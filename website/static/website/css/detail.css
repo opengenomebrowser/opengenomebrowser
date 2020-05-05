@@ -1,0 +1,52 @@
+.flex-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.table.no-bottom-padding {
+    margin-bottom: 0px;
+    margin-top: 16px;
+}
+
+.table th {
+    width: 300px;
+}
+
+#busco-table td {
+    text-align: right
+}
+
+.pie-chart {
+    width: 260px;
+    height: 260px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /*overflow: hidden;*/
+}
+
+.type-label {
+    color: darkslategray !important;
+    font-size: .4em;
+}
+
+.card-textbox {
+    background-color: white;
+    padding: 5px;
+}
+
+.sequence-div {
+    width: 100%;
+    overflow-wrap: break-word;
+    border: 1px inset #ccc;
+    background-color: white;
+    font-family: "Courier New", Courier, monospace;
+}
+
+.sequence-nucleotide b, .sequence-protein b {
+    border-radius: 5px;
+    margin-left: 1px;
+    margin-right: 1px;
+}

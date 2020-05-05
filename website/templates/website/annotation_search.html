@@ -1,0 +1,243 @@
+{% extends 'global/base.html' %}
+{% load static %}
+
+{% block styles %}
+    <!-- Site-specific css/js -->
+    <link rel="stylesheet" type="text/css" href="{% static 'annotation_search/css/annotation_search.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'global/css/annotype_color.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'global/css/taxid_color.css' %}"
+          id="taxid-color-stylesheet"/>
+
+    <!-- autocomplete -->
+    <link href="{% static 'website/css/jquery-ui.css' %}" rel="stylesheet"/>
+    <link href="{% static 'kegg/css/jquery.tag-editor.css' %}" rel="stylesheet"/>
+    <script src="{% static 'kegg/js/jquery.caret.min.js' %}"></script>
+    <script src="{% static 'kegg/js/jquery.tag-editor.min.js' %}"></script>
+
+{% endblock %}
+
+{% block sidebar %}
+
+    <div class="sidebar-subcontent form-check form-check-inline">
+        <label class="form-check-label" for="colorize-tax-checkbox"><a>Colorize taxonomy?</a></label>
+        <input class="form-check-input" type="checkbox" id="colorize-tax-checkbox" onclick="toggle_colorize_tax()"
+               checked>
+    </div>
+
+{% endblock %}
+
+{% block body %}
+
+
+    <section>
+
+        <form>
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="get-annotations">Annotations:</label>
+                <input type="text" class="form-control" id="get-annotations" value="{{ key_annotations|join:", " }}">
+            </div>
+
+
+            <div class="form-group">
+                <label for="get-members">Member:</label>
+                <input type="text" class="form-control" id="get-members" value="{{ key_members|join:", " }}">
+            </div>
+
+            <button type="button" class="btn btn-primary" onclick="submit_function()">Submit</button>
+        </form>
+
+        <hr class="featurette-divider">
+
+        <form>
+            <div class="form-group">
+                <label for="real-annotations">Annotations:</label>
+                <div class="form-control"
+                     style="height: unset; padding: unset; background-color: #e9ecef; border: 1px solid #ced4da"
+                     id="real-annotations">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="real-members">Member:</label>
+                <div class="form-control"
+                     style="height: unset; padding: unset; background-color: #e9ecef; border: 1px solid #ced4da"
+                     id="real-members">
+                </div>
+            </div>
+        </form>
+
+        {% csrf_token %}
+
+    </section>
+
+    <section style="text-align: center">
+
+        <!-- annotation-matrix -->
+        <div id="annotation-matrix"></div>
+
+    </section>
+
+
+{% endblock %}
+
+{% block end %}
+    <script>
+
+        "use strict";
+
+        let current_annotations = [];
+        let current_members = [];
+
+        let member_to_species;
+
+        $(document).ready(function () {
+            let original_annotations = [{% if key_annotations %} '{{ key_annotations|join:"', '" }}' {% else %}{% endif %}];
+            init_autocomplete_annotations("#get-annotations");
+            let original_members = [{% if key_members %} '{{ key_members|join:"', '" }}' {% else %}{% endif %}];
+            member_to_species = init_autocomplete_members("#get-members");
+
+            loadAnnotationTable(original_annotations, original_members, true);
+        });
+
+        window.addEventListener('popstate', function (e) {
+                // manage history stack
+                let members, annotations;
+
+                if (e.state == null) {
+                    annotations = [{% if key_annotations %} '{{ key_annotations|join:"', '" }}' {% else %}{% endif %}];
+                    members = [{% if key_members %} '{{ key_members|join:"', '" }}' {% else %}{% endif %}];
+                } else {
+                    annotations = e.state[0];
+                    members = e.state[1];
+                }
+
+                loadAnnotationTable(annotations, members, false);
+            }
+        );
+
+
+        function submit_function() {
+            let annotations = $('#get-annotations').val().split(',');
+            let members = $('#get-members').val().split(',');
+
+            console.log('annotations:', annotations);
+            console.log('members:', members);
+
+            $.when(validate_annotations(annotations), validate_members(members)).done(function (annotations_valid, members_valid) {
+                annotations_valid = annotations_valid[2].responseJSON['success'];
+                members_valid = members_valid[2].responseJSON['success'];
+
+                if (annotations_valid) {
+                    $('#get-annotations').next().removeClass('is-invalid');
+                } else {
+                    $('#get-annotations').next().addClass('is-invalid')
+                }
+
+                if (members_valid) {
+                    $('#get-members').next().removeClass('is-invalid');
+                } else {
+                    $('#get-members').next().addClass('is-invalid')
+                }
+
+                if (annotations_valid && members_valid) {
+                    console.log('FORM CONTROL SUCCESS', annotations, members, true);
+                    loadAnnotationTable(annotations, members, true);
+                }
+
+            });
+
+        }
+
+        function loadAnnotationTable(annotations, members, push_state) {
+            console.log('CHANGE ANNOTATIONS: ', current_annotations, '----->', annotations);
+            console.log('CHANGE MEMBER:      ', current_members, '----->', members);
+
+            if (
+                members.sort().join('+') === current_members.sort().join('+') &&
+                annotations.sort().join('+') === current_annotations.sort().join('+')
+            ) {
+                console.log('no change');
+                return
+            }
+
+            let loadTable = async function () {
+                console.log('ltable');
+
+                $('#annotation-matrix').load('{% url "website:annotation-matrix" %}', {
+                    annotations: annotations,
+                    members: members
+                });
+
+                await sleep(500);
+                activateTooltips()
+            };
+
+            let activateTooltips = async function () {
+                $('[data-toggle="tooltip"]').tooltip();
+
+                finalize()
+            };
+
+            let finalize = async function () {
+                console.log('fin');
+                if (push_state) {
+                    let state = [[], []];
+                    let url = '';
+
+                    if (annotations.length !== 0) {
+                        state[0] = annotations;
+                        url += `?annotations=${annotations.join('+')}`
+                    }
+                    if (members.length !== 0) {
+                        state[1] = members;
+                        if (annotations.length === 0) {
+                            url += `?members=${members.join('+')}`
+                        } else {
+                            url += `&members=${members.join('+')}`
+                        }
+                    }
+
+                    console.log("PUSH STATE");
+                    history.pushState(state, null, url);
+                }
+
+                $.getJSON('{% url "website:api-member-identifier-to-species" %}', {'members[]': members}, function (data) {
+                    delete data.success;
+                    console.log("DATAAAA:", data);
+
+                    $('#real-members').empty();
+                    $('#real-members').append(create_read_only_strain_div(Object.keys(data), data))
+                });
+
+                $.getJSON('{% url "website:api-annotation-to-type" %}', {'annotations[]': annotations}, function (data) {
+                    console.log("DATAAAA annotation-to-type:", data);
+
+                    $('#real-annotations').empty();
+                    $('#real-annotations').append(create_read_only_annotations_div(Object.keys(data), data))
+
+                });
+
+
+                current_annotations = annotations;
+                current_members = members;
+
+            };
+
+            if (annotations === [] || members === []) {
+                // nothing to display
+                $('#annotation-matrix').empty();
+
+                finalize();
+
+                return
+            }
+
+            loadTable()
+
+        }
+
+
+    </script>
+
+{% endblock %}

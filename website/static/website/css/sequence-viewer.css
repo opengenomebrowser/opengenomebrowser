@@ -1,0 +1,52 @@
+/*Adenine*/
+.sequence-nucleotide .A {
+    background-color: lightcoral;
+}
+
+/*Cytosine*/
+.sequence-nucleotide .C {
+    background-color: lightblue;
+}
+
+/*Guanine*/
+.sequence-nucleotide .G {
+    background-color: yellow;
+}
+
+/*Thymine*/
+.sequence-nucleotide .T {
+    background-color: lightgreen;
+}
+
+/*Uracil*/
+.sequence-nucleotide .U {
+    background-color: orange;
+}
+
+
+/*positive AA*/
+.sequence-protein .R, .sequence-protein .H, .sequence-protein .K {
+    background-color: lightcoral;
+}
+
+/*negative AA*/
+.sequence-protein .D, .sequence-protein .E {
+    background-color: lightblue;
+}
+
+/*uncharged AA*/
+.sequence-protein .S, .sequence-protein .T, .sequence-protein .N, .sequence-protein .Q {
+    background-color: yellow;
+}
+
+/*other AA*/
+.sequence-protein .C, .sequence-protein .U, .sequence-protein .G, .sequence-protein .P {
+    background-color: lightgreen;
+}
+
+/*hydropathic AA*/
+.sequence-protein .A, .sequence-protein .V, .sequence-protein .I, .sequence-protein .L,
+.sequence-protein .M, .sequence-protein .F, .sequence-protein .Y, .sequence-protein .W {
+    background-color: lightgrey;
+}
+

@@ -1,0 +1,88 @@
+html {
+    padding: 10px;
+    /*background: lightgrey;*/
+}
+
+.ogb-body {
+    margin-top: 70px; /* overwrite with selector #ogb-body */
+}
+
+#settings-icon {
+    height: 40px;
+    padding-right: 16px
+}
+
+.is-invalid {
+    border: 1px solid red !important;
+}
+
+/*
+inspired by "2019 answer": https://stackoverflow.com/questions/22252472/change-svg-color
+convert hex (e.g. #2980b9) to filter: https://codepen.io/sosuke/pen/Pjoqqp
+ */
+.context-menu-icon-copy::before {
+    content: url("/static/global/ionicons/md-copy.svg");
+    filter: invert(39%) sepia(80%) saturate(459%) hue-rotate(160deg) brightness(96%) contrast(93%); /* #2980b9 */
+}
+
+.context-menu-icon-pathway::before {
+    content: url("/static/global/ionicons/ios-git-branch.svg");
+    filter: invert(39%) sepia(80%) saturate(459%) hue-rotate(160deg) brightness(96%) contrast(93%); /* #2980b9 */
+}
+
+.context-menu-icon-strain::before {
+    content: url("/static/global/ionicons/md-bug.svg");
+    filter: invert(39%) sepia(80%) saturate(459%) hue-rotate(160deg) brightness(96%) contrast(93%); /* #2980b9 */
+}
+
+.context-menu-icon-strains::before {
+    content: url("/static/global/customicons/md-bugs.svg");
+    filter: invert(39%) sepia(80%) saturate(459%) hue-rotate(160deg) brightness(96%) contrast(93%); /* #2980b9 */
+}
+
+.context-menu-icon-world::before {
+    content: url("/static/global/ionicons/ios-globe.svg");
+    filter: invert(39%) sepia(80%) saturate(459%) hue-rotate(160deg) brightness(96%) contrast(93%); /* #2980b9 */
+}
+
+.context-menu-icon-annotation::before {
+    content: url("/static/global/ionicons/md-pricetag.svg");
+    filter: invert(39%) sepia(80%) saturate(459%) hue-rotate(160deg) brightness(96%) contrast(93%); /* #2980b9 */
+}
+
+.context-menu-icon-annotations::before {
+    content: url("/static/global/ionicons/md-pricetags.svg");
+    filter: invert(39%) sepia(80%) saturate(459%) hue-rotate(160deg) brightness(96%) contrast(93%); /* #2980b9 */
+}
+
+.context-menu-icon-blast::before {
+    content: url("/static/global/customicons/blast.svg");
+    filter: invert(39%) sepia(80%) saturate(459%) hue-rotate(160deg) brightness(96%) contrast(93%); /* #2980b9 */
+}
+
+
+.context-menu-icon::before {
+    position: absolute;
+    left: 0.5em;
+    width: 1.3em;
+    padding: 0 0 0 0;
+}
+
+.dropdown-item.context-menu-icon {
+    padding-left: 2.2em !important;
+}
+
+.context-menu-header {
+    font-weight: bold;;
+}
+
+.tag-editor {
+    padding: .375rem .375rem !important;
+    font-size: 1rem !important;
+    font-weight: 400 !important;
+    line-height: 1.5 !important;
+    border: 1px solid #ced4da !important;
+    border-radius: .25rem !important;
+    transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out !important;
+}
+

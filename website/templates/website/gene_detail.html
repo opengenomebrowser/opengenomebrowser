@@ -1,0 +1,291 @@
+{% extends 'global/base.html' %}
+{% load static %}
+
+{% block styles %}
+    <!-- Site-specific css/js -->
+    <link rel="stylesheet" type="text/css" href="{% static 'website/css/secondary-navbar.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'website/css/detail.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'website/css/sequence-viewer.css' %}"
+          id="sequence-stylesheet"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'global/css/annotype_color.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'global/css/taxid_color.css' %}">
+
+    <script src="{% static 'dna-feature-viewer/js/dna-feature-viewer.js' %}"></script>
+    <script src="{% static 'global/js/bokeh-2.0.1.min.js' %}"></script>
+    <script src="{% static 'global/js/bokeh-tables-2.0.1.min.js' %}"></script>
+    <script src="{% static 'global/js/bokeh-widgets-2.0.1.min.js' %}"></script>
+
+    <style>
+
+        .annotation {
+            white-space: normal;
+        }
+
+        {#        input[type=range] {#}
+        {#            -webkit-appearance: none;#}
+        {#            width: 100%;#}
+        {#            margin: 0.7px 0;#}
+        {#        }#}
+        {##}
+        {#        input[type=range]:focus {#}
+        {#            outline: none;#}
+        {#        }#}
+        {##}
+        {#        input[type=range]::-webkit-slider-runnable-track {#}
+        {#            width: 100%;#}
+        {#            height: 25.6px;#}
+        {#            cursor: pointer;#}
+        {#            box-shadow: 1px 1px 1px #000000, 0px 0px 1px #0d0d0d;#}
+        {#            background: #484d4d;#}
+        {#            border-radius: 0px;#}
+        {#            border: 0px solid #010101;#}
+        {#        }#}
+        {##}
+        {#        input[type=range]::-webkit-slider-thumb {#}
+        {#            box-shadow: 0px 0px 1px #000031, 0px 0px 0px #00004b;#}
+        {#            border: 1.8px solid #ff1e00;#}
+        {#            height: 27px;#}
+        {#            width: 18px;#}
+        {#            border-radius: 0px;#}
+        {#            background: rgba(255, 67, 95, 0.94);#}
+        {#            cursor: pointer;#}
+        {#            -webkit-appearance: none;#}
+        {#            margin-top: -0.7px;#}
+        {#        }#}
+        {##}
+        {#        input[type=range]:focus::-webkit-slider-runnable-track {#}
+        {#            background: #545a5a;#}
+        {#        }#}
+        {##}
+        {#        input[type=range]::-moz-range-track {#}
+        {#            width: 100%;#}
+        {#            height: 25.6px;#}
+        {#            cursor: pointer;#}
+        {#            box-shadow: 1px 1px 1px #000000, 0px 0px 1px #0d0d0d;#}
+        {#            background: #484d4d;#}
+        {#            border-radius: 0px;#}
+        {#            border: 0px solid #010101;#}
+        {#        }#}
+        {##}
+        {#        input[type=range]::-moz-range-thumb {#}
+        {#            box-shadow: 0px 0px 1px #000031, 0px 0px 0px #00004b;#}
+        {#            border: 1.8px solid #ff1e00;#}
+        {#            height: 27px;#}
+        {#            width: 18px;#}
+        {#            border-radius: 0px;#}
+        {#            background: rgba(255, 67, 95, 0.94);#}
+        {#            cursor: pointer;#}
+        {#        }#}
+        {##}
+        {#        input[type=range]::-ms-track {#}
+        {#            width: 100%;#}
+        {#            height: 25.6px;#}
+        {#            cursor: pointer;#}
+        {#            background: transparent;#}
+        {#            border-color: transparent;#}
+        {#            color: transparent;#}
+        {#        }#}
+        {##}
+        {#        input[type=range]::-ms-fill-lower {#}
+        {#            background: #3c4040;#}
+        {#            border: 0px solid #010101;#}
+        {#            border-radius: 0px;#}
+        {#            box-shadow: 1px 1px 1px #000000, 0px 0px 1px #0d0d0d;#}
+        {#        }#}
+        {##}
+        {#        input[type=range]::-ms-fill-upper {#}
+        {#            background: #484d4d;#}
+        {#            border: 0px solid #010101;#}
+        {#            border-radius: 0px;#}
+        {#            box-shadow: 1px 1px 1px #000000, 0px 0px 1px #0d0d0d;#}
+        {#        }#}
+        {##}
+        {#        input[type=range]::-ms-thumb {#}
+        {#            box-shadow: 0px 0px 1px #000031, 0px 0px 0px #00004b;#}
+        {#            border: 1.8px solid #ff1e00;#}
+        {#            height: 27px;#}
+        {#            width: 18px;#}
+        {#            border-radius: 0px;#}
+        {#            background: rgba(255, 67, 95, 0.94);#}
+        {#            cursor: pointer;#}
+        {#            height: 25.6px;#}
+        {#        }#}
+        {##}
+        {#        input[type=range]:focus::-ms-fill-lower {#}
+        {#            background: #484d4d;#}
+        {#        }#}
+        {##}
+        {#        input[type=range]:focus::-ms-fill-upper {#}
+        {#            background: #545a5a;#}
+        {#        }#}
+
+    </style>
+
+{% endblock %}
+
+{% block sidebar %}
+
+    <div class="sidebar-subcontent form-check form-check-inline">
+        <label class="form-check-label" for="colorize-sequence-checkbox"><a>Colorize sequences?</a></label>
+        <input class="form-check-input" type="checkbox" id="colorize-sequence-checkbox"
+               onclick="toggle_colorize_sequence()">
+    </div>
+
+    <div class="sidebar-subcontent form-check form-check-inline">
+        <label class="form-check-label" for="formControlRange"><a>Example Range input</a></label>
+        <input type="range" class="form-control-range" id="formControlRange" min="3000" max="300000" , value="3000">
+
+        <div><a>3000</a></div>
+    </div>
+
+
+{% endblock %}
+
+{% block body %}
+    <!-- Secondary Navbar -->
+    <nav id="secondary-navbar" class="navbar navbar-expand-sm navbar-dark fixed-top">
+        <div class="collapse navbar-collapse">
+            <div class="navbar-nav">
+                <!-- Strain -->
+                <a class="navbar-next">
+                    <img class="navbar-next-img" src="{% static 'global/customicons/caret.svg' %}"> </a>
+                <a class="nav-item nav-link"
+                   href="{% url 'website:strain' slug=gene.genome.strain %}">STRAIN {{ gene.genome.strain }}</a>
+                <!-- Member -->
+                <a class="navbar-next">
+                    <img class="navbar-next-img" src="{% static 'global/customicons/caret.svg' %}"> </a>
+                <a class="nav-item nav-link"
+                   href="{% url 'website:member' slug=gene.genome.identifier %}">MEMBER {{ gene.genome.identifier }}</a>
+                <!-- Gene -->
+                <a class="navbar-next">
+                    <img class="navbar-next-img" src="{% static 'global/customicons/caret_full.svg' %}"> </a>
+                <span class="nav-item nav-link active"
+                >{{ gene.identifier }}</span>
+            </div>
+        </div>
+    </nav>
+
+    <section>
+        <!-- Overview -->
+        <div class="container">
+
+            <hr class="featurette-divider">
+            <h1>
+                <a class="type-label">locus tag:</a>
+                {{ gene.identifier }}
+            </h1>
+            <h1>
+                <a class="type-label">member:</a>
+                <a class="h2">{{ gene.genome.identifier }}</a>
+                {% if gene.genome.taxid %}
+                    <a class="type-label">species:</a>
+                    <a class="h3">{{ gene.genome.taxid.taxscientificname }} ({{ gene.genome.taxid.id }})</a>
+                {% endif %}
+            </h1>
+        </div>
+
+        <!-- Annotations -->
+        <div class="container">
+            <hr class="featurette-divider">
+
+            <h3>Annotations</h3>
+            {% for anno in gene.annotations.all %}
+                {{ anno.anno_type_verbose }} : {{ anno.name }}  : {{ anno.description }}<br>
+            {% endfor %}
+
+            <!-- Annotations: Table -->
+            <table class="table no-bottom-padding">
+                <thead class="thead-dark">
+                <tr>
+                    <th scope="col">Type</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Description</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for anno in gene.annotations.all %}
+                    <tr>
+                        <th scope="row">
+                            <div class="annotation"
+                                 data-annotype="{{ anno.anno_type }}">{{ anno.anno_type_verbose }}</div>
+                        </th>
+                        <td>{{ anno.name }}</td>
+                        <td>{{ anno.description }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Sequences -->
+        <div class="container">
+            <hr class="featurette-divider">
+
+            <h3>Sequences</h3>
+
+            <p>Nucleotide sequence (GC-content: {{ gene.gc_content|floatformat:1 }} %):</p>
+            <div class="sequence-div sequence-nucleotide">{{ fasta_nucleotide|safe }}</div>
+            <br>
+            <p>Protein sequence:</p>
+            <div class="sequence-div sequence-protein">{{ fasta_protein|safe }}</div>
+        </div>
+
+        <!-- GenBank info -->
+        <div class="container">
+            <hr class="featurette-divider">
+            <h3>GenBank Info</h3>
+
+            {% for key, value in gene.get_gbk_qualifiers.items %}
+                {{ key }} - {{ value|join:" --AND-- " }}<br>
+            {% endfor %}
+        </div>
+
+        <!-- Gene Locus -->
+        <div class="container">
+            <hr class="featurette-divider">
+
+            <h3>Gene Locus</h3>
+
+            <div id="gene-locus"></div>
+
+            <hr class="featurette-divider">
+        </div>
+
+
+        <!-- Go to prev / next Gene -->
+        <div class="container" style="display: flex; justify-content: space-between">
+            <div>
+                {% if prev_gene %}
+                    <a href="{% url 'website:gene' slug=prev_gene %}">
+                        <img src="{% static 'global/ionicons/ios-arrow-dropleft.svg' %}"
+                             style="height: 3rem"> {{ prev_gene }}
+                    </a>
+                {% endif %}
+            </div>
+            <div>
+                {% if next_gene %}
+                    <a href="{% url 'website:gene' slug=next_gene %}">
+                        {{ next_gene }} <img src="{% static 'global/ionicons/ios-arrow-dropright.svg' %}"
+                                             style="height: 3rem">
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+        <div id="context-menu"></div>
+
+    </section>
+
+{% endblock %}
+
+{% block end %}
+    <script>
+        let draw;
+
+
+        $(document).ready(function () {
+            load_dna_feature_viewer('{{ gene.identifier }}')
+        });
+
+
+    </script>
+{% endblock %}

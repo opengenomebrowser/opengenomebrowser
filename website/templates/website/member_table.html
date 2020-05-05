@@ -1,0 +1,219 @@
+{% extends 'global/base.html' %}
+{% load static %}
+
+{% block styles %}
+    <!-- Site-specific css/js -->
+    <link rel="stylesheet" type="text/css" href="{% static 'website/css/member_table.css' %}"/>
+
+    <link rel="stylesheet" type="text/css" href="{% static 'global/css/taxid_color.css' %}" id="taxid-color-stylesheet"
+          disabled/>
+    <link rel="stylesheet" type="text/css" href="{% static 'global/css/tag_color.css' %}"/>
+
+    <!-- yadcf - interactive tables - uses JQuery-UI and DataTables-->
+    <script type="text/javascript" src="{% static 'website/js/pdfmake.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'website/js/datatables.min.js' %}"></script>
+    <script type="text/javascript" src='{% static 'website/js/jquery.dataTables.yadcf.js' %}'></script>
+    <script type="text/javascript" src='{% static 'website/js/select2.min.js' %}'></script>
+
+    <!-- yadcf css -->
+    <link href="{% static 'website/css/datatables.min.css' %}" rel="stylesheet"/>
+    {#    <link href="{% static 'website/css/jquery.dataTables.yadcf.css' %}" rel="stylesheet"/>#}
+    <link href="{% static 'website/css/select2.min.css' %}" rel="stylesheet"/>
+    <link href="{% static 'website/css/jquery-ui.css' %}" rel="stylesheet"/>
+
+    <!-- SortableJS - https://github.com/SortableJS/Sortable -->
+    <script src="{% static 'website/js/Sortable.min.js' %}"></script>
+
+{% endblock %}
+
+{% block sidebar %}
+
+    <div class="sidebar-subcontent">
+        <div id="buttons" class="sidebar-subcontent">
+            <a>Export table: </a>
+        </div>
+    </div>
+
+    <div class="sidebar-subcontent form-check form-check-inline">
+        <label class="form-check-label" for="colorize-tax-checkbox"><a>Colorize taxonomy?</a></label>
+        <input class="form-check-input" type="checkbox" id="colorize-tax-checkbox" onclick="toggle_colorize_tax()">
+    </div>
+
+    <div class="sidebar-subcontent">
+        <a>Show representatives?</a>
+        <div id="external_filter_representative" class="sidebar-select"></div>
+        <a>Show contaminated?</a>
+        <div id="external_filter_contaminated" class="sidebar-select"></div>
+        <a>Show restricted?</a>
+        <div id="external_filter_strain_restricted" class="sidebar-select"></div>
+    </div>
+
+    <div class="sidebar-subcontent">
+        <button type="button" class="btn btn-secondary buttons-copy buttons-html5" onclick="load_table()">Update Table
+        </button>
+    </div>
+
+    <div class="sidebar-subcontent">
+        <a>Sort columns</a>
+        <ul id="sortable-selected" class="sortable grid">{% for column in default_columns %}
+            <li data-selector="{{ column.0 }}">{{ column.1 }} {% endfor %}
+        </ul>
+    </div>
+    <div class="sidebar-subcontent">
+        <a>Available Fields</a>
+        <ul id="sortable-available" class="sortable grid">{% for column in yadcf_columns %}
+            <li data-selector="{{ column.0 }}">{{ column.1 }} {% endfor %}
+        </ul>
+    </div>
+
+{% endblock %}
+
+{% block body %}
+    <!-- Table for every Member in the database -->
+    <div id="custom-table-wrapper">
+        <table id="table" class="table table-sm"></table>
+    </div>
+
+{% endblock %}
+
+{% block end %}
+
+    <script>
+        "use strict";
+
+        const member_table = $('#table');
+        const col_dropdown = $('#coldropdown');
+        const sortable_selected = document.getElementById('sortable-selected');
+        const sortable_available = document.getElementById('sortable-available');
+        let data_table;
+        let columns_to_show = [{% for column in default_columns %}'{{ column.0 }}', {% endfor %}];
+        let resizeTimer;
+
+        // set default style of the table
+        const member_table_skeleton = "<thead class=\"thead-dark\"></thead>";
+
+        function get_sorted_selectors() {
+            let selectors = [];
+            $("ul#sortable-selected li").each(function () {
+                selectors.push($(this)[0].getAttribute('data-selector'))
+            });
+            return selectors
+        }
+
+        $(document).ready(function () {
+            new Sortable.create(sortable_selected, {
+                {#swapThreshold: 1,#}
+                animation: 150,
+                {#removeOnSpill: true,#}
+                multiDrag: true, // Enable multi-drag
+                selectedClass: 'selected', // The class applied to the selected items
+                group: 'shared', // set both lists to same group
+            });
+            new Sortable.create(sortable_available, {
+                {#swapThreshold: 1,#}
+                animation: 150,
+                {#removeOnSpill: true,#}
+                multiDrag: true, // Enable multi-drag
+                selectedClass: 'selected', // The class applied to the selected items
+                group: 'shared', // set both lists to same group
+            });
+        });
+
+
+        $(document).ready(function () {
+            load_table();
+        });
+
+        $(document).ready(function () {
+            console.log('init contextmenu');
+
+            $('#table').on('contextmenu', 'tr', function (event) {
+                event.preventDefault();
+
+                console.log('click on ');
+                console.log(event);
+
+                let this_row_idx = $(this).index();
+                let id_col_idx = all_colnames.indexOf('Identifier');
+                //let this_data = data_table.row(this_row_index).data();
+                let this_identifier = data_table.cell(this_row_idx, id_col_idx).data();
+                let selected_row_idx_array = data_table.rows({selected: true})[0];
+                let selected_identifiers = selected_row_idx_array.map(row_idx => data_table.cell(row_idx, id_col_idx).data());
+                
+                ShowMemberContextMenu(event, this_identifier, selected_identifiers);
+            })
+        });
+
+        // resize table based on window size
+        $(window).on('resize', function (e) {
+            if (typeof resizeTimer !== 'undefined') {
+                clearTimeout(resizeTimer);
+            }
+            resizeTimer = setTimeout(function () {
+                // Set new size to height -100px
+                member_table.closest('.dataTables_scrollBody').css('max-height', calcTableSize() + 'px');
+                member_table.DataTable().draw();
+
+            }, 250);    // Timer value for checking resize event start/stop
+        });
+
+        function load_table() {
+            // destroy DataTable if it exists
+            if (data_table) {
+                data_table.destroy();
+            }
+            // destroy external selectors
+            document.getElementById('external_filter_representative').innerHTML = '';
+            document.getElementById('external_filter_contaminated').innerHTML = '';
+            document.getElementById('external_filter_strain_restricted').innerHTML = '';
+
+            // load style of table
+            member_table.html(member_table_skeleton);
+
+            // load table
+            $.ajax({
+                type: "GET",
+                data: {columns: JSON.stringify(get_sorted_selectors())},
+                url: "../table-load-script/",
+                dataType: "script",
+            });
+
+            setTimeout(function () {
+                // adjust height based on window (timeout: 0.5 sec)
+                window.dispatchEvent(new Event('resize'));
+            }, 500);
+
+            // close sidenav
+            closeNav();
+        }
+
+        function loop_columns() {
+            let column_dict = {};
+
+            c = 0;
+            data_table.columns().every(function () {
+                column_dict[c] = this.header().firstChild.textContent;
+                c += 1;
+            });
+        }
+
+        function getElementByXpath(path) {
+            return document.evaluate(path, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+        }
+
+        function calcTableSize() {
+            let table_start = document.getElementById("custom-table-wrapper").offsetTop;  //distance top-table
+            let navigator_height = getElementByXpath("/html/body/div[2]/div/div[3]").offsetHeight;  //text and navigator below table
+
+            let table_size = window.innerHeight - table_start - navigator_height * 2 - 100;
+
+            if (table_size < 300) {  // ensure no negative numbers
+                return 300;
+            } else {
+                return table_size;
+            }
+        }
+
+    </script>
+
+{% endblock %}

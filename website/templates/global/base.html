@@ -1,0 +1,78 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <title>genomeDBmanager - projectname</title>
+    <link rel="shortcut icon" href="http://www.unibe.ch/favicon.ico">
+
+    <!-- jquery 3.4.1 -->
+    <script src="{% static 'global/js/jquery-3.4.1.min.js' %}"></script>
+
+    <!-- JQuery-UI-->
+    <script type="text/javascript" src="{% static 'website/js/jquery-ui.min.js' %}"></script>
+
+    <!-- bootstrap 4.3.1 -->
+    <script src="{% static 'global/js/popper.min.js' %}"></script>
+    <script src="{% static 'global/js/bootstrap.min.js' %}"></script>
+
+    <!-- basic css -->
+    <link rel="stylesheet" type="text/css" href="{% static 'global/css/base.css' %}"/>
+
+    <!-- sidebar -->
+    <script src="{% static 'global/js/sidebar.js' %}"></script>
+    <link rel="stylesheet" type="text/css" href="{% static 'global/css/sidebar.css' %}"/>
+
+    <!-- navbar -->
+    <link rel="stylesheet" href="{% static 'global/css/bootstrap.min.css' %}">
+
+    <!-- Base -->
+    <script src="{% static 'global/js/base.js' %}"></script>
+
+    <!-- CRF Cookie -->
+    <script type="text/javascript" src="{% static 'global/js/getCookie.js' %}"></script>
+
+    <!-- Font for the website -->
+    {% block styles %}{% endblock %}
+</head>
+
+<body id="ogb-body" class="ogb-body">
+<!--Sidebar-->
+<div id="mySidenav" class="sidenav">
+    <div id="sidebar-content">
+        {% block sidebar %}{% endblock %}
+    </div>
+</div>
+
+<!--Navbar-->
+<nav class="navbar navbar-expand-sm navbar-dark bg-dark fixed-top">
+    <!--Settings-->
+    <img src="{% static 'global/ionicons/md-settings.svg' %}" id="settings-icon" onclick="toggleNav()"
+         class=".navbar-dark .navbar-brand:hover">
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup"
+            aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <!--Home-->
+    <a class="navbar-brand" href="{% url 'website:index' %}">Home</a>
+    <!--Links-->
+    <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+        <div class="navbar-nav">
+            <a class="nav-item nav-link {% if request.resolver_match.url_name == 'members'           %}active{% endif %}" href="{% url 'website:members' %}">Member overview</a>
+            <a class="nav-item nav-link {% if request.resolver_match.url_name == 'kegg'              %}active{% endif %}" href="{% url 'website:kegg' %}">Kegg maps</a>
+            <a class="nav-item nav-link {% if request.resolver_match.url_name == 'annotation-search' %}active{% endif %}" href="{% url 'website:annotation-search' %}">Annotation Search</a>
+            <a class="nav-item nav-link {% if request.resolver_match.url_name == 'blast'             %}active{% endif %}" href="{% url 'website:blast' %}">Blast</a>
+        </div>
+    </div>
+</nav>
+
+{% block body %}{% endblock %}
+
+</body>
+
+{% block end %}{% endblock %}
+
+
+</html>

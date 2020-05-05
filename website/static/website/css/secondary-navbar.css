@@ -1,0 +1,20 @@
+#ogb-body {
+    margin-top: 125px; /*70+55*/
+}
+
+#secondary-navbar {
+    top: 55px;
+    background-color: rgb(75, 81, 87);
+}
+
+.navbar-next {
+    font-size: 1.5rem;
+}
+
+.navbar-next-img {
+    height: 1.5rem;
+}
+
+#mySidenav {
+    padding-top: 110px; /*55+55*/
+}

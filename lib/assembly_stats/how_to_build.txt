@@ -1,0 +1,11 @@
+sudo dnf install gcc gcc-c++
+
+git clone https://github.com/sanger-pathogens/assembly-stats.git
+
+mkdir assembly-stats/build
+cd assembly-stats/build
+
+cmake -DINSTALL_DIR:PATH=$PWD/../../executable ..
+make
+make test
+make install

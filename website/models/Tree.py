@@ -1,0 +1,121 @@
+import os
+from django.db import models
+from website.models import TaxID, ANI, Annotation, Member, Genome, Strain
+import pandas as pd
+from skbio import DistanceMatrix
+from skbio.tree import nj
+
+
+class TreeNotDoneError(Exception):
+    def __init__(self, message):
+        self.message = message
+
+
+class AbstractTree:
+    @property
+    def newick(self):
+        raise NotImplementedError('AbstractTree cannot create trees')
+
+
+class TaxIdTree(AbstractTree):
+    """
+    Create a Newick tree based on taxonomy.
+
+    :param objs: QuerySet of class 'Genome', 'Member', 'Strain' or 'TaxID'
+                    -> require property 'parent' that points to TaxID
+    """
+
+    def __init__(self, objs):
+        # transform QuerySet into TaxID-Queryset
+        assert type(objs) == models.QuerySet
+
+        # Load necessary TaxIDs into dictionary
+        node_to_children = {}  # TaxID (parent) -> set(TaxID, TaxID) (children)
+        for taxid in objs:
+            # assert taxid.invariant()  # ensure it has parents up until root node
+            while taxid.parent:
+                if taxid.parent in node_to_children:
+                    node_to_children[taxid.parent].add(taxid)
+                else:
+                    node_to_children[taxid.parent] = {taxid}
+                taxid = taxid.parent
+
+        root_node = TaxID.objects.get(parent=None)
+        assert root_node in node_to_children
+
+        # Create Newick-string using recursion.
+        def newick_render_node(taxid: TaxID) -> str:
+            # recursive function: start with root node, let children render themselves
+            if taxid not in node_to_children:
+                return str(taxid)
+            else:
+                children_set = node_to_children[taxid]
+                children_strings = [newick_render_node(child) for child in children_set]
+                return "(" + ','.join(children_strings) + ")" + str(taxid)
+
+        self.__newick = newick_render_node(root_node)
+
+    @property
+    def newick(self) -> str:
+        return self.__newick
+
+
+class AniTree(AbstractTree):
+    """
+    Create a Newick tree based on ANI whole genome similarity.
+
+    :param genomes: QuerySet of class 'Genome'
+    :raises TreeNotDoneError: if ANI-calculation is still running. (Be sure huey is running! (./manage.py run_huey))
+    """
+
+    def __init__(self, genomes: models.QuerySet):
+        anis = []
+        for g1 in genomes:
+            g1_existing_partners = g1.get_ani_partners()
+            for g2 in genomes:
+                if g1 == g2:
+                    ani, created = ANI.objects.get_or_create(from_genome=g1, to_genome=g2)
+                    anis.append(ani)
+                    break
+                assert os.path.isfile(g1.member.assembly_fasta)
+                assert os.path.isfile(g2.member.assembly_fasta)
+                ani, created = ANI.objects.get_or_create(from_genome=g1, to_genome=g2)
+                anis.append(ani)
+
+        self.__anis = anis
+        self.__genomes = genomes
+
+    @property
+    def newick(self) -> str:
+        def get_status(ani: ANI):
+            ani.refresh_from_db()
+            return ani.status
+
+        states = [get_status(ani) for ani in self.__anis]
+
+        n_done = states.count('D')
+        n_running = states.count('R')
+        n_failed = states.count('F')
+
+        assert n_done + n_running + n_failed == len(self.__anis)
+
+        if n_running > 0 or n_failed > 0:
+            raise TreeNotDoneError('ANI are still being calculated. ' +
+                                   F'Finished: {n_done}, running: {n_running}, failed: {n_failed}')
+
+        ani_matrix = pd.DataFrame(
+            {g1.identifier: [ANI.objects.get(g1, g2).similarity for g2 in self.__genomes]
+             for g1 in self.__genomes})
+        ani_matrix.rename({n: id for n, id in enumerate(self.__genomes.values_list('identifier', flat=True))},
+                          inplace=True)
+
+        ani_matrix = 1 - ani_matrix
+
+        distance_matrix = DistanceMatrix(data=ani_matrix, ids=ani_matrix.index)
+        return nj(distance_matrix, result_constructor=str)
+
+
+class OrthofinderTree(AbstractTree):
+    @property
+    def newick(self):
+        raise NotImplementedError('Tree calculation using Orthofinder has not been implemented yet.')

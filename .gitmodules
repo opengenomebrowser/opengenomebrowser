@@ -1,0 +1,18 @@
+[submodule "lib/tax_id_to_color/glasbey"]
+	path = lib/tax_id_to_color/glasbey
+	url = https://github.com/taketwo/glasbey
+[submodule "lib/get_tax_info"]
+	path = lib/get_tax_info
+	url = https://binfgitlab.unibe.ch/troder/get_tax_info
+[submodule "lib/custom_kegg"]
+	path = lib/custom_kegg
+	url = https://binfgitlab.unibe.ch/troder/custom_kegg
+[submodule "lib/orthofinder_tools"]
+	path = lib/orthofinder_tools
+	url = https://binfgitlab.unibe.ch/troder/orthofinder_tools
+[submodule "lib/ncbiblast"]
+	path = lib/ncbiblast
+	url = https://gitlab.bioinformatics.unibe.ch/troder/ncbiblast
+[submodule "lib/gene_loci_comparison"]
+	path = lib/gene_loci_comparison
+	url = https://gitlab.bioinformatics.unibe.ch/troder/gene_loci_comparison

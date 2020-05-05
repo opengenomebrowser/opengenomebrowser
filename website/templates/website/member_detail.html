@@ -1,0 +1,429 @@
+{% extends 'global/base.html' %}
+{% load static %}
+
+{% block styles %}
+    <!-- Site-specific css/js -->
+    <link rel="stylesheet" type="text/css" href="{% static 'global/css/taxid_color.css' %}" id="taxid-color-stylesheet"
+          disabled/>
+    <link rel="stylesheet" type="text/css" href="{% static 'global/css/tag_color.css' %}"/>
+
+    <link rel="stylesheet" type="text/css" href="{% static 'website/css/detail.css' %}"/>
+
+    <!-- Plotly https://plot.ly/ -->
+    <script src="{% static 'global/js/plotly-latest.min.js' %}"></script>
+
+    <!-- piechart https://anychart.com/ -->
+    <script src="{% static 'global/js/Chart.bundle.min.js' %}"></script>
+{% endblock %}
+
+{% block sidebar %}
+
+    <div class="sidebar-subcontent form-check form-check-inline">
+        <label class="form-check-label" for="colorize-tax-checkbox"><a>Colorize taxonomy?</a></label>
+        <input class="form-check-input" type="checkbox" id="colorize-tax-checkbox" onclick="toggle_colorize_tax()">
+    </div>
+
+{% endblock %}
+
+{% block body %}
+
+    <section>
+        <!-- title -->
+        <div class="container">
+            <h1>
+                <a class="type-label">identifier:</a>
+                {{ member.identifier }}
+                <a class="type-label">strain:</a>
+                <a class="h2">{{ member.strain }}</a>{% if member.old_identifier %}
+                <a class="type-label">old identifier:</a>
+                <a class="h3">{{ member.old_identifier }}</a>{% endif %}
+            </h1>
+            {% if member.taxid %}
+                <h1>
+                    <a class="type-label">species:</a>
+                    <a class="h3">{{ member.taxid.taxscientificname }} ({{ member.taxid.id }})</a>
+                </h1>{% endif %}
+        </div>
+
+        <!-- tags -->
+        <div class="container">
+
+            <hr class="featurette-divider">
+
+            <h3>Tags</h3>
+
+            {% if member.tags.all.count == 0 %}
+                <p>No tags</p>
+            {% else %}
+                <div class="container flex-container">
+                    {% for tag in member.all_tags.all %}
+                        <div class="card" style="width: 18rem; background-color:rgb({{ tag.color }})">
+                            <div class="card-body">
+                                <h5 class="card-title"
+                                    style="color: {% if tag.text_color_white %}white{% else %}black{% endif %}">{{ tag.tag }}</h5>
+                                <h6 class="card-subtitle mb-2"
+                                    style="color: {% if tag.text_color_white %}#EFEEEC{% else %}#444444{% endif %}">Card
+                                    subtitle</h6>
+                                <div class="card-textbox rounded">
+                                    <p class="card-text">{{ tag.description|default:"no description" }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+
+        <!-- tables -->
+        <div class="container">
+
+            <hr class="featurette-divider">
+
+            <!-- key parameters -->
+            <div data-toggle="collapse" href="#parameters-key-body" aria-expanded="true"
+                 aria-controls="parameters-key-body">
+                <table class="table no-bottom-padding">
+                    <thead class="thead-dark">
+                    <tr>
+                        <th scope="col">Key Parameters</th>
+                        <th scope="col"></th>
+                    </tr>
+                    </thead>
+                </table>
+            </div>
+
+            <div class="collapse" id="parameters-key-body">
+                <table class="table no-top-padding">
+                    <tbody>
+
+                    {% for verbose, value in key_parameters %}{% if value != None %}
+                        <tr>
+                            <th scope="row">{{ verbose }}</th>
+                            <td>{{ value }}</td>
+                        </tr>
+                    {% endif %}{% endfor %}
+
+                    {% if member.env_broad_scale %}
+                        <tr>
+                            <th scope="row">env_broad_scale</th>
+                            <td>{% for env in member.env_broad_scale %}{{ env }}{% endfor %}</td>
+                        </tr>{% endif %}
+
+                    {% if member.env_local_scale %}
+                        <tr>
+                            <th scope="row">env_local_scale</th>
+                            <td>{% for env in member.env_local_scale %}{{ env }}{% endfor %}</td>
+                        </tr>{% endif %}
+
+                    {% if member.env_medium %}
+                        <tr>
+                            <th scope="row">env_medium</th>
+                            <td>{% for env in member.env_medium %}{{ env }}{% endfor %}</td>
+                        </tr>{% endif %}
+
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- sequencing parameters -->
+            <div data-toggle="collapse" href="#parameters-seq-body" aria-expanded="true"
+                 aria-controls="parameters-seq-body">
+                <table class="table no-bottom-padding">
+                    <thead class="thead-dark">
+                    <tr>
+                        <th scope="col">Sequencing Information</th>
+                        <th scope="col"></th>
+                    </tr>
+                    </thead>
+                </table>
+            </div>
+
+            <div class="collapse" id="parameters-seq-body">
+                <table class="table no-top-padding">
+                    <tbody>
+
+                    {% for verbose, value in seq_parameters %}{% if value != None %}
+                        <tr>
+                            <th scope="row">{{ verbose }}</th>
+                            <td>{{ value }}</td>
+                        </tr>
+                    {% endif %}{% endfor %}
+
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- assembly parameters -->
+            <div data-toggle="collapse" href="#parameters-ass-body" aria-expanded="true"
+                 aria-controls="parameters-ass-body">
+                <table class="table no-bottom-padding">
+                    <thead class="thead-dark">
+                    <tr>
+                        <th scope="col">Assembly Information</th>
+                        <th scope="col"></th>
+                    </tr>
+                    </thead>
+                </table>
+            </div>
+
+            <div class="collapse" id="parameters-ass-body">
+                <table class="table no-top-padding">
+                    <tbody>
+
+                    {% for verbose, value in ass_parameters %}{% if value != None %}
+                        <tr>
+                            <th scope="row">{{ verbose }}</th>
+                            <td>{{ value }}</td>
+                        </tr>
+                    {% endif %}{% endfor %}
+
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- annotation parameters -->
+            <div data-toggle="collapse" href="#parameters-ann-body" aria-expanded="true"
+                 aria-controls="parameters-ann-body">
+                <table class="table no-bottom-padding">
+                    <thead class="thead-dark">
+                    <tr>
+                        <th scope="col">Annotation Information</th>
+                        <th scope="col"></th>
+                    </tr>
+                    </thead>
+                </table>
+            </div>
+
+            <div class="collapse" id="parameters-ann-body">
+                <table class="table no-top-padding">
+                    <tbody>
+
+                    {% for verbose, value in ann_parameters %}{% if value != None %}
+                        <tr>
+                            <th scope="row">{{ verbose }}</th>
+                            <td>{{ value }}</td>
+                        </tr>
+                    {% endif %}{% endfor %}
+
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+
+        {% if member.BUSCO %}
+            <!-- busco -->
+            <div class="container">
+
+                <hr class="featurette-divider">
+
+                <h3>BUSCO</h3>
+
+                <div class="container flex-container">
+                    <div>
+                        <table class="table table-sm" id="busco-table">
+                            <thead class="thead-dark">
+                            <tr>
+                                <th scope="col" data-toggle="tooltip" data-placement="top"
+                                    title="BUSCO: Benchmarking Universal Single-Copy Orthologs"><a
+                                        href="https://busco.ezlab.org/" style="color: inherit">BUSCO</a></th>
+                                <th scope="col" data-toggle="tooltip" data-placement="top"
+                                    title="BUSCO dataset">{{ member.BUSCO.dataset|default:"dataset undefined" }}</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr class="table-success" data-toggle="tooltip" data-placement="right"
+                                title="Complete and single-copy">
+                                <th scope="row">Single-copy</th>
+                                <td>{{ member.BUSCO.S }}</td>
+                            </tr>
+                            <tr class="table-primary" data-toggle="tooltip" data-placement="right"
+                                title="Complete but duplicated">
+                                <th scope="row">Duplicated</th>
+                                <td>{{ member.BUSCO.D }}</td>
+                            </tr>
+                            <tr class="table-warning" data-toggle="tooltip" data-placement="right"
+                                title="Match with high-identity but incomplete">
+                                <th scope="row">Fragmented</th>
+                                <td>{{ member.BUSCO.F }}</td>
+                            </tr>
+                            <tr class="table-danger" data-toggle="tooltip" data-placement="right"
+                                title="No significant matches or score below BUSCO profile.">
+                                <th scope="row">Missing</th>
+                                <td>{{ member.BUSCO.M }}</td>
+                            </tr>
+                            <tr class="table-light" class="table-light" data-toggle="tooltip" data-placement="right"
+                                title="Single-copy + duplicated">
+                                <th scope="row">Complete</th>
+                                <td>{{ member.BUSCO.C }}</td>
+                            </tr>
+                            <tr class="table-dark" data-toggle="tooltip" data-placement="right"
+                                title="Total BUSCO genes in profile">
+                                <th scope="row">Total</th>
+                                <td>{{ member.BUSCO.T }}</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div>
+                        <div id="busco-pie-chart" class="pie-chart" height="260px" width="260px"></div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        {% if included_sequences %}
+            <!-- busco -->
+            <div class="container">
+
+                <hr class="featurette-divider">
+
+                <h3>Origin of excluded sequences</h3>
+
+                <div class="container flex-container">
+                    <div>
+                        <table class="table table-sm" id="busco-table">
+                            <thead class="thead-dark">
+                            <tr>
+                                <th scope="col">Species</th>
+                                <th scope="col">Amount</th>
+                            </tr>
+                            </thead>
+                            <tbody>{% for taxid, sci_name, color, percentage in included_sequences %}
+                                <tr class="">
+                                    <th scope="row">{{ sci_name }}</th>
+                                    <td>{{ percentage }}</td>
+                                </tr>{% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div>
+                        <div id="included-pie-chart" class="pie-chart" height="260px" width="260px"></div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+
+        {% if excluded_sequences %}
+            <!-- busco -->
+            <div class="container">
+
+                <hr class="featurette-divider">
+
+                <h3>Origin of excluded sequences</h3>
+
+                <div class="container flex-container">
+                    <div>
+                        <table class="table table-sm" id="busco-table">
+                            <thead class="thead-dark">
+                            <tr>
+                                <th scope="col">Species</th>
+                                <th scope="col">Amount</th>
+                            </tr>
+                            </thead>
+                            <tbody>{% for taxid, sci_name, color, percentage in excluded_sequences %}
+                                <tr class="">
+                                    <th scope="row">{{ sci_name }}</th>
+                                    <td>{{ percentage }}</td>
+                                </tr>{% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div>
+                        <div id="excluded-pie-chart" class="pie-chart" height="260px" width="260px"></div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+
+    </section>
+{% endblock %}
+
+{% block end %}
+    <script>
+
+        $(document).ready(function () {
+            $('[data-toggle="tooltip"]').tooltip();
+        });
+
+        const pie_layout = {
+            height: 370,
+            width: 370,
+            showlegend: false
+        };
+
+        const pie_settings = {
+            displayModeBar: false
+        };
+
+        function load_busco_pie() {
+            let data = [{
+                values: [{{ member.BUSCO.S }}, {{ member.BUSCO.D }}, {{ member.BUSCO.F }}, {{ member.BUSCO.M }}],
+                labels: ['S (single-copy)', 'D (duplicated)', 'F (fragmented)', 'M (missing)',],
+                type: 'pie',
+                marker: {
+                    colors: ['#8fd19e', '#b8daff', '#ffdf7e', '#ed969e']
+                },
+            }];
+
+            Plotly.newPlot('busco-pie-chart', data, pie_layout, pie_settings);
+        }
+
+        {% if included_sequences %}
+            function load_included_pie() {
+                let data = [{
+                    values: [
+                        {% for taxid, sci_name, color, percentage in included_sequences %} {{percentage}}, {% endfor %}],
+                    labels: [
+                        {% for taxid, sci_name, color, percentage in included_sequences %} "{{sci_name}}", {% endfor %}],
+                    type: 'pie',
+                    marker: {
+                        colors: [
+                            {% for taxid, sci_name, color, percentage in included_sequences %} "rgb({{color}})", {% endfor %}]
+                    },
+                }];
+
+
+                Plotly.newPlot('included-pie-chart', data, pie_layout, pie_settings);
+            }
+        {% endif %}
+
+        {% if excluded_sequences %}
+            function load_excluded_pie() {
+                let data = [{
+                    values: [
+                        {% for taxid, sci_name, color, percentage in excluded_sequences %} {{percentage}}, {% endfor %}],
+                    labels: [
+                        {% for taxid, sci_name, color, percentage in excluded_sequences %} "{{sci_name}}", {% endfor %}],
+                    type: 'pie',
+                    marker: {
+                        colors: [
+                            {% for taxid, sci_name, color, percentage in excluded_sequences %} "rgb({{color}})", {% endfor %}]
+                    },
+                }];
+
+                Plotly.newPlot('excluded-pie-chart', data, pie_layout, pie_settings);
+            }
+        {% endif %}
+
+        window.onload = function () {
+            {% if member.BUSCO %}
+                load_busco_pie();
+            {% endif %}
+
+            {% if included_sequences %}
+                load_included_pie();
+            {% endif %}
+
+            {% if excluded_sequences %}
+                load_excluded_pie();
+            {% endif %}
+        };
+
+
+    </script>
+
+{% endblock %}
