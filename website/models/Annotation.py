@@ -5,6 +5,7 @@ from lib.orthofinder_tools.orthogroup_to_gene_name import OrthogroupToGeneName
 from enum import Enum
 import re
 from django.core.exceptions import ValidationError
+from OpenGenomeBrowser import settings
 
 
 class AnnotationRegex(Enum):
@@ -103,7 +104,7 @@ class Annotation(models.Model):
             'ko.tsv': ('ko:', 'lib/custom_kegg/data/rest_data/ko.tsv'),
             'rn.tsv': ('rn:', 'lib/custom_kegg/data/rest_data/rn.tsv'),
             'compound.tsv': ('cpd:', 'lib/custom_kegg/data/rest_data/rn.tsv'),
-            'Orthogroup_BestNames.tsv': ('', 'database/OrthoFinder/Orthogroup_BestNames.tsv')
+            'Orthogroup_BestNames.tsv': ('', F'{settings.GENOMIC_DATABASE}/OrthoFinder/Orthogroup_BestNames.tsv')
         }
         assert filename in filename_settings.keys(), F'Supported filenames: {filename_settings.keys()}. You provided: {filename}'
 
@@ -134,12 +135,11 @@ class Annotation(models.Model):
         import os
         from . import Genome, Gene
 
-        db_path = 'database'
+        orthofinder_base = F'{settings.GENOMIC_DATABASE}/OrthoFinder/'
 
-        with open(db_path + '/OrthoFinder/orthofinder_folder.txt') as f:
+        with open(F'{orthofinder_base}/orthofinder_folder.txt') as f:
             orthofinder_folder = f.read().strip()
 
-        orthofinder_base = 'database/OrthoFinder/'
         fastas_path = orthofinder_base + 'fastas/'
         orthogroups_dir = fastas_path + F'OrthoFinder/{orthofinder_folder}/Orthogroups/'
         orthogroups_txt = orthogroups_dir + 'Orthogroups.txt'

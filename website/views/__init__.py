@@ -8,6 +8,7 @@ from .KeggView import kegg_view
 from .TaxIDDetailView import TaxIDDetailView
 from .GeneDetailView import GeneDetailView
 from .AnnotationSearch import annotation_view
-from .MemberComparison import compare_members
+from .Trees import trees
 from .Blast import blast_view
 from .Api import Api
+from .Download import download_view

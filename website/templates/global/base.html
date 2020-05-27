@@ -64,6 +64,7 @@
             <a class="nav-item nav-link {% if request.resolver_match.url_name == 'kegg'              %}active{% endif %}" href="{% url 'website:kegg' %}">Kegg maps</a>
             <a class="nav-item nav-link {% if request.resolver_match.url_name == 'annotation-search' %}active{% endif %}" href="{% url 'website:annotation-search' %}">Annotation Search</a>
             <a class="nav-item nav-link {% if request.resolver_match.url_name == 'blast'             %}active{% endif %}" href="{% url 'website:blast' %}">Blast</a>
+            <a class="nav-item nav-link {% if request.resolver_match.url_name == 'trees'             %}active{% endif %}" href="{% url 'website:trees' %}">Trees</a>
         </div>
     </div>
 </nav>

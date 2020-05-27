@@ -5,6 +5,7 @@ from .TaxID import TaxID
 from .Tag import Tag
 from .Genome import Genome
 import os
+from OpenGenomeBrowser import settings
 
 
 class Member(models.Model):
@@ -46,7 +47,7 @@ class Member(models.Model):
     assembly_version = models.CharField('Assembly Version', max_length=40, null=True, blank=True)
     assembly_date = models.CharField('Date of Assembly', max_length=30, null=True, blank=True)  # 2018.01.01//2019.01.01
 
-    assembly_fasta_filename = models.CharField(max_length=200)
+    assembly_fasta_file = models.CharField(max_length=200)
     assembly_longest_scf = models.IntegerField('Longest Scaffold', null=True, blank=True)
     assembly_size = models.IntegerField('Assembly Size', null=True, blank=True)
     assembly_nr_scaffolds = models.IntegerField('Number of Scaffolds', null=True, blank=True)
@@ -61,11 +62,13 @@ class Member(models.Model):
     cds_tool = models.CharField('Primary Annotation Tool', max_length=50, null=True, blank=True)
     cds_tool_date = models.DateField('Date of Primary Annotation', null=True, blank=True)
     cds_tool_version = models.CharField('Version of Primary Annotation', max_length=20, null=True, blank=True)
-    cds_tool_faa_filename = models.CharField(max_length=200)  # MANDATORY
-    cds_tool_ffn_filename = models.CharField(max_length=200)  # MANDATORY
-    cds_tool_gbk_filename = models.CharField(max_length=200)  # MANDATORY
-    cds_tool_gff_filename = models.CharField(max_length=200)  # MANDATORY
-    cds_tool_sqn_filename = models.CharField(max_length=200, null=True, blank=True)
+    cds_tool_faa_file = models.CharField(max_length=200)  # MANDATORY
+    cds_tool_gbk_file = models.CharField(max_length=200)  # MANDATORY
+    cds_tool_gff_file = models.CharField(max_length=200)  # MANDATORY
+    cds_tool_ffn_file = models.CharField(max_length=200, null=True, blank=True)
+    cds_tool_sqn_file = models.CharField(max_length=200, null=True, blank=True)
+
+    sixteen_s = JSONField(default=dict)  # {'16S NCBI-db': [{'description': 'E. coli', 'taxid': 123, 'evalue': 0.0}, ...], ...}
 
     BUSCO = JSONField(default=dict)  # {C:2,D:2,F:2,M:2,S:2,T:2]}
     BUSCO_percent_single = models.DecimalField(max_digits=3, decimal_places=1, null=True, blank=True)
@@ -99,11 +102,24 @@ class Member(models.Model):
     @property
     def member_html(self):
         tsi = self.taxid.taxscientificname
-        return F'<div class="member" data-species="{tsi}" data-toggle="tooltip" title="{tsi}">{tsi}</div>'
+        return F'<div class="member" data-species="{tsi}" data-toggle="tooltip">{tsi}</div>'
+
+    @property
+    def html_warning_stripes(self):
+        classes = []
+        print(self, self.is_representative)
+        if not self.is_representative:
+            classes.append('no-representative')
+        if self.contaminated:
+            classes.append('contaminated')
+        if self.restricted:
+            classes.append('restricted')
+
+        return ' '.join(classes)
 
     @property
     def is_representative(self) -> bool:
-        return hasattr(self, 'representative')
+        return self.representative is not None
 
     @property
     def restricted(self) -> bool:
@@ -113,34 +129,38 @@ class Member(models.Model):
     def taxid(self) -> TaxID:
         return self.strain.taxid
 
-    @property
-    def base_path(self) -> str:
-        return F"database/strains/{self.strain.name}/members/{self.identifier}/"
+    def base_path(self, relative=True) -> str:
+        rel = F"strains/{self.strain.name}/members/{self.identifier}"
+        if relative:
+            return rel
+        else:
+            return F"{settings.GENOMIC_DATABASE}/{rel}"
 
     @property
-    def assembly_fasta(self) -> str:  # mandatory
-        return self.base_path + "1_assembly/" + self.assembly_fasta_filename
+    def rel_base_path(self):
+        return self.base_path(relative=True)
 
-    @property
-    def cds_faa(self) -> str:  # mandatory
-        return self.base_path + "2_cds/" + self.cds_tool_faa_filename
+    def assembly_fasta(self, relative=True) -> str:  # mandatory
+        return F"{self.base_path(relative)}/{self.assembly_fasta_file}"
 
-    @property
-    def cds_ffn(self) -> str:  # mandatory
-        return self.base_path + "2_cds/" + self.cds_tool_ffn_filename
+    def cds_faa(self, relative=True) -> str:  # mandatory
+        return F"{self.base_path(relative)}/{self.cds_tool_faa_file}"
 
-    @property
-    def cds_gbk(self) -> str:  # mandatory
-        return self.base_path + "2_cds/" + self.cds_tool_gbk_filename
+    def cds_gbk(self, relative=True) -> str:  # mandatory
+        return F"{self.base_path(relative)}/{self.cds_tool_gbk_file}"
 
-    @property
-    def cds_gff(self) -> str:  # mandatory
-        return self.base_path + "2_cds/" + self.cds_tool_gff_filename
+    def cds_gff(self, relative=True) -> str:  # mandatory
+        return F"{self.base_path(relative)}/{self.cds_tool_gff_file}"
 
-    @property
-    def cds_sqn(self) -> str:
-        if not self.cds_tool_sqn_filename: return None
-        return self.base_path + "2_cds/" + self.cds_tool_sqn_filename
+    def cds_ffn(self, relative=True) -> str:
+        if not self.cds_tool_ffn_file:
+            return None
+        return F"{self.base_path(relative)}/{self.cds_tool_ffn_file}"
+
+    def cds_sqn(self, relative=True) -> str:
+        if not self.cds_tool_sqn_file:
+            return None
+        return F"{self.base_path(relative)}/{self.cds_tool_sqn_file}"
 
     @property
     def all_tags(self):
@@ -154,15 +174,14 @@ class Member(models.Model):
 
         assert self.identifier.startswith(self.strain.name), msg
 
-        path = "database/strains/{}/members/{{}}/".format(self.strain.name)
-
         # Check if mandatory files exist:
-        for file in [self.cds_faa, self.cds_ffn, self.cds_gbk, self.cds_gff, self.assembly_fasta]:
-            assert os.path.isfile(file), "file does not exist: {}".format(file)
+        for file in [self.cds_faa, self.cds_gbk, self.cds_gff, self.assembly_fasta]:
+            assert os.path.isfile(file(relative=False)), "file does not exist: {}".format(file)
 
         # Check if non-mandatory files exist:
-        for file in [self.cds_sqn]:
-            if file: assert os.path.isfile(file), "file does not exist: {}".format(file)
+        for file in [self.cds_sqn, self.cds_ffn]:
+            if file(relative=False):
+                assert os.path.isfile(file(relative=False)), "file does not exist: {}".format(file)
 
         # check all JSONFields:
         if self.origin_included_sequences:
@@ -182,7 +201,7 @@ class Member(models.Model):
         if self.custom_annotations:
             for tool in self.custom_annotations:
                 assert Member.is_valid_date(tool['date']), msg
-                assert os.path.exists(self.base_path + "3_annotations/" + tool['file']), msg
+                assert os.path.exists(F"{self.base_path(relative=False)}/{tool['file']}"), msg
                 assert isinstance(tool['type'], str), msg
 
         for envs in [self.env_broad_scale, self.env_medium, self.env_local_scale]:
@@ -190,22 +209,11 @@ class Member(models.Model):
                 assert self.is_valid_env(envs), msg
 
         # test sequencing info
-        if self.sequencing_tech:
-            n_techs = self.sequencing_tech.count("//")
-            assert self.sequencing_tech_version.count("//") == n_techs
-            assert self.sequencing_date.count("//") == n_techs
-            assert self.sequencing_coverage.count("//") == n_techs
+        if self.sequencing_date:
             for date in self.sequencing_date.split("//"): assert self.is_valid_date(date)
-        else:
-            assert not self.sequencing_tech_version
-            assert not self.sequencing_date
-            assert not self.sequencing_coverage
 
         # test assembly tool
-        if self.assembly_tool:
-            n_tools = self.assembly_tool.count("//")
-            assert self.assembly_version.count("//") == n_tools
-            assert self.assembly_date.count("//") == n_tools
+        if self.assembly_date:
             for date in self.assembly_date.split("//"): assert self.is_valid_date(date)
 
         # Test certain string fields
@@ -258,7 +266,7 @@ class Member(models.Model):
     def update_assembly_info(self):
         if self.assembly_fasta:
             from lib.assembly_stats.assembly_stats import AssemblyStats
-            assembly_stats = AssemblyStats().get_assembly_stats(self.assembly_fasta)
+            assembly_stats = AssemblyStats().get_assembly_stats(self.assembly_fasta(relative=False))
             self.assembly_longest_scf = assembly_stats['longest']
             self.assembly_size = assembly_stats['total_length']
             self.assembly_nr_scaffolds = assembly_stats['number']

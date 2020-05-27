@@ -4,6 +4,7 @@ from website.models import TaxID, ANI, Annotation, Member, Genome, Strain
 import pandas as pd
 from skbio import DistanceMatrix
 from skbio.tree import nj
+from OpenGenomeBrowser import settings
 
 
 class TreeNotDoneError(Exception):
@@ -77,8 +78,9 @@ class AniTree(AbstractTree):
                     ani, created = ANI.objects.get_or_create(from_genome=g1, to_genome=g2)
                     anis.append(ani)
                     break
-                assert os.path.isfile(g1.member.assembly_fasta)
-                assert os.path.isfile(g2.member.assembly_fasta)
+
+                assert os.path.isfile(g1.member.assembly_fasta(relative=False)), g1.member.assembly_fasta(rel_path=False)
+                assert os.path.isfile(g2.member.assembly_fasta(relative=False)), g2.member.assembly_fasta(rel_path=False)
                 ani, created = ANI.objects.get_or_create(from_genome=g1, to_genome=g2)
                 anis.append(ani)
 
@@ -116,6 +118,21 @@ class AniTree(AbstractTree):
 
 
 class OrthofinderTree(AbstractTree):
+    """
+    Create a Newick tree using Orthofinder. (https://github.com/davidemms/OrthoFinder)
+
+    :param genomes: QuerySet of class 'Genome'
+    :raises TreeNotDoneError: if Orthofinder is still running. (Be sure huey is running! (./manage.py run_huey))
+    """
+
+    def __init__(self, genomes: models.QuerySet):
+        success, message = Genome.in_orthofinder(genomes)
+
+        assert success, message
+
+
+
+
     @property
     def newick(self):
         raise NotImplementedError('Tree calculation using Orthofinder has not been implemented yet.')

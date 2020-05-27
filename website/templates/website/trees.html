@@ -1,0 +1,224 @@
+{% extends 'global/base.html' %}
+{% load static %}
+
+{% block styles %}
+    <script src="{% static 'global/js/d3.v5.min.js' %}"></script>
+    <script src="{% static 'global/js/tidytree.min.js' %}"></script>
+    <script src="{% static 'global/js/phylogeneticTrees.js' %}"></script>
+    <script src="{% static 'global/js/ResizeSensor.js' %}"></script>
+
+    <link rel="stylesheet" type="text/css" href="{% static 'global/css/taxid_color.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'global/css/taxid_color_label.css' %}">
+
+    <!-- autocomplete -->
+    <link href="{% static 'website/css/jquery-ui.css' %}" rel="stylesheet"/>
+    <link href="{% static 'kegg/css/jquery.tag-editor.css' %}" rel="stylesheet"/>
+    <script src="{% static 'kegg/js/jquery.caret.min.js' %}"></script>
+    <script src="{% static 'kegg/js/jquery.tag-editor.min.js' %}"></script>
+
+
+    <style>
+        .tree-div {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid;
+            padding: 5px;
+            resize: vertical;
+            overflow: auto;
+            min-height: 90px;
+        }
+
+        .error-message {
+            text-align: center;
+        }
+    </style>
+{% endblock %}
+
+{% block sidebar %}
+
+    <div class="sidebar-subcontent form-check form-check-inline">
+        <label class="form-check-label" for="colorize-tax-checkbox"><a>Colorize taxonomy?</a></label>
+        <input class="form-check-input" type="checkbox" id="colorize-tax-checkbox" onclick="toggle_colorize_tax()"
+               checked>
+    </div>
+    <div class="sidebar-subcontent form-check form-check-inline">
+        <label for="mode-selector"><a>Mode</a></label>
+        <select class="form-control" id="mode-selector"
+                onchange="[taxid_tree, ani_tree].forEach(t=>changeTree(t, 'mode', this.value))">
+            <option>smooth</option>
+            <option>square</option>
+            <option>straight</option>
+        </select>
+
+    </div>
+{% endblock %}
+
+{% block body %}
+    <section>
+        <div class="container">
+            <form>
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="get-members">Member:</label>
+                    <input type="text" class="form-control" id="get-members" value="{{ key_members|join:", " }}">
+                </div>
+                <div style="display: flex; justify-content: space-evenly;">
+                    <button type="button" class="btn btn-primary" onclick="validate_members_load_tree('taxid')">Reload Taxid-based tree</button>
+                    <button type="button" class="btn btn-success" onclick="validate_members_load_tree('ani')">Calculate ANI-based tree</button>
+                    <button type="button" class="btn btn-info" onclick="validate_members_load_tree('orthofinder')">Calculate Orthofinder-based tree
+                    </button>
+                </div>
+            </form>
+            <br>
+        </div>
+
+        <div class="container" id="taxid-tree-container">
+            <h2>Taxid-based tree</h2>
+            <label for="layout-selector-taxid">Layout</label>
+            <select class="form-control" id="layout-selector-taxid"
+                    onchange="changeTree(taxid_tree, 'layout', this.value)">
+                <option>horizontal</option>
+                <option selected>vertical</option>
+                <option>circular</option>
+            </select>
+
+            <label for="type-selector-taxid">Type</label>
+            <select class="form-control" id="type-selector-taxid"
+                    onchange="changeTree(taxid_tree, 'type', this.value)">
+                <option>dendrogram</option>
+                <option disabled>weighted</option>
+                <option selected>tree</option>
+            </select>
+
+            <label for="taxid-newick">Newick string</label>
+            <input class="form-control" type="text" id="taxid-newick" placeholder="Loading..."
+                   onclick="CopyToClipboard(this.value)" readonly>
+
+            <label for="taxid-tree">Dendrogram</label>
+            <div id="taxid-tree" class="tree-div">
+                <div class="spinner-border text-dark" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+            </div>
+            <br>
+        </div>
+
+        <div class="container" id="ani-tree-container" hidden>
+            <h2>ANI-based tree</h2>
+            <label for="layout-selector-ani">Layout</label>
+            <select class="form-control" id="layout-selector-ani"
+                    onchange="changeTree(ani_tree, 'layout', this.value)">
+                <option>horizontal</option>
+                <option selected>vertical</option>
+                <option>circular</option>
+            </select>
+
+            <label for="type-selector-ani">Type</label>
+            <select class="form-control" id="type-selector-ani" onchange="changeTree(ani_tree, 'type', this.value)">
+                <option>dendrogram</option>
+                <option selected>weighted</option>
+                <option>tree</option>
+            </select>
+
+            <label for="ani-newick">Newick string</label>
+            <input class="form-control" type="text" id="ani-newick" placeholder="Loading..."
+                   onclick="CopyToClipboard(this.value)" readonly>
+
+            <label for="ani-tree">Dendrogram</label>
+            <div id="ani-tree" class="tree-div">
+                <div class="spinner-border text-dark" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+            </div>
+            <br>
+        </div>
+
+    </section>
+
+{% endblock %}
+
+{% block end %}
+    <script>
+        "use strict"
+
+        let current_members = []
+        let member_to_species
+        let taxid_tree
+        let ani_tree
+        let doit
+
+        $(document).ready(function () {
+            let original_members = [{% if key_members %} '{{ key_members|join:"', '" }}' {% else %}{% endif %}]
+            current_members = original_members
+            member_to_species = init_autocomplete_members("#get-members")
+
+            load_taxid_tree(current_members)
+        })
+
+        function validate_members_load_tree(type) {
+            let members = $('#get-members').val().split(',')
+            $.when(validate_members(members)).done(function (members_valid) {
+                let success = members_valid['success']
+                if (success) {
+                    $('#get-members').next().removeClass('is-invalid')
+                } else {
+                    $('#get-members').next().addClass('is-invalid')
+                }
+                if (success) {
+                    current_members = members
+                    if (type === "taxid") {
+                        load_taxid_tree(members)
+                    } else if (type === "ani") {
+                        load_ani_tree(members)
+                    }
+                }
+            })
+
+        }
+
+        function load_taxid_tree(members) {
+            taxid_tree = loadTree(
+                members, 'taxid', '#taxid-tree', '#taxid-newick',
+                $('#type-selector-taxid').val(),
+                $('#layout-selector-taxid').val(),
+                $('#mode-selector').val()
+            )
+            add_resize_listener('taxid-tree', taxid_tree)
+        }
+
+        function load_ani_tree(members) {
+            $('#ani-tree-container').attr("hidden", false)
+            ani_tree = loadTree(
+                members, 'ani', '#ani-tree', '#ani-newick',
+                $('#type-selector-ani').val(),
+                $('#layout-selector-ani').val(),
+                $('#mode-selector').val()
+            )
+            add_resize_listener('ani-tree', ani_tree)
+        }
+
+        async function add_resize_listener(target, tree) {
+            console.log('adding resize listener to', target, tree)
+            tree.then(function () {
+                addResizeListener(document.getElementById(target), function () {
+                    console.log('resize')
+                    clearTimeout(doit)
+                    doit = setTimeout(function () {
+                        redrawTree(tree)
+                    }, 500)
+                });
+            })
+
+        }
+
+        // Listener on the div to redraw if div size changes
+        let ShowTaxidContextMenu = function (event, taxid) {
+            console.log('ShowTaxidContextMenu DUMMY:', event, taxid)
+        }
+
+    </script>
+
+{% endblock %}

@@ -4,17 +4,15 @@ from django.http import HttpResponseBadRequest
 from website.models import Genome, Member, ANI, TaxID
 
 
-def compare_members(request):
+def trees(request):
     context = {}
 
-    if not 'members' in request.GET:
-        return HttpResponseBadRequest('No members specified')
+    if 'members' in request.GET:
+        member_ids = request.GET['members'].split(' ')
+    else:
+        member_ids = []
 
-    member_ids = request.GET['members'].split(' ')
-
-    print(member_ids)
-
-    context['member_identifiers'] = member_ids
+    context['key_members'] = member_ids
 
     # genomes = Genome.objects.filter(identifier__in=member_ids)
     # members = Member.objects.filter(identifier__in=member_ids)
@@ -22,4 +20,4 @@ def compare_members(request):
     # if not len(genomes) == len(members) == len(member_ids):
     #     return HttpResponseBadRequest('One or more member identifiers was wrong.')
 
-    return render(request, 'website/member_comparison.html', context)
+    return render(request, 'website/trees.html', context)

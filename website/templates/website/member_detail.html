@@ -3,17 +3,18 @@
 
 {% block styles %}
     <!-- Site-specific css/js -->
-    <link rel="stylesheet" type="text/css" href="{% static 'global/css/taxid_color.css' %}" id="taxid-color-stylesheet"
-          disabled/>
+    <link rel="stylesheet" type="text/css" href="{% static 'website/css/secondary-navbar.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'global/css/taxid_color.css' %}" id="taxid-color-stylesheet" disabled/>
     <link rel="stylesheet" type="text/css" href="{% static 'global/css/tag_color.css' %}"/>
-
     <link rel="stylesheet" type="text/css" href="{% static 'website/css/detail.css' %}"/>
+    <link href="{% static 'website/css/jquery-ui.css' %}" rel="stylesheet"/>
 
     <!-- Plotly https://plot.ly/ -->
     <script src="{% static 'global/js/plotly-latest.min.js' %}"></script>
 
     <!-- piechart https://anychart.com/ -->
     <script src="{% static 'global/js/Chart.bundle.min.js' %}"></script>
+
 {% endblock %}
 
 {% block sidebar %}
@@ -26,24 +27,91 @@
 {% endblock %}
 
 {% block body %}
+    <!-- Secondary Navbar -->
+    <nav id="secondary-navbar" class="navbar navbar-expand-sm navbar-dark fixed-top">
+        <div class="collapse navbar-collapse">
+            <div class="navbar-nav">
+                <!-- Taxid -->
+                <a class="navbar-next">
+                    <img class="navbar-next-img" src="{% static 'global/customicons/caret.svg' %}"> </a>
+                <a class="nav-item nav-link"
+                   href="{% url 'website:taxid' slug=member.taxid.id %}">TAXID {{ member.taxid.id }}</a>
+                <!-- Strain -->
+                <a class="navbar-next">
+                    <img class="navbar-next-img" src="{% static 'global/customicons/caret.svg' %}"> </a>
+                <a class="nav-item nav-link"
+                   href="{% url 'website:strain' slug=member.strain %}">STRAIN {{ member.strain }}</a>
+                <!-- Member -->
+                <a class="navbar-next">
+                    <img class="navbar-next-img" src="{% static 'global/customicons/caret_full.svg' %}"> </a>
+                <span class="nav-item nav-link active">{{ member.identifier }}</span>
+            </div>
+        </div>
+    </nav>
 
     <section>
         <!-- title -->
-        <div class="container">
-            <h1>
-                <a class="type-label">identifier:</a>
-                {{ member.identifier }}
-                <a class="type-label">strain:</a>
-                <a class="h2">{{ member.strain }}</a>{% if member.old_identifier %}
-                <a class="type-label">old identifier:</a>
-                <a class="h3">{{ member.old_identifier }}</a>{% endif %}
-            </h1>
-            {% if member.taxid %}
-                <h1>
-                    <a class="type-label">species:</a>
-                    <a class="h3">{{ member.taxid.taxscientificname }} ({{ member.taxid.id }})</a>
-                </h1>{% endif %}
+        <div class="container black-links">
+            <!-- member -->
+            <span class="type-label">member:</span>
+            <span class="h1">{{ member.identifier }}</span>
+
+            <!-- strain -->
+            <span class="type-label">strain:</span>
+            <a class="h2" href="{% url 'website:strain' slug=member.strain %}">{{ member.strain }}</a>
+
+            <!-- old identifier -->
+            {% if member.old_identifier %}
+                <span class="type-label">old identifier:</span>
+                <span class="h3">{{ member.old_identifier }}</span>
+            {% endif %}
+
+            <!-- taxid -->
+            {% if member.taxid %}<br>
+                <span class="type-label">species:</span>
+                <a class="h3" href="{% url 'website:taxid' slug=member.taxid.id %}">{{ member.taxid }} <span
+                        style="{{ member.taxid.html_style }}">(taxid: {{ member.taxid.id }})</span></a>
+            {% endif %}
+
+            <hr class="featurette-divider">
         </div>
+
+        <!-- representative -->
+        <div class="container black-links">
+            {% if member.representative %}
+                <div class="alert alert-success" role="alert">
+                    This member is a representative of <a href="{% url 'website:strain' slug=member.strain %}"
+                                                          style="color:darkgreen">{{ member.strain }}</a>.
+                </div>
+            {% else %}
+                <div class="alert alert-dark" role="alert">
+                    Warning: This member is not a representative of <a href="{% url 'website:strain' slug=member.strain %}">{{ member.strain }}</a>.
+                </div>
+            {% endif %}
+        </div>
+
+        {% if member.strain.restricted %}
+            <!-- restricted -->
+            <div class="container black-links">
+
+                <div class="alert alert-warning" role="alert">
+                    Warning: This strain is restricted.
+                </div>
+
+            </div>
+        {% endif %}
+
+        {% if member.contaminated %}
+            <!-- restricted -->
+            <div class="container black-links">
+
+                <div class="alert alert-danger" role="alert">
+                    Warning: This member is contaminated.
+                </div>
+
+            </div>
+        {% endif %}
+
 
         <!-- tags -->
         <div class="container">
@@ -253,7 +321,7 @@
                                 <th scope="row">Missing</th>
                                 <td>{{ member.BUSCO.M }}</td>
                             </tr>
-                            <tr class="table-light" class="table-light" data-toggle="tooltip" data-placement="right"
+                            <tr class="table-light" data-toggle="tooltip" data-placement="right"
                                 title="Single-copy + duplicated">
                                 <th scope="row">Complete</th>
                                 <td>{{ member.BUSCO.C }}</td>
@@ -338,6 +406,56 @@
             </div>
         {% endif %}
 
+        <!-- download files -->
+        <div class="container black-links">
+            <hr class="featurette-divider">
+            <h3>Download files</h3>
+            <ul>
+                <li><a href="/download/{{ member.assembly_fasta }}">Assembly</a></li>
+                <li>Coding sequences (CDS)
+                    <ul>
+                        <li><a href="/download/{{ member.cds_faa }}">Protein fasta (faa)</a></li>
+                        <li><a href="/download/{{ member.cds_gbk }}">GenBank (gbk)</a></li>
+                        <li><a href="/download/{{ member.cds_gff }}">General feature format (gff)</a></li>
+                        {% if member.cds_ffn %}
+                            <li><a href="/download/{{ member.cds_ffn }}">Nucleotide fasta (ffn)</a></li> {% endif %}
+                        {% if member.cds_sqn %}
+                            <li><a href="/download/{{ member.cds_sqn }}">Submission-ready annotated sequence (sqn)</a>
+                            </li> {% endif %}
+                    </ul>
+                </li>
+                {% if member.custom_annotations %}
+                    <li>Custom annotations
+                        <ul>
+                            {% for custom_annotation in member.custom_annotations %}
+                                <li><a href="/download/{{ member.rel_base_path }}{{ custom_annotation.file }}">{{ custom_annotation.type }}
+                                    (from {{ custom_annotation.date }})</a></li>
+                            {% endfor %}
+                        </ul>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+
+        <!-- find gene -->
+        <div class="container">
+            <hr class="featurette-divider">
+            <h3>Find gene</h3>
+
+            <label for="gene-search">Gene: </label>
+            <input id="gene-search" value="{{ member }}_">
+
+            <button type="button" class="btn btn-primary" onclick="go_to_gene($('#gene-search').val())">Submit</button>
+        </div>
+
+        <!-- link to annotation search -->
+        <div class="container black-links">
+            <hr class="featurette-divider">
+            <h3>Search for annotations in this genome</h3>
+
+            <a href="{% url 'website:annotation-search' %}?members={{ member }}">Link to annotation search</a>
+        </div>
+
 
     </section>
 {% endblock %}
@@ -346,8 +464,30 @@
     <script>
 
         $(document).ready(function () {
-            $('[data-toggle="tooltip"]').tooltip();
+            $('[data-toggle="tooltip"]').tooltip({
+                title: function () {
+                    return $(this).attr('data-species');
+                }
+            });
+
+            $("#gene-search").autocomplete({
+                source: function (request, response) {
+                    jQuery.get("/api/search-genes", {
+                        term: request.term
+                    }, function (data) {
+                        response(data);
+                    });
+                },
+                minLength: 3,
+                position: {collision: "flip"}
+            });
+
         });
+
+        function go_to_gene(gene) {
+            console.log(gene)
+            window.open(`/gene/${gene}`);
+        }
 
         const pie_layout = {
             height: 370,

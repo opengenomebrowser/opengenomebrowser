@@ -17,6 +17,7 @@ class MemberSerializer():
         member_dict.pop('assembly_size')
         member_dict.pop('assembly_nr_scaffolds')
         member_dict.pop('assembly_n50')
+        member_dict.pop('BUSCO_percent_single')
         return member_dict
 
     def import_member(self, raw_member_dict: dict, parent_strain: Strain, is_representative: bool,
@@ -86,5 +87,11 @@ class MemberSerializer():
         return_d['representative'] = None  # assign representative after first save
 
         return_d['tags'] = [Tag.get_or_create_tag(tag=tag_string).pk for tag_string in return_d['tags']]
+
+        if 'S' in return_d['BUSCO'] and 'T' in return_d['BUSCO']:
+            return_d['BUSCO_percent_single'] = round(return_d['BUSCO']['S'] / return_d['BUSCO']['T'], 1)
+            print(return_d['BUSCO_percent_single'])
+        else:
+            return_d['BUSCO_percent_single'] = None
 
         return return_d

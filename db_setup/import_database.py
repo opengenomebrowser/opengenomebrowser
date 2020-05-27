@@ -93,9 +93,9 @@ class Importer:
             for member_folder in os.scandir(strain_folder.path + "/members"):
                 all_members.append(member_folder.name)
 
-                # # OVERWRITE MEMBER.JSON
+                # OVERWRITE MEMBER.JSON
                 # print(member_folder.name)
-                # member_json_path = member_folder.path+"/member.json"
+                # member_json_path = member_folder.path + "/member.json"
                 # assert os.path.isfile(member_json_path)
                 # member_dict = MemberSerializer.export_member(member_folder.name)
                 # with open(member_json_path, 'w') as file:
@@ -103,15 +103,33 @@ class Importer:
 
                 # with open(member_folder.path + "/member.json") as file:
                 #     member_dict = json.loads(file.read())
-                #     for file in ['assembly_fasta_filename', 'cds_tool_faa_filename', 'cds_tool_gbk_filename',
-                #                  'cds_tool_gff_filename', 'cds_tool_sqn_filename']:
-                #         if member_dict[file] == "": member_dict[file] = None
+                # # print(member_dict)
+                # for file in ['assembly_fasta_file', 'cds_tool_faa_file', 'cds_tool_gbk_file',
+                #              'cds_tool_gff_file', 'cds_tool_sqn_file', 'cds_tool_ffn_file']:
+                #     if file.startswith('ass'):
+                #         folder = '1_assembly'
+                #     else:
+                #         folder = '2_cds'
+                #     fn = member_dict[file + 'name']
+                #     del member_dict[file + 'name']
+                #     if fn is not None:
+                #         fn = F'{folder}/{fn}'
+                #     member_dict[file] = fn
+                #
+                # assert 'custom_annotations' in member_dict
+                # cus_ann = member_dict['custom_annotations']
+                # for ann in cus_ann:
+                #     ann['file'] = '3_annotation/' + ann['file']
+                #     assert os.path.isfile(member_folder.path+"/"+ann['file'])
+                #
+                # print(member_dict['custom_annotations'])
+                # for key in member_dict.keys():
+                #     assert 'filename' not in key
+
+                # exit(0)
+
                 # with open(member_folder.path + "/member.json", 'w') as file:
                 #     file.write(json.dumps(member_dict, indent=4))
-
-                # os.rename(member_folder.path+'/1_assemblies', member_folder.path+'/1_assembly')
-                # os.rename(member_folder.path+'/2_annotations', member_folder.path+'/2_cds')
-                # os.rename(member_folder.path+'/3_custom_annotations', member_folder.path+'/3_annotations')
 
         # exit(0)
 
@@ -207,7 +225,7 @@ def main():
     si = Importer()
     # si.reset_database(auto_delete=True)
     si.import_database(auto_delete_missing=False, reload_orthologs=True)
-    si.load_kegg_maps(reload_data=False, re_render=False)
+    si.load_kegg_maps(reload_data=False, re_render=False)  # if all false: only recreate KEGG map database entries
 
 
 if __name__ == "__main__":

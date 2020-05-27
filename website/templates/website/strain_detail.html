@@ -1,11 +1,135 @@
-<!DOCTYPE html>{% load static %}
-<html lang="en-US">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+{% extends 'global/base.html' %}
+{% load static %}
 
-</head>
-<body>
-{{strain.name}}
-</body>
-</html>
+{% block styles %}
+    <!-- Site-specific css/js -->
+    <link rel="stylesheet" type="text/css" href="{% static 'website/css/secondary-navbar.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'global/css/taxid_color.css' %}" id="taxid-color-stylesheet"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'global/css/tag_color.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'website/css/detail.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'website/css/warning-stripes.css' %}"/>
+{% endblock %}
+
+{% block sidebar %}
+
+    <div class="sidebar-subcontent form-check form-check-inline">
+        <label class="form-check-label" for="colorize-tax-checkbox"><a>Colorize taxonomy?</a></label>
+        <input class="form-check-input" type="checkbox" id="colorize-tax-checkbox" onclick="toggle_colorize_tax()">
+    </div>
+
+{% endblock %}
+
+{% block body %}
+    <!-- Secondary Navbar -->
+    <nav id="secondary-navbar" class="navbar navbar-expand-sm navbar-dark fixed-top">
+        <div class="collapse navbar-collapse">
+            <div class="navbar-nav">
+                <!-- Taxid -->
+                <a class="navbar-next">
+                    <img class="navbar-next-img" src="{% static 'global/customicons/caret.svg' %}"> </a>
+                <a class="nav-item nav-link" href="{% url 'website:taxid' slug=strain.taxid.id %}">
+                    TAXID {{ strain.taxid.id }}</a>
+                <!-- Strain -->
+                <a class="navbar-next">
+                    <img class="navbar-next-img" src="{% static 'global/customicons/caret_full.svg' %}"> </a> <span class="nav-item nav-link active">
+                STRAIN {{ strain }}</span>
+            </div>
+        </div>
+    </nav>
+
+    <section>
+        <!-- title -->
+        <div class="container black-links">
+            <!-- strain -->
+            <span class="type-label">strain:</span>
+            <span class="h2">{{ strain }}</span>
+            <!-- taxid -->
+            {% if strain.taxid %}<br>
+                <span class="type-label">species:</span>
+                <a class="h3" href="{% url 'website:taxid' slug=strain.taxid.id %}">{{ strain.taxid }} <span
+                        style="{{ strain.taxid.html_style }}">(taxid: {{ strain.taxid.id }})</span></a>
+            {% endif %}
+
+            <hr class="featurette-divider">
+
+        </div>
+
+        {% if strain.restricted %}
+            <!-- restricted -->
+            <div class="container black-links">
+
+                <div class="alert alert-warning" role="alert">
+                    Warning: This strain is restricted.
+                </div>
+
+                <hr class="featurette-divider">
+            </div>
+        {% endif %}
+
+
+        <!-- tags -->
+        <div class="container">
+
+            <h3>Tags</h3>
+
+            {% if strain.tags.all.count == 0 %}
+                <p>No tags</p>
+            {% else %}
+                <div class="container flex-container">
+                    {% for tag in strain.tags.all %}
+                        <div class="card" style="width: 18rem; background-color:rgb({{ tag.color }})">
+                            <div class="card-body">
+                                <h5 class="card-title"
+                                    style="color: {% if tag.text_color_white %}white{% else %}black{% endif %}">{{ tag.tag }}</h5>
+                                <h6 class="card-subtitle mb-2"
+                                    style="color: {% if tag.text_color_white %}#EFEEEC{% else %}#444444{% endif %}">Card
+                                    subtitle</h6>
+                                <div class="card-textbox rounded">
+                                    <p class="card-text">{{ tag.description|default:"no description" }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <hr class="featurette-divider">
+        </div>
+
+        <!-- representative -->
+        <div class="container black-links">
+            <span class="h3">Representative:</span> <a class="h3"
+                                                       href="{% url 'website:member' slug=strain.representative %}">{{ strain.representative }}</a>
+        </div>
+
+        {% if strain.member_set.all.count > 1 %}
+            <!-- all members -->
+            <div class="container black-links">
+                <hr class="featurette-divider">
+
+                <h3>Members</h3>
+
+                <ul>{% for member in strain.member_set.all %}
+                    <li><span>member: </span><a
+                            class="{{ member.html_warning_stripes }}" href="{% url 'website:member' slug=member %}">{{ member }}</a></li>
+                {% endfor %}</ul>
+            </div>
+        {% endif %}
+
+    </section>
+{% endblock %}
+
+{% block end %}
+    <script>
+
+        $(document).ready(function () {
+            $('[data-toggle="tooltip"]').tooltip({
+                title: function () {
+                    return $(this).attr('data-species');
+                }
+            });
+        });
+
+    </script>
+
+{% endblock %}

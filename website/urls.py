@@ -1,5 +1,5 @@
 from django.conf.urls import url
-from django.urls import path
+from django.urls import path, re_path
 from website.views import *
 
 app_name = 'website'
@@ -7,6 +7,10 @@ app_name = 'website'
 urlpatterns = [
     # ex: /
     path('', Index.index_view, name='index'),
+
+    # ex: /download
+    re_path(r'download/.*$', Download.download_view, name='download'),
+
     # ex: /members
     path('members', MemberTable.member_list_view, name='members'),
     path('table-load-script/', LoadTableScript.render_script, name='member-table-script'),
@@ -27,8 +31,8 @@ urlpatterns = [
     # ex: /kegg-single/?keggmap={00030}&members={strain1}+{strain2}
     path('kegg/', KeggView.kegg_view, name='kegg'),
 
-    # ex: /compare-members/?members={strain1}+{strain2}
-    path('compare-members/', MemberComparison.compare_members, name='compare-members'),
+    # ex: /trees/?members={strain1}+{strain2}
+    path('trees/', Trees.trees, name='trees'),
 
     # ex: /annotation-search/?annotations={K01626}+{EC:4.4.4.4}&members={strain1}+{strain2}
     path('annotation-search/', AnnotationSearch.annotation_view, name='annotation-search'),
@@ -45,6 +49,7 @@ urlpatterns = [
     path('api/autocomplete-kegg-map/', Api.autocomplete_kegg_map, name='api-autocomplete-kegg-map'),
     path('api/autocomplete-genome-identifier/', Api.autocomplete_genome_identifiers,
          name='api-autocomplete-genome-identifier'),
+    path('api/search-genes/', Api.search_genes, name='api-search-genes'),
     path('api/validate-keggmap/', Api.validate_keggmap, name='api-validate-keggmap'),
     path('api/validate-members/', Api.validate_members, name='api-validate-members'),
     path('api/validate-annotations/', Api.validate_annotations, name='api-validate-annotations'),

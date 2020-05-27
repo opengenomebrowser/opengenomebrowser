@@ -1,11 +1,85 @@
-<!DOCTYPE html>{% load static %}
-<html lang="en-US">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+{% extends 'global/base.html' %}
+{% load static %}
 
-</head>
-<body>
-{{taxid.taxscientificname}}
-</body>
-</html>
+{% block styles %}
+    <!-- Site-specific css/js -->
+    <link rel="stylesheet" type="text/css" href="{% static 'website/css/secondary-navbar.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'global/css/taxid_color.css' %}" id="taxid-color-stylesheet"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'global/css/tag_color.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'website/css/detail.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'website/css/warning-stripes.css' %}"/>
+{% endblock %}
+
+{% block sidebar %}
+
+    <div class="sidebar-subcontent form-check form-check-inline">
+        <label class="form-check-label" for="colorize-tax-checkbox"><a>Colorize taxonomy?</a></label>
+        <input class="form-check-input" type="checkbox" id="colorize-tax-checkbox" onclick="toggle_colorize_tax()">
+    </div>
+
+{% endblock %}
+
+{% block body %}
+    <!-- Secondary Navbar -->
+    <nav id="secondary-navbar" class="navbar navbar-expand-sm navbar-dark fixed-top">
+        <div class="collapse navbar-collapse">
+            <div class="navbar-nav">
+                <!-- Taxid -->
+                <a class="navbar-next">
+                    <img class="navbar-next-img" src="{% static 'global/customicons/caret_full.svg' %}"> </a>
+                <span class="nav-item nav-link active">TAXID {{ taxid.id }}</span>
+            </div>
+        </div>
+    </nav>
+
+    <section>
+        <!-- title -->
+        <div class="container black-links">
+            <!-- strain -->
+            <span class="type-label">species:</span>
+            <span class="h3">{{ taxid }} <span style="{{ taxid.html_style }}">(taxid: {{ taxid.id }})</span></span>
+
+            <hr class="featurette-divider">
+
+        </div>
+
+        <!-- strains and members -->
+        <div class="container black-links">
+            <ul>
+                {% for strain in taxid.get_child_strains %}
+
+                    <li><span>strain: </span><a data-toggle="tooltip" data-species="{{ strain.taxid }}" href="{% url 'website:strain' slug=strain %}">
+                        {{ strain }}</a></li>
+                    <ul>
+                        {% for member in strain.member_set.all %}
+
+                            <li><span>member: </span><a class="{{ member.html_warning_stripes }}"
+                                                        href="{% url 'website:member' slug=member %}">{{ member }}</a></li>
+
+                        {% endfor %}
+                    </ul>
+                    </li>
+
+                {% endfor %}
+            </ul>
+
+
+        </div>
+
+    </section>
+{% endblock %}
+
+{% block end %}
+    <script>
+
+        $(document).ready(function () {
+            $('[data-toggle="tooltip"]').tooltip({
+                title: function () {
+                    return $(this).attr('data-species');
+                }
+            });
+        });
+
+    </script>
+
+{% endblock %}

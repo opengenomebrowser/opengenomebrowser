@@ -4,6 +4,7 @@ from website.models.Annotation import Annotation
 from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord
 from Bio.SeqUtils import GC
+from OpenGenomeBrowser import settings
 
 
 class Gene(models.Model):
@@ -19,6 +20,12 @@ class Gene(models.Model):
     annotations = models.ManyToManyField(Annotation)
 
     def __repr__(self):
+        return self.identifier
+
+    def __str__(self):
+        return self.identifier
+
+    def natural_key(self):
         return self.identifier
 
     def gc_content(self) -> float:
@@ -50,7 +57,7 @@ class Gene(models.Model):
     def __load_gbk_seqrecord(self):
         # ensure it's only loaded once
         if not hasattr(self, '_gbk_record'):
-            self._gbk_record = self.__get_gbk_seqrecord(self.genome.member.cds_gbk, self.identifier)
+            self._gbk_record = self.__get_gbk_seqrecord(self.genome.member.cds_gbk(relative=False), self.identifier)
             all_qualifiers = dict()
             for f in self._gbk_record.features:
                 all_qualifiers.update(f.qualifiers)

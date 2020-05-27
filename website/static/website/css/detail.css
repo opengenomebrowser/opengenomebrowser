@@ -29,7 +29,6 @@
 
 .type-label {
     color: darkslategray !important;
-    font-size: .4em;
 }
 
 .card-textbox {
@@ -49,4 +48,8 @@
     border-radius: 5px;
     margin-left: 1px;
     margin-right: 1px;
+}
+
+.black-links a {
+	color: black;
 }

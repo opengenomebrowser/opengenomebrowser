@@ -4,6 +4,7 @@ from django.contrib.postgres.fields import JSONField
 from website.models.Annotation import Annotation, AnnotationRegex
 from .TaxID import TaxID
 from .ANI import ANI
+from OpenGenomeBrowser import settings
 
 
 class Genome(models.Model):
@@ -53,7 +54,7 @@ class Genome(models.Model):
 
     def update(self):
         # was the gbk file changed? if so -> reload everything
-        if self.gbk_file_size != os.stat(self.member.cds_gbk).st_size:
+        if self.gbk_file_size != os.stat(self.member.cds_gbk(relative=False)).st_size:
             self.load_genome()
             self.save()
             return
@@ -94,7 +95,7 @@ class Genome(models.Model):
         # regex_split_gene_code = re.compile('^(.+)(_[0-9]+)$')
         # disallowed_types = ['CDS', 'misc_RNA', 'rRNA', 'repeat_region', 'tRNA', 'tmRNA']
 
-        with open(self.member.cds_gbk, "r") as input_handle:
+        with open(self.member.cds_gbk(relative=False), "r") as input_handle:
             for scf in SeqIO.parse(input_handle, "genbank"):
                 for f in scf.features:
                     if 'locus_tag' in f.qualifiers:
@@ -145,7 +146,7 @@ class Genome(models.Model):
         Gene.annotations.through.objects.bulk_create(objects)
 
         # Save file size of imported gbk.
-        self.gbk_file_size = os.stat(self.member.cds_gbk).st_size
+        self.gbk_file_size = os.stat(self.member.cds_gbk(relative=False)).st_size
 
         # load custom files:
         for file_dict in self.member.custom_annotations:
@@ -174,7 +175,7 @@ class Genome(models.Model):
         all_annotations = set()
         annotations_relationships = set()  # [('gene1', 'anno1), ('gene1', 'anno2), ...]
 
-        with open(self.member.base_path + "3_annotations/" + file_dict['file']) as f:
+        with open(F"{self.member.base_path(relative=False)}/{file_dict['file']}") as f:
             line = f.readline().strip()
             while line:
                 line = line.split("\t")
@@ -211,3 +212,27 @@ class Genome(models.Model):
         map_has = set(self.annotations.all().values_list('name', flat=True))
         map_should_have = map_has.union(annos_to_add)
         self.annotations.set(Annotation.objects.filter(name__in=map_should_have))
+
+    @staticmethod
+    def in_orthofinder(genomes) -> (bool, str):
+
+        orthofinder_fastas = F'{settings.GENOMIC_DATABASE}/OrthoFinder/fastas'
+
+        if not os.path.isdir(orthofinder_fastas):
+            return False, F'There is no OrthoFinder folder ({orthofinder_fastas})'
+
+        ls = [f for f in os.listdir(orthofinder_fastas) if not f[-4:] in ['flat', '.gdx', '.fxi'] or f == 'Orthofinder']
+        of_realpaths = [os.path.realpath(f) for f in ls]
+
+        print(ls)
+        print(of_realpaths)
+
+        print([g.member.cds_faa(relative=False) for g in genomes])
+
+        have, lack = [], []
+        [have.append(g) if g.member.cds_faa(relative=False) in of_realpaths else lack.append(g) for g in genomes]
+
+        if len(lack) > 0:
+            return False, F'The following members are missing: {lack}\nThe following are present: {have}'
+        else:
+            return True, 'All faa are present!'

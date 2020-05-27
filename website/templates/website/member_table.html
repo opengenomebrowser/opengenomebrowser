@@ -4,6 +4,7 @@
 {% block styles %}
     <!-- Site-specific css/js -->
     <link rel="stylesheet" type="text/css" href="{% static 'website/css/member_table.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'website/css/warning-stripes.css' %}"/>
 
     <link rel="stylesheet" type="text/css" href="{% static 'global/css/taxid_color.css' %}" id="taxid-color-stylesheet"
           disabled/>
@@ -139,7 +140,7 @@
                 let this_identifier = data_table.cell(this_row_idx, id_col_idx).data();
                 let selected_row_idx_array = data_table.rows({selected: true})[0];
                 let selected_identifiers = selected_row_idx_array.map(row_idx => data_table.cell(row_idx, id_col_idx).data());
-                
+
                 ShowMemberContextMenu(event, this_identifier, selected_identifiers);
             })
         });

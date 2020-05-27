@@ -1,0 +1,83 @@
+.contaminated {
+    background: repeating-linear-gradient(
+            135deg,
+            #ffe0e0,
+            #ffe0e0 10px,
+            transparent 10px,
+            transparent 20px,
+            transparent 20px,
+            transparent 30px
+    );
+}
+
+.no-representative {
+    background: repeating-linear-gradient(
+            135deg,
+            transparent,
+            transparent 10px,
+            #e0e0ff 10px,
+            #e0e0ff 20px,
+            transparent 20px,
+            transparent 30px
+    );
+}
+
+.restricted {
+    background: repeating-linear-gradient(
+            135deg,
+            transparent,
+            transparent 10px,
+            transparent 10px,
+            transparent 20px,
+            #fce8b5 20px,
+            #fce8b5 30px
+    );
+}
+
+.contaminated.no-representative {
+    background: repeating-linear-gradient(
+            135deg,
+            #ffe0e0,
+            #ffe0e0 10px,
+            #e0e0ff 10px,
+            #e0e0ff 20px,
+            transparent 20px,
+            transparent 30px
+    );
+}
+
+.contaminated.restricted {
+    background: repeating-linear-gradient(
+            135deg,
+            #ffe0e0,
+            #ffe0e0 10px,
+            transparent 10px,
+            transparent 20px,
+            #fce8b5 20px,
+            #fce8b5 30px
+    );
+}
+
+.restricted.no-representative {
+    background: repeating-linear-gradient(
+            135deg,
+            transparent,
+            transparent 10px,
+            #e0e0ff 10px,
+            #e0e0ff 20px,
+            #fce8b5 20px,
+            #fce8b5 30px
+    );
+}
+
+.contaminated.restricted.no-representative {
+    background: repeating-linear-gradient(
+            135deg,
+            #ffe0e0,
+            #ffe0e0 10px,
+            #e0e0ff 10px,
+            #e0e0ff 20px,
+            #fce8b5 20px,
+            #fce8b5 30px
+    );
+}

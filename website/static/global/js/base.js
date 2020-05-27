@@ -216,8 +216,8 @@ let ShowMemberContextMenu = function (event, member, siblings) {
     cm.appendHeader(member);
 
     cm.appendElement($('<a>', {
-        text: 'Open strain info',
-        href: `member/${member}`,
+        text: 'Open member info',
+        href: `/member/${member}`,
         class: "dropdown-item context-menu-icon context-menu-icon-strain", target: "_blank"
     }));
 
@@ -228,57 +228,56 @@ let ShowMemberContextMenu = function (event, member, siblings) {
     }));
 
     cm.appendElement($('<a>', {
-        text: 'Open strain on KEGG map',
-        href: `kegg/?members=${member}`,
+        text: 'Open member on KEGG map',
+        href: `/kegg/?members=${member}`,
         class: "dropdown-item context-menu-icon context-menu-icon-pathway", target: "_blank"
     }));
 
     cm.appendElement($('<a>', {
-        text: 'Search for annotations in strain',
-        href: `annotation-search/?members=${member}`,
+        text: 'Search for annotations in member',
+        href: `/annotation-search/?members=${member}`,
         class: "dropdown-item context-menu-icon context-menu-icon-annotation", target: "_blank"
     }));
 
     cm.appendElement($('<a>', {
-        text: 'Blast strain',
-        href: `blast/?members=${member}`,
+        text: 'Blast member',
+        href: `/blast/?members=${member}`,
         class: "dropdown-item context-menu-icon context-menu-icon-blast", target: "_blank"
     }));
 
 
     if (siblings.length > 1) {
-        cm.appendHeader(`${siblings.length} selected strains`);
+        cm.appendHeader(`${siblings.length} selected members`);
 
         cm.appendElement($('<a>', {
-            text: 'Compare selected strains',
-            href: `compare-members/?members=${siblings.join('+')}`,
+            text: 'Compare selected members',
+            href: `/trees/?members=${siblings.join('+')}`,
             class: "dropdown-item context-menu-icon context-menu-icon-strains", target: "_blank"
         }));
 
         cm.appendElement($('<a>', {
-            text: 'Copy selected strains',
+            text: 'Copy selected members',
             onclick: `CopyToClipboard('${siblings.join(', ')}')`,
             class: "dropdown-item context-menu-icon context-menu-icon-copy", target: "_blank"
         }));
 
         cm.appendElement($('<a>', {
-            text: 'Open strains on KEGG map',
-            href: `kegg/?members=${siblings.join('+')}`,
+            text: 'Open members on KEGG map',
+            href: `/kegg/?members=${siblings.join('+')}`,
             class: "dropdown-item context-menu-icon context-menu-icon-pathway", target: "_blank"
         }));
 
         cm.appendElement($('<a>', {
-            text: 'Search for annotations in strains',
-            href: `annotation-search/?members=${siblings.join('+')}`,
+            text: 'Search for annotations in members',
+            href: `/annotation-search/?members=${siblings.join('+')}`,
             class: "dropdown-item context-menu-icon context-menu-icon-annotations", target: "_blank"
         }));
 
         cm.appendElement($('<a>', {
-            text: 'Blast strains',
-            href: `blast/?members=${siblings.join('+')}`,
+            text: 'Blast members',
+            href: `/blast/?members=${siblings.join('+')}`,
             class: "dropdown-item context-menu-icon context-menu-icon-blast", target: "_blank"
         }));
-
     }
 
     cm.show();
@@ -322,7 +321,11 @@ let ShowGeneContextMenu = function (event, gene_identifier) {
 
         cm.popper.update()
 
-        $('#context-menu [data-toggle="tooltip"]').tooltip()
+        $('#context-menu [data-toggle="tooltip"]').tooltip({
+            title: function () {
+                return $(this).attr('data-species');
+            }
+        })
 
     });
 

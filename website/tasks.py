@@ -23,7 +23,7 @@ def calculate_ani(g1, g2) -> float:
     # The multiprocessing function must be at the top level of the module for it to work with Django.
     # https://stackoverflow.com/questions/48046862/
     print(F'start ANI calc {g1.identifier} :: {g2.identifier}')
-    ani_score = OrthoANI().calculate_similarity(g1.member.assembly_fasta, g2.member.assembly_fasta, ncpu=8)
+    ani_score = OrthoANI().calculate_similarity(g1.member.assembly_fasta(relative=False), g2.member.assembly_fasta(relative=False), ncpu=8)
 
     ani_obj: ANI
     ani_obj = ANI.objects.get(from_genome=g1, to_genome=g2)

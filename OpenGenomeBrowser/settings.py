@@ -139,6 +139,7 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = 'dist/media'
 
 GENOMIC_DATABASE = os.path.join(BASE_DIR, 'database')
+GENOMIC_DATABASE_BN = os.path.basename(GENOMIC_DATABASE)
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
@@ -149,7 +150,7 @@ HUEY = {
     'immediate': False,  # If DEBUG=True, run synchronously.
     'utc': True,  # Use UTC for all times internally.
     'consumer': {
-        'workers': 1,
+        'workers': 4,
         'worker_type': 'thread',
         'initial_delay': 0.1,  # Smallest polling interval, same as -d.
         'backoff': 1.15,  # Exponential backoff using this rate, -b.
@@ -157,6 +158,6 @@ HUEY = {
         'scheduler_interval': 1,  # Check schedule every second, -s.
         'periodic': True,  # Enable crontab feature.
         'check_worker_health': True,  # Enable worker health checks.
-        'health_check_interval': 1,  # Check worker health every second.
+        'health_check_interval': 10,  # Check worker health every second.
     },
 }

@@ -118,7 +118,12 @@
 
             let activateTooltips = async function () {
                 if (map_id !== current_map_id) {
-                    $('[data-toggle="tooltip"]').tooltip();
+                    $('[data-toggle="tooltip"]').tooltip({
+                            title: function () {
+                                return $(this).attr('data-species');
+                            }
+                        }
+                    );
                 }
 
                 colorizeMap()

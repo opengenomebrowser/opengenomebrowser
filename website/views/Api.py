@@ -1,8 +1,10 @@
 from django.shortcuts import HttpResponse
 from django.http import JsonResponse
 import json
+import os
 from django.http import HttpResponseBadRequest
 
+from OpenGenomeBrowser import settings
 from website.models.Annotation import Annotation
 from website.models import Genome, Member, KeggMap, Gene, TaxID, ANI
 from website.models.Tree import TaxIdTree, AniTree, OrthofinderTree, TreeNotDoneError
@@ -115,6 +117,30 @@ class Api:
             })
         data = json.dumps(results)
         mimetype = 'application/json'
+        return HttpResponse(data, mimetype)
+
+    @staticmethod
+    def search_genes(request):
+        # http://flaviusim.com/blog/AJAX-Autocomplete-Search-with-Django-and-jQuery/
+        term = request.GET.get('term', None)
+
+        genome = request.GET.get('genome', None)
+
+        if term is None and genome is None:
+            return err('"term" and "genome" are not in request.GET')
+
+        print(genome, term)
+
+        if genome:
+            genes = Gene.objects.filter(genome=genome, identifier__icontains=term if term else '').order_by('identifier')[:10]
+        else:
+            genes = Gene.objects.filter(identifier__istartswith=term).order_by('identifier')[:10]
+
+        results = [gene.identifier for gene in genes]
+
+        data = json.dumps(results)
+        mimetype = 'application/json'
+        print(results)
         return HttpResponse(data, mimetype)
 
     @staticmethod
@@ -270,7 +296,7 @@ class Api:
 
         g = Gene.objects.get(identifier=gene_identifier)
 
-        graphic_record = GraphicRecordLocus(gbk_file=g.genome.member.cds_gbk, locus_tag=gene_identifier, span=30000)
+        graphic_record = GraphicRecordLocus(gbk_file=g.genome.member.cds_gbk(relative=False), locus_tag=gene_identifier, span=30000)
 
         graphic_record.colorize_graphic_record({gene_identifier: '#1984ff'}, strict=False, default_color='#ffffff')
 

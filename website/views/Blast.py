@@ -1,15 +1,13 @@
+import os
 from django.shortcuts import render, HttpResponse, HttpResponseRedirect
+from OpenGenomeBrowser import settings
 from website.models.Genome import Genome
-from Bio import SeqIO, Seq, SeqRecord
 from django.conf import settings
 # from dal import autocomplete
 from django.http import HttpResponseBadRequest
-
 from django import forms
-
 from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext_lazy as _
-
 from lib.ncbiblast.ncbi_blast.blast_wrapper import Blast
 
 blast = Blast(blast_path='lib/ncbi_blast/bin', outfmt=5)
@@ -78,11 +76,12 @@ def blast_submit(request):
 
     file_type = choice_to_settings[blast_type]['file_type']
 
-    db = [getattr(genome.member, file_type) for genome in cd['members']]
+    fasta_files = [os.path.join(settings.GENOMIC_DATABASE_BN, getattr(genome.member, file_type))
+                   for genome in cd['members']]
 
-    print(blast_type, blast_algorithm, query_type, db_type, db)
+    print(blast_type, blast_algorithm, query_type, db_type, fasta_files)
 
-    blast_output = blast.blast(fasta_string=query, db=db, mode=blast_algorithm)
+    blast_output = blast.blast(fasta_string=query, db=fasta_files, mode=blast_algorithm)
 
     return HttpResponse(blast_output, content_type="text/plain")
 

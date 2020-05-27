@@ -21,6 +21,13 @@ let loadTree = async function (members, method, target, newick_target, type, lay
     let go_on
 
     let load_tree = function () {
+        // abort if current_members have changed
+        if (members.join('::') != current_members.join('::')) {
+            go_on = false
+            return null
+        }
+
+
         let ajax = $.ajax({
             url: "/api/get-tree",
             data: {'members[]': members, method: method},
@@ -30,14 +37,19 @@ let loadTree = async function (members, method, target, newick_target, type, lay
 
         if (ajax.status === 409) {
             // still calculating...
-            console.log('still calculating', ajax)
-            console.log(ajax.responseJSON.message)
+            console.log('still calculating', ajax.responseJSON.message, ajax)
             go_on = true
 
-            $(target + " .error-message").replaceWith($('<p>', {
+            $(target).empty()
+            $(target).append($('<p>', {
                 class: "error-message",
                 text: ajax.responseJSON.message
             }))
+            $(target).append($('<div>', {
+                class: "spinner-border text-dark",
+                role: "status"
+            }).append($('<span>', {class: "sr-only", text: "Loading..."})))
+
             return null
         }
 
@@ -69,6 +81,7 @@ let loadTree = async function (members, method, target, newick_target, type, lay
                 branchLabels: true,
                 branchDistances: false,
                 ruler: false,
+                vStretch: 0.9,
             })
 
         // colorize branch labels, which represent TaxIDs
@@ -91,27 +104,33 @@ let loadTree = async function (members, method, target, newick_target, type, lay
                 })
         });
 
-        // ensure tree is not cropped
-        tree = tree.setVStretch(0.9)
-        tree = tree.setHStretch(0.9)
-
-        turnBranchLabels(tree)
-
         return tree
     }
 
     let tree
     do {
-        tree = load_tree()
-        await sleep(5000)  // sleep from base.js
+        tree = await load_tree()
+
+        if (go_on) {
+            await sleep(5000)  // sleep from base.js
+        } else {
+            await sleep(500)
+        }
 
     } while (go_on)
+
+    turnBranchLabels(tree)
 
     return tree
 }
 
 let turnBranchLabels = async function (tree) {
+    console.log('turn branch labels')
     console.log(tree)
+    if (tree == null) {
+        return
+    }
+
     tree = await tree.redraw()
 
     if (tree.layout === 'vertical' || tree.layout === 'horizontal') {

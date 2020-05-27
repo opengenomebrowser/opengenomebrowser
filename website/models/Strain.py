@@ -18,7 +18,7 @@ class Strain(models.Model):
 
     name = models.SlugField(max_length=40, unique=True)
     alternative_name = models.CharField(max_length=200, null=True, blank=True)
-    taxid = models.ForeignKey(TaxID, on_delete=models.CASCADE)  # if unknown, set to TaxID = 32644 = unidentified
+    taxid = models.ForeignKey(TaxID, on_delete=models.CASCADE)  # if unknown: 32644; mixture: 1427524
     restricted = models.BooleanField(default=False)
 
     tags = models.ManyToManyField(Tag)

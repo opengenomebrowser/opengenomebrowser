@@ -37,6 +37,11 @@ class TaxID(MPTTModel):
     def __str__(self):
         return self.taxscientificname
 
+    @property
+    def html_style(self):
+        text_color = 'white' if self.text_color_white else 'black'
+        return F'background-color:rgb({self.color});color:{text_color}'
+
     def get_child_taxids(self) -> QuerySet:
         return TaxID.objects.get_queryset_descendants(TaxID.objects.filter(id=self.id), include_self=True)
 
