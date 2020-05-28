@@ -10,7 +10,7 @@ from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext_lazy as _
 from lib.ncbiblast.ncbi_blast.blast_wrapper import Blast
 
-blast = Blast(blast_path='lib/ncbi_blast/bin', outfmt=5)
+blast = Blast(system_blast=False, outfmt=5)
 
 choice_to_settings = dict(
     blastn_ffn=dict(query_type='nucl', db_type='nucl', file_type='cds_ffn'),
@@ -76,7 +76,7 @@ def blast_submit(request):
 
     file_type = choice_to_settings[blast_type]['file_type']
 
-    fasta_files = [os.path.join(settings.GENOMIC_DATABASE_BN, getattr(genome.member, file_type))
+    fasta_files = [os.path.join(settings.GENOMIC_DATABASE_BN, getattr(genome.member, file_type)(relative=False))
                    for genome in cd['members']]
 
     print(blast_type, blast_algorithm, query_type, db_type, fasta_files)

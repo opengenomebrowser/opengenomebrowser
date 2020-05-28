@@ -1,6 +1,6 @@
 import os
 from lib.ncbiblast.ncbi_blast.blast_wrapper import Blast
-from .MemberLooper import MemberLooper
+from db_setup.MemberLooper import MemberLooper
 
 
 class MemberLooperMakeBlastDB(MemberLooper):
@@ -11,7 +11,7 @@ class MemberLooperMakeBlastDB(MemberLooper):
     def mkblastdbs(self, path_to_member, assembly_fn, faa_fn, ffn_fn, overwrite):
         print(path_to_member)
         assert os.path.isdir(path_to_member), F'Member folder does not exist! {path_to_member}'
-        assembly_file = os.path.join(path_to_member, '1_assembly', assembly_fn)
+        assembly_file = os.path.join(path_to_member, assembly_fn)
         faa_file = os.path.join(path_to_member, faa_fn)
         ffn_file = os.path.join(path_to_member, ffn_fn)
 
