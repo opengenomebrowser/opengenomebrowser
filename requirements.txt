@@ -1,3 +1,5 @@
+numpy==1.18.4
+pandas==1.0.3
 asgiref==3.2.7
 backcall==0.1.0
 beautifulsoup4==4.9.1
@@ -35,9 +37,7 @@ MarkupSafe==1.1.1
 matplotlib==3.2.1
 msgpack==1.0.0
 natsort==7.0.1
-numpy==1.18.4
 packaging==20.4
-pandas==1.0.3
 parso==0.7.0
 pexpect==4.8.0
 pickleshare==0.7.5
