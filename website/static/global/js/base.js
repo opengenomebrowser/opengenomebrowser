@@ -250,9 +250,9 @@ let ShowMemberContextMenu = function (event, member, siblings) {
         cm.appendHeader(`${siblings.length} selected members`);
 
         cm.appendElement($('<a>', {
-            text: 'Compare selected members',
+            text: 'Show phylogenetic trees',
             href: `/trees/?members=${siblings.join('+')}`,
-            class: "dropdown-item context-menu-icon context-menu-icon-strains", target: "_blank"
+            class: "dropdown-item context-menu-icon context-menu-icon-tree", target: "_blank"
         }));
 
         cm.appendElement($('<a>', {

@@ -212,27 +212,3 @@ class Genome(models.Model):
         map_has = set(self.annotations.all().values_list('name', flat=True))
         map_should_have = map_has.union(annos_to_add)
         self.annotations.set(Annotation.objects.filter(name__in=map_should_have))
-
-    @staticmethod
-    def in_orthofinder(genomes) -> (bool, str):
-
-        orthofinder_fastas = F'{settings.GENOMIC_DATABASE}/OrthoFinder/fastas'
-
-        if not os.path.isdir(orthofinder_fastas):
-            return False, F'There is no OrthoFinder folder ({orthofinder_fastas})'
-
-        ls = [f for f in os.listdir(orthofinder_fastas) if not f[-4:] in ['flat', '.gdx', '.fxi'] or f == 'Orthofinder']
-        of_realpaths = [os.path.realpath(f) for f in ls]
-
-        print(ls)
-        print(of_realpaths)
-
-        print([g.member.cds_faa(relative=False) for g in genomes])
-
-        have, lack = [], []
-        [have.append(g) if g.member.cds_faa(relative=False) in of_realpaths else lack.append(g) for g in genomes]
-
-        if len(lack) > 0:
-            return False, F'The following members are missing: {lack}\nThe following are present: {have}'
-        else:
-            return True, 'All faa are present!'

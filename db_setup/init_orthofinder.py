@@ -33,13 +33,17 @@ To procceed, delete the folder.'
     member_looper = MemberLooperInitOrthofinder(db_path=DB_PATH)
     member_looper.loop_members()
 
-    post_cmd = F"-it --rm -v {os.path.abspath(DB_PATH)}:/input:Z davidemms/orthofinder orthofinder -f /input/OrthoFinder/fastas"
+    cmd = F"orthofinder -f /input/OrthoFinder/fastas"
 
-    p_cmd = F"podman run --ulimit=host {post_cmd}"
+    print('Run orthofinder like this:', cmd)
+
+    container_cmd = F"-it --rm -v {os.path.abspath(DB_PATH)}:/input:Z davidemms/orthofinder {cmd}"
+
+    p_cmd = F"podman run --ulimit=host {container_cmd}"
     print(F'run this command if you use podman:')
     print(F'run this command: {p_cmd}')
 
-    d_cmd = F"docker run --ulimit nofile=1000000:1000000 {post_cmd}"
+    d_cmd = F"docker run --ulimit nofile=1000000:1000000 {container_cmd}"
     print(F'run this command if you use docker:')
     print(F'run this command: {d_cmd}')
 

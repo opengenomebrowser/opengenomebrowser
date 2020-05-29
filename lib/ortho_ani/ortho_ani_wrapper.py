@@ -12,10 +12,10 @@ class OrthoANI:
 
     def __init__(self, blast_dir=None):
         if not blast_dir:
-            self.ncbi_blast_dir = os.path.dirname(__file__) + "/../ncbi_blast/bin"
+            self.ncbi_blast_dir = os.path.dirname(__file__) + "/../ncbiblast/ncbi_blast/bin"
         else:
             self.ncbi_blast_dir = blast_dir
-        assert os.path.isdir(self.ncbi_blast_dir)
+        assert os.path.isdir(self.ncbi_blast_dir), F"Blast dir does not exist: {self.ncbi_blast_dir}"
 
         self.ortho_ani_path = os.path.dirname(__file__) + '/OAT_cmd.jar'
         assert os.path.isfile(self.ortho_ani_path)

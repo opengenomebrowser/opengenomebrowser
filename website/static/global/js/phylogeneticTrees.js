@@ -54,7 +54,7 @@ let loadTree = async function (members, method, target, newick_target, type, lay
         }
 
         if (ajax.status !== 200) {
-            alert('Failed to load ANI-tree.')
+            alert(`Failed to load ${method} tree.`)
             console.log('ajax-response for debugging:', ajax)
             go_on = false
             return null
@@ -84,16 +84,26 @@ let loadTree = async function (members, method, target, newick_target, type, lay
                 vStretch: 0.9,
             })
 
-        // colorize branch labels, which represent TaxIDs
-        tree = tree.eachBranchLabel((label, data) => {
-            d3.select(label).style("font-size", 1 + "rem")
-                .style("text-anchor", "middle")
-                .attr("data-species-label", label.textContent)
-                .on("click", function (data) {
-                    d3.event.stopPropagation()
-                    ShowTaxidContextMenu([10, 12], data.data.id) // could use d3.event insted of null
-                })
-        });
+        if (method === 'taxid') {
+            // colorize branch labels, which represent TaxIDs
+            tree = tree.eachBranchLabel((label, data) => {
+                d3.select(label).style("font-size", 1 + "rem")
+                    .style("text-anchor", "middle")
+                    .attr("data-species-label", label.textContent)
+                    .on("click", function (data) {
+                        d3.event.stopPropagation()
+                        ShowTaxidContextMenu([10, 12], data.data.id) // could use d3.event insted of null
+                    })
+            });
+        }
+        if (method === 'orthofinder') {
+            // colorize branch labels, which represent TaxIDs
+            tree = tree.eachBranchLabel((label, data) => {
+                d3.select(label).style("font-size", 1 + "rem")
+                    .style("text-anchor", "middle")
+            });
+        }
+
         // colorize leaf labels, which represent Members
         tree = tree.eachLeafLabel((label, data) => {
             d3.select(label).style("font-size", 1 + "rem")

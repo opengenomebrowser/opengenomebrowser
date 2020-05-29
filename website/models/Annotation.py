@@ -169,7 +169,7 @@ class Annotation(models.Model):
             gene_to_ortholog_links = []
             while line:
                 orthogroup, gene_identifiers = line.split(': ', maxsplit=1)
-                gene_identifiers = gene_identifiers.split(" ")
+                gene_identifiers = [s.rsplit('|', maxsplit=1)[-1] for s in gene_identifiers.split(" ")]
                 strains = [gene_id.split("_", maxsplit=1)[0] for gene_id in gene_identifiers]
 
                 if len(strains) == 1:

@@ -10,13 +10,13 @@ def _sort(genome1, genome2):
         return genome2, genome1
 
 
-class QuestionQuerySet(models.query.QuerySet):
+class AniQuerySet(models.query.QuerySet):
     def get(self, from_genome, to_genome, **kwargs):
         from_genome, to_genome = _sort(from_genome, to_genome)
-        return super(QuestionQuerySet, self).get(from_genome=from_genome, to_genome=to_genome, **kwargs)
+        return super(AniQuerySet, self).get(from_genome=from_genome, to_genome=to_genome, **kwargs)
 
 
-class AniManager(models.Manager.from_queryset(QuestionQuerySet)):
+class AniManager(models.Manager.from_queryset(AniQuerySet)):
     def get_or_create(self, from_genome, to_genome, **kwargs):
         from_genome, to_genome = _sort(from_genome, to_genome)
 

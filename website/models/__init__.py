@@ -6,3 +6,4 @@ from .Genome import Genome, ANI
 from .Annotation import Annotation
 from .Gene import Gene
 from .KeggMap import KeggMap
+from .CoreGenomeDendrogram import CoreGenomeDendrogram

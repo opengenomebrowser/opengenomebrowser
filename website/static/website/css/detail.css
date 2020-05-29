@@ -27,6 +27,26 @@
     /*overflow: hidden;*/
 }
 
+#busco-pie-chart > div > div > svg {
+    background-color: transparent !important;
+}
+
+#busco-pie-chart {
+    float: right
+}
+
+.busco-flex-table {
+    flex-shrink: 1;
+    flex-grow: 1;
+    flex-basis: 10em;
+}
+
+.busco-flex-pie {
+    flex-shrink: 1;
+    flex-grow: 1;
+    flex-basis: 10em;
+}
+
 .type-label {
     color: darkslategray !important;
 }
@@ -51,5 +71,5 @@
 }
 
 .black-links a {
-	color: black;
+    color: black;
 }

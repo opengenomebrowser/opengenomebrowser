@@ -43,7 +43,7 @@
                    href="{% url 'website:strain' slug=member.strain %}">STRAIN {{ member.strain }}</a>
                 <!-- Member -->
                 <a class="navbar-next">
-                    <img class="navbar-next-img" src="{% static 'global/customicons/caret_full.svg' %}"> </a>
+                    <img class="navbar-next-img" src="{% static 'global/customicons/caret-full.svg' %}"> </a>
                 <span class="nav-item nav-link active">{{ member.identifier }}</span>
             </div>
         </div>
@@ -289,7 +289,7 @@
                 <h3>BUSCO</h3>
 
                 <div class="container flex-container">
-                    <div>
+                    <div class="busco-flex-table">
                         <table class="table table-sm" id="busco-table">
                             <thead class="thead-dark">
                             <tr>
@@ -334,7 +334,7 @@
                             </tbody>
                         </table>
                     </div>
-                    <div>
+                    <div class="busco-flex-pie">
                         <div id="busco-pie-chart" class="pie-chart" height="260px" width="260px"></div>
                     </div>
                 </div>

@@ -380,8 +380,6 @@ class Api:
         if method == 'orthofinder':
             MODEL = Genome
             METHOD = OrthofinderTree
-            # Todo: Orthofinder-based trees
-            return err("Not implemented yet")
 
         objs = MODEL.objects.filter(identifier__in=identifiers)
         try:

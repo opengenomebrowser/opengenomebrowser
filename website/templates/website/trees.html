@@ -136,6 +136,37 @@
             <br>
         </div>
 
+        <div class="container" id="orthofinder-tree-container" hidden>
+            <h2>OrthoFinder-based tree</h2>
+            <label for="layout-selector-orthofinder">Layout</label>
+            <select class="form-control" id="layout-selector-orthofinder"
+                    onchange="changeTree(orthofinder_tree, 'layout', this.value)">
+                <option>horizontal</option>
+                <option selected>vertical</option>
+                <option>circular</option>
+            </select>
+
+            <label for="type-selector-orthofinder">Type</label>
+            <select class="form-control" id="type-selector-orthofinder" onchange="changeTree(orthofinder_tree, 'type', this.value)">
+                <option>dendrogram</option>
+                <option selected>weighted</option>
+                <option>tree</option>
+            </select>
+
+            <label for="orthofinder-newick">Newick string</label>
+            <input class="form-control" type="text" id="orthofinder-newick" placeholder="Loading..."
+                   onclick="CopyToClipboard(this.value)" readonly>
+
+            <label for="orthofinder-tree">Dendrogram</label>
+            <div id="orthofinder-tree" class="tree-div">
+                <div class="spinner-border text-dark" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+            </div>
+            <br>
+        </div>
+
+
     </section>
 
 {% endblock %}
@@ -148,6 +179,7 @@
         let member_to_species
         let taxid_tree
         let ani_tree
+        let orthofinder_tree
         let doit
 
         $(document).ready(function () {
@@ -155,13 +187,18 @@
             current_members = original_members
             member_to_species = init_autocomplete_members("#get-members")
 
-            load_taxid_tree(current_members)
+            if (current_members.length >= 3) {
+                load_taxid_tree(current_members)
+            }
         })
 
         function validate_members_load_tree(type) {
             let members = $('#get-members').val().split(',')
             $.when(validate_members(members)).done(function (members_valid) {
                 let success = members_valid['success']
+                if (members.length < 3) {
+                    success = false
+                }
                 if (success) {
                     $('#get-members').next().removeClass('is-invalid')
                 } else {
@@ -173,6 +210,8 @@
                         load_taxid_tree(members)
                     } else if (type === "ani") {
                         load_ani_tree(members)
+                    } else if (type === "orthofinder") {
+                        load_orthofinder_tree(members)
                     }
                 }
             })
@@ -199,6 +238,18 @@
             )
             add_resize_listener('ani-tree', ani_tree)
         }
+
+        function load_orthofinder_tree(members) {
+            $('#orthofinder-tree-container').attr("hidden", false)
+            orthofinder_tree = loadTree(
+                members, 'orthofinder', '#orthofinder-tree', '#orthofinder-newick',
+                $('#type-selector-orthofinder').val(),
+                $('#layout-selector-orthofinder').val(),
+                $('#mode-selector').val()
+            )
+            add_resize_listener('orthofinder-tree', orthofinder_tree)
+        }
+
 
         async function add_resize_listener(target, tree) {
             console.log('adding resize listener to', target, tree)

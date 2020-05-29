@@ -1,10 +1,9 @@
 import os
 from django.db import models
-from website.models import TaxID, ANI, Annotation, Member, Genome, Strain
+from website.models import TaxID, ANI, Annotation, Member, Genome, Strain, CoreGenomeDendrogram
 import pandas as pd
 from skbio import DistanceMatrix
 from skbio.tree import nj
-from OpenGenomeBrowser import settings
 
 
 class TreeNotDoneError(Exception):
@@ -122,17 +121,24 @@ class OrthofinderTree(AbstractTree):
     Create a Newick tree using Orthofinder. (https://github.com/davidemms/OrthoFinder)
 
     :param genomes: QuerySet of class 'Genome'
-    :raises TreeNotDoneError: if Orthofinder is still running. (Be sure huey is running! (./manage.py run_huey))
+    :raises TreeNotDoneError: if Orthofinder failed or is still running. (Be sure huey is running! (./manage.py run_huey))
     """
 
     def __init__(self, genomes: models.QuerySet):
-        success, message = Genome.in_orthofinder(genomes)
-
-        assert success, message
-
-
-
+        self.__genomes = genomes
+        self.__dendrogram, created = CoreGenomeDendrogram.objects.get_or_create(genomes=genomes)
 
     @property
-    def newick(self):
-        raise NotImplementedError('Tree calculation using Orthofinder has not been implemented yet.')
+    def newick(self) -> str:
+        self.__dendrogram.refresh_from_db()
+
+        status = self.__dendrogram.status
+
+        if status == 'D':
+            return self.__dendrogram.newick
+        if status == 'R':
+            raise TreeNotDoneError('Tree is still being calculated...')
+        if status == 'F':
+            raise TreeNotDoneError('Tree calculation failed.')
+
+        raise AssertionError('Code should never end up here!')

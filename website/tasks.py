@@ -3,6 +3,7 @@ import time
 from huey import crontab
 from huey.contrib.djhuey import task, periodic_task, db_task
 from lib.ortho_ani.ortho_ani_wrapper import OrthoANI
+from lib.orthofinder.orthofinder import Orthofinder
 
 
 # def tprint(s, c=32):
@@ -23,15 +24,51 @@ def calculate_ani(g1, g2) -> float:
     # The multiprocessing function must be at the top level of the module for it to work with Django.
     # https://stackoverflow.com/questions/48046862/
     print(F'start ANI calc {g1.identifier} :: {g2.identifier}')
-    ani_score = OrthoANI().calculate_similarity(g1.member.assembly_fasta(relative=False), g2.member.assembly_fasta(relative=False), ncpu=8)
 
-    ani_obj: ANI
+    try:
+        ani_score = OrthoANI().calculate_similarity(g1.member.assembly_fasta(relative=False), g2.member.assembly_fasta(relative=False), ncpu=8)
+    except Exception as e:
+        ani_obj = ANI.objects.get(from_genome=g1, to_genome=g2)
+        if ani_obj.status in ['R', 'F']:
+            ani_obj.status = 'F'  # FAILED
+            ani_obj.save()
+        print(F'ANI failed: {g1.identifier} :: {g2.identifier}')
+        raise e
+
     ani_obj = ANI.objects.get(from_genome=g1, to_genome=g2)
     assert ani_obj.status == 'R'  # RUNNING
     ani_obj.similarity = ani_score
     ani_obj.status = 'D'  # DONE
     ani_obj.save()
-    print(F'completed ANI calc {g1.identifier} :: {g2.identifier}')
+    print(F'completed ANI: {g1.identifier} :: {g2.identifier} :: {ani_score}')
+
+
+@task()
+def calculate_orthofinder(genomes) -> str:
+    from website.models.Genome import Genome
+    from website.models.CoreGenomeDendrogram import CoreGenomeDendrogram
+    identifiers = sorted(set(g.identifier for g in genomes))
+
+    print(F'Start OrthoFinder with identifiers: {identifiers}')
+
+    try:
+        newick = Orthofinder().run_precomputed(identifiers=identifiers)
+    except Exception as e:
+        dendrogram_obj = CoreGenomeDendrogram.objects.get(unique_id=CoreGenomeDendrogram.hash_genomes(genomes))
+        if dendrogram_obj.status in ['R', 'F']:
+            dendrogram_obj.status = 'F'  # FAILED
+            dendrogram_obj.save()
+        print(F'OrthoFinder failed: {identifiers}')
+        raise e
+
+    dendrogram_obj = CoreGenomeDendrogram.objects.get(unique_id=CoreGenomeDendrogram.hash_genomes(genomes))
+    assert dendrogram_obj.status == 'R'  # RUNNING
+    dendrogram_obj.newick = newick
+    dendrogram_obj.status = 'D'  # DONE
+    dendrogram_obj.save()
+    print(F'completed OrthoFinder: {identifiers} :: {newick}')
+
+    return newick
 
 # @db_task()  # Opens DB connection for duration of task.
 # def slow(n):
