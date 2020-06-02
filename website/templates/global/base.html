@@ -33,8 +33,6 @@
 
     <!-- CRF Cookie -->
     <script type="text/javascript" src="{% static 'global/js/getCookie.js' %}"></script>
-
-    <!-- Font for the website -->
     {% block styles %}{% endblock %}
 </head>
 
@@ -48,25 +46,48 @@
 
 <!--Navbar-->
 <nav class="navbar navbar-expand-sm navbar-dark bg-dark fixed-top">
-    <!--Settings-->
-    <img src="{% static 'global/ionicons/md-settings.svg' %}" id="settings-icon" onclick="toggleNav()"
-         class=".navbar-dark .navbar-brand:hover">
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup"
-            aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+    <!-- logo and text -->
+    <a class="navbar-brand" href="/" style="font-family: 'ogbFont'">
+        <img src="{% static 'global/customicons/ogb-circle.svg' %}" id="ogb-logo-circle" width="30" height="30" class="d-inline-block align-top"
+             loading="lazy">
+        <span id="ogb-logo-text">open genome browser</span>
+    </a>
+
+    <!-- collapsible menu -->
+    <div class="navbar-collapse collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a class="nav-link text-nowrap {% if request.resolver_match.url_name == 'members' %}active{% endif %}"
+                   href="{% url 'website:members' %}">Member overview</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-nowrap {% if request.resolver_match.url_name == 'kegg' %}active{% endif %}" href="{% url 'website:kegg' %}">Kegg
+                    maps</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-nowrap {% if request.resolver_match.url_name == 'annotation-search' %}active{% endif %}"
+                   href="{% url 'website:annotation-search' %}">Annotation Search</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-nowrap {% if request.resolver_match.url_name == 'blast' %}active{% endif %}" href="{% url 'website:blast' %}">Blast</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-nowrap {% if request.resolver_match.url_name == 'trees' %}active{% endif %}" href="{% url 'website:trees' %}">Trees</a>
+            </li>
+        </ul>
+    </div>
+    <!-- collapsible menu button (only shown when collapsed) -->
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+            aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
     </button>
-    <!--Home-->
-    <a class="navbar-brand" href="{% url 'website:index' %}">Home</a>
-    <!--Links-->
-    <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-        <div class="navbar-nav">
-            <a class="nav-item nav-link {% if request.resolver_match.url_name == 'members'           %}active{% endif %}" href="{% url 'website:members' %}">Member overview</a>
-            <a class="nav-item nav-link {% if request.resolver_match.url_name == 'kegg'              %}active{% endif %}" href="{% url 'website:kegg' %}">Kegg maps</a>
-            <a class="nav-item nav-link {% if request.resolver_match.url_name == 'annotation-search' %}active{% endif %}" href="{% url 'website:annotation-search' %}">Annotation Search</a>
-            <a class="nav-item nav-link {% if request.resolver_match.url_name == 'blast'             %}active{% endif %}" href="{% url 'website:blast' %}">Blast</a>
-            <a class="nav-item nav-link {% if request.resolver_match.url_name == 'trees'             %}active{% endif %}" href="{% url 'website:trees' %}">Trees</a>
-        </div>
+
+    <!-- toggle sidebar -->
+    <div class="nav-item">
+        <img src="{% static 'global/ionicons/md-settings.svg' %}" class="d-inline-block svg-invert" width="30" height="30"
+             onclick="toggleNav(event)" loading="lazy">
     </div>
+
 </nav>
 
 {% block body %}{% endblock %}

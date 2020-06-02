@@ -1,6 +1,6 @@
 from django.db import models
-from django.contrib.postgres.fields import JSONField
-from django.db.utils import IntegrityError, ProgrammingError
+from django.db.utils import ProgrammingError
+from OpenGenomeBrowser import settings
 import os
 
 
@@ -44,7 +44,7 @@ class Tag(models.Model):
         return t
 
     def get_html_badge(self):
-        return '<span data-tag="{tag}">{tag}</span>'.format(tag=self.tag)
+        return '<span class="ogb-tag" data-tag="{tag}">{tag}</span>'.format(tag=self.tag)
 
     @staticmethod
     def getTagList() -> [str]:
@@ -55,9 +55,13 @@ class Tag(models.Model):
             return ""
 
     @staticmethod
+    def get_tag_css_path():
+        return os.path.abspath(F'{settings.BASE_DIR}/website/static/global/css/tag_color.css')
+
+    @staticmethod
     def create_tag_color_css():
         all_tags = Tag.objects.all()
-        with open('website/static/global/css/tag_color.css', 'w') as f:
+        with open(Tag.get_tag_css_path(), 'w') as f:
             for tag in all_tags:
                 css = '[data-tag="' + tag.tag + '"] {background-color: rgb(' + tag.color + '); color: '
                 if tag.text_color_white:

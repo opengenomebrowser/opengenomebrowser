@@ -66,7 +66,7 @@ class Annotation(models.Model):
 
     @property
     def anno_html(self):
-        return F'<div class="annotation" data-annotype="{self.anno_type}" data-toggle="tooltip" title="{self.description}">{self.name}</div>'
+        return F'<div class="annotation ogb-tag" data-annotype="{self.anno_type}" data-toggle="tooltip" title="{self.description}">{self.name}</div>'
 
     @staticmethod
     def get_auto_description(query: str):

@@ -4,3 +4,28 @@
     justify-content: center;
     flex-direction: column;
 }
+
+.mb-3 {
+
+}
+
+.input-group-prepend {
+
+}
+
+.input-group-text {
+
+}
+
+.entry-container {
+    height: min-content;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.form-control p {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+

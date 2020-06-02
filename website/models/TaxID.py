@@ -1,3 +1,5 @@
+import os
+from OpenGenomeBrowser import settings
 from django.db import models
 from mptt.models import MPTTModel, TreeForeignKey
 from django.db.models.query import QuerySet
@@ -148,8 +150,9 @@ class TaxID(MPTTModel):
     @staticmethod
     def create_taxid_color_css():
         all_taxids = TaxID.objects.all()
-        div_css = open('website/static/global/css/taxid_color.css', 'w')
-        label_css = open('website/static/global/css/taxid_color_label.css', 'w')
+        basepath = os.path.abspath(F'{settings.BASE_DIR}/website/static/global/css')
+        div_css = open(F'{basepath}/taxid_color.css', 'w')
+        label_css = open(F'{basepath}/taxid_color_label.css', 'w')
         for taxid in all_taxids:
             div_css.write(F'[data-species="{taxid.taxscientificname}"] {{' +
                           F'background-color: rgb({taxid.color}) !important; ' +

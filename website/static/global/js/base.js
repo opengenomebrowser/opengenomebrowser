@@ -26,10 +26,31 @@ function toggle_colorize_sequence() {
 let jmouseX, jmouseY;
 jQuery(document).ready(function () {
     $(document).mousemove(function (e) {
-        jmouseX = e.pageX;
-        jmouseY = e.pageY;
+        jmouseX = e.pageX
+        jmouseY = e.pageY
     });
 });
+
+/*
+ * Encode blanks as !!!, join array
+ * E.g. ['OG0000006', 'OG0000010S24', 'S24 family peptidase']
+ * becomes "OG0000006+OG0000010S24+S24!!!family!!!peptidase"
+ */
+let urlReplBlanks = function (arr) {
+    let encode = function (str) {
+        return str.replaceAll(' ', '!!!')
+    }
+    return arr.map(str => encode(str)).join('+')
+}
+
+/*
+ * Undo urlReplBlanks
+ * E.g. ['OG0000010S24', 'S24!!!family!!!peptidase']
+ * becomes ['OG0000010S24', 'S24 family peptidase']
+ */
+let undoReplBlanks = function (arr) {
+    return arr.map(str => str.replaceAll('!!!', ' '))
+}
 
 /*
 * This function creates dummy elements. Necessary for popups that emerge from canvas/svg.
@@ -356,7 +377,7 @@ function validate_annotations(annotations) {
 
 function create_read_only_strain_div(strain_array, member_to_species) {
     let read_only_strain_div = $('<div>', {
-        class: "dropdown-item context-menu-icon context-menu-icon-copy",
+        class: "dropdown-item",
         css: {'display': 'flex', 'flex-wrap': 'wrap'},
         onclick: `CopyToClipboard('${strain_array.join(', ')}')`
     });
@@ -365,7 +386,7 @@ function create_read_only_strain_div(strain_array, member_to_species) {
         read_only_strain_div.append($('<div>', {
             // class: "dropdown-clickprotect",
             text: strain_array[idx],
-            style: 'margin-right: 6px; margin-bottom: 6px',
+            class: 'member ogb-tag',
             'data-species': member_to_species[strain_array[idx]]['sciname'],
             'title': member_to_species[strain_array[idx]]['sciname'],
             'data-toggle': 'tooltip'
@@ -386,7 +407,7 @@ function create_read_only_annotations_div(annotations_array, annotation_to_type)
         read_only_annotations_div.append($('<div>', {
             // class: "dropdown-clickprotect",
             text: annotations_array[idx],
-            style: 'margin-right: 6px; margin-bottom: 6px',
+            class: 'annotation ogb-tag',
             'data-annotype': annotation_to_type[annotations_array[idx]]['anno_type'],
             'title': annotation_to_type[annotations_array[idx]]['description'],
             'data-toggle': 'tooltip'

@@ -1,81 +1,65 @@
-<table class="table table-bordered table-sm" id="matrix-table" style="width: min-content;">
+<table class="table table-bordered table-sm white-links" id="matrix-table" style="width: min-content;">
     <thead class="thead-dark" id="matrix-thread">
     <tr>
+        <th scope="col" style="width: 50%">X</th>
         {% for cell in table_header %}
-            <th scope="col" style="width: 50%">{{ cell }}</th>
+            <th scope="col" style="width: 50%"><a href="#header_{{ cell }}">{{ cell }}</a></th>
         {% endfor %}
     </tr>
     </thead>
     <tbody>
-    {% for row in table_body %}
+    {% for annotation, row in table_body %}
         <tr>
+            <th scope="row">{{ annotation.anno_html|safe }}</th>
             {% for cell in row %}
-                {% if forloop.first %}
-                    <th scope="row"><span id="href_query1" class="annotation"
-                                          data-annotype="{{ cell.anno_type }}">{{ cell.name }}</span></th>
-                {% else %}
-                    <td align="center" style="background-color: {% if cell %}black">X{% else %}white">{% endif %}</td>
-                {% endif %}
+                <td align="center" style="background-color: {% if cell %}black">X{% else %}white">{% endif %}</td>
             {% endfor %}
         </tr>
     {% endfor %}
     </tbody>
     <tfoot class="table-dark text-light">
     <tr>
-        <th scope="row">SUM OF STRAINS</th>
-        {% for cell in table_foot %}
+        <th scope="row">#covered</th>
+        {% for cell in table_footer_covered %}
+            <td align="center">{{ cell }}</td>{% endfor %}
+    </tr>
+    <tr>
+        <th scope="row">#members</th>
+        {% for cell in table_footer_members %}
             <td align="center">{{ cell }}</td>{% endfor %}
     </tr>
     </tfoot>
+
 </table>
 
-{% for group in groups %}
-    group<br>
-    {% for member in group %}{{ member.identifier }} {% endfor %}
-    <br><br>
-{% endfor %}
+<div class="container">
 
+    <hr class="featurette-divider">
 
+    {% for group_name, data in grp_to_genomes_annogene.items %}
 
-<!-- Display greedy solution of the set coverage problem. -->
-{% if solution %}
-    <br>
-    <p>Pick one strain from the following {{ solution_length }} groups to cover {% if not_covered %}the remaining
-        queries{% else %}the queries{% endif %}:
+        <h3 id="header_{{ group_name }}" style="padding-top: 4em; margin-top: -4em;">group {{ group_name }}</h3>
 
-        <highlight_solution>{{ solution }}</highlight_solution>
-        <br>There may be better solutions!
-    </p>
-{% endif %}
-
-<!-- Which group contains which strains? Which queries do they cover? -->
-{% for strains, annos in groupz %}{% if forloop.first %}<h2>Group Members</h2>
-
-
-    <!-- Set KEGG Map-ID -->
-    <div class="input-group mb-3">
-        <div class="input-group-prepend">
-            <span class="input-group-text">Enter KEGG map ID to generate hyperlinks from K-numbers and EC-numbers:</span>
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                <span class="input-group-text">Members</span>
+            </div>
+            <div class="form-control entry-container">
+                {% for genome in data.0 %} {{ genome.member.member_html|safe }} {% endfor %}
+            </div>
         </div>
-        <input type="text" class="form-control" id="KEGGmapID" pattern="^[0-9]{5}$"
-               placeholder="e.g. '00400' for Phenylalanine, tyrosine and tryptophan biosynthesis" required>
-    </div>
+        {% for annotation, genes in data.1 %}
+            <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                    <div class="input-group-text">{{ annotation.anno_html|safe }}</div>
+                </div>
+                <div class="form-control entry-container">
+                    {% for gene in genes %} {{ gene.gene_html|safe }} {% endfor %}
+                </div>
+            </div>
+        {% endfor %}
 
+    {% endfor %}
 
-{% endif %}
-    <div class="input-group">
-        <div class="input-group-prepend">
-            <span class="input-group-text">Group {{ forloop.counter0 }}<br>[{{ strains|length }}]</span>
-        </div>
-        <div class="form-control no_height"><b>Covers:</b>
-            <a id="href_group{{ forloop.counter0 }}" class="kegglink" target="_blank">
-                {% for anno, color in annos %}{% if not forloop.first %}, {% endif %}
-                    <span style="background-color: {{ color }}">{{ anno }}</span>{% endfor %}
-            </a>
-            <hr class="hr">{% for strain in strains %}
-                <a class="strain" data-toggle="tooltip" title="{{ strain.1 }}"
-                   style="background-color: {{ strain.2 }}">{{ strain.0 }}</a>{% if not forloop.last %},
-                {% endif %}{% endfor %}
-        </div>
-    </div>
-{% endfor %}
+</div>
+

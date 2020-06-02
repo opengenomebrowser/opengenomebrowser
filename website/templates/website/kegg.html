@@ -39,49 +39,58 @@
 
     <section>
 
-        <form>
-            {% csrf_token %}
-            <div class="form-group row">
-                <label for="get-map" class="col-sm-2 col-form-label" style="white-space: nowrap">KEGG map:</label>
-                <div class="col-sm-10">
-                    <input type="text" class="form-control" id="get-map"
-                           value="{% if key_map %}{{ key_map }} : {{ map_name }}{% endif %}">
+
+        <div class="container">
+
+            <form>
+                {% csrf_token %}
+                <div class="form-group row">
+                    <label for="get-map" class="col-sm-2 col-form-label" style="white-space: nowrap">KEGG map:</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" id="get-map"
+                               value="{% if key_map %}{{ key_map }} : {{ map_name }}{% endif %}">
+                    </div>
                 </div>
-            </div>
 
-            <div class="form-group">
-                <label for="get-members">Member:</label>
-                <input type="text" class="form-control" id="get-members" value="{{ key_members|join:", " }}">
-            </div>
-
-            <button type="button" class="btn btn-primary" onclick="submit_function()">Submit</button>
-        </form>
-
-        <hr class="featurette-divider">
-
-        <form>
-            <div class="form-group row">
-                <label for="real-map" class="col-sm-2 col-form-label" style="white-space: nowrap">KEGG map:</label>
-                <div class="col-sm-10">
-                    <input type="text" class="form-control" id="real-map" value="-" readonly>
+                <div class="form-group">
+                    <label for="get-members">Member:</label>
+                    <input type="text" class="form-control" id="get-members" value="{{ key_members|join:", " }}">
                 </div>
-            </div>
 
-            <div class="form-group">
-                <label for="real-members">Member:</label>
-                <div class="form-control"
-                     style="height: unset; padding: unset; background-color: #e9ecef; border: 1px solid #ced4da"
-                     id="real-members">
+                <button type="button" class="btn btn-primary" onclick="submit_function()">Submit</button>
+            </form>
+
+            <hr class="featurette-divider">
+
+            <form>
+                <div class="form-group row">
+                    <label for="real-map" class="col-sm-2 col-form-label" style="white-space: nowrap">KEGG map:</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" id="real-map" value="-" readonly>
+                    </div>
                 </div>
-            </div>
-        </form>
+
+                <div class="form-group">
+                    <label for="real-members">Member:</label>
+                    <div class="form-control"
+                         style="height: unset; padding: unset; background-color: #e9ecef; border: 1px solid #ced4da"
+                         id="real-members">
+                    </div>
+                </div>
+            </form>
+
+        </div>
 
     </section>
 
     <section style="text-align: center">
 
-        <!-- kegg svg -->
-        <div id="kegg-container"></div>
+        <div class="overflow-auto">
+
+            <!-- kegg svg -->
+            <div id="kegg-container"></div>
+
+        </div>
 
     </section>
 {% endblock %}

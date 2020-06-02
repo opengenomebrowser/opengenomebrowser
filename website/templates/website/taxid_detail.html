@@ -20,17 +20,19 @@
 {% endblock %}
 
 {% block body %}
-    <!-- Secondary Navbar -->
-    <nav id="secondary-navbar" class="navbar navbar-expand-sm navbar-dark fixed-top">
-        <div class="collapse navbar-collapse">
-            <div class="navbar-nav">
-                <!-- Taxid -->
-                <a class="navbar-next">
-                    <img class="navbar-next-img" src="{% static 'global/customicons/caretfull.svg' %}"> </a>
-                <span class="nav-item nav-link active">TAXID {{ taxid.id }}</span>
-            </div>
-        </div>
+    <!-- Breadcrumb -->
+    <div class="breadcrumb-push"></div>
+    <nav aria-label="breadcrumb" class="breadcrumb-fixed">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"></li>
+            <!-- Taxid -->
+            <li class="breadcrumb-item active" aria-current="page">
+                <span>TAXID {{ taxid.id }}</span>
+            </li>
+        </ol>
     </nav>
+
+    <div class="body-push"></div>
 
     <section>
         <!-- title -->

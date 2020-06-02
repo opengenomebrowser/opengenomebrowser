@@ -1,5 +1,6 @@
 import os
 from math import sqrt
+from OpenGenomeBrowser import settings
 
 
 class GlasbeyWrapper:
@@ -17,7 +18,7 @@ class GlasbeyWrapper:
         """
         from website.models import TaxID
         import json
-        color_json_path = "database/species_color_dict.json"
+        color_json_path = F"{settings.GENOMIC_DATABASE}/species_color_dict.json"
         if os.path.isfile(color_json_path):
             with open(color_json_path, 'r') as f:
                 color_json = json.load(f)
@@ -67,13 +68,15 @@ class GlasbeyWrapper:
         Otherwise, it assigns a new color from non_assigned_colors in tag_color_dict.json.
         If this is not possible either, new distinct colors are generated using Glasbey.
         """
+        from OpenGenomeBrowser import settings
         from website.models import Tag
         import json
-        color_json_path = "database/tag_color_dict.json"
+        color_json_path = F"{settings.GENOMIC_DATABASE}/tag_color_dict.json"
         if os.path.isfile(color_json_path):
             with open(color_json_path, 'r') as f:
                 color_json = json.load(f)
         else:
+            open(color_json_path, 'a').close()
             color_json = {"tag_to_color": {}, "non_assigned_colors": []}
 
         if tag in color_json["tag_to_color"]:

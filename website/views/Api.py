@@ -16,6 +16,7 @@ from bokeh.embed import components
 
 
 def err(error_message):
+    print(error_message)
     return JsonResponse(dict(status='false', message=error_message), status=500)
 
 

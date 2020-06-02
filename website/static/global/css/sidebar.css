@@ -4,8 +4,8 @@
     width: 0; /* 0 width - change this with JavaScript */
     top: 0;
     position: fixed; /* Stay in place */
-    z-index: 1; /* Stay on top */
-    left: 0;
+    z-index: 100; /* Stay on top */
+    right: 0;
     background-color: #111; /* Black*/
     overflow: auto; /* Disable horizontal scroll */
     overflow-x: hidden;

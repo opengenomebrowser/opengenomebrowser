@@ -74,3 +74,4 @@ website/static/global/css/taxid_color.css
 
 
 /lib/orthofinder/OrthoFinder/
+/db_setup/huey.db

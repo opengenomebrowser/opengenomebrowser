@@ -2,6 +2,8 @@
 {% load static %}
 
 {% block styles %}
+    <!-- Site-specific css/js -->
+    <link rel="stylesheet" type="text/css" href="{% static 'index/css/index.css' %}"/>
 
 {% endblock %}
 
@@ -10,9 +12,109 @@
 {% endblock %}
 
 {% block body %}
-    <div id="hello">
-        <a>hello</a>
+    <!-- full logo -->
+    <div class="container" style="display: flex; align-items: center; flex-direction: column; padding: 15% 15%;">
+        <img src="{% static 'global/customicons/ogb-full.svg' %}" id="ogb-logo-full">
     </div>
+
+    <div class="container">
+
+        <h3>People</h3>
+
+        <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 black-links">
+
+            {% for person in credits_personen %}
+                <div class="col mb-4">
+                    <div class="card col mb-4">
+                        <div class="row no-gutters">
+                            <div class="card-img-top {{ person.img_cls }}">
+                                <div class="img-container">
+                                    <img src="{{ person.img }}"
+                                         alt="{{ person.name }}">
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title"><a href="{{ person.href }}">{{ person.name }}</a></h5>
+                                <p class="card-text"><small class="text-muted">{{ person.role }}</small></p>
+                                <ul class="list-group list-group-flush">
+                                    {% for did in person.did %}
+                                        <li class="list-group-item">{{ did }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            {% endfor %}
+        </div>
+
+        <hr class="featurette-divider">
+
+        <h3>Institutions</h3>
+
+        <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 black-links">
+
+            {% for institution in credits_institutions %}
+                <div class="col mb-4">
+                    <div class="card col mb-4">
+                        <div class="row no-gutters">
+                            <div class="card-img-top {{ institution.img_cls }}">
+                                <div class="img-container">
+                                    <img src="{{ institution.img }}"
+                                         alt="{{ institution.name }}">
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title"><a href="{{ institution.href }}">{{ institution.name }}</a></h5>
+                                <p class="card-text"><small class="text-muted">{{ institution.role }}</small></p>
+                                <ul class="list-group list-group-flush">
+                                    {% for did in institution.did %}
+                                        <li class="list-group-item">{{ did }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            {% endfor %}
+        </div>
+
+        <hr class="featurette-divider">
+
+        <h3>Software</h3>
+
+        <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 black-links">
+
+            {% for software in credits_software %}
+                <div class="col mb-4">
+                    <div class="card col mb-4">
+                        <div class="row no-gutters">
+                            <div class="card-img-top {{ software.img_cls }}">
+                                <div class="img-container">
+                                    <img src="{{ software.img }}"
+                                         alt="{{ software.name }}">
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title"><a href="{{ software.href }}">{{ software.name }}</a></h5>
+                                <p class="card-text"><small class="text-muted">{{ software.role }}</small></p>
+                                <ul class="list-group list-group-flush">
+                                    {% for did in software.did %}
+                                        <li class="list-group-item">{{ did }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            {% endfor %}
+        </div>
+
+    </div>
+
 
 {% endblock %}
 

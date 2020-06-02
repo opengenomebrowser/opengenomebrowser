@@ -20,22 +20,23 @@
 {% endblock %}
 
 {% block body %}
-    <!-- Secondary Navbar -->
-    <nav id="secondary-navbar" class="navbar navbar-expand-sm navbar-dark fixed-top">
-        <div class="collapse navbar-collapse">
-            <div class="navbar-nav">
-                <!-- Taxid -->
-                <a class="navbar-next">
-                    <img class="navbar-next-img" src="{% static 'global/customicons/caret.svg' %}"> </a>
-                <a class="nav-item nav-link" href="{% url 'website:taxid' slug=strain.taxid.id %}">
-                    TAXID {{ strain.taxid.id }}</a>
-                <!-- Strain -->
-                <a class="navbar-next">
-                    <img class="navbar-next-img" src="{% static 'global/customicons/caret-full.svg' %}"> </a> <span class="nav-item nav-link active">
-                STRAIN {{ strain }}</span>
-            </div>
-        </div>
+    <!-- Breadcrumb -->
+    <div class="breadcrumb-push"></div>
+    <nav aria-label="breadcrumb" class="breadcrumb-fixed">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"></li>
+            <!-- Taxid -->
+            <li class="breadcrumb-item">
+                <a href="{% url 'website:taxid' slug=strain.taxid.id %}"> TAXID {{ strain.taxid.id }}</a>
+            </li>
+            <!-- Strain -->
+            <li class="breadcrumb-item active" aria-current="page">
+                <span>STRAIN {{ strain }}</span>
+            </li>
+        </ol>
     </nav>
+
+    <div class="body-push"></div>
 
     <section>
         <!-- title -->

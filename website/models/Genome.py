@@ -154,8 +154,73 @@ class Genome(models.Model):
                 self.load_custom_file(file_dict)
 
     def load_custom_file(self, file_dict):
-        from .Gene import Gene
         print("       add new file:", file_dict)
+        if file_dict['type'] == 'eggnog':
+            self.load_eggnog_file(file_dict)
+        else:
+            self.load_custom_file(file_dict)
+
+        self.custom_files.append(file_dict)
+
+    def load_eggnog_file(self, file_dict):
+        assert file_dict['type'] == 'eggnog'
+        from .Gene import Gene
+
+        go = (set(), set(), AnnotationRegex.GENEONTOLOGY)
+        ec = (set(), set(), AnnotationRegex.ENZYMECOMMISSION)
+        kegg = (set(), set(), AnnotationRegex.KEGGGENE)
+        r = (set(), set(), AnnotationRegex.KEGGREACTION)
+
+        def add_anno(annotations: list, all_annotations, annotations_relationships, regex):
+            for annotation in annotations:
+                assert regex.match_regex.match(
+                    annotation) is not None, F"Error: Annotation '{annotation}' does not match regex '{regex.match_regex.pattern}'!"
+                all_annotations.update(annotations)
+                annotations_relationships.update([(locus_tag, anno) for anno in annotations])
+            pass
+
+        with open(F"{self.member.base_path(relative=False)}/{file_dict['file']}") as f:
+            # skip header
+            head = [next(f).rstrip() for x in range(4)]
+            for h in head:
+                assert h.startswith('#'), F'Error parsing file: {file_dict}'
+
+            # parse file
+            line = f.readline()[:-1]
+            while line:
+                line = line.split("\t")
+                if len(line) != 22:
+                    break
+
+                locus_tag = line[0].rsplit('|', maxsplit=1)[1]
+
+                if line[6] != "":
+                    add_anno(line[6].split(','), *go)
+                if line[7] != "":
+                    add_anno([F'EC:{l}' for l in line[7].split(',')], *ec)
+                if line[8] != "":
+                    add_anno([l[3:] for l in line[8].split(',')], *kegg)
+                if line[11] != "":
+                    add_anno(line[11].split(','), *r)
+
+                line = f.readline()[:-1]
+
+            # parse end of file
+            rest = f.readlines()
+            for line in rest:
+                assert h.startswith('#'), F'Error parsing file: {file_dict}'
+
+        # Create Annotation-Objects and many-to-many relationships
+        for all_annotations, annotations_relationships, regex in (go, ec, kegg, r):
+            self.add_many_annotations(self=self, anno_type=regex.value, annos_to_add=all_annotations)
+            objects = [Gene.annotations.through(gene_id=gene, annotation_id=anno) for gene, anno in
+                       annotations_relationships]
+            Gene.annotations.through.objects.bulk_create(objects, ignore_conflicts=True)
+
+
+
+    def load_regular_file(self, file_dict):
+        from .Gene import Gene
 
         if file_dict['type'] == 'KEGG':
             anno_type = AnnotationRegex.KEGGGENE
@@ -194,8 +259,6 @@ class Genome(models.Model):
         objects = [Gene.annotations.through(gene_id=gene, annotation_id=anno) for gene, anno in
                    annotations_relationships]
         Gene.annotations.through.objects.bulk_create(objects, ignore_conflicts=True)
-
-        self.custom_files.append(file_dict)
 
     @staticmethod
     def add_many_annotations(self, anno_type: str, annos_to_add: set):

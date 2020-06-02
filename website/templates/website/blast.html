@@ -41,17 +41,18 @@
 
         {% if submitted %}
             <p class="success">
-                Your message was submitted successfully. Thank you.
+                Your message was submitted successfully.
             </p>
 
         {% else %}
 
-            <form method="post" id="blast-form" action="{% url "website:blast-submit" %}">
-                {% csrf_token %}
-                {{ form|crispy }}
-                <button type="submit" class="btn btn-success">Blast!</button>
-
-            </form>
+            <div class="container">
+                <form method="post" id="blast-form" action="{% url "website:blast-submit" %}">
+                    {% csrf_token %}
+                    {{ form|crispy }}
+                    <button type="submit" class="btn btn-success">Blast!</button>
+                </form>
+            </div>
 
         {% endif %}
 

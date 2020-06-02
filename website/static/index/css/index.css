@@ -1,0 +1,67 @@
+.card-deck {
+    justify-content: space-evenly
+}
+
+.card {
+    width: 14rem
+}
+
+.row {
+    display: flex;
+    justify-content: center
+
+}
+
+.row .no-gutters div {
+    width: 100%;
+}
+
+.card-img-top {
+    padding: 1rem
+}
+
+.img-container {
+    padding-bottom: 100%;
+    overflow: hidden;
+    position: relative
+}
+
+.ibu img {
+    max-width: 100%;
+    position: absolute;
+    clip-path: circle(at 50% 43%);
+    top: -10%
+}
+
+.circle img {
+    max-width: 100%;
+    position: absolute;
+    clip-path: circle();
+}
+
+.square-offset-top img {
+    max-width: 100%;
+    position: absolute;
+    top: 10%;
+}
+
+.ncbi img {
+    max-width: 100%;
+    position: absolute;
+    clip-path: circle(at 50% 50%);
+    top: -11.6%
+}
+
+.square img {
+    position: absolute;
+    width: 100%;
+}
+
+
+.card-title {
+    margin-bottom: 0
+}
+
+.list-group li {
+    padding: 0.2rem 1.25rem
+}

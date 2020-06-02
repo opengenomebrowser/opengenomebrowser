@@ -1,19 +1,53 @@
-html {
-    padding: 10px;
-    /*background: lightgrey;*/
+.navbar a {
+    white-space: nowrap;
+}
+
+@font-face {
+    font-family: ogbFont;
+    src: url(/static/global/fonts/SansSerifFLF/sansserifbldflf.otf);
+}
+
+@media (min-width: 576px) and (max-width: 800px) {
+    #ogb-logo-text {
+        display: none !important;
+    }
+}
+
+.svg-invert {
+    -webkit-filter: invert(100%);
+    filter: invert(100%);
 }
 
 .ogb-body {
     margin-top: 70px; /* overwrite with selector #ogb-body */
 }
 
-#settings-icon {
-    height: 40px;
-    padding-right: 16px
-}
-
 .is-invalid {
     border: 1px solid red !important;
+}
+
+.ogb-tag {
+    width: min-content;
+    white-space: nowrap;
+    margin: 3px 3px 3px 3px;
+    border-radius: .25rem;
+    padding: 0 6px;
+}
+
+#context-menu .context-menu-icon-annotation {
+    margin: 0 0 0 0;
+}
+
+#context-menu .ogb-tag {
+    margin: 0 0 0 0;
+}
+
+.black-links a {
+    color: black;
+}
+
+.white-links a {
+    color: white;
 }
 
 /*
@@ -86,3 +120,28 @@ convert hex (e.g. #2980b9) to filter: https://codepen.io/sosuke/pen/Pjoqqp
     transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out !important;
 }
 
+/*
+ * secondary navbar / breadcrumb-push
+*/
+
+.body-push {
+    /* push body down */
+    height: 55px;
+}
+
+.breadcrumb-push {
+    /* push breadcrumb down */
+    margin-top: 55px;
+}
+
+.breadcrumb-fixed {
+    /* keep breadcrumb on top of page */
+    position: fixed;
+    z-index: 2;
+    width: 100%;
+    margin-top: -14px;
+}
+
+.breadcrumb a {
+    color: #343a40;
+}

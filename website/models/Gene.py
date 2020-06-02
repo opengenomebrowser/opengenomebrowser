@@ -28,6 +28,11 @@ class Gene(models.Model):
     def natural_key(self):
         return self.identifier
 
+    @property
+    def gene_html(self):
+        tsi = self.genome.member.taxscientificname
+        return F'<span class="gene ogb-tag" data-species="{tsi}" data-toggle="tooltip">{self.identifier}</span>'
+
     def gc_content(self) -> float:
         return GC(self.fasta_nucleotide())
 
