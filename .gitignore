@@ -78,5 +78,5 @@ website/static/global/css/taxid_color.css
 /static_root/
 /huey.db
 /OpenGenomeBrowser/settings.py
-/website/static/kegg/svg/
+/website/static/kegg/svg
 
