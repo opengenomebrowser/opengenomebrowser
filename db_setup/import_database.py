@@ -227,8 +227,8 @@ class Importer:
 def main():
     si = Importer()
     # si.reset_database(auto_delete=True)
-    si.import_database(auto_delete_missing=False, reload_orthologs=True)
-    si.load_kegg_maps(reload_data=False, re_render=False)  # if all false: only recreate KEGG map database entries
+    # si.import_database(auto_delete_missing=False, reload_orthologs=True)
+    si.load_kegg_maps(reload_data=False, re_render=True)  # if all false: only recreate KEGG map database entries
 
 
 if __name__ == "__main__":

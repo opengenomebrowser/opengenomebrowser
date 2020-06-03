@@ -2,6 +2,8 @@ from django.db import models
 from django.core.validators import RegexValidator
 from .Annotation import Annotation
 from website.models.Genome import Genome
+from OpenGenomeBrowser import settings
+import os
 
 
 class KeggMap(models.Model):
@@ -23,9 +25,22 @@ class KeggMap(models.Model):
     # from django.db.models import Q
     # AnnotationKEGG.objects.filter(Q(keggmap='00400') & Q(genome='FAM19471'))
     #
+    @staticmethod
+    def __get_dir():
+        real_dir = F'{settings.BASE_DIR}/static_root/kegg/svg'
+        link_dir = F'{settings.BASE_DIR}/website/static/kegg/svg'
+        # ensure realdir exists
+        os.makedirs(real_dir, exist_ok=True)
+        # ensure link to realdir exists
+        if not os.path.islink(link_dir):
+            # ensure parent exists
+            os.makedirs(os.path.dirname(link_dir), exist_ok=True)
+            os.symlink(real_dir, link_dir)
+        return real_dir
 
     @staticmethod
     def load_maps(reload_data=True, re_render=True):
+        out_dir = KeggMap.__get_dir()
         # remove all maps
         KeggMap.wipe_maps(re_render=re_render)
 
@@ -53,7 +68,7 @@ class KeggMap(models.Model):
             if re_render:
                 # create svg templates
                 rendered = ck.render_svg_object(map_id=map_id, kegg_map_dict=map_to_annos, kegg_svg_id='kegg-svg')
-                with open('website/static/kegg/svg/{}.svg'.format(map_id), 'w') as out:
+                with open(F'{out_dir}/{map_id}.svg', 'w') as out:
                     out.write(rendered)
 
     def _load_content(self, K_set, EC_set, R_set):
@@ -69,7 +84,8 @@ class KeggMap(models.Model):
     @staticmethod
     def wipe_maps(re_render: bool):
         KeggMap.objects.all().delete()
+        dir = KeggMap.__get_dir()
         if re_render:
             import os, shutil
-            shutil.rmtree('website/static/kegg/svg')
-            os.makedirs('website/static/kegg/svg')
+            shutil.rmtree(dir)
+            os.makedirs(dir)
