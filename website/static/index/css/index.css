@@ -1,15 +1,31 @@
+#full-logo-container {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    padding: 15% 15%;
+}
+
+#ogb-logo-full {
+    width: 85%;
+}
+
 .card-deck {
     justify-content: space-evenly
 }
 
 .card {
-    width: 14rem
+    max-width: 16rem
 }
 
 .row {
     display: flex;
     justify-content: center
 
+}
+
+.card .list-group-item {
+    padding-left: 0;
+    padding-right: 0;
 }
 
 .row .no-gutters div {
@@ -26,37 +42,16 @@
     position: relative
 }
 
-.ibu img {
-    max-width: 100%;
-    position: absolute;
-    clip-path: circle(at 50% 43%);
-    top: -10%
-}
-
 .circle img {
-    max-width: 100%;
+    width: 100%;
     position: absolute;
     clip-path: circle();
-}
-
-.square-offset-top img {
-    max-width: 100%;
-    position: absolute;
-    top: 10%;
-}
-
-.ncbi img {
-    max-width: 100%;
-    position: absolute;
-    clip-path: circle(at 50% 50%);
-    top: -11.6%
 }
 
 .square img {
     position: absolute;
     width: 100%;
 }
-
 
 .card-title {
     margin-bottom: 0

@@ -1,28 +1,37 @@
-#annotation-matrix {
+#annotation-matrix-container {
     display: flex;
     align-items: center;
     justify-content: center;
     flex-direction: column;
 }
 
-.mb-3 {
-
+.table {
+    width: min-content
 }
 
-.input-group-prepend {
-
+.table thead th {
+    min-width: 40px;
 }
 
-.input-group-text {
-
+.table td, .table th {
+	text-align: center;
+	vertical-align: middle;
 }
 
-.entry-container {
-    height: min-content;
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
+.group-table-container thead th .ogb-tag {
+    padding: 6px 0; /* opposite as usual */
+    white-space: nowrap;
+
+    writing-mode: vertical-rl;
+
+    -webkit-transform: rotate(-180deg);
+    -moz-transform: rotate(-180deg);
 }
+
+.group-table-container tbody p {
+    margin: 0 0;
+}
+
 
 .form-control p {
     margin-top: 0;

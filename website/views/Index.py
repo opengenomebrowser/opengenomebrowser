@@ -7,24 +7,24 @@ def index_view(request):
     personen = [
         dict(
             name='Thomas Roder',
-            img='https://www.bioinformatics.unibe.ch/e132733/e132747/e649912/e698523/2020_01_14_12_44_31.jpg',
-            img_cls='ibu',
+            img='/static/index/images/Thomas.jpg',
+            img_cls='circle',
             role='PhD student',
             href='https://www.bioinformatics.unibe.ch/about_us/team/index_eng.html#person698529',
             did=['Code', 'Concept']
         ),
         dict(
             name='Simone Oberhänsli',
-            img='https://www.bioinformatics.unibe.ch/e132733/e132747/e649912/e649912/2020_01_14_12_45_48.jpg',
-            img_cls='ibu',
+            img='/static/index/images/Simone.jpg',
+            img_cls='circle',
             role='Staff scientist',
             href='https://www.bioinformatics.unibe.ch/about_us/team/index_eng.html#person649918',
             did=['Support', 'Ideas', 'Test data']
         ),
         dict(
             name='Rémy Bruggmann',
-            img='https://www.bioinformatics.unibe.ch/e132733/e132747/e649912/e132748/2019_12_17_15_45_07.jpg',
-            img_cls='ibu',
+            img='/static/index/images/Remy.jpg',
+            img_cls='circle',
             role='Supervisor',
             href='https://www.bioinformatics.unibe.ch/about_us/team/index_eng.html#person156979',
             did=['Support', 'Infrastructure']
@@ -42,7 +42,7 @@ def index_view(request):
     institutions = [
         dict(
             name='Gebert Rüf Stiftung',
-            img='https://www.grstiftung.ch/dam/jcr:77e5bf43-9924-46d8-b5a5-ca900745d025/Logo%20Twitter.jpg',
+            img='/static/index/images/GRS.jpg',
             img_cls='circle',
             role='Grant-ID: GRS-070/17',
             href='https://www.grstiftung.ch/',
@@ -50,10 +50,18 @@ def index_view(request):
         ),
         dict(
             name='Interfaculty Bioinformatics Unit',
-            img='https://www.unibe.ch/media/logo_unibern@2x.png',
-            img_cls='square-offset-top',
+            img='/static/index/images/unibe.png',
+            img_cls='square',
             role='University of Bern',
             href='https://www.bioinformatics.unibe.ch/',
+            did=['Infrastructure']
+        ),
+        dict(
+            name='Agroscope',
+            img='/static/index/images/agroscope.png',
+            img_cls='square',
+            role='Swiss center for agricultural research',
+            href='https://www.agroscope.admin.ch/',
             did=['Infrastructure']
         )
     ]
@@ -77,23 +85,23 @@ def index_view(request):
         ),
         dict(
             name='Kyoto Enzyclopedia of Genes',
-            img='https://upload.wikimedia.org/wikipedia/en/8/80/KEGG_database_logo.gif',
-            img_cls='square-offset-top',
-            role='KEGG',
+            img='/static/index/images/kegg.png',
+            img_cls='square',
+            role='square',
             href='https://www.kegg.jp/',
             did=['Pathway maps']
         ),
         dict(
             name='National Center for Biotechnology Information',
-            img='https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/US-NLM-NCBI-Logo.svg/1200px-US-NLM-NCBI-Logo.svg.png',
-            img_cls='ncbi',
+            img='/static/index/images/ncbi.png',
+            img_cls='circle',
             role='NCBI',
             href='https://blast.ncbi.nlm.nih.gov/Blast.cgi/',
             did=['BLAST alignment search', 'Taxonomy']
         ),
         dict(
             name='Blasterjs',
-            img='http://www.sing-group.org/blasterjs/img/profile.png',
+            img='/static/index/images/blasterjs.png',
             img_cls='circle',
             role='SING Group, University of Vigo',
             href='http://www.sing-group.org/blasterjs/',
@@ -101,7 +109,7 @@ def index_view(request):
         ),
         dict(
             name='DNA Features Viewer',
-            img='https://edinburgh-genome-foundry.github.io/static/imgs/logos/dfv.png',
+            img='/static/index/images/dna-features-viewer.png',
             img_cls='square',
             role='Edinburgh Genome Foundry',
             href='https://edinburgh-genome-foundry.github.io/DnaFeaturesViewer/',
@@ -117,8 +125,8 @@ def index_view(request):
         ),
         dict(
             name='BioPython',
-            img='https://upload.wikimedia.org/wikipedia/commons/thumb/7/7d/Biopython_logo.svg/1599px-Biopython_logo.svg.png',
-            img_cls='square-offset-top',
+            img='/static/index/images/biopython.png',
+            img_cls='square',
             role='Python library',
             href='https://biopython.org/',
             did=['Parsers', 'Wrappers']

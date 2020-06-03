@@ -1,65 +1,22 @@
-<table class="table table-bordered table-sm white-links" id="matrix-table" style="width: min-content;">
-    <thead class="thead-dark" id="matrix-thread">
-    <tr>
-        <th scope="col" style="width: 50%">X</th>
-        {% for cell in table_header %}
-            <th scope="col" style="width: 50%"><a href="#header_{{ cell }}">{{ cell }}</a></th>
-        {% endfor %}
-    </tr>
-    </thead>
-    <tbody>
-    {% for annotation, row in table_body %}
-        <tr>
-            <th scope="row">{{ annotation.anno_html|safe }}</th>
-            {% for cell in row %}
-                <td align="center" style="background-color: {% if cell %}black">X{% else %}white">{% endif %}</td>
-            {% endfor %}
-        </tr>
-    {% endfor %}
-    </tbody>
-    <tfoot class="table-dark text-light">
-    <tr>
-        <th scope="row">#covered</th>
-        {% for cell in table_footer_covered %}
-            <td align="center">{{ cell }}</td>{% endfor %}
-    </tr>
-    <tr>
-        <th scope="row">#members</th>
-        {% for cell in table_footer_members %}
-            <td align="center">{{ cell }}</td>{% endfor %}
-    </tr>
-    </tfoot>
+<div class="container">
+    <h3>Coverage Matrix</h3>
+</div>
 
-</table>
+<div id="annotation-matrix-container">
+    {{ matrix|safe }}
+</div>
 
 <div class="container">
-
     <hr class="featurette-divider">
 
-    {% for group_name, data in grp_to_genomes_annogene.items %}
+    {% for group_name, table in group_to_table.items %}
 
-        <h3 id="header_{{ group_name }}" style="padding-top: 4em; margin-top: -4em;">group {{ group_name }}</h3>
+        <h3 id="header_{{ group_name }}" style="padding-top: 4em; margin-top: -4em;">Number of genes per strain: Group {{ group_name }}</h3>
 
-        <div class="input-group mb-3">
-            <div class="input-group-prepend">
-                <span class="input-group-text">Members</span>
-            </div>
-            <div class="form-control entry-container">
-                {% for genome in data.0 %} {{ genome.member.member_html|safe }} {% endfor %}
-            </div>
+        <div class="group-table-container">
+            {{ table|safe }}
         </div>
-        {% for annotation, genes in data.1 %}
-            <div class="input-group mb-3">
-                <div class="input-group-prepend">
-                    <div class="input-group-text">{{ annotation.anno_html|safe }}</div>
-                </div>
-                <div class="form-control entry-container">
-                    {% for gene in genes %} {{ gene.gene_html|safe }} {% endfor %}
-                </div>
-            </div>
-        {% endfor %}
 
     {% endfor %}
 
 </div>
-

@@ -77,10 +77,7 @@
 
     </section>
 
-    <section style="text-align: center">
-
-        <!-- annotation-matrix -->
-        <div id="annotation-matrix"></div>
+    <section id="annotation-matrix-container">
 
     </section>
 
@@ -168,16 +165,33 @@
             }
 
             let loadTable = async function () {
-                await $('#annotation-matrix').load('{% url "website:annotation-matrix" %}', {
-                    annotations: annotations,
-                    members: members
-                });
+                await $('#annotation-matrix-container').load('{% url "website:annotation-matrix" %}', {
+                        annotations: annotations,
+                        members: members
+                    }, function () {
+                        // activate tooltips in newly loaded container
+                        $('#annotation-matrix-container .ogb-tag').tooltip({
+                            title: function () {
+                                return $(this).attr('data-species');
+                            }
+                        }).each(function () {
+                            if ($(this).hasClass('member')) {
+                                this.setAttribute('onclick', `ShowMemberContextMenu(event, '${this.textContent}')`)
+                            } else if ($(this).hasClass('annotation')) {
+                                this.setAttribute('onclick', `ShowAnnotationContextMenu(event, '${this.textContent}')`)
+                            }
+                        })
+                    $('.group-table-container tbody [data-genes]').each(function(){
+                        this.setAttribute('onclick', `console.log('test', '${$(this).data('genes')}')`)
+                    })
+                    }
+                )
 
-                await finalize()
+                finalize()
             };
 
 
-            let finalize = async function () {
+            let finalize = function () {
                 console.log('fin');
                 if (push_state) {
                     let state = [[], []];
@@ -220,18 +234,11 @@
                 current_annotations = annotations
                 current_members = members
 
-                activateTooltips()
             };
-
-            let activateTooltips = async function () {
-                await sleep(3000)
-                await $('[data-annotype]').tooltip()
-            };
-
 
             if (annotations === [] || members === []) {
                 // nothing to display
-                $('#annotation-matrix').empty()
+                $('#annotation-matrix-container').empty()
 
                 finalize();
 

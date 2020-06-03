@@ -31,6 +31,18 @@ jQuery(document).ready(function () {
     });
 });
 
+
+function assert(condition, message) {
+    if (!condition) {
+        message = message || "Assertion failed";
+        if (typeof Error !== "undefined") {
+            throw new Error(message);
+        }
+        throw message; // Fallback
+    }
+}
+
+
 /*
  * Encode blanks as !!!, join array
  * E.g. ['OG0000006', 'OG0000010S24', 'S24 family peptidase']
@@ -224,12 +236,37 @@ class ContextMenu {
  * Create context menu for a Member.
  * Can be used like this:
 
+ ShowMemberContextMenu(event, member_identifier)
+ or:
  ShowMemberContextMenu(event, member_identifier, [sibling-id-1, sibling-id-2, ...])
 
  */
-let ShowMemberContextMenu = function (event, member, siblings) {
-    console.log('ShowMemberContextMenu member:', member);
-    console.log('ShowMemberContextMenu siblings:', siblings);
+let ShowMemberContextMenu = function (event, member, siblings = 'auto') {
+    console.log('ShowMemberContextMenu', 'event:', event, 'member:', member, 'siblings:', siblings);
+
+    // auto-discover siblings
+    if (siblings === 'auto') {
+        console.log('autodiscover')
+
+        siblings = [member]
+        $(event.target).siblings().each(function () {
+            if ($(this).hasClass('member')) {
+                siblings.push($(this).text())
+            }
+        });
+    } else if (typeof (siblings) === 'string') {
+        console.log('autodiscover')
+        let target = siblings
+        siblings = []
+        $(target).children().each(function () {
+            if ($(this).hasClass('member')) {
+                siblings.push($(this).text())
+            }
+        });
+
+    } else {
+        assert(Array.isArray(siblings), 'This function expects an array, a JQuery selector or nothing!!')
+    }
 
     let cm = new ContextMenu(event);
 
@@ -305,6 +342,83 @@ let ShowMemberContextMenu = function (event, member, siblings) {
 };
 
 /**
+ * Create context menu for an Annotation.
+ * Can be used like this:
+
+ ShowAnnotationContextMenu(event, annotation)
+ or:
+ ShowAnnotationContextMenu(event, annotation, [sibling-id-1, sibling-id-2, ...])
+ */
+let ShowAnnotationContextMenu = function (event, annotation, siblings = 'auto') {
+    console.log('ShowAnnotationContextMenu', 'event:', event, 'annotation:', annotation, 'siblings:', siblings);
+
+    // auto-discover siblings
+    if (siblings === 'auto') {
+        console.log('autodiscover')
+
+        siblings = [annotation]
+        $(event.target).siblings().each(function () {
+            if ($(this).hasClass('annotation')) {
+                siblings.push($(this).text())
+            }
+        });
+    } else if (typeof (siblings) === 'string') {
+        console.log('autodiscover')
+        let target = siblings
+        siblings = []
+        $(target).children().each(function () {
+            if ($(this).hasClass('member')) {
+                siblings.push($(this).text())
+            }
+        });
+
+    } else {
+        assert(Array.isArray(siblings), 'This function expects an array, a JQuery selector or nothing!!')
+    }
+
+    let cm = new ContextMenu(event);
+
+    // list of elements to click on
+    cm.appendHeader(annotation);
+
+    let annolink = urlReplBlanks([annotation])
+
+    cm.appendElement($('<a>', {
+        text: 'Search genes',
+        href: `/annotation-search/?annotations=${annolink}`,
+        class: "dropdown-item context-menu-icon context-menu-icon-annotation", target: "_blank"
+    }));
+
+    cm.appendElement($('<a>', {
+        text: 'Copy name',
+        onclick: `CopyToClipboard('${annotation}')`,
+        class: "dropdown-item context-menu-icon context-menu-icon-copy", target: "_blank"
+    }));
+
+    if (siblings.length > 1) {
+        cm.appendHeader(`${siblings.length} selected annotations`);
+
+        let siblingslink = urlReplBlanks(siblings)
+
+        cm.appendElement($('<a>', {
+            text: 'Search genes',
+            href: `/annotation-search/?annotations=${siblingslink}`,
+            class: "dropdown-item context-menu-icon context-menu-icon-tree", target: "_blank"
+        }));
+
+
+        cm.appendElement($('<a>', {
+            text: 'Copy selected annotations',
+            onclick: `CopyToClipboard('${siblings.join(', ')}')`,
+            class: "dropdown-item context-menu-icon context-menu-icon-copy", target: "_blank"
+        }));
+    }
+
+    cm.show();
+};
+
+
+/**
  * Create context menu for a Gene.
  * Can be used like this:
 
@@ -377,7 +491,7 @@ function validate_annotations(annotations) {
 
 function create_read_only_strain_div(strain_array, member_to_species) {
     let read_only_strain_div = $('<div>', {
-        class: "dropdown-item",
+        class: "read-only-div",
         css: {'display': 'flex', 'flex-wrap': 'wrap'},
         onclick: `CopyToClipboard('${strain_array.join(', ')}')`
     });
@@ -387,6 +501,7 @@ function create_read_only_strain_div(strain_array, member_to_species) {
             // class: "dropdown-clickprotect",
             text: strain_array[idx],
             class: 'member ogb-tag',
+            onclick: `ShowMemberContextMenu(event, '${strain_array[idx]}')`,
             'data-species': member_to_species[strain_array[idx]]['sciname'],
             'title': member_to_species[strain_array[idx]]['sciname'],
             'data-toggle': 'tooltip'
@@ -398,7 +513,7 @@ function create_read_only_strain_div(strain_array, member_to_species) {
 
 function create_read_only_annotations_div(annotations_array, annotation_to_type) {
     let read_only_annotations_div = $('<div>', {
-        class: "dropdown-item context-menu-icon context-menu-icon-copy",
+        class: "read-only-div",
         css: {'display': 'flex', 'flex-wrap': 'wrap'},
         onclick: `CopyToClipboard('${annotations_array.join(', ')}')`
     });
@@ -408,6 +523,7 @@ function create_read_only_annotations_div(annotations_array, annotation_to_type)
             // class: "dropdown-clickprotect",
             text: annotations_array[idx],
             class: 'annotation ogb-tag',
+            onclick: `ShowAnnotationContextMenu(event, '${annotations_array[idx]}')`,
             'data-annotype': annotation_to_type[annotations_array[idx]]['anno_type'],
             'title': annotation_to_type[annotations_array[idx]]['description'],
             'data-toggle': 'tooltip'

@@ -45,13 +45,18 @@
 </div>
 
 <!--Navbar-->
-<nav class="navbar navbar-expand-sm navbar-dark bg-dark fixed-top">
+<nav class="navbar navbar-dark bg-dark fixed-top">
     <!-- logo and text -->
     <a class="navbar-brand" href="/" style="font-family: 'ogbFont'">
         <img src="{% static 'global/customicons/ogb-circle.svg' %}" id="ogb-logo-circle" width="30" height="30" class="d-inline-block align-top"
              loading="lazy">
         <span id="ogb-logo-text">open genome browser</span>
     </a>
+
+    <div class="navbar-nav ml-auto">
+        <a class="nav-link text-nowrap {% if request.resolver_match.url_name == 'members' %}active{% endif %}" href="{% url 'website:members' %}"
+        >Member overview</a>
+    </div>
 
     <!-- collapsible menu -->
     <div class="navbar-collapse collapse" id="navbarSupportedContent">

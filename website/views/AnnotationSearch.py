@@ -1,5 +1,6 @@
 from django.shortcuts import render, HttpResponse
 import pandas as pd
+import re
 
 from website.models import Genome, Gene
 from website.models.Annotation import Annotation
@@ -37,16 +38,16 @@ def annotation_matrix(request):
         return HttpResponse('Request failed: annotations[] incorrect.')
 
     mm = MatrixMaker(genomes, annotations)
-    grp_to_genomes_annogene = mm.get_grp_to_genomes_annogene()
 
-    print(grp_to_genomes_annogene)
+    group_to_table = mm.get_group_to_table()
 
     context = dict(
-        table_header=mm.matrix.columns.to_list(),
-        table_body=zip(mm.matrix.index, mm.matrix.values.tolist()),
-        table_footer_covered=mm.matrix.sum().values.tolist(),
-        table_footer_members=[len(g) for g in mm.grp_to_genomes.values()],
-        grp_to_genomes_annogene=grp_to_genomes_annogene
+        matrix_header=mm.matrix.columns.to_list(),
+        matrix_body=zip(mm.matrix.index, mm.matrix.values.tolist()),
+        matrix_footer_covered=mm.matrix.sum().values.tolist(),
+        matrix_footer_members=[len(g) for g in mm.grp_to_genomes.values()],
+        matrix=mm.html_matrix,
+        group_to_table=group_to_table
     )
 
     return render(request, 'website/annotation_matrix.html', context)
@@ -55,34 +56,86 @@ def annotation_matrix(request):
 class MatrixMaker:
     def __init__(self, genomes: [Genome], annotations: [Annotation]):
         self.genomes = genomes
+
+        self._genome_to_html = {}  # cannot be done using list comprehension
+        for genome in genomes:
+            self._genome_to_html[genome] = genome.member.html
+
         self.annotations = annotations
+
+        self._annotation_to_html = {}  # cannot be done using list comprehension
+        for annotation in annotations:
+            self._annotation_to_html[annotation] = annotation.html
 
         self.matrix, \
         self.grp_to_genomes = self.__create_coverage_matrix()
 
-        self.grp_to_genes = self.__get_grp_to_genes()
+        self.html_matrix = self.pandas_to_html(table=self.matrix, id='matrix-table')
+        self.__add_footer()
 
-    def get_grp_to_genomes_annogene(self):
-        return {grp: (genomes, self.grp_to_genes[grp]) for grp, genomes in self.grp_to_genomes.items()}
+    def pandas_to_html(self, table: pd.DataFrame, id: str) -> str:
+        tmp = table.__deepcopy__()
+        if type(tmp.columns[0]) == str:
+            tmp.columns = [F'<a href="#header_{grp_id}">{grp_id}</a>' for grp_id in tmp.columns]
+        else:
+            tmp.columns = [self._genome_to_html[g] for g in tmp.columns]
+        tmp.index = [self._annotation_to_html[a] for a in tmp.index]
+        html = tmp.to_html(escape=False)
 
-    def __get_grp_to_genes(self):
-        grp_to_genes = dict()
-        for group_name, genomes in self.grp_to_genomes.items():
-            print(group_name, len(genomes))
-            grp_to_genes[group_name] = []
-            for annotation, is_covered in self.matrix[group_name].items():
-                if is_covered:
-                    genes = self.get_genes(annotation, genomes)
-                    assert len(genomes) <= len(genes), F'There must be at least as many genes as genomes! {annotation}\n{genomes}\n{genes}'
-                    grp_to_genes[group_name].append((annotation, genes))
+        html = html \
+            .replace('border="1" class="dataframe"',
+                     F'id="{id}" class="table table-bordered table-sm white-links"', 1) \
+            .replace('<thead>', '<thead class="thead-dark">', 1) \
+            .replace('<th>g', '<th scope="col">g', len(table.columns))
 
-        return grp_to_genes
+        return html
+
+    def __add_footer(self):
+        footer_covered = ''.join([F'<td>{s}</td>' for s in self.matrix.sum().values])
+        footer_members = ''.join([F'<td>{len(g)}</td>' for g in self.grp_to_genomes.values()])
+
+        self.html_matrix = self.html_matrix \
+            .replace('      <td>True</td>', '      <td style="background-color: black">X</td>') \
+            .replace('      <td>False</td>', '      <td></td>') \
+            .replace('</tbody>',
+                     F"""</tbody><tfoot class="table-dark text-light">
+                    <tr><th scope="row">#covered</th>{footer_covered}</tr>
+                    <tr><th scope="row">#members</th>{footer_members}</tr></tfoot>""", 1)
 
     @staticmethod
     def get_genes(annotation: Annotation, genomes: [Genome]) -> [Gene]:
         return annotation.gene_set.filter(genome__in=genomes).order_by('genome__identifier').prefetch_related('genome__member__strain__taxid')
 
-    def __create_coverage_matrix(self):
+    def get_group_to_table(self) -> dict:
+        return {grp_id: self.__create_group_table(grp_id, genomes) for grp_id, genomes in self.grp_to_genomes.items()}
+
+    def __create_group_table(self, grp_id, genomes) -> str:
+        genome_to_n_genes = dict()
+        for genome in genomes:
+            genome_to_n_genes[genome] = [self.__get_count_gene_tuple(genome, anno) for anno in self.matrix.index]
+        table = pd.DataFrame(genome_to_n_genes)
+        table.index = self.matrix.index
+
+        # remove empty rows
+        def tuple_sum(list_of_tuples):
+            return sum(count for count, genes in list_of_tuples)
+
+        table = table.loc[(table.apply(tuple_sum, axis=1) != 0),]
+
+        # add genes to data-genes
+        table = table.applymap(lambda x: F'<p data-genes="{x[1]}">{x[0]}</p>')
+
+        return self.pandas_to_html(table, id=F'table_{grp_id}')
+
+    def __get_count_gene_tuple(self, genome: Genome, anno: Annotation) -> (int, list):
+        genes = list(anno.gene_set.filter(genome=genome).values_list('identifier', flat=True))
+        genes_to_js = ' '.join(genes)
+        return len(genes), genes_to_js
+
+    def __count_genes(self, genome: Genome, anno: Annotation) -> int:
+        return anno.gene_set.filter(genome=genome).count()
+
+    def __create_coverage_matrix(self) -> (pd.DataFrame, dict):
         pattern_to_genomes = self.create_patterns()
 
         tmp_grp_to_genomes = dict()

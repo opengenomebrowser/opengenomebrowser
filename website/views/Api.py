@@ -340,7 +340,7 @@ class Api:
                     anno_type=annotation.anno_type,
                     anno_type_verbose=annotation.anno_type_verbose,
                     description=annotation.description,
-                    html=annotation.anno_html
+                    html=annotation.html
                 ) for annotation in g.annotations.all().order_by('anno_type')]
         ))
 

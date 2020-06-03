@@ -65,7 +65,7 @@ class Annotation(models.Model):
         return '-'
 
     @property
-    def anno_html(self):
+    def html(self):
         return F'<div class="annotation ogb-tag" data-annotype="{self.anno_type}" data-toggle="tooltip" title="{self.description}">{self.name}</div>'
 
     @staticmethod

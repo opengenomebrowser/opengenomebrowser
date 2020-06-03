@@ -100,7 +100,7 @@ class Member(models.Model):
         return self.taxid.taxscientificname
 
     @property
-    def member_html(self):
+    def html(self):
         tsi = self.taxid.taxscientificname
         return F'<div class="member ogb-tag" data-species="{tsi}" data-toggle="tooltip">{self.identifier}</div>'
 

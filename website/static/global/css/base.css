@@ -2,12 +2,16 @@
     white-space: nowrap;
 }
 
+.navbar .navbar-nav a {
+    padding: .5rem .5rem
+}
+
 @font-face {
     font-family: ogbFont;
     src: url(/static/global/fonts/SansSerifFLF/sansserifbldflf.otf);
 }
 
-@media (min-width: 576px) and (max-width: 800px) {
+@media (max-width: 576px) {
     #ogb-logo-text {
         display: none !important;
     }
@@ -39,7 +43,7 @@
 }
 
 #context-menu .ogb-tag {
-    margin: 0 0 0 0;
+    margin: 3px 3px 3px 3px;
 }
 
 .black-links a {
@@ -48,6 +52,10 @@
 
 .white-links a {
     color: white;
+}
+
+.read-only-div {
+    padding: 6px 6px 6px 6px
 }
 
 /*
