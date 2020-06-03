@@ -11,7 +11,7 @@ data_table = member_table.DataTable({
     pageLength: 25,
     lengthMenu: [[-1, 10, 25, 50, 100, 200, 400, 800, 1600], ["All", 10, 25, 50, 100, 200, 400, 800, 1600]],
     // colReorder: true,
-    "ajax": "http://127.0.0.1:8000/table-ajax/",
+    "ajax": "{% url 'website:member-table-ajax' %}",
     "createdRow": function (row, data, dataIndex) {
         if (data[{{ indexes.representative }}] == "False") {
             console.log(data[4], 'no-rep');

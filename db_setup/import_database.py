@@ -27,7 +27,7 @@ class Importer:
 
     def import_database(self, delete_missing=True, auto_delete_missing=False, reload_orthologs=True):
         strains_path = self.db_path + "/strains"
-        assert os.path.isdir(strains_path)
+        assert os.path.isdir(strains_path), strains_path
 
         # Remove Strain or a Member if it has been removed from the database-folder
         if delete_missing:
