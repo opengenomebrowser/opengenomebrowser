@@ -9,7 +9,7 @@ def index_view(request):
             name='Thomas Roder',
             img='/static/index/images/Thomas.jpg',
             img_cls='circle',
-            role='PhD student',
+            role='PhD candidate',
             href='https://www.bioinformatics.unibe.ch/about_us/team/index_eng.html#person698529',
             did=['Code', 'Concept']
         ),
@@ -25,7 +25,7 @@ def index_view(request):
             name='Rémy Bruggmann',
             img='/static/index/images/Remy.jpg',
             img_cls='circle',
-            role='Supervisor',
+            role='Supervisor, Head of IBU',
             href='https://www.bioinformatics.unibe.ch/about_us/team/index_eng.html#person156979',
             did=['Support', 'Infrastructure']
         ),
@@ -49,7 +49,7 @@ def index_view(request):
             did=['Funding']
         ),
         dict(
-            name='Interfaculty Bioinformatics Unit',
+            name='Interfaculty Bioinformatics Unit (IBU)',
             img='/static/index/images/unibe.png',
             img_cls='square',
             role='University of Bern',
