@@ -1,6 +1,9 @@
+import sys
 import os
 from lib.ncbiblast.ncbi_blast.blast_wrapper import Blast
 from db_setup.MemberLooper import MemberLooper
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
 class MemberLooperMakeBlastDB(MemberLooper):
@@ -29,5 +32,11 @@ class MemberLooperMakeBlastDB(MemberLooper):
 
 
 if __name__ == "__main__":
-    member_looper = MemberLooperMakeBlastDB(db_path='database')
-    member_looper.loop_members()
+    def run(db_path='database'):
+        member_looper = MemberLooperMakeBlastDB(db_path=db_path)
+        member_looper.loop_members()
+
+
+    import fire
+
+    fire.Fire(run)
