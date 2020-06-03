@@ -1,8 +1,11 @@
 #! /usr/bin/python3
+import sys
 import os
 import json
 from progressbar import progressbar  # pip install progressbar2
 from colorama import Fore
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # import django environment to manipulate the Strain and Member classes
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "OpenGenomeBrowser.settings")
