@@ -150,15 +150,30 @@ class TaxID(MPTTModel):
     @staticmethod
     def create_taxid_color_css():
         all_taxids = TaxID.objects.all()
-        basepath = os.path.abspath(F'{settings.BASE_DIR}/website/static/global/css')
-        div_css = open(F'{basepath}/taxid_color.css', 'w')
-        label_css = open(F'{basepath}/taxid_color_label.css', 'w')
+
+        basepaths = [os.path.abspath(F'{settings.BASE_DIR}/website/static/global/css'),
+                     os.path.abspath(F'{settings.BASE_DIR}/static_root/global/css')]
+
+        div_css = ''
+        label_css = ''
+
         for taxid in all_taxids:
-            div_css.write(F'[data-species="{taxid.taxscientificname}"] {{' +
-                          F'background-color: rgb({taxid.color}) !important; ' +
-                          F'color: {"white" if taxid.text_color_white else "black"} !important' +
-                          '}\n')
-            label_css.write(F'[data-species-label="{taxid.taxscientificname}"] {{' +
-                            F'text-shadow: 1px 0 3px rgb({taxid.color}), -1px 0 3px rgb({taxid.color}), 0 1px 3px rgb({taxid.color}), 0 -1px 3px rgb({taxid.color}); '
-                            F'fill: {"white" if taxid.text_color_white else "black"} !important' +
-                            '}\n')
+            div_css += F'[data-species="{taxid.taxscientificname}"] {{' + \
+                       F'background-color: rgb({taxid.color}) !important; ' + \
+                       F'color: {"white" if taxid.text_color_white else "black"} !important' + \
+                       '}\n'
+            label_css += F'[data-species-label="{taxid.taxscientificname}"] {{' + \
+                         F'text-shadow: 1px 0 3px rgb({taxid.color}), -1px 0 3px rgb({taxid.color}), 0 1px 3px rgb({taxid.color}), 0 -1px 3px rgb({taxid.color}); ' + \
+                         F'fill: {"white" if taxid.text_color_white else "black"} !important' + \
+                         '}\n'
+
+        for basepath in basepaths:
+            # ensure parent exists
+            file = F'{basepath}/taxid_color.css'
+            os.makedirs(os.path.dirname(file), exist_ok=True)
+            open(file, 'w').write(div_css)
+
+            # ensure parent exists
+            file = F'{basepath}/taxid_color_label.css'
+            os.makedirs(os.path.dirname(file), exist_ok=True)
+            open(file, 'w').write(label_css)
