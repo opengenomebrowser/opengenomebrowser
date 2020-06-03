@@ -75,22 +75,12 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'OpenGenomeBrowser.wsgi.application'
 
-# Database
-# https://docs.djangoproject.com/en/2.2/ref/settings/#databases
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-#     }
-# }
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'open_genome_browser_db',
         'USER': 'ogb_admin',
-        'PASSWORD': 'd8kla3e7iad',
+        'PASSWORD': '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!',
         'HOST': 'localhost',
         'PORT': '',
     }
@@ -138,7 +128,8 @@ STATIC_ROOT = 'static_root/'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = 'dist/media'
 
-GENOMIC_DATABASE = os.path.join(BASE_DIR, 'database')
+GENOMIC_DATABASE = '/path/to/fb'
+assert os.path.isdir(GENOMIC_DATABASE), F"The path in settings.py doesn't point to a folder: {GENOMIC_DATABASE}"
 GENOMIC_DATABASE_BN = os.path.basename(GENOMIC_DATABASE)
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
