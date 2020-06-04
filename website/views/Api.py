@@ -332,7 +332,7 @@ class Api:
 
         return JsonResponse(dict(
             member=g.genome.identifier,
-            member_html=g.genome.member.member_html,
+            member_html=g.genome.member.html,
             identifier=g.identifier,
             annotations=[
                 dict(

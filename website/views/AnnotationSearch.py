@@ -7,13 +7,14 @@ from website.models.Annotation import Annotation
 
 
 def annotation_view(request):
-    context = {}
+    context = dict(title='Annotation search')
 
     if 'members' in request.GET:
         context['key_members'] = request.GET['members'].split(' ')
 
     if 'annotations' in request.GET:
-        context['key_annotations'] = [ann.replace('!!!', ' ') for ann in request.GET['annotations'].split(' ')]
+        annotation_name_list = [ann.replace('!!!', ' ') for ann in request.GET['annotations'].split(' ')]
+        context['key_annotations'] = Annotation.objects.filter(name__in=annotation_name_list)
 
     return render(request, 'website/annotation_search.html', context)
 

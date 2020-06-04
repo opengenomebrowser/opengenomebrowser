@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-    <title>genomeDBmanager - projectname</title>
+    <title>{% if title %}{{ title }} - {% endif %}OpenGenomeBrowser</title>
     <link rel="shortcut icon" type="image/svg+xml" href="{% static 'global/customicons/ogb-circle.svg' %}">
 
     <!-- jquery 3.4.1 -->
@@ -71,7 +71,7 @@
             </li>
             <li class="nav-item">
                 <a class="nav-link text-nowrap {% if request.resolver_match.url_name == 'annotation-search' %}active{% endif %}"
-                   href="{% url 'website:annotation-search' %}">Annotation Search</a>
+                   href="{% url 'website:annotation-search' %}">Annotation search</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link text-nowrap {% if request.resolver_match.url_name == 'blast' %}active{% endif %}" href="{% url 'website:blast' %}">Blast</a>

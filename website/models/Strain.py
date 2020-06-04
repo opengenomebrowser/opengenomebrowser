@@ -35,6 +35,10 @@ class Strain(models.Model):
         return self.name
 
     @property
+    def html(self):
+        return F'<div class="strain ogb-tag" data-species="{self.taxid.taxscientificname}" data-toggle="tooltip">{self.name}</div>'
+
+    @property
     def get_tag_html(self) -> str:
         html = [tag.get_html_badge() for tag in self.tags.all().order_by('tag')]
         return " ".join(html)

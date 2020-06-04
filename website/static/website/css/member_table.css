@@ -3,6 +3,7 @@ html {
     padding: 10px 10px;
 }
 
+/* sidebar */
 .sortable {
     -webkit-user-select: none;
     -moz-user-select: none;
@@ -144,7 +145,7 @@ table thead {
     font-size: 1rem;
 }
 
-table thead tr th{
+table thead tr th {
     vertical-align: middle !important;
 }
 
@@ -159,7 +160,7 @@ table tbody td {
 }
 
 .yadcf-filter-range-date {
-	width: 100px;
+    width: 100px;
 }
 
 .sorting {
@@ -174,16 +175,33 @@ table tbody td {
     text-align: center;
 }
 
+/* yacdf */
 .yadcf-filter-wrapper .yadcf-filter {
     max-width: 70px !important;
 }
 
-.select2-search__field {
-    /*max-width: 80px;*/
+.yadcf-filter {
+    background: white;
+    border: 1px solid #aaa;
+    border-radius: 4px;
+    cursor: text;
+    box-sizing: border-box;
+    font-size: 100%;
+    padding-left: 5px;
+    line-height: 2rem;
 }
 
 .yadcf-filter-wrapper {
     white-space: nowrap;
+}
+
+.select2-search__field {
+	/*margin-top: 0;*/
+}
+
+.select2-container--default {
+    width: min-content !important;
+    min-width: 186.617px
 }
 
 .select2-results__options {
@@ -208,5 +226,5 @@ table tbody td {
     white-space: nowrap;
     vertical-align: baseline;
     border-radius: .25rem;
-    transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+    transition: color .15s ease-in-out, background-color .15s ease-in-out, border-color .15s ease-in-out, box-shadow .15s ease-in-out;
 }

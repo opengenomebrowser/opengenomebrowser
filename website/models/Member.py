@@ -101,8 +101,7 @@ class Member(models.Model):
 
     @property
     def html(self):
-        tsi = self.taxid.taxscientificname
-        return F'<div class="member ogb-tag" data-species="{tsi}" data-toggle="tooltip">{self.identifier}</div>'
+        return F'<div class="member ogb-tag" data-species="{self.taxid.taxscientificname}" data-toggle="tooltip">{self.identifier}</div>'
 
     @property
     def html_warning_stripes(self):

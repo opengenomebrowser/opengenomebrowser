@@ -15,9 +15,11 @@ class MemberDetailView(DetailView):
         return Member._meta.get_field(attr).verbose_name
 
     def get_context_data(self, **kwargs):
-        context = super(MemberDetailView, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
 
         m: Member = self.object
+
+        context['title'] = m.identifier
 
         key_parameters = ['is_representative', 'contaminated', 'isolation_date', 'growth_condition',
                           'geographical_coordinates', 'geographical_name']

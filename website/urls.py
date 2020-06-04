@@ -61,4 +61,8 @@ urlpatterns = [
     path('api/dna-feature-viewer/', Api.dna_feature_viewer, name='api-dna-feature-viewer'),
     path('api/get-gene/', Api.get_gene, name='api-get-gene'),
     path('api/get-tree/', Api.get_tree, name='api-get-tree'),
+
+    # ex /test-click-menu/
+    path('test-click-menu/', ClickMenu.click_view, name='test-click-menu'),
+
 ]

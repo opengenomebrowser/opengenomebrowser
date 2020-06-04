@@ -44,6 +44,10 @@ class TaxID(MPTTModel):
         text_color = 'white' if self.text_color_white else 'black'
         return F'background-color:rgb({self.color});color:{text_color}'
 
+    @property
+    def html(self):
+        return F'<div class="taxid ogb-tag" data-species="{self.taxscientificname}" data-toggle="tooltip">{self.taxscientificname}</div>'
+
     def get_child_taxids(self) -> QuerySet:
         return TaxID.objects.get_queryset_descendants(TaxID.objects.filter(id=self.id), include_self=True)
 

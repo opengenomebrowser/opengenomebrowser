@@ -12,3 +12,4 @@ from .Trees import trees
 from .Blast import blast_view
 from .Api import Api
 from .Download import download_view
+from .ClickMenu import click_view

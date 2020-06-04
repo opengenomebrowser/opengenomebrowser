@@ -14,14 +14,6 @@
     <script src="{% static 'global/js/bokeh-tables-2.0.1.min.js' %}"></script>
     <script src="{% static 'global/js/bokeh-widgets-2.0.1.min.js' %}"></script>
 
-    <style>
-
-        .annotation {
-            white-space: normal;
-        }
-
-    </style>
-
 {% endblock %}
 
 {% block sidebar %}
@@ -43,7 +35,7 @@
 {% endblock %}
 
 {% block body %}
-        <!-- Breadcrumb -->
+    <!-- Breadcrumb -->
     <div class="breadcrumb-push"></div>
     <nav aria-label="breadcrumb" class="breadcrumb-fixed">
         <ol class="breadcrumb">
@@ -94,10 +86,6 @@
             <hr class="featurette-divider">
 
             <h3>Annotations</h3>
-            {% for anno in gene.annotations.all %}
-                {{ anno.anno_type_verbose }} : {{ anno.name }}  : {{ anno.description }}<br>
-            {% endfor %}
-
             <!-- Annotations: Table -->
             <table class="table no-bottom-padding">
                 <thead class="thead-dark">
@@ -108,15 +96,17 @@
                 </tr>
                 </thead>
                 <tbody>
-                {% for anno in gene.annotations.all %}
-                    <tr>
-                        <th scope="row">
-                            <div class="annotation"
-                                 data-annotype="{{ anno.anno_type }}">{{ anno.anno_type_verbose }}</div>
-                        </th>
-                        <td>{{ anno.name }}</td>
-                        <td>{{ anno.description }}</td>
-                    </tr>
+                {% for anno_type, annos in annotations.items %}
+                    {% for anno in annos %}
+                        <tr>
+                            <th scope="row">
+                                <div class="annotation"
+                                     data-annotype="{{ anno.anno_type }}">{{ anno.anno_type_verbose }}</div>
+                            </th>
+                            <td>{{ anno.html|safe }}</td>
+                            <td>{{ anno.description }}</td>
+                        </tr>
+                    {% endfor %}
                 {% endfor %}
                 </tbody>
             </table>

@@ -1,4 +1,4 @@
-from website.models import Gene
+from website.models import Gene, Annotation
 from django.views.generic import DetailView
 import re
 
@@ -14,6 +14,8 @@ class GeneDetailView(DetailView):
 
         g: Gene = self.object
 
+        context['title'] = g.identifier
+
         # Convert sequences to HTML for colorization. See also stylesheet 'sequence-viewer.css'
         context['fasta_nucleotide'] = ''.join([F'<b class="{x}">{x}</b>' for x in g.fasta_nucleotide()])
 
@@ -21,6 +23,14 @@ class GeneDetailView(DetailView):
             context['fasta_protein'] = ''.join([F'<b class="{x}">{x}</b>' for x in g.fasta_protein()])
         else:
             context['fasta_protein'] = '-- no protein sequence --'
+
+        annotations = g.annotations.order_by('name').reverse()  # reverse because interesting GO-terms tend to have high values
+
+        annotations = {anno_type: annotations.filter(anno_type=anno_type) for anno_type in Annotation.AnnotationTypes}
+
+        annotations = {anno_type: annos for anno_type, annos in annotations.items() if len(annos) > 0}
+
+        context['annotations'] = annotations
 
         # Find previous and next gene
         match = re.search('\d+$', g.identifier)

@@ -14,8 +14,9 @@ def member_list_view(request):
     for entry in default_columns:
         yadcf_columns.remove(entry)
 
-    context = {
-        'yadcf_columns': yadcf_columns,
-        'default_columns': default_columns
-    }
+    context = dict(
+        title='Member overview',
+        yadcf_columns=yadcf_columns,
+        default_columns=default_columns
+    )
     return render(request, 'website/member_table.html', context)

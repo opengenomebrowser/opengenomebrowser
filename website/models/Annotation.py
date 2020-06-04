@@ -1,11 +1,13 @@
+import re
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from binary_file_search.BinaryFileSearch import BinaryFileSearch
 from lib.orthofinder_tools.orthogroup_to_gene_name import OrthogroupToGeneName
+from lib.gene_ontology.gene_ontology import GeneOntology
 from enum import Enum
-import re
-from django.core.exceptions import ValidationError
 from OpenGenomeBrowser import settings
+
+gene_ontology = GeneOntology()
 
 
 class AnnotationRegex(Enum):
@@ -36,14 +38,14 @@ class Annotation(models.Model):
     name = models.CharField(max_length=200, unique=True, primary_key=True)
 
     class AnnotationTypes(models.TextChoices):
+        PRODUCT = 'GP', _('Gene Product')
         GENECODE = 'GC', _('Gene Code')
+        ORTHOLOG = "OL", _('Ortholog')
         CUSTOM = 'CU', _('Custom Annotation')
-        ENZYMECOMMISSION = 'EC', _('Enzyme Commission Number')
         KEGGGENE = 'KG', _('Kegg Gene')
         KEGGREACTION = 'KR', _('Kegg Reaction')
+        ENZYMECOMMISSION = 'EC', _('Enzyme Commission Number')
         GENEONTOLOGY = 'GO', _('Gene Ontology Number')
-        ORTHOLOG = "OL", _('Ortholog')
-        PRODUCT = 'GP', _('Gene Product')
 
     anno_type = models.CharField(
         max_length=2,
@@ -54,15 +56,24 @@ class Annotation(models.Model):
     def anno_type_verbose(self):
         return self.get_anno_type_display()
 
+    # ensure these things are only calculated once
+    _descr = None
+
     @property
     def description(self) -> str:
+        if self._descr:
+            return self._descr
+        else:
+            self._descr = '-'
         if self.anno_type == self.AnnotationTypes.KEGGGENE.value:
-            return self._get_description_from_file(filename='ko.tsv', query=self.name)
-        if self.anno_type == self.AnnotationTypes.KEGGREACTION.value:
-            return self._get_description_from_file(filename='rn.tsv', query=self.name)
-        if self.anno_type == self.AnnotationTypes.ORTHOLOG.value:
-            return self._get_description_from_file(filename='Orthogroup_BestNames.tsv', query=self.name)
-        return '-'
+            self._descr = self._get_description_from_file(filename='ko.tsv', query=self.name)
+        elif self.anno_type == self.AnnotationTypes.KEGGREACTION.value:
+            self._descr = self._get_description_from_file(filename='rn.tsv', query=self.name)
+        elif self.anno_type == self.AnnotationTypes.ORTHOLOG.value:
+            self._descr = self._get_description_from_file(filename='Orthogroup_BestNames.tsv', query=self.name)
+        elif self.anno_type == self.AnnotationTypes.GENEONTOLOGY.value:
+            self._descr = self._get_description_from_file(filename='go.obo', query=self.name)
+        return self._descr
 
     @property
     def html(self):
@@ -82,7 +93,8 @@ class Annotation(models.Model):
             return Annotation._get_description_from_file(
                 filename='rn.tsv', query=query.upper())
         if AnnotationRegex.GENEONTOLOGY.match_regex.match(query):
-            return '-'
+            return Annotation._get_description_from_file(
+                filename='go.obo', query=query.upper())
         if AnnotationRegex.ORTHOLOG.match_regex.match(query):
             return Annotation._get_description_from_file(
                 filename='Orthogroup_BestNames.tsv', query=query.upper())
@@ -100,6 +112,12 @@ class Annotation(models.Model):
 
     @staticmethod
     def _get_description_from_file(filename: str, query: str):
+        if filename == 'go.obo':
+            try:
+                return gene_ontology.search(query=query)
+            except KeyError:
+                return '-'
+
         filename_settings = {
             'ko.tsv': ('ko:', 'lib/custom_kegg/data/rest_data/ko.tsv'),
             'rn.tsv': ('rn:', 'lib/custom_kegg/data/rest_data/rn.tsv'),

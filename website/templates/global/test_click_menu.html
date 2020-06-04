@@ -1,0 +1,91 @@
+{% extends 'global/base.html' %}
+{% load static %}
+
+{% block styles %}
+    <!-- Site-specific css/js -->
+    <link rel="stylesheet" type="text/css" href="{% static 'global/css/annotype_color.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'global/css/taxid_color.css' %}"
+          id="taxid-color-stylesheet"/>
+
+
+    <style>
+        .test-div {
+            display: flex;
+            margin-top: 3rem;
+            padding: 1rem 1rem;
+            justify-content: center;
+        }
+    </style>
+
+{% endblock %}
+
+{% block sidebar %}
+
+    <div class="sidebar-subcontent form-check form-check-inline">
+        <label class="form-check-label" for="colorize-tax-checkbox"><a>Colorize taxonomy?</a></label>
+        <input class="form-check-input" type="checkbox" id="colorize-tax-checkbox" onclick="toggle_colorize_tax()"
+               checked>
+    </div>
+
+{% endblock %}
+
+{% block body %}
+
+
+    <section>
+
+        <div class="container">
+            <div class="test-div border border-primary">
+                {% for x in taxids %}
+                    {{ x.html| safe }}
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="test-div border border-primary">
+                {% for x in annotations %}
+                    {{ x.html| safe }}
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="test-div border border-primary">
+                {% for x in members %}
+                    {{ x.html| safe }}
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="test-div border border-primary">
+                {% for x in strains %}
+                    {{ x.html| safe }}
+                {% endfor %}
+            </div>
+        </div>
+
+    </section>
+
+
+{% endblock %}
+
+{% block end %}
+
+    <script>
+
+        "use strict";
+
+        $(document).ready(function () {
+            $('[data-toggle="tooltip"]').tooltip({
+                title: function () {
+                    return $(this).attr('data-species');
+                }
+            });
+        });
+
+    </script>
+
+
+{% endblock %}

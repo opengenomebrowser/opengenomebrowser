@@ -87,7 +87,7 @@ def blast_submit(request):
 
 
 def blast_view(request):
-    context = {}
+    context = dict(title='Blast')
 
     context['form'] = BlastForm()
 

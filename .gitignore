@@ -80,3 +80,5 @@ website/static/global/css/taxid_color.css
 /OpenGenomeBrowser/settings.py
 /website/static/kegg/svg
 
+/lib/gene_ontology/go.obo
+/lib/gene_ontology/go.obo.converted
