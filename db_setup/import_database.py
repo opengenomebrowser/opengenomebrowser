@@ -227,9 +227,11 @@ class Importer:
 def main():
     si = Importer()
     # si.reset_database(auto_delete=True)
-    # si.import_database(auto_delete_missing=False, reload_orthologs=True)
+    si.import_database(auto_delete_missing=False, reload_orthologs=True)
     si.load_kegg_maps(reload_data=False, re_render=True)  # if all false: only recreate KEGG map database entries
 
+    # TODO: hook install_orthofinder.py
+    # TODO: hook notice if oat is missing
 
 if __name__ == "__main__":
     main()
