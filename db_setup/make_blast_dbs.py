@@ -1,9 +1,10 @@
 import sys
 import os
-from lib.ncbiblast.ncbi_blast.blast_wrapper import Blast
-from db_setup.MemberLooper import MemberLooper
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from db_setup.MemberLooper import MemberLooper
+from lib.ncbiblast.ncbi_blast.blast_wrapper import Blast
 
 
 class MemberLooperMakeBlastDB(MemberLooper):
