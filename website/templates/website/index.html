@@ -13,9 +13,21 @@
 
 {% block body %}
     <!-- full logo -->
-    <div id="full-logo-container">
-        <img src="{% static 'global/customicons/ogb-full.svg' %}" id="ogb-logo-full">
+
+    <div>
+        <a href="{% url 'website:members' %}">
+            <div class="logo-container">
+                <img src="{% static 'global/customicons/ogb-full.svg' %}" id="ogb-logo-full">
+            </div>
+        </a>
+
+        <div class=" logo-container black-links" style="padding-top:3rem">
+            <a href="{% url 'website:members' %}">
+                click here to go to member overview
+            </a>
+        </div>
     </div>
+
 
     <div class="container">
 
@@ -29,8 +41,10 @@
                         <div class="row no-gutters">
                             <div class="card-img-top {{ person.img_cls }}">
                                 <div class="img-container">
-                                    <img src="{{ person.img }}"
-                                         alt="{{ person.name }}">
+                                    <a href="{{ person.href }}">
+                                        <img src="{{ person.img }}"
+                                             alt="{{ person.name }}">
+                                    </a>
                                 </div>
                             </div>
                             <div class="card-body">
@@ -61,8 +75,10 @@
                         <div class="row no-gutters">
                             <div class="card-img-top {{ institution.img_cls }}">
                                 <div class="img-container">
-                                    <img src="{{ institution.img }}"
-                                         alt="{{ institution.name }}">
+                                    <a href="{{ institution.href }}">
+                                        <img src="{{ institution.img }}"
+                                             alt="{{ institution.name }}">
+                                    </a>
                                 </div>
                             </div>
                             <div class="card-body">
@@ -93,8 +109,9 @@
                         <div class="row no-gutters">
                             <div class="card-img-top {{ software.img_cls }}">
                                 <div class="img-container">
-                                    <img src="{{ software.img }}"
-                                         alt="{{ software.name }}">
+                                    <a href="{{ software.href }}">
+                                        <img src="{{ software.img }}"
+                                             alt="{{ software.name }}">
                                 </div>
                             </div>
                             <div class="card-body">

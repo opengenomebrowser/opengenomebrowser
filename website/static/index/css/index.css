@@ -1,12 +1,12 @@
-#full-logo-container {
+.logo-container {
     display: flex;
     align-items: center;
     flex-direction: column;
-    padding: 15% 15%;
+    margin: 5% 5%;
 }
 
 #ogb-logo-full {
-    width: 85%;
+    width: 50%;
 }
 
 .card-deck {
@@ -20,7 +20,6 @@
 .row {
     display: flex;
     justify-content: center
-
 }
 
 .card .list-group-item {
