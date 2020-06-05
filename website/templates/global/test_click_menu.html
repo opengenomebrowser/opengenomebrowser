@@ -4,10 +4,9 @@
 {% block styles %}
     <!-- Site-specific css/js -->
     <link rel="stylesheet" type="text/css" href="{% static 'global/css/annotype_color.css' %}">
-    <link rel="stylesheet" type="text/css" href="{% static 'global/css/taxid_color.css' %}"
-          id="taxid-color-stylesheet"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'global/css/taxid_color.css' %}" id="taxid-color-stylesheet"/>
 
-
+    <!-- new js -->
     <style>
         .test-div {
             display: flex;
@@ -23,8 +22,7 @@
 
     <div class="sidebar-subcontent form-check form-check-inline">
         <label class="form-check-label" for="colorize-tax-checkbox"><a>Colorize taxonomy?</a></label>
-        <input class="form-check-input" type="checkbox" id="colorize-tax-checkbox" onclick="toggle_colorize_tax()"
-               checked>
+        <input class="form-check-input" type="checkbox" id="colorize-tax-checkbox" onclick="toggle_colorize_tax()" checked>
     </div>
 
 {% endblock %}
@@ -66,6 +64,14 @@
             </div>
         </div>
 
+        <div class="container">
+            <div class="test-div border border-primary">
+                {% for x in genes %}
+                    {{ x.html| safe }}
+                {% endfor %}
+            </div>
+        </div>
+
     </section>
 
 
@@ -82,7 +88,15 @@
                 title: function () {
                     return $(this).attr('data-species');
                 }
-            });
+            }).each(function () {
+                if ($(this).hasClass('member')) {
+                    this.setAttribute('onclick', `showMemberClickMenu(event)`)
+                } else if ($(this).hasClass('annotation')) {
+                    this.setAttribute('onclick', `showAnnotationClickMenu(event, '${this.textContent}')`)
+                } else if ($(this).hasClass('gene')) {
+                    this.setAttribute('onclick', `showGeneClickMenu(event, '${this.textContent}')`)
+                }
+            })
         });
 
     </script>

@@ -41,6 +41,10 @@ class Genome(models.Model):
         return self.identifier
 
     @property
+    def html(self):
+        return F'<div class="member ogb-tag" data-species="{self.member.taxid.taxscientificname}" data-toggle="tooltip">{self.identifier}</div>'
+
+    @property
     def strain(self):
         return self.member.strain
 

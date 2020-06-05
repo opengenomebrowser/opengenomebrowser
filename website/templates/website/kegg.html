@@ -337,7 +337,7 @@
 
         // overwrite kegg-svg-lib.js' showKeggMenu function
         function showKeggMenu(event, element) {
-            let cm = new ContextMenu(event, element, 'context-menu');
+            let cm = new ContextMenu(event, 'kegg-context-menu');
 
             // apply gradient info
             let has_gradient_info = element.hasAttribute('data-strains-have') && element.getAttribute('data-strains-have') !== "";

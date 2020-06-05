@@ -29,9 +29,9 @@ class Gene(models.Model):
         return self.identifier
 
     @property
-    def gene_html(self):
+    def html(self):
         tsi = self.genome.member.taxscientificname
-        return F'<span class="gene ogb-tag" data-species="{tsi}" data-toggle="tooltip">{self.identifier}</span>'
+        return F'<div class="gene ogb-tag" data-species="{tsi}" data-toggle="tooltip">{self.identifier}</div>'
 
     def gc_content(self) -> float:
         return GC(self.fasta_nucleotide())

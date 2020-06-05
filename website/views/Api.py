@@ -330,10 +330,29 @@ class Api:
 
         g = Gene.objects.get(identifier=gene_identifier)
 
+        def jsonify_annotation(a: Annotation):
+            return dict(
+                name=a.name,
+                anno_type=a.anno_type,
+                anno_type_verbose=a.anno_type_verbose,
+                description=a.description,
+                html=a.html
+            )
+
+        annotype_to_gene = {}
+        for annotation in g.annotations.all():
+            if annotation.anno_type not in annotype_to_gene:
+                annotype_to_gene[annotation.anno_type] = [jsonify_annotation(annotation)]
+            else:
+                annotype_to_gene[(annotation.anno_type)].append(jsonify_annotation(annotation))
+
         return JsonResponse(dict(
             member=g.genome.identifier,
             member_html=g.genome.member.html,
+            species=g.genome.taxid.taxscientificname,
+            taxid=g.genome.taxid.id,
             identifier=g.identifier,
+            annotype_to_gene=annotype_to_gene,
             annotations=[
                 dict(
                     name=annotation.name,

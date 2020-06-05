@@ -1,5 +1,6 @@
 from website.models import TaxID
 from django.views.generic import DetailView
+from django.shortcuts import redirect
 
 
 class TaxIDDetailView(DetailView):
@@ -16,3 +17,10 @@ class TaxIDDetailView(DetailView):
         context['title'] = t.taxscientificname
 
         return context
+
+    @staticmethod
+    def redirect_taxname(request, slug):
+
+        t = TaxID.objects.get(taxscientificname=slug)
+
+        return redirect(F'/taxid/{t.id}')

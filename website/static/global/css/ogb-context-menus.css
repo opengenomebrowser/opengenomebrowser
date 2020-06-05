@@ -1,0 +1,14 @@
+.ogb-click-menu {
+    background-color: white;
+    padding: .5rem 0;
+    border: 1px solid rgba(0, 0, 0, .15);
+    display: flex;
+    flex-direction: column;
+    max-width: 400px;
+    min-width: 250px;
+
+}
+
+.context-menu-header {
+    font-weight: bold;;
+}

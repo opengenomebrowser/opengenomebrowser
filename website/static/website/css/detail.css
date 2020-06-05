@@ -69,3 +69,8 @@
     margin-left: 1px;
     margin-right: 1px;
 }
+
+.annotation-container {
+    display: inline-flex;
+    flex-wrap: wrap;
+}

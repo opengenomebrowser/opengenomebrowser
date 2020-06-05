@@ -102,6 +102,15 @@ convert hex (e.g. #2980b9) to filter: https://codepen.io/sosuke/pen/Pjoqqp
     filter: invert(39%) sepia(80%) saturate(459%) hue-rotate(160deg) brightness(96%) contrast(93%); /* #2980b9 */
 }
 
+.context-menu-icon-taxid::before {
+    content: url("/static/global/customicons/taxid.svg");
+    filter: invert(39%) sepia(80%) saturate(459%) hue-rotate(160deg) brightness(96%) contrast(93%); /* #2980b9 */
+}
+
+.context-menu-icon-gene::before {
+    content: url("/static/global/customicons/gene.svg");
+    filter: invert(39%) sepia(80%) saturate(459%) hue-rotate(160deg) brightness(96%) contrast(93%); /* #2980b9 */
+}
 
 .context-menu-icon::before {
     position: absolute;

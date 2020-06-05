@@ -1,0 +1,94 @@
+{% extends 'global/base.html' %}
+{% load static %}
+
+{% block styles %}
+    <!-- Site-specific css/js -->
+    <link rel="stylesheet" type="text/css" href="{% static 'website/css/detail.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'global/css/annotype_color.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'global/css/taxid_color.css' %}">
+
+{% endblock %}
+
+{% block sidebar %}
+
+    <div class="sidebar-subcontent form-check form-check-inline">
+        <label class="form-check-label" for="colorize-sequence-checkbox"><a>Colorize sequences?</a></label>
+        <input class="form-check-input" type="checkbox" id="colorize-sequence-checkbox"
+               onclick="toggle_colorize_sequence()">
+    </div>
+
+
+{% endblock %}
+
+{% block body %}
+
+    <div class="body-push"></div>
+
+    <section>
+
+        <!-- title -->
+        <div class="container black-links">
+            <!-- annotation -->
+            <span class="type-label">annotation:</span>
+            <span class="h1">{{ annotation.name }}</span>
+            <!-- anno_type -->
+            <span class="type-label">type:</span>
+            <span class="h2" data-annotype="{{ annotation.anno_type }}">{{ annotation.get_anno_type_display }}</span>
+
+        </div>
+
+        <div class="container">
+            <hr class="featurette-divider">
+
+            <h3>Members that cover the annotation</h3>
+
+            <table class="table table-bordered table-sm white-links">
+                <thead class="thead-dark">
+                <tr>
+                    <th>Member</th>
+                    <th style="width: min-content">Genes</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for genome, genes in genome_to_gene.items %}
+                    <tr>
+                        <td>{{ genome.html|safe }}</td>
+                        <td>
+                            <div class="annotation-container">{% for gene in genes %}{{ gene.html|safe }}{% endfor %}</div>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            {% if capped %}<span> (capped at 2000 genes)</span>{% endif %}
+
+        </div>
+
+    </section>
+
+{% endblock %}
+
+{% block end %}
+    <script>
+        $(document).ready(function () {
+            $('.member').tooltip({
+                title: function () {
+                    return $(this).attr('data-species');
+                }
+            }).each(function () {
+                this.setAttribute('onclick', `showMemberClickMenu(event)`)
+            })
+
+            $('.gene').tooltip({
+                title: function () {
+                    return $(this).attr('data-species');
+                }
+            }).each(function () {
+                this.setAttribute('onclick', `showGeneClickMenu(event)`)
+            })
+
+        });
+
+
+    </script>
+{% endblock %}

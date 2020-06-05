@@ -24,6 +24,8 @@ urlpatterns = [
 
     # ex: /taxid/{taxid}
     path('taxid/<str:slug>/', TaxIDDetailView.as_view(), name='taxid'),
+    # ex: /taxname/{taxscientificname}
+    path('taxname/<str:slug>/', TaxIDDetailView.redirect_taxname, name='taxname'),
 
     # ex: /gene/{name}
     path('gene/<str:slug>/', GeneDetailView.as_view(), name='gene'),
@@ -33,6 +35,9 @@ urlpatterns = [
 
     # ex: /trees/?members={strain1}+{strain2}
     path('trees/', Trees.trees, name='trees'),
+
+    # ex: /annotation/{name}
+    path('annotation/<str:slug>/', AnnotationDetailView.as_view(), name='annotation'),
 
     # ex: /annotation-search/?annotations={K01626}+{EC:4.4.4.4}&members={strain1}+{strain2}
     path('annotation-search/', AnnotationSearch.annotation_view, name='annotation-search'),

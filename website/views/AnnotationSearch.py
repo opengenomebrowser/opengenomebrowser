@@ -14,7 +14,7 @@ def annotation_view(request):
 
     if 'annotations' in request.GET:
         annotation_name_list = [ann.replace('!!!', ' ') for ann in request.GET['annotations'].split(' ')]
-        context['key_annotations'] = Annotation.objects.filter(name__in=annotation_name_list)
+        context['key_annotations'] = Annotation.objects.filter(name__in=annotation_name_list).values_list('name', flat=True)
 
     return render(request, 'website/annotation_search.html', context)
 

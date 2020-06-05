@@ -134,7 +134,7 @@ let CopyToClipboard = function (text, fallback) {
 
  */
 class ContextMenu {
-    constructor(event) {
+    constructor(event, menu_id) {
         console.log('run', event, 'ev')
         if (Array.isArray(event)) {
             console.log('create context ref element', event)
@@ -146,7 +146,7 @@ class ContextMenu {
             event.stopPropagation()
             this.target = event.target
         }
-        this.menu_id = 'context-menu';
+        this.menu_id = menu_id;
         this.createMenu(this.menu_id);
         this.dropdown = $('#' + this.menu_id);
         this.popper = null;
@@ -218,15 +218,13 @@ class ContextMenu {
         $(document).on('click.context-menu-event', function (e) {
             // console.log('context-menu listener speaking. target:', e.target);
 
-            if (e.altKey || e.metaKey || $('#context-menu').has(e.target).length == 1 || $('#context-menu').is(e.target)) {
+            if (e.altKey || e.metaKey || $('#' + menu_id).has(e.target).length == 1 || $('#' + menu_id).is(e.target)) {
                 // ignore clicks with alt or meta keys
                 // ignore clicks on dropdown
             } else {
                 // hide div
                 console.log('hide context menu')
                 mydropdown.hide();
-                // destroy listener
-                $(this).off('click.context-menu-event');
             }
         });
     };
@@ -268,7 +266,7 @@ let ShowMemberContextMenu = function (event, member, siblings = 'auto') {
         assert(Array.isArray(siblings), 'This function expects an array, a JQuery selector or nothing!!')
     }
 
-    let cm = new ContextMenu(event);
+    let cm = new ContextMenu(event, 'member-context-menu');
 
     // list of elements to click on
     cm.appendHeader(member);
@@ -376,7 +374,7 @@ let ShowAnnotationContextMenu = function (event, annotation, siblings = 'auto') 
         assert(Array.isArray(siblings), 'This function expects an array, a JQuery selector or nothing!!')
     }
 
-    let cm = new ContextMenu(event);
+    let cm = new ContextMenu(event, 'annotation-context-menu');
 
     // list of elements to click on
     cm.appendHeader(annotation);
@@ -429,7 +427,7 @@ let ShowGeneContextMenu = function (event, gene_identifier) {
     console.log('ShowGeneContextMenu gene:', event, gene_identifier);
 
     // initiate context menu
-    let cm = new ContextMenu(event);
+    let cm = new ContextMenu(event, 'gene-context-menu');
 
     // list of elements to click on
     cm.appendHeader(gene_identifier);
