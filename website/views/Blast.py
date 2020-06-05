@@ -1,7 +1,7 @@
 import os
 from django.shortcuts import render, HttpResponse, HttpResponseRedirect
 from OpenGenomeBrowser import settings
-from website.models.Genome import Genome
+from website.models.GenomeContent import GenomeContent
 from django.conf import settings
 # from dal import autocomplete
 from django.http import HttpResponseBadRequest
@@ -25,7 +25,7 @@ choice_to_settings = dict(
 # https://django-autocomplete-light.readthedocs.io/en/master/tutorial.html
 # class GenomeAutocomplete(autocomplete.Select2QuerySetView):
 #     def get_queryset(self):
-#         qs = Genome.objects.all()
+#         qs = GenomeContent.objects.all()
 #
 #         if self.q:
 #             qs = qs.filter(identifier__istartswith=self.q)
@@ -35,10 +35,10 @@ choice_to_settings = dict(
 
 class BlastForm(forms.Form):
     class Meta:
-        model = Genome
+        model = GenomeContent
         fields = ('__all__')
 
-    members = forms.CharField(widget=forms.Textarea(attrs={'cols': '40', 'rows': '1'}))
+    genomes = forms.CharField(widget=forms.Textarea(attrs={'cols': '40', 'rows': '1'}))
 
     blast_type = forms.ChoiceField(choices=[("blastp", "blastp: protein -> protein cds"),
                                             ("blastn_ffn", "blastn: nucleotides -> nucleotide cds"),
@@ -50,13 +50,13 @@ class BlastForm(forms.Form):
     blast_input = forms.CharField(
         widget=forms.Textarea(attrs=({'style': 'font-family: Courier', 'spellcheck': 'false'})))
 
-    def clean_members(self):
+    def clean_genomes(self):
         """Turn comma separated identifier string into set of Genome objects"""
-        members = set(self.cleaned_data['members'].split(','))
-        found_members = set(Genome.objects.filter(identifier__in=members))
-        if len(members) != len(found_members):
-            raise ValidationError(_('Some members are invalid!'))
-        return found_members
+        genomes = set(self.cleaned_data['genomes'].split(','))
+        found_genomes = set(GenomeContent.objects.filter(identifier__in=genomes))
+        if len(genomes) != len(found_genomes):
+            raise ValidationError(_('Some genomes are invalid!'))
+        return found_genomes
 
 
 def blast_submit(request):
@@ -76,8 +76,8 @@ def blast_submit(request):
 
     file_type = choice_to_settings[blast_type]['file_type']
 
-    fasta_files = [os.path.join(settings.GENOMIC_DATABASE_BN, getattr(genome.member, file_type)(relative=False))
-                   for genome in cd['members']]
+    fasta_files = [os.path.join(settings.GENOMIC_DATABASE_BN, getattr(genome.genome, file_type)(relative=False))
+                   for genome in cd['genomes']]
 
     print(blast_type, blast_algorithm, query_type, db_type, fasta_files)
 
@@ -91,10 +91,10 @@ def blast_view(request):
 
     context['form'] = BlastForm()
 
-    if 'members' in request.GET:
-        key_members = request.GET['members'].split(' ')
-        key_members = ','.join(key_members)
-        context['form'] = BlastForm(dict(members=key_members, blast_type='blastp', blast_input='>'))
+    if 'genomes' in request.GET:
+        key_genomes = request.GET['genomes'].split(' ')
+        key_genomes = ','.join(key_genomes)
+        context['form'] = BlastForm(dict(genomes=key_genomes, blast_type='blastp', blast_input='>'))
     else:
         context['form'] = BlastForm()
 

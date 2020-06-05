@@ -45,7 +45,7 @@
 
         </div>
 
-        <!-- strains and members -->
+        <!-- strains and genomes -->
         <div class="container black-links">
             <ul>
                 {% for strain in taxid.get_child_strains %}
@@ -53,10 +53,10 @@
                     <li><span>strain: </span><a data-toggle="tooltip" data-species="{{ strain.taxid }}" href="{% url 'website:strain' slug=strain %}">
                         {{ strain }}</a></li>
                     <ul>
-                        {% for member in strain.member_set.all %}
+                        {% for genome in strain.genome_set.all %}
 
-                            <li><span>member: </span><a class="{{ member.html_warning_stripes }}"
-                                                        href="{% url 'website:member' slug=member %}">{{ member }}</a></li>
+                            <li><span>genome: </span><a class="{{ genome.html_warning_stripes }}"
+                                                        href="{% url 'website:genome' slug=genome %}">{{ genome }}</a></li>
 
                         {% endfor %}
                     </ul>

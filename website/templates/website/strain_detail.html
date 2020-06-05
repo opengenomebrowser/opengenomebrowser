@@ -100,19 +100,19 @@
         <!-- representative -->
         <div class="container black-links">
             <span class="h3">Representative:</span> <a class="h3"
-                                                       href="{% url 'website:member' slug=strain.representative %}">{{ strain.representative }}</a>
+                                                       href="{% url 'website:genome' slug=strain.representative %}">{{ strain.representative }}</a>
         </div>
 
-        {% if strain.member_set.all.count > 1 %}
-            <!-- all members -->
+        {% if strain.genome_set.all.count > 1 %}
+            <!-- all genomes -->
             <div class="container black-links">
                 <hr class="featurette-divider">
 
-                <h3>Members</h3>
+                <h3>Genomes</h3>
 
-                <ul>{% for member in strain.member_set.all %}
-                    <li><span>member: </span><a
-                            class="{{ member.html_warning_stripes }}" href="{% url 'website:member' slug=member %}">{{ member }}</a></li>
+                <ul>{% for genome in strain.genome_set.all %}
+                    <li><span>genome: </span><a
+                            class="{{ genome.html_warning_stripes }}" href="{% url 'website:genome' slug=genome %}">{{ genome }}</a></li>
                 {% endfor %}</ul>
             </div>
         {% endif %}

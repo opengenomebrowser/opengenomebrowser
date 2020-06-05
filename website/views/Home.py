@@ -1,7 +1,7 @@
 from django.shortcuts import render
 
 
-def index_view(request):
+def home_view(request):
     credit = dict(
         People=[
             dict(
@@ -40,14 +40,6 @@ def index_view(request):
 
         Institutions=[
             dict(
-                name='Gebert Rüf Stiftung',
-                img='/static/index/images/GRS.jpg',
-                img_cls='circle',
-                role='Grant-ID: GRS-070/17',
-                href='https://www.grstiftung.ch/',
-                did=['Funding']
-            ),
-            dict(
                 name='Interfaculty Bioinformatics Unit (IBU)',
                 img='/static/index/images/unibe.png',
                 img_cls='square',
@@ -62,6 +54,14 @@ def index_view(request):
                 role='Swiss center for agricultural research',
                 href='https://www.agroscope.admin.ch/',
                 did=['Infrastructure']
+            ),
+            dict(
+                name='Gebert Rüf Stiftung',
+                img='/static/index/images/GRS.jpg',
+                img_cls='circle',
+                role='Grant-ID: GRS-070/17',
+                href='https://www.grstiftung.ch/',
+                did=['Funding']
             )
         ],
 

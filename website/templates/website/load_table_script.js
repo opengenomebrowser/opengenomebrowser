@@ -1,4 +1,4 @@
-data_table = member_table.DataTable({
+data_table = genome_table.DataTable({
     rowId: 'identifier',
     scrollY: '250px',
     scrollCollapse: true,
@@ -11,7 +11,7 @@ data_table = member_table.DataTable({
     pageLength: 25,
     lengthMenu: [[-1, 10, 25, 50, 100, 200, 400, 800, 1600], ["All", 10, 25, 50, 100, 200, 400, 800, 1600]],
     // colReorder: true,
-    "ajax": "{% url 'website:member-table-ajax' %}",
+    "ajax": "{% url 'website:genome-table-ajax' %}",
     "createdRow": function (row, data, dataIndex) {
         if (data[{{ indexes.representative }}] == "False") {
             console.log(data[4], 'no-rep');

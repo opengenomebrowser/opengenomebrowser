@@ -2,25 +2,25 @@ from django_datatables_view.base_datatable_view import BaseDatatableView
 from django.db.models import Q
 from django.contrib.postgres.aggregates.general import StringAgg, ArrayAgg
 
-from website.models import Member
+from website.models import Genome
 
 from django.db.models import Aggregate, CharField, Value
 
 
-class MemberTableAjax(BaseDatatableView):
+class GenomeTableAjax(BaseDatatableView):
     # The model we're going to show
-    model = Member
+    model = Genome
 
     # set max limit of records returned, this is used to protect our site if someone tries to attack our site
     # and make it return huge amount of data
     max_display_length = 2000
 
-    def render_column(self, row: Member, column: str):
-        if column == 'member_tags':
-            html = [F'<span data-tag="{tag}">{tag}</span>' for tag in row.member_tags if tag]
+    def render_column(self, row: Genome, column: str):
+        if column == 'genome_tags':
+            html = [F'<span data-tag="{tag}">{tag}</span>' for tag in row.genome_tags if tag]
             return ' '.join(html)
         if column == 'strain_tags':
-            html = [F'<span data-tag="{tag}">{tag}</span>' for tag in row.strain_tags if tag]
+            html = [F'<span data-tag="{tag}">{tag}</span>' for tag in row.genome_tags if tag]
             return ' '.join(html)
         if column == 'representative':
             return 'True' if row.representative else 'False'
@@ -29,13 +29,13 @@ class MemberTableAjax(BaseDatatableView):
         elif column.startswith("env_"):
             return " ".join(row.__getattribute__(column))
         else:
-            return super(MemberTableAjax, self).render_column(row, column)
+            return super(GenomeTableAjax, self).render_column(row, column)
 
     def get_initial_queryset(self):
         if not self.model:
             raise NotImplementedError("Need to provide a model or implement get_initial_queryset!")
         return self.model.objects.annotate(
-            member_tags=ArrayAgg('tags__tag', ordering='tags__pk'),
+            genome_tags=ArrayAgg('tags__tag', ordering='tags__pk'),
             strain_tags=ArrayAgg('strain__tags__tag', ordering='tags__pk')
         ).all()
 
@@ -69,7 +69,7 @@ class MemberTableAjax(BaseDatatableView):
                             qs = qs.filter(representative__isnull=False)
                         else:
                             qs = qs.filter(representative__isnull=True)
-                    elif colname == "member_tags":
+                    elif colname == "genome_tags":
                         qs = qs.filter(tags__tag__in=col['search.value'].split("|"))
                     elif colname == "strain_tags":
                         qs = qs.filter(strain__tags__tag__in=col['search.value'].split("|"))

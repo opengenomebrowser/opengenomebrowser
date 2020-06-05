@@ -58,16 +58,16 @@
     </a>
 
     <div class="navbar-nav ml-auto">
-        <a class="nav-link text-nowrap {% if request.resolver_match.url_name == 'members' %}active{% endif %}" href="{% url 'website:members' %}"
-        >Member overview</a>
+        <a class="nav-link text-nowrap {% if request.resolver_match.url_name == 'genomes' %}active{% endif %}" href="{% url 'website:genomes' %}"
+        >Genomes</a>
     </div>
 
     <!-- collapsible menu -->
     <div class="navbar-collapse collapse" id="navbarSupportedContent">
         <ul class="navbar-nav ml-auto">
             <li class="nav-item">
-                <a class="nav-link text-nowrap {% if request.resolver_match.url_name == 'members' %}active{% endif %}"
-                   href="{% url 'website:members' %}">Member overview</a>
+                <a class="nav-link text-nowrap {% if request.resolver_match.url_name == 'genomes' %}active{% endif %}"
+                   href="{% url 'website:genomes' %}">Genomes</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link text-nowrap {% if request.resolver_match.url_name == 'kegg' %}active{% endif %}" href="{% url 'website:kegg' %}">Kegg

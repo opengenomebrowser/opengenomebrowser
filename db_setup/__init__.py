@@ -1,1 +1,1 @@
-from .MemberLooper import MemberLooper
+from .GenomeLooper import GenomeLooper

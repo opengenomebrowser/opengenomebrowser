@@ -85,6 +85,6 @@ class OrthoANI:
 
 # oa = OrthoANI()
 # print(os.getcwd())
-# res = oa.calculate_similarity('../../database/strains/FAM18119/members/FAM18119/1_assembly/FAM18119.fna',
-#                               '../../database/strains/FAM22277/members/FAM22277/1_assembly/FAM22277.fna')
+# res = oa.calculate_similarity('../../database/strains/FAM18119/genomes/FAM18119/1_assembly/FAM18119.fna',
+#                               '../../database/strains/FAM22277/genomes/FAM22277/1_assembly/FAM22277.fna')
 # print(res)

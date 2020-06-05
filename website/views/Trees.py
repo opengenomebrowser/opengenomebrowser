@@ -4,11 +4,11 @@ from django.shortcuts import render, HttpResponse
 def trees(request):
     context = dict(title='Trees')
 
-    if 'members' in request.GET:
-        member_ids = request.GET['members'].split(' ')
+    if 'genomes' in request.GET:
+        genome_ids = request.GET['genomes'].split(' ')
     else:
-        member_ids = []
+        genome_ids = []
 
-    context['key_members'] = member_ids
+    context['key_genomes'] = genome_ids
 
     return render(request, 'website/trees.html', context)

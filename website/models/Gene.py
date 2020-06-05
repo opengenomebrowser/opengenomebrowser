@@ -1,5 +1,5 @@
 from django.db import models
-from website.models.Genome import Genome
+from website.models.GenomeContent import GenomeContent
 from website.models.Annotation import Annotation
 from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord
@@ -13,7 +13,7 @@ class Gene(models.Model):
 
     Sequences aren't stored in the database and need to be retrieved from the gbk-file.
     """
-    genome = models.ForeignKey(Genome, on_delete=models.CASCADE)
+    genomecontent = models.ForeignKey(GenomeContent, on_delete=models.CASCADE)
 
     identifier = models.CharField(max_length=50, primary_key=True)
 
@@ -30,7 +30,7 @@ class Gene(models.Model):
 
     @property
     def html(self):
-        tsi = self.genome.member.taxscientificname
+        tsi = self.genomecontent.genome.taxscientificname
         return F'<div class="gene ogb-tag" data-species="{tsi}" data-toggle="tooltip">{self.identifier}</div>'
 
     def gc_content(self) -> float:
@@ -62,7 +62,7 @@ class Gene(models.Model):
     def __load_gbk_seqrecord(self):
         # ensure it's only loaded once
         if not hasattr(self, '_gbk_record'):
-            self._gbk_record = self.__get_gbk_seqrecord(self.genome.member.cds_gbk(relative=False), self.identifier)
+            self._gbk_record = self.__get_gbk_seqrecord(self.genomecontent.genome.cds_gbk(relative=False), self.identifier)
             all_qualifiers = dict()
             for f in self._gbk_record.features:
                 all_qualifiers.update(f.qualifiers)

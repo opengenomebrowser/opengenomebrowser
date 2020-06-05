@@ -2,15 +2,15 @@ from django.shortcuts import render, HttpResponse
 import pandas as pd
 import re
 
-from website.models import Genome, Gene
+from website.models import GenomeContent, Gene
 from website.models.Annotation import Annotation
 
 
 def annotation_view(request):
     context = dict(title='Annotation search')
 
-    if 'members' in request.GET:
-        context['key_members'] = request.GET['members'].split(' ')
+    if 'genomes' in request.GET:
+        context['key_genomes'] = request.GET['genomes'].split(' ')
 
     if 'annotations' in request.GET:
         annotation_name_list = [ann.replace('!!!', ' ') for ann in request.GET['annotations'].split(' ')]
@@ -23,14 +23,14 @@ def annotation_matrix(request):
     context = {}
 
     # check input
-    if not 'members[]' and 'annotations[]' in request.POST:
-        return HttpResponse('Request failed! Please POST members[] and annotations[].')
+    if not 'genomes[]' and 'annotations[]' in request.POST:
+        return HttpResponse('Request failed! Please POST genomes[] and annotations[].')
 
-    identifiers = set(request.POST.getlist('members[]'))
-    genomes = Genome.objects.filter(identifier__in=identifiers).order_by('identifier')
+    identifiers = set(request.POST.getlist('genomes[]'))
+    genomes = GenomeContent.objects.filter(identifier__in=identifiers).order_by('identifier')
 
     if len(identifiers) != len(genomes):
-        return HttpResponse('Request failed: members[] incorrect.')
+        return HttpResponse('Request failed: genomes[] incorrect.')
 
     annotations = set(request.POST.getlist('annotations[]'))
     try:
@@ -46,7 +46,7 @@ def annotation_matrix(request):
         matrix_header=mm.matrix.columns.to_list(),
         matrix_body=zip(mm.matrix.index, mm.matrix.values.tolist()),
         matrix_footer_covered=mm.matrix.sum().values.tolist(),
-        matrix_footer_members=[len(g) for g in mm.grp_to_genomes.values()],
+        matrix_footer_genomes=[len(g) for g in mm.grp_to_genomes.values()],
         matrix=mm.html_matrix,
         group_to_table=group_to_table
     )
@@ -55,12 +55,12 @@ def annotation_matrix(request):
 
 
 class MatrixMaker:
-    def __init__(self, genomes: [Genome], annotations: [Annotation]):
+    def __init__(self, genomes: [GenomeContent], annotations: [Annotation]):
         self.genomes = genomes
 
         self._genome_to_html = {}  # cannot be done using list comprehension
         for genome in genomes:
-            self._genome_to_html[genome] = genome.member.html
+            self._genome_to_html[genome] = genome.genome.html
 
         self.annotations = annotations
 
@@ -93,7 +93,7 @@ class MatrixMaker:
 
     def __add_footer(self):
         footer_covered = ''.join([F'<td>{s}</td>' for s in self.matrix.sum().values])
-        footer_members = ''.join([F'<td>{len(g)}</td>' for g in self.grp_to_genomes.values()])
+        footer_genomes = ''.join([F'<td>{len(g)}</td>' for g in self.grp_to_genomes.values()])
 
         self.html_matrix = self.html_matrix \
             .replace('      <td>True</td>', '      <td style="background-color: black">X</td>') \
@@ -101,11 +101,11 @@ class MatrixMaker:
             .replace('</tbody>',
                      F"""</tbody><tfoot class="table-dark text-light">
                     <tr><th scope="row">#covered</th>{footer_covered}</tr>
-                    <tr><th scope="row">#members</th>{footer_members}</tr></tfoot>""", 1)
+                    <tr><th scope="row">#genomes</th>{footer_genomes}</tr></tfoot>""", 1)
 
     @staticmethod
-    def get_genes(annotation: Annotation, genomes: [Genome]) -> [Gene]:
-        return annotation.gene_set.filter(genome__in=genomes).order_by('genome__identifier').prefetch_related('genome__member__strain__taxid')
+    def get_genes(annotation: Annotation, genomes: [GenomeContent]) -> [Gene]:
+        return annotation.gene_set.filter(genomecontent__in=genomes).order_by('genomecontent__identifier').prefetch_related('genomecontent__genome__strain__taxid')
 
     def get_group_to_table(self) -> dict:
         return {grp_id: self.__create_group_table(grp_id, genomes) for grp_id, genomes in self.grp_to_genomes.items()}
@@ -128,13 +128,13 @@ class MatrixMaker:
 
         return self.pandas_to_html(table, id=F'table_{grp_id}')
 
-    def __get_count_gene_tuple(self, genome: Genome, anno: Annotation) -> (int, list):
-        genes = list(anno.gene_set.filter(genome=genome).values_list('identifier', flat=True))
+    def __get_count_gene_tuple(self, genome: GenomeContent, anno: Annotation) -> (int, list):
+        genes = list(anno.gene_set.filter(genomecontent=genome).values_list('identifier', flat=True))
         genes_to_js = ' '.join(genes)
         return len(genes), genes_to_js
 
-    def __count_genes(self, genome: Genome, anno: Annotation) -> int:
-        return anno.gene_set.filter(genome=genome).count()
+    def __count_genes(self, genome: GenomeContent, anno: Annotation) -> int:
+        return anno.gene_set.filter(genomecontent=genome).count()
 
     def __create_coverage_matrix(self) -> (pd.DataFrame, dict):
         pattern_to_genomes = self.create_patterns()
@@ -170,7 +170,7 @@ class MatrixMaker:
                 pattern_to_genomes[pattern] = [genome]
         return pattern_to_genomes
 
-    def get_pattern(self, genome: Genome) -> tuple:
+    def get_pattern(self, genome: GenomeContent) -> tuple:
         """
         :returns a tuple of len(annotations) filled with booleans: True if genome covers annotation
         Example: (False, False, False, True, False)
@@ -178,8 +178,8 @@ class MatrixMaker:
         pattern = list()
         for annotation in self.annotations:
             try:
-                annotation.genome_set.get(identifier=genome.identifier)
+                annotation.genomecontent_set.get(identifier=genome.identifier)
                 pattern.append(True)
-            except Genome.DoesNotExist:
+            except GenomeContent.DoesNotExist:
                 pattern.append(False)
         return tuple(pattern)  # tuples are hashable

@@ -61,8 +61,8 @@ class ANI(models.Model):
 
     objects = AniManager()
 
-    from_genome = models.ForeignKey('Genome', on_delete=models.CASCADE, related_name='from_ani')
-    to_genome = models.ForeignKey('Genome', on_delete=models.CASCADE, related_name='to_ani')
+    from_genome = models.ForeignKey('website.GenomeContent', on_delete=models.CASCADE, related_name='from_ani')
+    to_genome = models.ForeignKey('website.GenomeContent', on_delete=models.CASCADE, related_name='to_ani')
     similarity = models.FloatField()
 
     DONE = "D"

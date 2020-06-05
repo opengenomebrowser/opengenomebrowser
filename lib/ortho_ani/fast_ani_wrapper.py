@@ -104,10 +104,10 @@ class FastANI:
 
 
 if __name__ == '__main__':
-    f1 = 'database/strains/FAM19036/members/FAM19036/1_assembly/FAM19036.fna'
-    f2 = 'database/strains/FAM19038/members/FAM19038/1_assembly/FAM19038.fna'
-    f3 = 'database/strains/FAM18356/members/FAM18356/1_assembly/FAM18356.fna'
-    f4 = 'database/strains/FAM17927/members/FAM17927/1_assembly/FAM17927.fna'
+    f1 = 'database/strains/FAM19036/genomes/FAM19036/1_assembly/FAM19036.fna'
+    f2 = 'database/strains/FAM19038/genomes/FAM19038/1_assembly/FAM19038.fna'
+    f3 = 'database/strains/FAM18356/genomes/FAM18356/1_assembly/FAM18356.fna'
+    f4 = 'database/strains/FAM17927/genomes/FAM17927/1_assembly/FAM17927.fna'
 
     from lib.assembly_stats import AssemblyStats
 

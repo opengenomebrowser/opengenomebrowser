@@ -18,15 +18,15 @@ from lib.orthofinder.orthofinder import Orthofinder
 @task()
 def calculate_ani(g1, g2) -> float:
     from website.models.ANI import ANI
-    from website.models.Genome import Genome
-    g1: Genome
-    g2: Genome
+    from website.models.GenomeContent import GenomeContent
+    g1: GenomeContent
+    g2: GenomeContent
     # The multiprocessing function must be at the top level of the module for it to work with Django.
     # https://stackoverflow.com/questions/48046862/
     print(F'start ANI calc {g1.identifier} :: {g2.identifier}')
 
     try:
-        ani_score = OrthoANI().calculate_similarity(g1.member.assembly_fasta(relative=False), g2.member.assembly_fasta(relative=False), ncpu=8)
+        ani_score = OrthoANI().calculate_similarity(g1.genome.assembly_fasta(relative=False), g2.genome.assembly_fasta(relative=False), ncpu=8)
     except Exception as e:
         ani_obj = ANI.objects.get(from_genome=g1, to_genome=g2)
         if ani_obj.status in ['R', 'F']:
@@ -45,7 +45,7 @@ def calculate_ani(g1, g2) -> float:
 
 @task()
 def calculate_orthofinder(genomes) -> str:
-    from website.models.Genome import Genome
+    from website.models.GenomeContent import GenomeContent
     from website.models.CoreGenomeDendrogram import CoreGenomeDendrogram
     identifiers = sorted(set(g.identifier for g in genomes))
 

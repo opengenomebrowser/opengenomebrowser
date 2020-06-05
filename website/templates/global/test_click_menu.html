@@ -50,7 +50,7 @@
 
         <div class="container">
             <div class="test-div border border-primary">
-                {% for x in members %}
+                {% for x in genomes %}
                     {{ x.html| safe }}
                 {% endfor %}
             </div>
@@ -89,8 +89,8 @@
                     return $(this).attr('data-species');
                 }
             }).each(function () {
-                if ($(this).hasClass('member')) {
-                    this.setAttribute('onclick', `showMemberClickMenu(event)`)
+                if ($(this).hasClass('genome')) {
+                    this.setAttribute('onclick', `showGenomeClickMenu(event)`)
                 } else if ($(this).hasClass('annotation')) {
                     this.setAttribute('onclick', `showAnnotationClickMenu(event, '${this.textContent}')`)
                 } else if ($(this).hasClass('gene')) {

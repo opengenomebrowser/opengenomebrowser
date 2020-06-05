@@ -1,6 +1,6 @@
 from django.contrib import admin
-from .models import Strain, Member, Tag
+from .models import Strain, Genome, Tag
 
 admin.site.register(Strain)
-admin.site.register(Member)
+admin.site.register(Genome)
 admin.site.register(Tag)

@@ -34,15 +34,15 @@
             <li class="breadcrumb-item"></li>
             <!-- Taxid -->
             <li class="breadcrumb-item">
-                <a href="{% url 'website:taxid' slug=member.taxid.id %}"> TAXID {{ member.taxid.id }}</a>
+                <a href="{% url 'website:taxid' slug=genome.taxid.id %}"> TAXID {{ genome.taxid.id }}</a>
             </li>
             <!-- Strain -->
             <li class="breadcrumb-item">
-                <a href="{% url 'website:strain' slug=member.strain %}"> STRAIN {{ member.strain }}</a>
+                <a href="{% url 'website:strain' slug=genome.strain %}"> STRAIN {{ genome.strain }}</a>
             </li>
-            <!-- Member -->
+            <!-- Genome -->
             <li class="breadcrumb-item active" aria-current="page">
-                <span>MEMBER {{ member }}</span>
+                <span>GENOME {{ genome }}</span>
             </li>
         </ol>
     </nav>
@@ -52,25 +52,25 @@
     <section>
         <!-- title -->
         <div class="container black-links">
-            <!-- member -->
-            <span class="type-label">member:</span>
-            <span class="h1">{{ member.identifier }}</span>
+            <!-- genome -->
+            <span class="type-label">genome:</span>
+            <span class="h1">{{ genome.identifier }}</span>
 
             <!-- strain -->
             <span class="type-label">strain:</span>
-            <a class="h2" href="{% url 'website:strain' slug=member.strain %}">{{ member.strain }}</a>
+            <a class="h2" href="{% url 'website:strain' slug=genome.strain %}">{{ genome.strain }}</a>
 
             <!-- old identifier -->
-            {% if member.old_identifier %}
+            {% if genome.old_identifier %}
                 <span class="type-label">old identifier:</span>
-                <span class="h3">{{ member.old_identifier }}</span>
+                <span class="h3">{{ genome.old_identifier }}</span>
             {% endif %}
 
             <!-- taxid -->
-            {% if member.taxid %}<br>
+            {% if genome.taxid %}<br>
                 <span class="type-label">species:</span>
-                <a class="h3" href="{% url 'website:taxid' slug=member.taxid.id %}">{{ member.taxid }} <span
-                        style="{{ member.taxid.html_style }}">(taxid: {{ member.taxid.id }})</span></a>
+                <a class="h3" href="{% url 'website:taxid' slug=genome.taxid.id %}">{{ genome.taxid }} <span
+                        style="{{ genome.taxid.html_style }}">(taxid: {{ genome.taxid.id }})</span></a>
             {% endif %}
 
             <hr class="featurette-divider">
@@ -78,19 +78,19 @@
 
         <!-- representative -->
         <div class="container black-links">
-            {% if member.representative %}
+            {% if genome.representative %}
                 <div class="alert alert-success" role="alert">
-                    This member is a representative of <a href="{% url 'website:strain' slug=member.strain %}"
-                                                          style="color:darkgreen">{{ member.strain }}</a>.
+                    This genome is a representative of <a href="{% url 'website:strain' slug=genome.strain %}"
+                                                          style="color:darkgreen">{{ genome.strain }}</a>.
                 </div>
             {% else %}
                 <div class="alert alert-dark" role="alert">
-                    Warning: This member is not a representative of <a href="{% url 'website:strain' slug=member.strain %}">{{ member.strain }}</a>.
+                    Warning: This genome is not a representative of <a href="{% url 'website:strain' slug=genome.strain %}">{{ genome.strain }}</a>.
                 </div>
             {% endif %}
         </div>
 
-        {% if member.strain.restricted %}
+        {% if genome.strain.restricted %}
             <!-- restricted -->
             <div class="container black-links">
 
@@ -101,12 +101,12 @@
             </div>
         {% endif %}
 
-        {% if member.contaminated %}
+        {% if genome.contaminated %}
             <!-- restricted -->
             <div class="container black-links">
 
                 <div class="alert alert-danger" role="alert">
-                    Warning: This member is contaminated.
+                    Warning: This genome is contaminated.
                 </div>
 
             </div>
@@ -120,11 +120,11 @@
 
             <h3>Tags</h3>
 
-            {% if member.tags.all.count == 0 %}
+            {% if genome.tags.all.count == 0 %}
                 <p>No tags</p>
             {% else %}
                 <div class="container flex-container">
-                    {% for tag in member.all_tags.all %}
+                    {% for tag in genome.all_tags.all %}
                         <div class="card" style="width: 18rem; background-color:rgb({{ tag.color }})">
                             <div class="card-body">
                                 <h5 class="card-title"
@@ -172,22 +172,22 @@
                         </tr>
                     {% endif %}{% endfor %}
 
-                    {% if member.env_broad_scale %}
+                    {% if genome.env_broad_scale %}
                         <tr>
                             <th scope="row">env_broad_scale</th>
-                            <td>{% for env in member.env_broad_scale %}{{ env }}{% endfor %}</td>
+                            <td>{% for env in genome.env_broad_scale %}{{ env }}{% endfor %}</td>
                         </tr>{% endif %}
 
-                    {% if member.env_local_scale %}
+                    {% if genome.env_local_scale %}
                         <tr>
                             <th scope="row">env_local_scale</th>
-                            <td>{% for env in member.env_local_scale %}{{ env }}{% endfor %}</td>
+                            <td>{% for env in genome.env_local_scale %}{{ env }}{% endfor %}</td>
                         </tr>{% endif %}
 
-                    {% if member.env_medium %}
+                    {% if genome.env_medium %}
                         <tr>
                             <th scope="row">env_medium</th>
-                            <td>{% for env in member.env_medium %}{{ env }}{% endfor %}</td>
+                            <td>{% for env in genome.env_medium %}{{ env }}{% endfor %}</td>
                         </tr>{% endif %}
 
                     </tbody>
@@ -280,7 +280,7 @@
 
         </div>
 
-        {% if member.BUSCO %}
+        {% if genome.BUSCO %}
             <!-- busco -->
             <div class="container">
 
@@ -297,39 +297,39 @@
                                     title="BUSCO: Benchmarking Universal Single-Copy Orthologs"><a
                                         href="https://busco.ezlab.org/" style="color: inherit">BUSCO</a></th>
                                 <th scope="col" data-toggle="tooltip" data-placement="top"
-                                    title="BUSCO dataset">{{ member.BUSCO.dataset|default:"dataset undefined" }}</th>
+                                    title="BUSCO dataset">{{ genome.BUSCO.dataset|default:"dataset undefined" }}</th>
                             </tr>
                             </thead>
                             <tbody>
                             <tr class="table-success" data-toggle="tooltip" data-placement="right"
                                 title="Complete and single-copy">
                                 <th scope="row">Single-copy</th>
-                                <td>{{ member.BUSCO.S }}</td>
+                                <td>{{ genome.BUSCO.S }}</td>
                             </tr>
                             <tr class="table-primary" data-toggle="tooltip" data-placement="right"
                                 title="Complete but duplicated">
                                 <th scope="row">Duplicated</th>
-                                <td>{{ member.BUSCO.D }}</td>
+                                <td>{{ genome.BUSCO.D }}</td>
                             </tr>
                             <tr class="table-warning" data-toggle="tooltip" data-placement="right"
                                 title="Match with high-identity but incomplete">
                                 <th scope="row">Fragmented</th>
-                                <td>{{ member.BUSCO.F }}</td>
+                                <td>{{ genome.BUSCO.F }}</td>
                             </tr>
                             <tr class="table-danger" data-toggle="tooltip" data-placement="right"
                                 title="No significant matches or score below BUSCO profile.">
                                 <th scope="row">Missing</th>
-                                <td>{{ member.BUSCO.M }}</td>
+                                <td>{{ genome.BUSCO.M }}</td>
                             </tr>
                             <tr class="table-light" data-toggle="tooltip" data-placement="right"
                                 title="Single-copy + duplicated">
                                 <th scope="row">Complete</th>
-                                <td>{{ member.BUSCO.C }}</td>
+                                <td>{{ genome.BUSCO.C }}</td>
                             </tr>
                             <tr class="table-dark" data-toggle="tooltip" data-placement="right"
                                 title="Total BUSCO genes in profile">
                                 <th scope="row">Total</th>
-                                <td>{{ member.BUSCO.T }}</td>
+                                <td>{{ genome.BUSCO.T }}</td>
                             </tr>
                             </tbody>
                         </table>
@@ -411,24 +411,24 @@
             <hr class="featurette-divider">
             <h3>Download files</h3>
             <ul>
-                <li><a href="/download/{{ member.assembly_fasta }}">Assembly</a></li>
+                <li><a href="/download/{{ genome.assembly_fasta }}">Assembly</a></li>
                 <li>Coding sequences (CDS)
                     <ul>
-                        <li><a href="/download/{{ member.cds_faa }}">Protein fasta (faa)</a></li>
-                        <li><a href="/download/{{ member.cds_gbk }}">GenBank (gbk)</a></li>
-                        <li><a href="/download/{{ member.cds_gff }}">General feature format (gff)</a></li>
-                        {% if member.cds_ffn %}
-                            <li><a href="/download/{{ member.cds_ffn }}">Nucleotide fasta (ffn)</a></li> {% endif %}
-                        {% if member.cds_sqn %}
-                            <li><a href="/download/{{ member.cds_sqn }}">Submission-ready annotated sequence (sqn)</a>
+                        <li><a href="/download/{{ genome.cds_faa }}">Protein fasta (faa)</a></li>
+                        <li><a href="/download/{{ genome.cds_gbk }}">GenBank (gbk)</a></li>
+                        <li><a href="/download/{{ genome.cds_gff }}">General feature format (gff)</a></li>
+                        {% if genome.cds_ffn %}
+                            <li><a href="/download/{{ genome.cds_ffn }}">Nucleotide fasta (ffn)</a></li> {% endif %}
+                        {% if genome.cds_sqn %}
+                            <li><a href="/download/{{ genome.cds_sqn }}">Submission-ready annotated sequence (sqn)</a>
                             </li> {% endif %}
                     </ul>
                 </li>
-                {% if member.custom_annotations %}
+                {% if genome.custom_annotations %}
                     <li>Custom annotations
                         <ul>
-                            {% for custom_annotation in member.custom_annotations %}
-                                <li><a href="/download/{{ member.rel_base_path }}{{ custom_annotation.file }}">{{ custom_annotation.type }}
+                            {% for custom_annotation in genome.custom_annotations %}
+                                <li><a href="/download/{{ genome.rel_base_path }}/{{ custom_annotation.file }}">{{ custom_annotation.type }}
                                     (from {{ custom_annotation.date }})</a></li>
                             {% endfor %}
                         </ul>
@@ -443,7 +443,7 @@
             <h3>Find gene</h3>
 
             <label for="gene-search">Gene: </label>
-            <input id="gene-search" value="{{ member }}_">
+            <input id="gene-search" value="{{ genome }}_">
 
             <button type="button" class="btn btn-primary" onclick="go_to_gene($('#gene-search').val())">Submit</button>
         </div>
@@ -453,7 +453,7 @@
             <hr class="featurette-divider">
             <h3>Search for annotations in this genome</h3>
 
-            <a href="{% url 'website:annotation-search' %}?members={{ member }}">Link to annotation search</a>
+            <a href="{% url 'website:annotation-search' %}?genomes={{ genome }}">Link to annotation search</a>
         </div>
 
 
@@ -501,7 +501,7 @@
 
         function load_busco_pie() {
             let data = [{
-                values: [{{ member.BUSCO.S }}, {{ member.BUSCO.D }}, {{ member.BUSCO.F }}, {{ member.BUSCO.M }}],
+                values: [{{ genome.BUSCO.S }}, {{ genome.BUSCO.D }}, {{ genome.BUSCO.F }}, {{ genome.BUSCO.M }}],
                 labels: ['S (single-copy)', 'D (duplicated)', 'F (fragmented)', 'M (missing)',],
                 type: 'pie',
                 marker: {
@@ -550,7 +550,7 @@
         {% endif %}
 
         window.onload = function () {
-            {% if member.BUSCO %}
+            {% if genome.BUSCO %}
                 load_busco_pie();
             {% endif %}
 

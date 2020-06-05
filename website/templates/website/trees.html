@@ -62,13 +62,13 @@
             <form>
                 {% csrf_token %}
                 <div class="form-group">
-                    <label for="get-members">Member:</label>
-                    <input type="text" class="form-control" id="get-members" value="{{ key_members|join:", " }}">
+                    <label for="get-genomes">Genome:</label>
+                    <input type="text" class="form-control" id="get-genomes" value="{{ key_genomes|join:", " }}">
                 </div>
                 <div style="display: flex; justify-content: space-evenly;">
-                    <button type="button" class="btn btn-primary" onclick="validate_members_load_tree('taxid')">Reload Taxid-based tree</button>
-                    <button type="button" class="btn btn-success" onclick="validate_members_load_tree('ani')">Calculate ANI-based tree</button>
-                    <button type="button" class="btn btn-info" onclick="validate_members_load_tree('orthofinder')">Calculate Orthofinder-based tree
+                    <button type="button" class="btn btn-primary" onclick="validate_genomes_load_tree('taxid')">Reload Taxid-based tree</button>
+                    <button type="button" class="btn btn-success" onclick="validate_genomes_load_tree('ani')">Calculate ANI-based tree</button>
+                    <button type="button" class="btn btn-info" onclick="validate_genomes_load_tree('orthofinder')">Calculate Orthofinder-based tree
                     </button>
                 </div>
             </form>
@@ -175,52 +175,53 @@
     <script>
         "use strict"
 
-        let current_members = []
-        let member_to_species
+        let current_genomes = []
+        let genome_to_species
         let taxid_tree
         let ani_tree
         let orthofinder_tree
         let doit
 
         $(document).ready(function () {
-            let original_members = [{% if key_members %} '{{ key_members|join:"', '" }}' {% else %}{% endif %}]
-            current_members = original_members
-            member_to_species = init_autocomplete_members("#get-members")
+            let original_genomes = [{% if key_genomes %} '{{ key_genomes|join:"', '" }}' {% else %}{% endif %}]
+            current_genomes = original_genomes
+            genome_to_species = init_autocomplete_genomes("#get-genomes")
 
-            if (current_members.length >= 3) {
-                load_taxid_tree(current_members)
+            if (current_genomes.length >= 3) {
+                console.log('load tree!')
+                load_taxid_tree(current_genomes)
             }
         })
 
-        function validate_members_load_tree(type) {
-            let members = $('#get-members').val().split(',')
-            $.when(validate_members(members)).done(function (members_valid) {
-                let success = members_valid['success']
-                if (members.length < 3) {
+        function validate_genomes_load_tree(type) {
+            let genomes = $('#get-genomes').val().split(',')
+            $.when(validate_genomes(genomes)).done(function (genomes_valid) {
+                let success = genomes_valid['success']
+                if (genomes.length < 3) {
                     success = false
                 }
                 if (success) {
-                    $('#get-members').next().removeClass('is-invalid')
+                    $('#get-genomes').next().removeClass('is-invalid')
                 } else {
-                    $('#get-members').next().addClass('is-invalid')
+                    $('#get-genomes').next().addClass('is-invalid')
                 }
                 if (success) {
-                    current_members = members
+                    current_genomes = genomes
                     if (type === "taxid") {
-                        load_taxid_tree(members)
+                        load_taxid_tree(genomes)
                     } else if (type === "ani") {
-                        load_ani_tree(members)
+                        load_ani_tree(genomes)
                     } else if (type === "orthofinder") {
-                        load_orthofinder_tree(members)
+                        load_orthofinder_tree(genomes)
                     }
                 }
             })
 
         }
 
-        function load_taxid_tree(members) {
+        function load_taxid_tree(genomes) {
             taxid_tree = loadTree(
-                members, 'taxid', '#taxid-tree', '#taxid-newick',
+                genomes, 'taxid', '#taxid-tree', '#taxid-newick',
                 $('#type-selector-taxid').val(),
                 $('#layout-selector-taxid').val(),
                 $('#mode-selector').val()
@@ -228,10 +229,10 @@
             add_resize_listener('taxid-tree', taxid_tree)
         }
 
-        function load_ani_tree(members) {
+        function load_ani_tree(genomes) {
             $('#ani-tree-container').attr("hidden", false)
             ani_tree = loadTree(
-                members, 'ani', '#ani-tree', '#ani-newick',
+                genomes, 'ani', '#ani-tree', '#ani-newick',
                 $('#type-selector-ani').val(),
                 $('#layout-selector-ani').val(),
                 $('#mode-selector').val()
@@ -239,10 +240,10 @@
             add_resize_listener('ani-tree', ani_tree)
         }
 
-        function load_orthofinder_tree(members) {
+        function load_orthofinder_tree(genomes) {
             $('#orthofinder-tree-container').attr("hidden", false)
             orthofinder_tree = loadTree(
-                members, 'orthofinder', '#orthofinder-tree', '#orthofinder-newick',
+                genomes, 'orthofinder', '#orthofinder-tree', '#orthofinder-newick',
                 $('#type-selector-orthofinder').val(),
                 $('#layout-selector-orthofinder').val(),
                 $('#mode-selector').val()

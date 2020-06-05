@@ -1,16 +1,16 @@
 import os
-from db_setup.MemberLooper import MemberLooper
+from db_setup.GenomeLooper import GenomeLooper
 
 
-class MemberLooperInitOrthofinder(MemberLooper):
-    def process(self, strain_dict, member_dict):
-        path_to_member = os.path.join(self.db_path, 'strains', strain_dict['name'], 'members',
-                                      member_dict['identifier'])
-        faa_fn = member_dict['cds_tool_faa_file']
-        faa_path = os.path.join(path_to_member, faa_fn)
+class GenomeLooperInitOrthofinder(GenomeLooper):
+    def process(self, strain_dict, genome_dict):
+        path_to_genome = os.path.join(self.db_path, 'strains', strain_dict['name'], 'genomes',
+                                      genome_dict['identifier'])
+        faa_fn = genome_dict['cds_tool_faa_file']
+        faa_path = os.path.join(path_to_genome, faa_fn)
         assert os.path.isfile(faa_path), faa_path
         rel_path = os.path.relpath(faa_path, start=FASTA_PATH)
-        os.symlink(src=rel_path, dst=F"{FASTA_PATH}/{member_dict['identifier']}.faa")
+        os.symlink(src=rel_path, dst=F"{FASTA_PATH}/{genome_dict['identifier']}.faa")
 
 
 if __name__ == "__main__":
@@ -30,8 +30,8 @@ To procceed, delete the folder.'
     open(FOLDERPOINTER_PATH, 'a').close()  # create the file
 
     print('getting links to faas')
-    member_looper = MemberLooperInitOrthofinder(db_path=DB_PATH)
-    member_looper.loop_members()
+    genome_looper = GenomeLooperInitOrthofinder(db_path=DB_PATH)
+    genome_looper.loop_genomes()
 
     cmd = F"orthofinder -f /input/OrthoFinder/fastas"
 

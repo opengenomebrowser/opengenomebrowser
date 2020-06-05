@@ -73,12 +73,12 @@
         "use strict";
 
         let current_annotations = [];
-        let current_members = [];
+        let current_genomes = [];
 
-        let member_to_species;
+        let genome_to_species;
 
         $(document).ready(function () {
-            member_to_species = init_autocomplete_members("#id_members");
+            genome_to_species = init_autocomplete_genomes("#id_genomes");
         });
 
 

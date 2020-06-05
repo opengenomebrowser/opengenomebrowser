@@ -53,8 +53,8 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="get-members">Member:</label>
-                    <input type="text" class="form-control" id="get-members" value="{{ key_members|join:", " }}">
+                    <label for="get-genomes">Genomes:</label>
+                    <input type="text" class="form-control" id="get-genomes" value="{{ key_genomes|join:", " }}">
                 </div>
 
                 <button type="button" class="btn btn-primary" onclick="submit_function()">Submit</button>
@@ -71,10 +71,10 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="real-members">Member:</label>
+                    <label for="real-genomes">Genomes:</label>
                     <div class="form-control"
                          style="height: unset; padding: unset; background-color: #e9ecef; border: 1px solid #ced4da"
-                         id="real-members">
+                         id="real-genomes">
                     </div>
                 </div>
             </form>
@@ -100,15 +100,15 @@
         "use strict";
 
         let current_map_id = "";
-        let current_members = [];
+        let current_genomes = [];
 
-        let member_to_species;
+        let genome_to_species;
 
-        function loadMap(map_id, members, push_state) {
+        function loadMap(map_id, genomes, push_state) {
             console.log('CHANGE MAP:     ', current_map_id, '----->', map_id);
-            console.log('CHANGE MEMBER:  ', current_members, '----->', members);
+            console.log('CHANGE GENOME:  ', current_genomes, '----->', genomes);
 
-            if (map_id === current_map_id && members.sort().join('+') === current_members.sort().join('+')) {
+            if (map_id === current_map_id && genomes.sort().join('+') === current_genomes.sort().join('+')) {
                 console.log('no change');
                 return
             }
@@ -139,8 +139,8 @@
             };
 
             let colorizeMap = async function () {
-                if (members !== current_members) {
-                    colorize_kegg(map_id, members);
+                if (genomes !== current_genomes) {
+                    colorize_kegg(map_id, genomes);
                 }
 
                 finalize()
@@ -155,12 +155,12 @@
                         state[0] = map_id;
                         url += `?map=${map_id}`
                     }
-                    if (members.length !== 0) {
-                        state[1] = members;
+                    if (genomes.length !== 0) {
+                        state[1] = genomes;
                         if (map_id === "") {
-                            url += `?members=${members.join('+')}`
+                            url += `?genomes=${genomes.join('+')}`
                         } else {
-                            url += `&members=${members.join('+')}`
+                            url += `&genomes=${genomes.join('+')}`
                         }
                     }
 
@@ -172,17 +172,17 @@
                         document.getElementById('real-map').value = data[0]['label'];
                     });
 
-                    $.getJSON('{% url "website:api-member-identifier-to-species" %}', {'members[]': members}, function (data) {
+                    $.getJSON('{% url "website:api-genome-identifier-to-species" %}', {'genomes[]': genomes}, function (data) {
                         delete data.success;
 
-                        $('#real-members').empty();
-                        $('#real-members').append(create_read_only_strain_div(Object.keys(data), data))
+                        $('#real-genomes').empty();
+                        $('#real-genomes').append(create_read_only_strain_div(Object.keys(data), data))
 
                     });
                 }
 
                 current_map_id = map_id;
-                current_members = members;
+                current_genomes = genomes;
             };
 
             if (map_id == "") {
@@ -201,18 +201,18 @@
 
         $(document).ready(function () {
             let original_map_id = {% if key_map %}'{{ key_map }}'{% else %} null {% endif %};
-            let original_members = [{% if key_members %} '{{ key_members|join:"', '" }}' {% else %}{% endif %}];
-            loadMap(original_map_id, original_members, true);
-            init_autocomplete_members();
+            let original_genomes = [{% if key_genomes %} '{{ key_genomes|join:"', '" }}' {% else %}{% endif %}];
+            loadMap(original_map_id, original_genomes, true);
+            init_autocomplete_genomes();
         });
 
         function submit_function() {
-            let members = $('#get-members').val().split(',');
+            let genomes = $('#get-genomes').val().split(',');
             let map_id = $('#get-map').val().substr(0, 5);
 
-            $.when(validate_keggmap(map_id), validate_members(members)).done(function (keggmap_valid, members_valid) {
+            $.when(validate_keggmap(map_id), validate_genomes(genomes)).done(function (keggmap_valid, genomes_valid) {
                 keggmap_valid = keggmap_valid[2].responseJSON['success'];
-                members_valid = members_valid[2].responseJSON['success'];
+                genomes_valid = genomes_valid[2].responseJSON['success'];
 
                 if (keggmap_valid) {
                     $('#get-map').removeClass('is-invalid');
@@ -220,14 +220,14 @@
                     $('#get-map').addClass('is-invalid')
                 }
 
-                if (members_valid) {
-                    $('#get-members').next().removeClass('is-invalid');
+                if (genomes_valid) {
+                    $('#get-genomes').next().removeClass('is-invalid');
                 } else {
-                    $('#get-members').next().addClass('is-invalid')
+                    $('#get-genomes').next().addClass('is-invalid')
                 }
 
-                if (keggmap_valid && members_valid) {
-                    loadMap(map_id, members, true);
+                if (keggmap_valid && genomes_valid) {
+                    loadMap(map_id, genomes, true);
                 }
 
             });
@@ -236,21 +236,21 @@
 
         window.addEventListener('popstate', function (e) {
                 // manage history stack
-                let map_id, members;
+                let map_id, genomes;
 
                 if (e.state == null) {
                     map_id = '{{ map_id }}';
-                    members = [{% if key_members %} '{{ key_members|join:"', '" }}' {% else %} {% endif %}];
+                    genomes = [{% if key_genomes %} '{{ key_genomes|join:"', '" }}' {% else %} {% endif %}];
                 } else {
                     map_id = e.state[0];
-                    members = e.state[1];
+                    genomes = e.state[1];
                 }
 
-                loadMap(map_id, members, false);
+                loadMap(map_id, genomes, false);
             }
         );
 
-        function init_autocomplete_members() {
+        function init_autocomplete_genomes() {
             // http://flaviusim.com/blog/AJAX-Autocomplete-Search-with-Django-and-jQuery/
             $("#get-map").autocomplete({
                 source: '{% url "website:api-autocomplete-kegg-map" %}',
@@ -258,56 +258,56 @@
             });
 
             // https://goodies.pixabay.com/jquery/tag-editor/demo.html
-            $("#get-members").tagEditor({
+            $("#get-genomes").tagEditor({
                 autocomplete: {
                     source: '{% url "website:api-autocomplete-genome-identifier" %}',
                     minLength: 2
                 },
                 forceLowercase: false,
-                onChange: on_members_change
+                onChange: on_genomes_change
             });
 
-            let tag_editor_objects = $('#get-members').tagEditor('getTags')[0];
+            let tag_editor_objects = $('#get-genomes').tagEditor('getTags')[0];
 
-            on_members_change(tag_editor_objects.field, tag_editor_objects.editor, tag_editor_objects.tags);
+            on_genomes_change(tag_editor_objects.field, tag_editor_objects.editor, tag_editor_objects.tags);
         }
 
-        function on_members_change(field, editor, tags) {
-            $.getJSON('{% url "website:api-member-identifier-to-species" %}', {'members[]': tags}, function (data) {
+        function on_genomes_change(field, editor, tags) {
+            $.getJSON('{% url "website:api-genome-identifier-to-species" %}', {'genomes[]': tags}, function (data) {
                 delete data.success;
 
-                member_to_species = data;
+                genome_to_species = data;
 
                 let entries = $('li', editor).slice(1);  // remove first placeholder element
 
                 entries.each(function () {
                     let li = $(this);
-                    let member = li[0].innerText.substring(3);
+                    let genome = li[0].innerText.substring(3);
 
                     let child_1 = li.children()[1];
-                    child_1.setAttribute('data-species', data[member]['sciname']);
+                    child_1.setAttribute('data-species', data[genome]['sciname']);
                     child_1.setAttribute('data-toggle', 'tooltip');
-                    child_1.setAttribute('title', data[member]['sciname']);
+                    child_1.setAttribute('title', data[genome]['sciname']);
                     $(child_1).tooltip();
 
                     let child_2 = li.children()[2];
-                    child_2.setAttribute('data-species', data[member]['sciname']);
+                    child_2.setAttribute('data-species', data[genome]['sciname']);
                 });
             });
         }
 
 
-        function colorize_kegg(map_id, members) {
-            if (members.length === 0) {
+        function colorize_kegg(map_id, genomes) {
+            if (genomes.length === 0) {
                 clearMap();
                 return
             }
 
             $.getJSON('{% url "website:api-get-kegg-annos" %}', {
                     'map_id': map_id,
-                    'members[]': members
+                    'genomes[]': genomes
                 }, function (data) {
-                    // check if map_id and members are valid
+                    // check if map_id and genomes are valid
                     if (Object.keys(data).length === 0) {
                         alert("sth went wrong")
 
@@ -450,7 +450,7 @@
                                 class: 'dropdown-header context-menu-header'
                             });
 
-                            let expand_item_strains = create_read_only_strain_div(strains, member_to_species);
+                            let expand_item_strains = create_read_only_strain_div(strains, genome_to_species);
 
                             expand_items_div.append(expand_item_header);
                             expand_items_div.append(expand_item_strains);
@@ -467,11 +467,11 @@
 
             if (has_gradient_info) {
                 cm.appendHeader(`Positive strains (${have.length})`);
-                cm.appendElement(create_read_only_strain_div(have, member_to_species));
+                cm.appendElement(create_read_only_strain_div(have, genome_to_species));
 
                 if (has_negative_strains) {
                     cm.appendHeader(`Negative strains (${lack.length})`);
-                    cm.appendElement(create_read_only_strain_div(lack, member_to_species));
+                    cm.appendElement(create_read_only_strain_div(lack, genome_to_species));
                 }
             }
 

@@ -1,6 +1,6 @@
 import os
 from django.db import models
-from website.models import TaxID, ANI, Annotation, Member, Genome, Strain, CoreGenomeDendrogram
+from website.models import TaxID, ANI, Annotation, Genome, GenomeContent, Strain, CoreGenomeDendrogram
 import pandas as pd
 from skbio import DistanceMatrix
 from skbio.tree import nj
@@ -21,7 +21,7 @@ class TaxIdTree(AbstractTree):
     """
     Create a Newick tree based on taxonomy.
 
-    :param objs: QuerySet of class 'Genome', 'Member', 'Strain' or 'TaxID'
+    :param objs: QuerySet of class 'GenomeContent', 'Genome', 'Strain' or 'TaxID'
                     -> require property 'parent' that points to TaxID
     """
 
@@ -78,8 +78,8 @@ class AniTree(AbstractTree):
                     anis.append(ani)
                     break
 
-                assert os.path.isfile(g1.member.assembly_fasta(relative=False)), g1.member.assembly_fasta(rel_path=False)
-                assert os.path.isfile(g2.member.assembly_fasta(relative=False)), g2.member.assembly_fasta(rel_path=False)
+                assert os.path.isfile(g1.genome.assembly_fasta(relative=False)), g1.genome.assembly_fasta(rel_path=False)
+                assert os.path.isfile(g2.genome.assembly_fasta(relative=False)), g2.genome.assembly_fasta(rel_path=False)
                 ani, created = ANI.objects.get_or_create(from_genome=g1, to_genome=g2)
                 anis.append(ani)
 

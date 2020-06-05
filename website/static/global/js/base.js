@@ -231,24 +231,24 @@ class ContextMenu {
 }
 
 /**
- * Create context menu for a Member.
+ * Create context menu for a Genome.
  * Can be used like this:
 
- ShowMemberContextMenu(event, member_identifier)
+ ShowGenomeContextMenu(event, genome_identifier)
  or:
- ShowMemberContextMenu(event, member_identifier, [sibling-id-1, sibling-id-2, ...])
+ ShowGenomeContextMenu(event, genome_identifier, [sibling-id-1, sibling-id-2, ...])
 
  */
-let ShowMemberContextMenu = function (event, member, siblings = 'auto') {
-    console.log('ShowMemberContextMenu', 'event:', event, 'member:', member, 'siblings:', siblings);
+let ShowGenomeContextMenu = function (event, genome, siblings = 'auto') {
+    console.log('ShowGenomeContextMenu', 'event:', event, 'genome:', genome, 'siblings:', siblings);
 
     // auto-discover siblings
     if (siblings === 'auto') {
         console.log('autodiscover')
 
-        siblings = [member]
+        siblings = [genome]
         $(event.target).siblings().each(function () {
-            if ($(this).hasClass('member')) {
+            if ($(this).hasClass('genome')) {
                 siblings.push($(this).text())
             }
         });
@@ -257,7 +257,7 @@ let ShowMemberContextMenu = function (event, member, siblings = 'auto') {
         let target = siblings
         siblings = []
         $(target).children().each(function () {
-            if ($(this).hasClass('member')) {
+            if ($(this).hasClass('genome')) {
                 siblings.push($(this).text())
             }
         });
@@ -266,72 +266,72 @@ let ShowMemberContextMenu = function (event, member, siblings = 'auto') {
         assert(Array.isArray(siblings), 'This function expects an array, a JQuery selector or nothing!!')
     }
 
-    let cm = new ContextMenu(event, 'member-context-menu');
+    let cm = new ContextMenu(event, 'genome-context-menu');
 
     // list of elements to click on
-    cm.appendHeader(member);
+    cm.appendHeader(genome);
 
     cm.appendElement($('<a>', {
-        text: 'Open member info',
-        href: `/member/${member}`,
+        text: 'Open genome info',
+        href: `/genome/${genome}`,
         class: "dropdown-item context-menu-icon context-menu-icon-strain", target: "_blank"
     }));
 
     cm.appendElement($('<a>', {
         text: 'Copy identifier',
-        onclick: `CopyToClipboard('${member}')`,
+        onclick: `CopyToClipboard('${genome}')`,
         class: "dropdown-item context-menu-icon context-menu-icon-copy", target: "_blank"
     }));
 
     cm.appendElement($('<a>', {
-        text: 'Open member on KEGG map',
-        href: `/kegg/?members=${member}`,
+        text: 'Open genome on KEGG map',
+        href: `/kegg/?genomes=${genome}`,
         class: "dropdown-item context-menu-icon context-menu-icon-pathway", target: "_blank"
     }));
 
     cm.appendElement($('<a>', {
-        text: 'Search for annotations in member',
-        href: `/annotation-search/?members=${member}`,
+        text: 'Search for annotations in genome',
+        href: `/annotation-search/?genomes=${genome}`,
         class: "dropdown-item context-menu-icon context-menu-icon-annotation", target: "_blank"
     }));
 
     cm.appendElement($('<a>', {
-        text: 'Blast member',
-        href: `/blast/?members=${member}`,
+        text: 'Blast genome',
+        href: `/blast/?genomes=${genome}`,
         class: "dropdown-item context-menu-icon context-menu-icon-blast", target: "_blank"
     }));
 
 
     if (siblings.length > 1) {
-        cm.appendHeader(`${siblings.length} selected members`);
+        cm.appendHeader(`${siblings.length} selected genomes`);
 
         cm.appendElement($('<a>', {
             text: 'Show phylogenetic trees',
-            href: `/trees/?members=${siblings.join('+')}`,
+            href: `/trees/?genomes=${siblings.join('+')}`,
             class: "dropdown-item context-menu-icon context-menu-icon-tree", target: "_blank"
         }));
 
         cm.appendElement($('<a>', {
-            text: 'Copy selected members',
+            text: 'Copy selected genomes',
             onclick: `CopyToClipboard('${siblings.join(', ')}')`,
             class: "dropdown-item context-menu-icon context-menu-icon-copy", target: "_blank"
         }));
 
         cm.appendElement($('<a>', {
-            text: 'Open members on KEGG map',
-            href: `/kegg/?members=${siblings.join('+')}`,
+            text: 'Open genomes on KEGG map',
+            href: `/kegg/?genomes=${siblings.join('+')}`,
             class: "dropdown-item context-menu-icon context-menu-icon-pathway", target: "_blank"
         }));
 
         cm.appendElement($('<a>', {
-            text: 'Search for annotations in members',
-            href: `/annotation-search/?members=${siblings.join('+')}`,
+            text: 'Search for annotations in genomes',
+            href: `/annotation-search/?genomes=${siblings.join('+')}`,
             class: "dropdown-item context-menu-icon context-menu-icon-annotations", target: "_blank"
         }));
 
         cm.appendElement($('<a>', {
-            text: 'Blast members',
-            href: `/blast/?members=${siblings.join('+')}`,
+            text: 'Blast genomes',
+            href: `/blast/?genomes=${siblings.join('+')}`,
             class: "dropdown-item context-menu-icon context-menu-icon-blast", target: "_blank"
         }));
     }
@@ -365,7 +365,7 @@ let ShowAnnotationContextMenu = function (event, annotation, siblings = 'auto') 
         let target = siblings
         siblings = []
         $(target).children().each(function () {
-            if ($(this).hasClass('member')) {
+            if ($(this).hasClass('genome')) {
                 siblings.push($(this).text())
             }
         });
@@ -439,10 +439,10 @@ let ShowGeneContextMenu = function (event, gene_identifier) {
     }));
 
     $.getJSON("/api/get-gene", {gene_identifier}, function (data) {
-        cm.appendHeader('Member');
+        cm.appendHeader('Genome');
         cm.appendElement($('<p>', {
             class: "dropdown-item context-menu-icon context-menu-icon-strain", target: "_blank"
-        }).append(data['member_html']));
+        }).append(data['genome_html']));
 
         cm.appendHeader('Annotations');
 
@@ -472,8 +472,8 @@ function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-function validate_members(members) {
-    return $.getJSON("/api/validate-members", {members}, function (data) {
+function validate_genomes(genomes) {
+    return $.getJSON("/api/validate-genomes", {genomes}, function (data) {
     });
 }
 
@@ -487,7 +487,7 @@ function validate_annotations(annotations) {
     });
 }
 
-function create_read_only_strain_div(strain_array, member_to_species) {
+function create_read_only_strain_div(strain_array, genome_to_species) {
     let read_only_strain_div = $('<div>', {
         class: "read-only-div",
         css: {'display': 'flex', 'flex-wrap': 'wrap'},
@@ -498,10 +498,10 @@ function create_read_only_strain_div(strain_array, member_to_species) {
         read_only_strain_div.append($('<div>', {
             // class: "dropdown-clickprotect",
             text: strain_array[idx],
-            class: 'member ogb-tag',
-            onclick: `ShowMemberContextMenu(event, '${strain_array[idx]}')`,
-            'data-species': member_to_species[strain_array[idx]]['sciname'],
-            'title': member_to_species[strain_array[idx]]['sciname'],
+            class: 'genome ogb-tag',
+            onclick: `ShowGenomeContextMenu(event, '${strain_array[idx]}')`,
+            'data-species': genome_to_species[strain_array[idx]]['sciname'],
+            'title': genome_to_species[strain_array[idx]]['sciname'],
             'data-toggle': 'tooltip'
         }).tooltip());
     }
@@ -579,7 +579,7 @@ function on_annotations_change(field, editor, tags) {
     });
 }
 
-function init_autocomplete_members(div_name) {
+function init_autocomplete_genomes(div_name) {
     // https://goodies.pixabay.com/jquery/tag-editor/demo.html
     $(div_name).tagEditor({
         autocomplete: {
@@ -587,42 +587,42 @@ function init_autocomplete_members(div_name) {
             minLength: 2
         },
         forceLowercase: false,
-        onChange: on_members_change
+        onChange: on_genomes_change
     });
 
     let tag_editor_objects = $(div_name).tagEditor('getTags')[0];
 
-    return on_members_change(tag_editor_objects.field, tag_editor_objects.editor, tag_editor_objects.tags);
+    return on_genomes_change(tag_editor_objects.field, tag_editor_objects.editor, tag_editor_objects.tags);
 }
 
-function on_members_change(field, editor, tags) {
+function on_genomes_change(field, editor, tags) {
     console.log('field  :', field);
     console.log('editor :', editor);
     console.log('tags   :', tags);
 
-    $.getJSON('/api/member-identifier-to-species/', {'members[]': tags}, function (data) {
+    $.getJSON('/api/genome-identifier-to-species/', {'genomes[]': tags}, function (data) {
         delete data.success;
 
-        member_to_species = data;
+        genome_to_species = data;
 
         let entries = $('li', editor).slice(1);  // remove first placeholder element
 
         entries.each(function () {
             let li = $(this);
-            let member = li[0].innerText.substring(3);
+            let genome = li[0].innerText.substring(3);
 
-            // console.log('DATA:', data, 'MEMBER', member);
-            // console.log('DATA:', data[member]);
+            // console.log('DATA:', data, 'GENOME', genome);
+            // console.log('DATA:', data[genome]);
 
             let child_1 = li.children()[1];
-            child_1.setAttribute('data-species', data[member]['sciname']);
+            child_1.setAttribute('data-species', data[genome]['sciname']);
             child_1.setAttribute('data-toggle', 'tooltip');
-            child_1.setAttribute('title', data[member]['sciname']);
+            child_1.setAttribute('title', data[genome]['sciname']);
             $(child_1).tooltip();
 
             let child_2 = li.children()[2];
-            child_2.setAttribute('data-species', data[member]['sciname']);
+            child_2.setAttribute('data-species', data[genome]['sciname']);
         });
-        return member_to_species
+        return genome_to_species
     });
 }

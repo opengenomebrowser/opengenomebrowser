@@ -4,7 +4,7 @@
 /**
  * Create Phylogenetic Tree based on TaxIDs.
  *
- * members: list of identifiers
+ * genomes: list of identifiers
  * method: taxid, ani or orthofinder
  * target: div id
  * type: weighted, tree or dendrogram (see https://cdcgov.github.io/TidyTree/app/)
@@ -16,13 +16,13 @@
 /**
  * Create Phylogenetic Tree based on ANI similarity.
  */
-let loadTree = async function (members, method, target, newick_target, type, layout, mode) {
+let loadTree = async function (genomes, method, target, newick_target, type, layout, mode) {
     // load newick synchronously
     let go_on
 
     let load_tree = function () {
-        // abort if current_members have changed
-        if (members.join('::') != current_members.join('::')) {
+        // abort if current_genomes have changed
+        if (genomes.join('::') != current_genomes.join('::')) {
             go_on = false
             return null
         }
@@ -30,7 +30,7 @@ let loadTree = async function (members, method, target, newick_target, type, lay
 
         let ajax = $.ajax({
             url: "/api/get-tree",
-            data: {'members[]': members, method: method},
+            data: {'genomes[]': genomes, method: method},
             async: false,
             dataType: "json",
         })
@@ -104,13 +104,13 @@ let loadTree = async function (members, method, target, newick_target, type, lay
             });
         }
 
-        // colorize leaf labels, which represent Members
+        // colorize leaf labels, which represent genomes
         tree = tree.eachLeafLabel((label, data) => {
             d3.select(label).style("font-size", 1 + "rem")
                 .attr("data-species-label", species_dict[label.textContent])
                 .on("click", function (data) {
                     d3.event.stopPropagation()
-                    ShowMemberContextMenu([10, 12], data.data.id, []) // could use d3.event insted of null
+                    ShowGenomeContextMenu([10, 12], data.data.id, []) // could use d3.event insted of null
                 })
         });
 

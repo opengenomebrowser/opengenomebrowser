@@ -40,12 +40,12 @@
         <div class="container">
             <hr class="featurette-divider">
 
-            <h3>Members that cover the annotation</h3>
+            <h3>Genomes that cover the annotation</h3>
 
             <table class="table table-bordered table-sm white-links">
                 <thead class="thead-dark">
                 <tr>
-                    <th>Member</th>
+                    <th>Genome</th>
                     <th style="width: min-content">Genes</th>
                 </tr>
                 </thead>
@@ -71,12 +71,12 @@
 {% block end %}
     <script>
         $(document).ready(function () {
-            $('.member').tooltip({
+            $('.genome').tooltip({
                 title: function () {
                     return $(this).attr('data-species');
                 }
             }).each(function () {
-                this.setAttribute('onclick', `showMemberClickMenu(event)`)
+                this.setAttribute('onclick', `showGenomeClickMenu(event)`)
             })
 
             $('.gene').tooltip({

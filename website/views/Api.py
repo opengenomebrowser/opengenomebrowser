@@ -6,7 +6,7 @@ from django.http import HttpResponseBadRequest
 
 from OpenGenomeBrowser import settings
 from website.models.Annotation import Annotation
-from website.models import Genome, Member, KeggMap, Gene, TaxID, ANI
+from website.models import GenomeContent, Genome, KeggMap, Gene, TaxID, ANI
 from website.models.Tree import TaxIdTree, AniTree, OrthofinderTree, TreeNotDoneError
 from django.db.models.functions import Concat
 from django.db.models import CharField, Value as V
@@ -22,29 +22,29 @@ def err(error_message):
 
 class Api:
     @staticmethod
-    def member_identifier_to_species(request):
+    def genome_identifier_to_species(request):
         if not request.GET:
             return err('did not receive valid JSON')
 
-        if not ('members[]' in request.GET):
-            return err(F"missing parameter 'members[]'. Got: {request.GET.keys()}")
+        if not ('genomes[]' in request.GET):
+            return err(F"missing parameter 'genomes[]'. Got: {request.GET.keys()}")
 
-        members = set(request.GET.getlist('members[]'))
+        genomes = set(request.GET.getlist('genomes[]'))
 
-        member_to_species = Member.objects.filter(identifier__in=members).prefetch_related('strain', 'strain__taxid') \
+        genome_to_species = Genome.objects.filter(identifier__in=genomes).prefetch_related('strain', 'strain__taxid') \
             .values('identifier', 'strain__taxid', 'strain__taxid__taxscientificname')
 
-        member_to_species = {m['identifier']:
+        genome_to_species = {m['identifier']:
             dict(
                 taxid=m['strain__taxid'],
                 sciname=m['strain__taxid__taxscientificname']
-            ) for m in member_to_species}
+            ) for m in genome_to_species}
 
-        if len(member_to_species) != len(members):
-            missing = set(members).difference(set(member_to_species.keys()))
-            return err(F"could not find genome for members='{missing}'")
+        if len(genome_to_species) != len(genomes):
+            missing = set(genomes).difference(set(genome_to_species.keys()))
+            return err(F"could not find genome for genomes='{missing}'")
 
-        return JsonResponse(member_to_species)
+        return JsonResponse(genome_to_species)
 
     @staticmethod
     def annotation_to_type(request):
@@ -133,7 +133,7 @@ class Api:
         print(genome, term)
 
         if genome:
-            genes = Gene.objects.filter(genome=genome, identifier__icontains=term if term else '').order_by('identifier')[:10]
+            genes = Gene.objects.filter(genomecontent=genome, identifier__icontains=term if term else '').order_by('identifier')[:10]
         else:
             genes = Gene.objects.filter(identifier__istartswith=term).order_by('identifier')[:10]
 
@@ -150,7 +150,7 @@ class Api:
         if not 'term' in request.GET:
             return err('"term" not in request.GET')
         q = request.GET.get('term', '')
-        genomes = Genome.objects.filter(identifier__icontains=q)[:20]
+        genomes = GenomeContent.objects.filter(identifier__icontains=q)[:20]
         genomes.prefetch_related('strain__taxid')
         results = []
         for genome in genomes:
@@ -199,20 +199,20 @@ class Api:
         return JsonResponse(dict(success=success))
 
     @staticmethod
-    def validate_members(request):
+    def validate_genomes(request):
         """
-        Test if members exist in the database.
+        Test if genomes exist in the database.
         """
         if not request.GET:
             return err('did not receive valid JSON')
 
-        if not 'members[]' in request.GET:
-            return err('did not receive members[]')
+        if not 'genomes[]' in request.GET:
+            return err('did not receive genomes[]')
 
-        query_members = set(request.GET.getlist('members[]'))
-        found_members = set(Member.objects.filter(identifier__in=query_members).values_list('identifier', flat=True))
+        query_genomes = set(request.GET.getlist('genomes[]'))
+        found_genomes = set(Genome.objects.filter(identifier__in=query_genomes).values_list('identifier', flat=True))
 
-        success = query_members == found_members
+        success = query_genomes == found_genomes
 
         return JsonResponse(dict(success=success))
 
@@ -221,31 +221,31 @@ class Api:
         """
         Get the annotations a strain has for a given KEGG map.
 
-        Queries: map_id, members
+        Queries: map_id, genomes
 
         Returns: {k: ['K0000', ...], r: [], ec: []}
         """
         if not request.GET:
             return err('did not receive valid JSON')
 
-        if not ('map_id' and 'members[]' in request.GET):
-            return err(F"missing parameters. required: 'map_id' and 'members[]'. Got: {request.GET.keys()}")
+        if not ('map_id' and 'genomes[]' in request.GET):
+            return err(F"missing parameters. required: 'map_id' and 'genomes[]'. Got: {request.GET.keys()}")
 
         map_id = request.GET['map_id']
-        members = request.GET.getlist('members[]')
+        genomes = request.GET.getlist('genomes[]')
 
         strain_to_annotations = {}
 
         map_annos = Annotation.objects.filter(keggmap=map_id)
 
-        for identifier in members:
-            if not Genome.objects.filter(pk=identifier).exists():
-                return err(F"could not find genome for member='{identifier}'")
+        for identifier in genomes:
+            if not GenomeContent.objects.filter(pk=identifier).exists():
+                return err(F"could not find genome for genome='{identifier}'")
 
             strain_to_annotations[identifier] = dict(
-                k=list(map_annos.filter(anno_type='KG', genome=identifier).values_list(flat=True)),
-                r=list(map_annos.filter(anno_type='KR', genome=identifier).values_list(flat=True)),
-                ec=list(map_annos.filter(anno_type='EC', genome=identifier).values_list(flat=True))
+                k=list(map_annos.filter(anno_type='KG', genomecontent=identifier).values_list(flat=True)),
+                r=list(map_annos.filter(anno_type='KR', genomecontent=identifier).values_list(flat=True)),
+                ec=list(map_annos.filter(anno_type='EC', genomecontent=identifier).values_list(flat=True))
             )
 
         return JsonResponse(strain_to_annotations)
@@ -297,7 +297,7 @@ class Api:
 
         g = Gene.objects.get(identifier=gene_identifier)
 
-        graphic_record = GraphicRecordLocus(gbk_file=g.genome.member.cds_gbk(relative=False), locus_tag=gene_identifier, span=30000)
+        graphic_record = GraphicRecordLocus(gbk_file=g.genomecontent.genome.cds_gbk(relative=False), locus_tag=gene_identifier, span=30000)
 
         graphic_record.colorize_graphic_record({gene_identifier: '#1984ff'}, strict=False, default_color='#ffffff')
 
@@ -347,10 +347,10 @@ class Api:
                 annotype_to_gene[(annotation.anno_type)].append(jsonify_annotation(annotation))
 
         return JsonResponse(dict(
-            member=g.genome.identifier,
-            member_html=g.genome.member.html,
-            species=g.genome.taxid.taxscientificname,
-            taxid=g.genome.taxid.id,
+            genome=g.genomecontent.identifier,
+            genome_html=g.genomecontent.genome.html,
+            species=g.genomecontent.taxid.taxscientificname,
+            taxid=g.genomecontent.taxid.id,
             identifier=g.identifier,
             annotype_to_gene=annotype_to_gene,
             annotations=[
@@ -375,7 +375,7 @@ class Api:
 
         Query:
             - method: 'taxid', 'ani' or 'orthofinder'
-            - members[]: list of member identifiers
+            - genomes[]: list of genome identifiers
         """
         if not request.GET:
             return err('did not receive valid JSON')
@@ -387,18 +387,18 @@ class Api:
         if method not in ['taxid', 'ani', 'orthofinder']:
             return err(F"method must be either taxid', 'ani' or 'orthofinder'. Got: {method}")
 
-        identifiers = set(request.GET.getlist('members[]'))
+        identifiers = set(request.GET.getlist('genomes[]'))
 
         if method == 'taxid':
-            MODEL = Member
+            MODEL = Genome
             METHOD = TaxIdTree
 
         if method == 'ani':
-            MODEL = Genome
+            MODEL = GenomeContent
             METHOD = AniTree
 
         if method == 'orthofinder':
-            MODEL = Genome
+            MODEL = GenomeContent
             METHOD = OrthofinderTree
 
         objs = MODEL.objects.filter(identifier__in=identifiers)

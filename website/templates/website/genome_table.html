@@ -3,7 +3,7 @@
 
 {% block styles %}
     <!-- Site-specific css/js -->
-    <link rel="stylesheet" type="text/css" href="{% static 'website/css/member_table.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'website/css/genome_table.css' %}"/>
     <link rel="stylesheet" type="text/css" href="{% static 'website/css/warning-stripes.css' %}"/>
 
     <link rel="stylesheet" type="text/css" href="{% static 'global/css/taxid_color.css' %}" id="taxid-color-stylesheet"
@@ -70,7 +70,7 @@
 {% endblock %}
 
 {% block body %}
-    <!-- Table for every Member in the database -->
+    <!-- Table for every Genome in the database -->
     <div id="custom-table-wrapper">
         <table id="table" class="table table-sm"></table>
     </div>
@@ -82,7 +82,7 @@
     <script>
         "use strict";
 
-        const member_table = $('#table');
+        const genome_table = $('#table');
         const col_dropdown = $('#coldropdown');
         const sortable_selected = document.getElementById('sortable-selected');
         const sortable_available = document.getElementById('sortable-available');
@@ -91,7 +91,7 @@
         let resizeTimer;
 
         // set default style of the table
-        const member_table_skeleton = "<thead class=\"thead-dark\"></thead>";
+        const genome_table_skeleton = "<thead class=\"thead-dark\"></thead>";
 
         function get_sorted_selectors() {
             let selectors = [];
@@ -141,7 +141,7 @@
                 let selected_row_idx_array = data_table.rows({selected: true})[0];
                 let selected_identifiers = selected_row_idx_array.map(row_idx => data_table.cell(row_idx, id_col_idx).data());
 
-                ShowMemberContextMenu(event, this_identifier, selected_identifiers);
+                ShowGenomeContextMenu(event, this_identifier, selected_identifiers);
             })
         });
 
@@ -152,9 +152,8 @@
             }
             resizeTimer = setTimeout(function () {
                 // Set new size to height -100px
-                member_table.closest('.dataTables_scrollBody').css('max-height', calcTableSize() + 'px');
-                member_table.DataTable().draw();
-
+                genome_table.closest('.dataTables_scrollBody').css('max-height', calcTableSize() + 'px');
+                genome_table.DataTable().draw()
             }, 250);    // Timer value for checking resize event start/stop
         });
 
@@ -163,13 +162,13 @@
             if (data_table) {
                 data_table.destroy();
             }
-            // destroy external selectors
+            {#// destroy external selectors#}
             document.getElementById('external_filter_representative').innerHTML = '';
             document.getElementById('external_filter_contaminated').innerHTML = '';
             document.getElementById('external_filter_strain_restricted').innerHTML = '';
 
             // load style of table
-            member_table.html(member_table_skeleton);
+            genome_table.html(genome_table_skeleton);
 
             // load table
             $.ajax({
@@ -177,7 +176,14 @@
                 data: {columns: JSON.stringify(get_sorted_selectors())},
                 url: "../table-load-script/",
                 dataType: "script",
-            });
+            }).done(function () {
+                    sleep(1500).then(function () {
+                        document.getElementById('yadcf-filter--table-0')[0].text = 'show all'
+                        document.getElementById('yadcf-filter--table-1')[0].text = 'show all'
+                        document.getElementById('yadcf-filter--table-2')[0].text = 'show all'
+                    })
+                }
+            );
 
             setTimeout(function () {
                 // adjust height based on window (timeout: 0.5 sec)

@@ -70,7 +70,7 @@ class Orthofinder:
         # raise OrthofinderError if an identifier is not amongst the precomputed fastas
         not_precomputed = identifiers.difference(old_identifiers)
         if len(not_precomputed):
-            raise OrthofinderError(F'The following members have not been precomputed: {not_precomputed}. Remove them!')
+            raise OrthofinderError(F'The following genomes have not been precomputed: {not_precomputed}. Remove them!')
 
         # comment unwanted fastas
         def filter(line):

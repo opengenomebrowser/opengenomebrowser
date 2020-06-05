@@ -151,7 +151,7 @@ class Annotation(models.Model):
     @staticmethod
     def reload_orthofinder():
         import os
-        from . import Genome, Gene
+        from . import GenomeContent, Gene
 
         orthofinder_base = F'{settings.GENOMIC_DATABASE}/OrthoFinder/'
 
@@ -180,10 +180,10 @@ class Annotation(models.Model):
         with open(orthogroups_txt, 'r') as f:
             line = f.readline().strip()
 
-            all_genomes = set(Genome.objects.all().values_list('identifier', flat=True))
+            all_genomecontents = set(GenomeContent.objects.all().values_list('identifier', flat=True))
             all_genes = set(Gene.objects.all().values_list('identifier', flat=True))
             orthogroups = []
-            genome_to_ortholog_links = []
+            genomecontent_to_ortholog_links = []
             gene_to_ortholog_links = []
             while line:
                 orthogroup, gene_identifiers = line.split(': ', maxsplit=1)
@@ -201,9 +201,9 @@ class Annotation(models.Model):
                             Gene.annotations.through(gene_id=gene_id, annotation_id=orthogroup))
 
                 for strain in set(strains):
-                    if strain in all_genomes:
-                        genome_to_ortholog_links.append(
-                            Genome.annotations.through(genome_id=strain, annotation_id=orthogroup))
+                    if strain in all_genomecontents:
+                        genomecontent_to_ortholog_links.append(
+                            GenomeContent.annotations.through(genomecontent_id=strain, annotation_id=orthogroup))
 
                 line = f.readline().strip()
 
@@ -213,7 +213,7 @@ class Annotation(models.Model):
 
         # Create many-to-many relationships
         print('Step 3/5: Link orthogroup-annotations to genomes.', end=' ', flush=True)
-        Genome.annotations.through.objects.bulk_create(genome_to_ortholog_links)
+        GenomeContent.annotations.through.objects.bulk_create(genomecontent_to_ortholog_links)
         print('Step 4/5: Link orthogroup-annotations to genes.', end=' ', flush=True)
         Gene.annotations.through.objects.bulk_create(gene_to_ortholog_links)
 

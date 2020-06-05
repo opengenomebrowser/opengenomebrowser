@@ -7,15 +7,15 @@ from colorama import Fore
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-# import django environment to manipulate the Strain and Member classes
+# import django environment to manipulate the Strain and Genome classes
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "OpenGenomeBrowser.settings")
 from django.core.wsgi import get_wsgi_application
 from django.conf import settings
 
 application = get_wsgi_application()
 
-from website.models import Strain, Member, Tag, TaxID, Genome, Gene, KeggMap
-from website.models.MemberSerializer import MemberSerializer
+from website.models import Strain, Genome, Tag, TaxID, GenomeContent, Gene, KeggMap
+from website.models.GenomeSerializer import GenomeSerializer
 from website.models.StrainSerializer import StrainSerializer
 
 from website.models.Annotation import Annotation
@@ -29,12 +29,12 @@ class Importer:
         strains_path = self.db_path + "/strains"
         assert os.path.isdir(strains_path), strains_path
 
-        # Remove Strain or a Member if it has been removed from the database-folder
+        # Remove Strain or a Genome if it has been removed from the database-folder
         if delete_missing:
             self.remove_missing_strains(strains_path, auto_delete_missing)
 
         # Import new strains / update existing strains
-        member_serializer = MemberSerializer()
+        genome_serializer = GenomeSerializer()
         strain_serializer = StrainSerializer()
 
         strain_folders_len = len(list(os.scandir(strains_path)))
@@ -53,28 +53,28 @@ class Importer:
                 "'name' in strain.json doesn't match folder name: {}".format(strain_folder.path)
 
             representative_identifier = strain_dict["representative"]
-            assert os.path.isdir(strain_folder.path + "/members/" + representative_identifier), \
+            assert os.path.isdir(strain_folder.path + "/genomes/" + representative_identifier), \
                 "Error: Representative doesn't exist! Strain: {}, Representative: {}" \
                     .format(strain_folder.name, representative_identifier)
 
             s = strain_serializer.import_strain(strain_dict, update_css=False)
 
-            for member_folder in os.scandir(strain_folder.path + "/members"):
-                current_member = member_folder.name
-                print("   └── " + current_member, end='')
+            for genome_folder in os.scandir(strain_folder.path + "/genomes"):
+                current_genome = genome_folder.name
+                print("   └── " + current_genome, end='')
 
-                with open(member_folder.path + "/member.json") as file:
-                    member_dict = json.loads(file.read())
+                with open(genome_folder.path + "/genome.json") as file:
+                    genome_dict = json.loads(file.read())
 
-                assert current_member.startswith(strain_folder.name), \
-                    "Member name '{}' doesn't start with corresponding strain name '{}'.".format(current_member,
+                assert current_genome.startswith(strain_folder.name), \
+                    "genome name '{}' doesn't start with corresponding strain name '{}'.".format(current_genome,
                                                                                                  current_strain)
-                assert current_member == member_dict["identifier"], \
-                    "'name' in member.json doesn't match folder name: {}".format(member_folder.path)
+                assert current_genome == genome_dict["identifier"], \
+                    "'name' in genome.json doesn't match folder name: {}".format(genome_folder.path)
 
-                is_representative = current_member == representative_identifier
+                is_representative = current_genome == representative_identifier
 
-                member_serializer.import_member(member_dict, s, is_representative, update_css=False)
+                genome_serializer.import_genome(genome_dict, s, is_representative, update_css=False)
 
         if reload_orthologs: Annotation.reload_orthofinder()
 
@@ -89,61 +89,61 @@ class Importer:
 
     def remove_missing_strains(self, strains_path, auto_delete_missing):
         all_strains = []
-        all_members = []
+        all_genomes = []
 
         for strain_folder in os.scandir(strains_path):
             all_strains.append(strain_folder.name)
-            for member_folder in os.scandir(strain_folder.path + "/members"):
-                all_members.append(member_folder.name)
+            for genome_folder in os.scandir(strain_folder.path + "/genomes"):
+                all_genomes.append(genome_folder.name)
 
-                # OVERWRITE MEMBER.JSON
-                # print(member_folder.name)
-                # member_json_path = member_folder.path + "/member.json"
-                # assert os.path.isfile(member_json_path)
-                # member_dict = MemberSerializer.export_member(member_folder.name)
-                # with open(member_json_path, 'w') as file:
-                #     file.write(json.dumps(member_dict, indent=4))
+                # OVERWRITE genome.JSON
+                # print(genome_folder.name)
+                # genome_json_path = genome_folder.path + "/genome.json"
+                # assert os.path.isfile(genome_json_path)
+                # genome_dict = genomeSerializer.export_genome(genome_folder.name)
+                # with open(genome_json_path, 'w') as file:
+                #     file.write(json.dumps(genome_dict, indent=4))
 
-                # with open(member_folder.path + "/member.json") as file:
-                #     member_dict = json.loads(file.read())
-                # # print(member_dict)
+                # with open(genome_folder.path + "/genome.json") as file:
+                #     genome_dict = json.loads(file.read())
+                # # print(genome_dict)
                 # for file in ['assembly_fasta_file', 'cds_tool_faa_file', 'cds_tool_gbk_file',
                 #              'cds_tool_gff_file', 'cds_tool_sqn_file', 'cds_tool_ffn_file']:
                 #     if file.startswith('ass'):
                 #         folder = '1_assembly'
                 #     else:
                 #         folder = '2_cds'
-                #     fn = member_dict[file + 'name']
-                #     del member_dict[file + 'name']
+                #     fn = genome_dict[file + 'name']
+                #     del genome_dict[file + 'name']
                 #     if fn is not None:
                 #         fn = F'{folder}/{fn}'
-                #     member_dict[file] = fn
+                #     genome_dict[file] = fn
                 #
-                # assert 'custom_annotations' in member_dict
-                # cus_ann = member_dict['custom_annotations']
+                # assert 'custom_annotations' in genome_dict
+                # cus_ann = genome_dict['custom_annotations']
                 # for ann in cus_ann:
                 #     ann['file'] = '3_annotation/' + ann['file']
-                #     assert os.path.isfile(member_folder.path+"/"+ann['file'])
+                #     assert os.path.isfile(genome_folder.path+"/"+ann['file'])
                 #
-                # print(member_dict['custom_annotations'])
-                # for key in member_dict.keys():
+                # print(genome_dict['custom_annotations'])
+                # for key in genome_dict.keys():
                 #     assert 'filename' not in key
 
                 # exit(0)
 
-                # with open(member_folder.path + "/member.json", 'w') as file:
-                #     file.write(json.dumps(member_dict, indent=4))
+                # with open(genome_folder.path + "/genome.json", 'w') as file:
+                #     file.write(json.dumps(genome_dict, indent=4))
 
         # exit(0)
 
-        for member in Member.objects.all():
-            if member.identifier not in all_members:
+        for genome in Genome.objects.all():
+            if genome.identifier not in all_genomes:
                 if not auto_delete_missing:
                     Importer.print_warning(
-                        "Member '{}' is missing from the database-folder. Remove it from the database?"
-                            .format(member.identifier), color=Fore.MAGENTA)
+                        "Genome '{}' is missing from the database-folder. Remove it from the database?"
+                            .format(genome.identifier), color=Fore.MAGENTA)
                     Importer.confirm_delete(color=Fore.MAGENTA)
-                member.delete()
+                genome.delete()
 
         for strain in Strain.objects.all():
             if strain.name not in all_strains:
@@ -191,7 +191,7 @@ class Importer:
             Importer.print_warning("DO YOU REALLY WANT TO RESET THE DATABASE?", color=Fore.MAGENTA)
             Importer.confirm_delete(color=Fore.MAGENTA)
 
-        for model in [Strain, Member, Tag, TaxID, Genome, Gene, KeggMap, Annotation]:
+        for model in [Strain, Genome, Tag, TaxID, GenomeContent, Gene, KeggMap, Annotation]:
             model.objects.all().delete()
 
     @staticmethod
@@ -203,9 +203,9 @@ class Importer:
         for strain in strains:
             assert strain.invariant(), "Class invariant failed for strain '{}'!".format(strain.name)
 
-        members = Member.objects.all()
-        for member in members:
-            assert member.invariant(), "Class invariant failed for member '{}'!".format(member.identifier)
+        genomes = Genome.objects.all()
+        for genome in genomes:
+            assert genome.invariant(), "Class invariant failed for genome '{}'!".format(genome.identifier)
 
         tags = Tag.objects.all()
         for tag in tags:
@@ -217,8 +217,8 @@ class Importer:
                                                                                            taxid.scientific_name)
         assert Annotation.invariant()
 
-        print("Successfully imported {} strains and {} members, belonging to {} species.".format(
-            len(strains), len(members), len(Strain.objects.values('taxid').distinct())))
+        print("Successfully imported {} strains and {} genomes, belonging to {} species.".format(
+            len(strains), len(genomes), len(Strain.objects.values('taxid').distinct())))
 
     # def export_database(self):
     #     for strain in Strain.objects.all()

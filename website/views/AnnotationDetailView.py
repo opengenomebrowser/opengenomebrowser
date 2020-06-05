@@ -1,4 +1,4 @@
-from website.models import Genome, Gene, Annotation
+from website.models import GenomeContent, Gene, Annotation
 from django.views.generic import DetailView
 
 
@@ -15,17 +15,17 @@ class AnnotationDetailView(DetailView):
 
         context['title'] = a.name
 
-        genes = a.gene_set.all().order_by('identifier')[:2000].prefetch_related('genome__member__strain__taxid')
+        genes = a.gene_set.all().order_by('identifier')[:2000].prefetch_related('genomecontent__genome__strain__taxid')
 
         context['capped'] = len(genes) == 2000
 
-        genome_to_gene = {}
+        genomecontent_to_gene = {}
         for gene in genes:
-            if gene.genome not in genome_to_gene:
-                genome_to_gene[gene.genome] = [gene]
+            if gene.genomecontent not in genomecontent_to_gene:
+                genomecontent_to_gene[gene.genomecontent] = [gene]
             else:
-                genome_to_gene[(gene.genome)].append(gene)
+                genomecontent_to_gene[(gene.genomecontent)].append(gene)
 
-        context['genome_to_gene'] = genome_to_gene
+        context['genome_to_gene'] = genomecontent_to_gene
 
         return context

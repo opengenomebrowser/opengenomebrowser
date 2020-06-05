@@ -1,7 +1,7 @@
 from django.db import models
 from django.core.validators import RegexValidator
 from .Annotation import Annotation
-from website.models.Genome import Genome
+from website.models.GenomeContent import GenomeContent
 from OpenGenomeBrowser import settings
 import os
 
@@ -73,9 +73,9 @@ class KeggMap(models.Model):
 
     def _load_content(self, K_set, EC_set, R_set):
         # link KEGG-map to annotations
-        Genome.add_many_annotations(self=self, anno_type='KG', annos_to_add=K_set)
-        Genome.add_many_annotations(self=self, anno_type='EC', annos_to_add=EC_set)
-        Genome.add_many_annotations(self=self, anno_type='KR', annos_to_add=R_set)
+        GenomeContent.add_many_annotations(self=self, anno_type='KG', annos_to_add=K_set)
+        GenomeContent.add_many_annotations(self=self, anno_type='EC', annos_to_add=EC_set)
+        GenomeContent.add_many_annotations(self=self, anno_type='KR', annos_to_add=R_set)
 
         assert len(K_set) == len(self.annotations.filter(anno_type='KG'))
         assert len(EC_set) == len(self.annotations.filter(anno_type='EC'))

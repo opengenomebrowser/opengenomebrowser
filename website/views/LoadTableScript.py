@@ -1,13 +1,13 @@
 import json
-from website.models import Tag, Member
+from website.models import Tag, Genome
 from django.shortcuts import render
 from lib.django_template_increment_counter import Counter
 
 # prepare yadcf settings
-selector_to_description_dict = Member.get_selector_to_description_dict()
+selector_to_description_dict = Genome.get_selector_to_description_dict()
 tags = Tag.getTagList().__str__()
 
-yadcf_columns = Member.get_selector_to_description_dict()
+yadcf_columns = Genome.get_selector_to_description_dict()
 
 yadcf_settings = {
     'no-filter': {
@@ -56,7 +56,7 @@ for selector in yadcf_columns:
 
 
 def render_script(request):
-    columns = ["strain.name", "identifier", "strain.taxid.taxscientificname", "member_tags", "strain_tags"]  # default
+    columns = ["strain.name", "identifier", "strain.taxid.taxscientificname", "genome_tags", "strain_tags"]  # default
 
     if 'columns' in request.GET:
         temp = json.loads(request.GET['columns'])

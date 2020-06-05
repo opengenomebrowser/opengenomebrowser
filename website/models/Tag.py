@@ -21,7 +21,7 @@ class Tag(models.Model):
     @staticmethod
     def get_or_create_tag(tag: str):
         """
-        Add Strain or Member to Tag if it already exists, create new one otherwise.
+        Add Strain or Genome to Tag if it already exists, create new one otherwise.
 
         :param tag: tag-string
         :returns Tag:

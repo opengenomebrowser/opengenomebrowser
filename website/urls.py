@@ -6,21 +6,21 @@ app_name = 'website'
 
 urlpatterns = [
     # ex: /
-    path('', Index.index_view, name='index'),
+    path('', Home.home_view, name='index'),
 
     # ex: /download
     re_path(r'download/.*$', Download.download_view, name='download'),
 
-    # ex: /members
-    path('members', MemberTable.member_list_view, name='members'),
-    path('table-load-script/', LoadTableScript.render_script, name='member-table-script'),
-    path('table-ajax/', MemberTableAjax.as_view(), name='member-table-ajax'),
+    # ex: /genomes
+    path('genomes', GenomeTable.genome_list_view, name='genomes'),
+    path('table-load-script/', LoadTableScript.render_script, name='genome-table-script'),
+    path('table-ajax/', GenomeTableAjax.as_view(), name='genome-table-ajax'),
 
     # ex: /strain/{identifier}
     path('strain/<slug:slug>/', StrainDetailView.as_view(), name='strain'),
 
     # ex: /strain/{name}
-    path('member/<str:slug>/', MemberDetailView.as_view(), name='member'),
+    path('genome/<str:slug>/', GenomeDetailView.as_view(), name='genome'),
 
     # ex: /taxid/{taxid}
     path('taxid/<str:slug>/', TaxIDDetailView.as_view(), name='taxid'),
@@ -30,20 +30,20 @@ urlpatterns = [
     # ex: /gene/{name}
     path('gene/<str:slug>/', GeneDetailView.as_view(), name='gene'),
 
-    # ex: /kegg-single/?keggmap={00030}&members={strain1}+{strain2}
+    # ex: /kegg-single/?keggmap={00030}&genomes={strain1}+{strain2}
     path('kegg/', KeggView.kegg_view, name='kegg'),
 
-    # ex: /trees/?members={strain1}+{strain2}
+    # ex: /trees/?genomes={strain1}+{strain2}
     path('trees/', Trees.trees, name='trees'),
 
     # ex: /annotation/{name}
     path('annotation/<str:slug>/', AnnotationDetailView.as_view(), name='annotation'),
 
-    # ex: /annotation-search/?annotations={K01626}+{EC:4.4.4.4}&members={strain1}+{strain2}
+    # ex: /annotation-search/?annotations={K01626}+{EC:4.4.4.4}&genomes={strain1}+{strain2}
     path('annotation-search/', AnnotationSearch.annotation_view, name='annotation-search'),
     path('annotation-matrix/', AnnotationSearch.annotation_matrix, name='annotation-matrix'),
 
-    # ex: /blast/?query={fasta}&members={strain1}+{strain2}
+    # ex: /blast/?query={fasta}&genomes={strain1}+{strain2}
     path('blast/', Blast.blast_view, name='blast'),
     path('blast/submit', Blast.blast_submit, name='blast-submit'),
     # path('api/autocomplete-genome/', Blast.GenomeAutocomplete.as_view(),
@@ -56,12 +56,12 @@ urlpatterns = [
          name='api-autocomplete-genome-identifier'),
     path('api/search-genes/', Api.search_genes, name='api-search-genes'),
     path('api/validate-keggmap/', Api.validate_keggmap, name='api-validate-keggmap'),
-    path('api/validate-members/', Api.validate_members, name='api-validate-members'),
+    path('api/validate-genomes/', Api.validate_genomes, name='api-validate-genomes'),
     path('api/validate-annotations/', Api.validate_annotations, name='api-validate-annotations'),
     path('api/get-kegg-annos/', Api.get_kegg_annos, name='api-get-kegg-annos'),
     path('api/get-anno-description/', Api.get_anno_description, name='api-get-anno-description'),
-    path('api/member-identifier-to-species/', Api.member_identifier_to_species,
-         name='api-member-identifier-to-species'),
+    path('api/genome-identifier-to-species/', Api.genome_identifier_to_species,
+         name='api-genome-identifier-to-species'),
     path('api/annotation-to-type/', Api.annotation_to_type, name='api-annotation-to-type'),
     path('api/dna-feature-viewer/', Api.dna_feature_viewer, name='api-dna-feature-viewer'),
     path('api/get-gene/', Api.get_gene, name='api-get-gene'),

@@ -46,23 +46,23 @@ class Strain(models.Model):
     def get_taxonomy(self, rank: str = None) -> str:
         return self.taxid.get_taxonomy(rank)
 
-    def set_representative(self, member):
-        from .Member import Member
-        assert member == None or isinstance(member, Member)
+    def set_representative(self, genome):
+        from .Genome import Genome
+        assert genome == None or isinstance(genome, Genome)
 
         if hasattr(self, 'representative'):
             current_representative = self.representative
             current_representative.representative = None
             current_representative.save()
 
-        if member:
-            member.representative = self
-            member.save()
+        if genome:
+            genome.representative = self
+            genome.save()
 
     def __str__(self):
         return self.name
 
     def invariant(self):
-        assert self.member_set.count() > 0, "Error in strain {}: Has no member!".format(self.name)
+        assert self.genome_set.count() > 0, "Error in strain {}: Has no genome!".format(self.name)
         assert hasattr(self, 'representative'), "Error in strain {}: Has no representative!".format(self.name)
         return True

@@ -42,15 +42,15 @@
             <li class="breadcrumb-item"></li>
             <!-- Taxid -->
             <li class="breadcrumb-item">
-                <a href="{% url 'website:taxid' slug=gene.genome.member.taxid.id %}"> TAXID {{ gene.genome.member.taxid.id }}</a>
+                <a href="{% url 'website:taxid' slug=gene.genomecontent.genome.taxid.id %}"> TAXID {{ gene.genomecontent.genome.taxid.id }}</a>
             </li>
             <!-- Strain -->
             <li class="breadcrumb-item">
-                <a href="{% url 'website:strain' slug=gene.genome.strain %}"> STRAIN {{ gene.genome.strain }}</a>
+                <a href="{% url 'website:strain' slug=gene.genomecontent.strain %}"> STRAIN {{ gene.genomecontent.strain }}</a>
             </li>
-            <!-- Member -->
+            <!-- Genome -->
             <li class="breadcrumb-item">
-                <a href="{% url 'website:member' slug=gene.genome %}"> MEMBER {{ gene.genome }}</a>
+                <a href="{% url 'website:genome' slug=gene.genomecontent %}"> GENOME {{ gene.genomecontent }}</a>
             </li>
             <!-- Gene -->
             <li class="breadcrumb-item active" aria-current="page">
@@ -68,15 +68,15 @@
             <span class="type-label">locus tag:</span>
             <span class="h1">{{ gene }}</span>
 
-            <!-- member -->
-            <span class="type-label">member:</span>
-            <a class="h2" href="{% url 'website:member' slug=gene.genome %}">{{ gene.genome }}</a>
+            <!-- genome -->
+            <span class="type-label">genome:</span>
+            <a class="h2" href="{% url 'website:genome' slug=gene.genomecontent %}">{{ gene.genomecontent }}</a>
 
             <!-- taxid -->
-            {% if gene.genome.taxid %}<br>
+            {% if gene.genomecontent.taxid %}<br>
                 <span class="type-label">species:</span>
-                <a class="h3" href="{% url 'website:taxid' slug=gene.genome.taxid.id %}">{{ gene.genome.taxid }} <span
-                        style="{{ gene.genome.taxid.html_style }}">(taxid: {{ gene.genome.taxid.id }})</span></a>
+                <a class="h3" href="{% url 'website:taxid' slug=gene.genomecontent.taxid.id %}">{{ gene.genomecontent.taxid }} <span
+                        style="{{ gene.genomecontent.taxid.html_style }}">(taxid: {{ gene.genomecontent.taxid.id }})</span></a>
             {% endif %}
         </div>
 

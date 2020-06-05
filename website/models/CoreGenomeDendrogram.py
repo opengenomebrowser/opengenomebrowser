@@ -1,7 +1,7 @@
 from django.db import models
 import hashlib
 from website.tasks import calculate_orthofinder
-from .Genome import Genome
+from .GenomeContent import GenomeContent
 
 
 
@@ -47,7 +47,7 @@ class CoreGenomeDendrogram(models.Model):
 
     newick = models.TextField()  # TextFields have an unlimited number of characters
 
-    genomes = models.ManyToManyField(Genome)
+    genomes = models.ManyToManyField(GenomeContent)
 
     DONE = "D"
     RUNNING = "R"

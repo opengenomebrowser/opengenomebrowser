@@ -146,35 +146,35 @@ let autoDiscoverSpecies = function (event, species) {
 }
 
 
-let showMemberClickMenu = function (event, member = 'auto', species = 'auto', siblings = 'auto') {
-    console.log('showMemberClickMenu', 'event:', event, 'member:', member, 'siblings:', siblings)
+let showGenomeClickMenu = function (event, genome = 'auto', species = 'auto', siblings = 'auto') {
+    console.log('showGenomeClickMenu', 'event:', event, 'genome:', genome, 'siblings:', siblings)
     // auto-discover species
     species = autoDiscoverSpecies(event, species)
 
-    // auto-discover member
-    member = autoDiscoverSelf(event, member)
+    // auto-discover genome
+    genome = autoDiscoverSelf(event, genome)
 
     // auto-discover siblings
-    siblings = autoDiscoverSiblings(event, member, siblings, 'member')
+    siblings = autoDiscoverSiblings(event, genome, siblings, 'genome')
 
-    let cm = new ClickMenu(event, 'member-context-menu')
+    let cm = new ClickMenu(event, 'genome-context-menu')
 
     // list of elements to click on
     cm.appendElement(`
 <h6 class="dropdown-header context-menu-header">
-${member}</h6>
+${genome}</h6>
 <a data-species="${species}" href="/taxname/${species}" class="dropdown-item context-menu-icon context-menu-icon-taxid">
 ${species}</a>
-<a href="/member/${member}" class="dropdown-item context-menu-icon context-menu-icon-strain">
-Open member info</a>
-<a onclick="CopyToClipboard('${member}')" class="dropdown-item context-menu-icon context-menu-icon-copy">
+<a href="/genome/${genome}" class="dropdown-item context-menu-icon context-menu-icon-strain">
+Open genome info</a>
+<a onclick="CopyToClipboard('${genome}')" class="dropdown-item context-menu-icon context-menu-icon-copy">
 Copy identifier</a>
-<a href="/kegg/?members=${member}" class="dropdown-item context-menu-icon context-menu-icon-pathway">
-Open member on KEGG map</a>
-<a href="/annotation-search/?members=${member}" class="dropdown-item context-menu-icon context-menu-icon-annotation">
-Search for annotations in member</a>
-<a href="/blast/?members=${member}" class="dropdown-item context-menu-icon context-menu-icon-blast">
-Blast member</a>
+<a href="/kegg/?genomes=${genome}" class="dropdown-item context-menu-icon context-menu-icon-pathway">
+Open genome on KEGG map</a>
+<a href="/annotation-search/?genomes=${genome}" class="dropdown-item context-menu-icon context-menu-icon-annotation">
+Search for annotations in genome</a>
+<a href="/blast/?genomes=${genome}" class="dropdown-item context-menu-icon context-menu-icon-blast">
+Blast genome</a>
 `)
 
 
@@ -182,17 +182,17 @@ Blast member</a>
         siblings = siblings.join('+')
         cm.appendElement(`
 <h6 class="dropdown-header context-menu-header">
-${siblings.length} selected members</h6>
-<a href="/trees/?members=${siblings}" class="dropdown-item context-menu-icon context-menu-icon-tree">
+${siblings.length} selected genomes</h6>
+<a href="/trees/?genomes=${siblings}" class="dropdown-item context-menu-icon context-menu-icon-tree">
 Show phylogenetic trees</a>
 <a onclick="CopyToClipboard('FAM21277-i1-1.1, FAM19036-p1-1.1, FAM19471-i1-1.1, FAM1079-i1-1.1, FAM22472-i1-1.1')" class="dropdown-item context-menu-icon context-menu-icon-copy">
-Copy selected members</a>
-<a href="/kegg/?members=${siblings}" class="dropdown-item context-menu-icon context-menu-icon-pathway">
-Open members on KEGG map</a>
-<a href="/annotation-search/?members=${siblings}" class="dropdown-item context-menu-icon context-menu-icon-annotations">
-Search for annotations in members</a>
-<a href="/blast/?members=${siblings}" class="dropdown-item context-menu-icon context-menu-icon-blast">
-Blast members</a>
+Copy selected genomes</a>
+<a href="/kegg/?genomes=${siblings}" class="dropdown-item context-menu-icon context-menu-icon-pathway">
+Open genomes on KEGG map</a>
+<a href="/annotation-search/?genomes=${siblings}" class="dropdown-item context-menu-icon context-menu-icon-annotations">
+Search for annotations in genomes</a>
+<a href="/blast/?genomes=${siblings}" class="dropdown-item context-menu-icon context-menu-icon-blast">
+Blast genomes</a>
 </div>
 `)
     }
@@ -200,8 +200,8 @@ Blast members</a>
 };
 
 
-let showAnnotationClickMenu = function (event, annotation = 'auto', siblings = 'auto', members = 'auto') {
-    console.log('showAnnotationClickMenu', 'event:', event, 'annotation:', annotation, 'siblings:', siblings, 'members', members)
+let showAnnotationClickMenu = function (event, annotation = 'auto', siblings = 'auto', genomes = 'auto') {
+    console.log('showAnnotationClickMenu', 'event:', event, 'annotation:', annotation, 'siblings:', siblings, 'genomes', genomes)
 
     // auto-discover annotation
     annotation = autoDiscoverSelf(event, annotation)
@@ -269,7 +269,7 @@ Compare genes</a>
 
     $.getJSON("/api/get-gene", {'gene_identifier': gene}, function (data) {
         console.log('API GET GENE')
-        let member = data['member']
+        let genome = data['genome']
         let taxid = data['taxid']
         let species = data['species']
         let annotype_to_gene = data['annotype_to_gene']
@@ -277,10 +277,10 @@ Compare genes</a>
         document.getElementById('gene-context-menu-species-missing').setAttribute('data-species', species);
 
         let html = `
-<h6 class="dropdown-header context-menu-header" onclick="showMemberClickMenu(event)">
-${member}</h6>
-<a href="/member/${member}" class="dropdown-item context-menu-icon context-menu-icon-strain">
-Open member info</a>
+<h6 class="dropdown-header context-menu-header" onclick="showGenomeClickMenu(event)">
+${genome}</h6>
+<a href="/genome/${genome}" class="dropdown-item context-menu-icon context-menu-icon-strain">
+Open genome info</a>
 <h6 class="dropdown-header context-menu-header">
 Annotations</h6>
 `
