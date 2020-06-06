@@ -3,16 +3,15 @@
 
 {% block styles %}
     <!-- Site-specific css/js -->
-    <link rel="stylesheet" type="text/css" href="{% static 'website/css/secondary-navbar.css' %}"/>
     <link rel="stylesheet" type="text/css" href="{% static 'website/css/detail.css' %}"/>
     <link rel="stylesheet" type="text/css" href="{% static 'website/css/sequence-viewer.css' %}" id="sequence-stylesheet"/>
     <link rel="stylesheet" type="text/css" href="{% static 'global/css/annotype_color.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'global/css/taxid_color.css' %}">
 
     <script src="{% static 'dna-feature-viewer/js/dna-feature-viewer.js' %}"></script>
-    <script src="{% static 'global/js/bokeh-2.0.1.min.js' %}"></script>
-    <script src="{% static 'global/js/bokeh-tables-2.0.1.min.js' %}"></script>
-    <script src="{% static 'global/js/bokeh-widgets-2.0.1.min.js' %}"></script>
+    <script src="{% static 'global/js/bokeh-2.0.2.min.js' %}"></script>
+    <script src="{% static 'global/js/bokeh-tables-2.0.2.min.js' %}"></script>
+    <script src="{% static 'global/js/bokeh-widgets-2.0.2.min.js' %}"></script>
 
 {% endblock %}
 
@@ -26,7 +25,7 @@
 
     <div class="sidebar-subcontent form-check form-check-inline">
         <label class="form-check-label" for="formControlRange"><a>Example Range input</a></label>
-        <input type="range" class="form-control-range" id="formControlRange" min="3000" max="300000" , value="3000">
+        <input type="range" class="form-control-range" id="formControlRange" min="3000" max="300000" value="3000">
 
         <div><a>3000</a></div>
     </div>
@@ -178,7 +177,7 @@
 
 
         $(document).ready(function () {
-            load_dna_feature_viewer('{{ gene }}')
+            load_dna_feature_viewer_single('{{ gene }}', $('#gene-locus'))
         });
 
 

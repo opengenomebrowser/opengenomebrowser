@@ -276,7 +276,7 @@ class Api:
         return JsonResponse(anno_to_description)
 
     @staticmethod
-    def dna_feature_viewer(request):
+    def dna_feature_viewer_single(request):
         """
         Get dna_feature_viewer bokeh around gene_identifier.
 
@@ -306,6 +306,47 @@ class Api:
                                               viewspan=3000)
 
         script, plot_div = components(plot)
+        script = script[33:-10]  # remove <script type="text/javascript"> and </script>
+
+        return JsonResponse(dict(script=script, plot_div=plot_div))
+
+    @staticmethod
+    def dna_feature_viewer_multi(request):
+        """
+        Get dna_feature_viewer bokeh around gene_identifier.
+
+        Query: gene_identifiers = ["strain3_000345", "strain2_000445"]
+
+        Returns bokeh script and div
+
+        Todo: Span around gene_locus
+        """
+
+        if not request.GET:
+            return err('did not receive valid JSON')
+
+        if not ('gene_identifiers[]' in request.GET):
+            return err(F"missing parameters. required: 'gene_identifiers[]'. Got: {request.GET.keys()}")
+
+        gene_identifiers = request.GET.getlist('gene_identifiers[]')
+
+        gs = Gene.objects.filter(identifier__in=gene_identifiers)
+
+        loci_of_interest = [
+            (g.genomecontent.genome.cds_gbk(relative=False), g.identifier, g.identifier)
+            for g in gs]
+
+        locus_to_color_dict = {id: '#1984ff' for gbk, id, id_ in loci_of_interest}
+
+        graphic_records = GraphicRecordLocus.get_multiple(
+            loci_of_interest,
+            locus_to_color_dict=locus_to_color_dict,
+            span=10000
+        )
+
+        plots = GraphicRecordLocus.plot_multiple_bokeh(graphic_records, viewspan=3000, auto_reverse=True)
+
+        script, plot_div = components(plots)
         script = script[33:-10]  # remove <script type="text/javascript"> and </script>
 
         return JsonResponse(dict(script=script, plot_div=plot_div))

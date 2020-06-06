@@ -337,7 +337,7 @@
 
         // overwrite kegg-svg-lib.js' showKeggMenu function
         function showKeggMenu(event, element) {
-            let cm = new ContextMenu(event, 'kegg-context-menu');
+            let cm = new ClickMenu(event, 'kegg-context-menu');
 
             // apply gradient info
             let has_gradient_info = element.hasAttribute('data-strains-have') && element.getAttribute('data-strains-have') !== "";
@@ -373,12 +373,17 @@
 
             cm.appendHeader('Annotations');
 
+            let all_annotations = []
+
             // append annotations
             for (let a in annotation_types) {
                 let shape_annos = element.getAttribute('data-' + annotation_types[a]).split(',');
                 if (shape_annos[0] !== "") {
                     for (let anno in shape_annos) {
                         anno = shape_annos[anno];
+
+                        all_annotations.push(anno)
+
                         let anno_text = anno;
                         if (has_gradient_info) {
                             anno_text = `${anno} (${annos_to_strains[anno].length})`
@@ -474,6 +479,24 @@
                     cm.appendElement(create_read_only_strain_div(lack, genome_to_species));
                 }
             }
+
+            let formatKegg = function (x) {
+                if (isNaN(x[0])) {
+                    // first letter is not numeric -> not EC number
+                    return x
+                } else {
+                    // EC number
+                    return 'EC:' + x
+                }
+            }
+
+            all_annotations = all_annotations.map(x => formatKegg(x));
+
+            cm.appendElement(`
+<div style="display: inline-flex;">
+    <a class="dropdown-item context-menu-icon context-menu-icon-annotations" href="/annotation-search/?annotations=${urlReplBlanks(all_annotations)}&genomes=${have.join('+')}">
+    Search these annotations in the genomes</a>
+</div>`)
 
             event.stopPropagation();
 

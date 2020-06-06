@@ -3,7 +3,6 @@
 
 {% block styles %}
     <!-- Site-specific css/js -->
-    <link rel="stylesheet" type="text/css" href="{% static 'website/css/secondary-navbar.css' %}"/>
     <link rel="stylesheet" type="text/css" href="{% static 'global/css/taxid_color.css' %}" id="taxid-color-stylesheet"/>
     <link rel="stylesheet" type="text/css" href="{% static 'global/css/tag_color.css' %}"/>
     <link rel="stylesheet" type="text/css" href="{% static 'website/css/detail.css' %}"/>
@@ -43,12 +42,15 @@
         <div class="container black-links">
             <!-- strain -->
             <span class="type-label">strain:</span>
-            <span class="h2">{{ strain }}</span>
+            <span class="h1" onclick="showStrainClickMenu(event, 'auto', '{{ strain.taxid }}')">{{ strain }}</span>
+            <!-- taxid -->
             <!-- taxid -->
             {% if strain.taxid %}<br>
                 <span class="type-label">species:</span>
-                <a class="h3" href="{% url 'website:taxid' slug=strain.taxid.id %}">{{ strain.taxid }} <span
-                        style="{{ strain.taxid.html_style }}">(taxid: {{ strain.taxid.id }})</span></a>
+                <span class="h3">{{ strain.taxid }}</span>
+                <span class="type-label">taxid:</span>
+                <span class="h3" style="{{ strain.taxid.html_style }}"
+                      onclick="showTaxidClickMenu(event, '{{ strain.taxid }}')">{{ strain.taxid.id }}</span>
             {% endif %}
 
             <hr class="featurette-divider">
@@ -99,8 +101,8 @@
 
         <!-- representative -->
         <div class="container black-links">
-            <span class="h3">Representative:</span> <a class="h3"
-                                                       href="{% url 'website:genome' slug=strain.representative %}">{{ strain.representative }}</a>
+            <span class="h3">Representative:</span> <span class="h3"
+                                                          onclick="showGenomeClickMenu(event, 'auto', '{{ strain.taxid }}')">{{ strain.representative }}</span>
         </div>
 
         {% if strain.genome_set.all.count > 1 %}
@@ -111,8 +113,9 @@
                 <h3>Genomes</h3>
 
                 <ul>{% for genome in strain.genome_set.all %}
-                    <li><span>genome: </span><a
-                            class="{{ genome.html_warning_stripes }}" href="{% url 'website:genome' slug=genome %}">{{ genome }}</a></li>
+                    <li><span>genome: </span>
+                        <span class="{{ genome.html_warning_stripes }}" onclick="showGenomeClickMenu(event, 'auto', '{{ strain.taxid }}')">
+                            {{ genome }}</span></li>
                 {% endfor %}</ul>
             </div>
         {% endif %}

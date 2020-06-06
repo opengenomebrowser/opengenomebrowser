@@ -57,7 +57,7 @@ class GenomeTableAjax(BaseDatatableView):
                 if search and col['searchable']:
                     # cannot search binary fields or tags
                     if not columns[col_no] in ['representative', 'contaminated', 'strain.restricted']:
-                        q |= Q(**{'{0}__{1}'.format(columns[col_no].replace('.', '__'), filter_method): search})
+                        q |= Q(**{F"{columns[col_no].replace('.', '__')}__{filter_method}": search})
 
                 # column specific filter
                 if col['search.value']:

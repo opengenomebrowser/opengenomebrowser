@@ -3,7 +3,6 @@
 
 {% block styles %}
     <!-- Site-specific css/js -->
-    <link rel="stylesheet" type="text/css" href="{% static 'website/css/secondary-navbar.css' %}"/>
     <link rel="stylesheet" type="text/css" href="{% static 'global/css/taxid_color.css' %}" id="taxid-color-stylesheet"/>
     <link rel="stylesheet" type="text/css" href="{% static 'global/css/tag_color.css' %}"/>
     <link rel="stylesheet" type="text/css" href="{% static 'website/css/detail.css' %}"/>
@@ -37,10 +36,28 @@
     <section>
         <!-- title -->
         <div class="container black-links">
-            <!-- strain -->
-            <span class="type-label">species:</span>
-            <span class="h3">{{ taxid }} <span style="{{ taxid.html_style }}">(taxid: {{ taxid.id }})</span></span>
+            <!-- species name -->
+            <span class="type-label">name:</span>
+            <span class="h1">{{ taxid }} </span>
 
+            <!-- species taxid -->
+            <span class="type-label">taxid:</span>
+            <span class="h1" style="{{ taxid.html_style }}" onclick="showTaxidClickMenu(event, '{{ taxid }}')">{{ taxid.id }} </span>
+
+            <!-- species rank --><br>
+            <span class="type-label">rank:</span>
+            <span class="h2">{{ taxid.rank }}</span>
+
+            {% if taxid.parent %}<br>
+                <!-- parent name -->
+                <span class="type-label">parent:</span>
+                <span class="h1">{{ taxid.parent }} </span>
+
+                <!-- parent taxid -->
+                <span class="type-label">taxid:</span>
+                <span class="h1" style="{{ taxid.parent.html_style }}"
+                      onclick="showTaxidClickMenu(event, '{{ taxid.parent }}')">{{ taxid.parent.id }} </span>
+            {% endif %}
             <hr class="featurette-divider">
 
         </div>
@@ -49,14 +66,14 @@
         <div class="container black-links">
             <ul>
                 {% for strain in taxid.get_child_strains %}
-
-                    <li><span>strain: </span><a data-toggle="tooltip" data-species="{{ strain.taxid }}" href="{% url 'website:strain' slug=strain %}">
-                        {{ strain }}</a></li>
+                    {#   todo: change this <a> to showStrainClickMenu()!    #}
+                    <li><span>strain: </span><span data-toggle="tooltip" data-species="{{ strain.taxid }}"
+                                                   onclick="showStrainClickMenu(event)">{{ strain }}</span></li>
                     <ul>
                         {% for genome in strain.genome_set.all %}
 
-                            <li><span>genome: </span><a class="{{ genome.html_warning_stripes }}"
-                                                        href="{% url 'website:genome' slug=genome %}">{{ genome }}</a></li>
+                            <li><span>genome: </span><span class="{{ genome.html_warning_stripes }}"
+                                                           onclick="showGenomeClickMenu(event, 'auto', '{{ strain.taxid }}')">{{ genome }}</span></li>
 
                         {% endfor %}
                     </ul>

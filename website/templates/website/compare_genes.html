@@ -1,0 +1,94 @@
+{% extends 'global/base.html' %}
+{% load static %}
+
+{% block styles %}
+    <!-- Site-specific css/js -->
+    <link rel="stylesheet" type="text/css" href="{% static 'global/css/annotype_color.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'global/css/taxid_color.css' %}">
+
+    <script src="{% static 'dna-feature-viewer/js/dna-feature-viewer.js' %}"></script>
+    <script src="{% static 'global/js/bokeh-2.0.2.min.js' %}"></script>
+    <script src="{% static 'global/js/bokeh-tables-2.0.2.min.js' %}"></script>
+    <script src="{% static 'global/js/bokeh-widgets-2.0.2.min.js' %}"></script>
+
+
+    <style>
+
+        #gene-loci {
+            height: 30rem
+        }
+
+    </style>
+
+{% endblock %}
+
+{% block sidebar %}
+
+    <div class="sidebar-subcontent form-check form-check-inline">
+        <label class="form-check-label" for="colorize-sequence-checkbox"><a>Colorize sequences?</a></label>
+        <input class="form-check-input" type="checkbox" id="colorize-sequence-checkbox"
+               onclick="toggle_colorize_sequence()">
+    </div>
+
+    <div class="sidebar-subcontent form-check form-check-inline">
+        <label class="form-check-label" for="formControlRange"><a>Example Range input</a></label>
+        <input type="range" class="form-control-range" id="formControlRange" min="3000" max="300000" value="3000">
+
+        <div><a>3000</a></div>
+    </div>
+
+
+{% endblock %}
+
+{% block body %}
+
+    <section>
+
+        {% if capping %}
+            <div class="container">
+                <div class="alert alert-danger" role="alert">
+                    Genes were capped at {{ capping }}.
+                </div>
+                <hr class="featurette-divider">
+            </div>
+        {% endif %}
+
+        <!-- Gene Locus -->
+        <div class="container">
+
+            <h3>Alignments</h3>
+
+            <div id="alignmentss">
+                <p>not implemented yet</p>
+            </div>
+
+        </div>
+
+
+        <!-- Gene Locus -->
+        <div class="container">
+            <hr class="featurette-divider">
+
+            <h3>Gene Loci</h3>
+
+            <div id="gene-loci"></div>
+
+        </div>
+
+
+    </section>
+
+{% endblock %}
+
+{% block end %}
+    <script>
+        let draw;
+
+
+        $(document).ready(function () {
+            load_dna_feature_viewer_multi([{% if key_genes %} '{{ key_genes|join:"', '" }}' {% else %}{% endif %}], $('#gene-loci'))
+        });
+
+
+    </script>
+{% endblock %}

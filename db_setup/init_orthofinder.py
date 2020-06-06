@@ -1,5 +1,9 @@
 import os
-from db_setup.GenomeLooper import GenomeLooper
+import sys
+from .GenomeLooper import GenomeLooper
+
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
 class GenomeLooperInitOrthofinder(GenomeLooper):
@@ -14,7 +18,7 @@ class GenomeLooperInitOrthofinder(GenomeLooper):
 
 
 if __name__ == "__main__":
-    assert os.path.basename(os.getcwd()) == 'OpenGenomeBrowser', F'CWD must be OpenGenomeBrowser, is {os.getcwd()}'
+    assert os.path.basename(os.getcwd()) == 'opengenomebrowser', F'CWD must be opengenomebrowser, is {os.getcwd()}'
     DB_PATH = 'database'
     if not os.path.isdir(DB_PATH):
         raise NotADirectoryError(F'database dir not found: {DB_PATH}')

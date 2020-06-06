@@ -6,8 +6,7 @@
     <link rel="stylesheet" type="text/css" href="{% static 'website/css/genome_table.css' %}"/>
     <link rel="stylesheet" type="text/css" href="{% static 'website/css/warning-stripes.css' %}"/>
 
-    <link rel="stylesheet" type="text/css" href="{% static 'global/css/taxid_color.css' %}" id="taxid-color-stylesheet"
-          disabled/>
+    <link rel="stylesheet" type="text/css" href="{% static 'global/css/taxid_color.css' %}" id="taxid-color-stylesheet" disabled/>
     <link rel="stylesheet" type="text/css" href="{% static 'global/css/tag_color.css' %}"/>
 
     <!-- yadcf - interactive tables - uses JQuery-UI and DataTables-->
@@ -80,24 +79,24 @@
 {% block end %}
 
     <script>
-        "use strict";
+        "use strict"
 
-        const genome_table = $('#table');
-        const col_dropdown = $('#coldropdown');
-        const sortable_selected = document.getElementById('sortable-selected');
-        const sortable_available = document.getElementById('sortable-available');
-        let data_table;
-        let columns_to_show = [{% for column in default_columns %}'{{ column.0 }}', {% endfor %}];
-        let resizeTimer;
+        const genome_table = $('#table')
+        const col_dropdown = $('#coldropdown')
+        const sortable_selected = document.getElementById('sortable-selected')
+        const sortable_available = document.getElementById('sortable-available')
+        let data_table
+        let columns_to_show = [{% for column in default_columns %}'{{ column.0 }}', {% endfor %}]
+        let resizeTimer
 
         // set default style of the table
-        const genome_table_skeleton = "<thead class=\"thead-dark\"></thead>";
+        const genome_table_skeleton = "<thead class=\"thead-dark\"></thead>"
 
         function get_sorted_selectors() {
-            let selectors = [];
+            let selectors = []
             $("ul#sortable-selected li").each(function () {
                 selectors.push($(this)[0].getAttribute('data-selector'))
-            });
+            })
             return selectors
         }
 
@@ -109,7 +108,7 @@
                 multiDrag: true, // Enable multi-drag
                 selectedClass: 'selected', // The class applied to the selected items
                 group: 'shared', // set both lists to same group
-            });
+            })
             new Sortable.create(sortable_available, {
                 {#swapThreshold: 1,#}
                 animation: 150,
@@ -117,58 +116,60 @@
                 multiDrag: true, // Enable multi-drag
                 selectedClass: 'selected', // The class applied to the selected items
                 group: 'shared', // set both lists to same group
-            });
-        });
+            })
+        })
 
 
         $(document).ready(function () {
-            load_table();
-        });
+            load_table()
+            waitForFail() // improve labels in sidebar
+            toggle_colorize_tax()
+        })
 
         $(document).ready(function () {
-            console.log('init contextmenu');
+            console.log('init contextmenu')
 
             $('#table').on('contextmenu', 'tr', function (event) {
-                event.preventDefault();
+                event.preventDefault()
 
-                console.log('click on ');
-                console.log(event);
+                console.log('click on ')
+                console.log(event)
 
-                let this_row_idx = $(this).index();
-                let id_col_idx = all_colnames.indexOf('Identifier');
-                //let this_data = data_table.row(this_row_index).data();
-                let this_identifier = data_table.cell(this_row_idx, id_col_idx).data();
-                let selected_row_idx_array = data_table.rows({selected: true})[0];
-                let selected_identifiers = selected_row_idx_array.map(row_idx => data_table.cell(row_idx, id_col_idx).data());
+                let this_row_idx = $(this).index()
+                let id_col_idx = all_colnames.indexOf('Identifier')
+                //let this_data = data_table.row(this_row_index).data()
+                let this_identifier = data_table.cell(this_row_idx, id_col_idx).data()
+                let selected_row_idx_array = data_table.rows({selected: true})[0]
+                let selected_identifiers = selected_row_idx_array.map(row_idx => data_table.cell(row_idx, id_col_idx).data())
 
-                ShowGenomeContextMenu(event, this_identifier, selected_identifiers);
+                showGenomeClickMenu(event, this_identifier, 'none', selected_identifiers)
             })
-        });
+        })
 
         // resize table based on window size
         $(window).on('resize', function (e) {
             if (typeof resizeTimer !== 'undefined') {
-                clearTimeout(resizeTimer);
+                clearTimeout(resizeTimer)
             }
             resizeTimer = setTimeout(function () {
                 // Set new size to height -100px
-                genome_table.closest('.dataTables_scrollBody').css('max-height', calcTableSize() + 'px');
+                genome_table.closest('.dataTables_scrollBody').css('max-height', calcTableSize() + 'px')
                 genome_table.DataTable().draw()
-            }, 250);    // Timer value for checking resize event start/stop
-        });
+            }, 250)    // Timer value for checking resize event start/stop
+        })
 
         function load_table() {
             // destroy DataTable if it exists
             if (data_table) {
-                data_table.destroy();
+                data_table.destroy()
             }
             {#// destroy external selectors#}
-            document.getElementById('external_filter_representative').innerHTML = '';
-            document.getElementById('external_filter_contaminated').innerHTML = '';
-            document.getElementById('external_filter_strain_restricted').innerHTML = '';
+            document.getElementById('external_filter_representative').innerHTML = ''
+            document.getElementById('external_filter_contaminated').innerHTML = ''
+            document.getElementById('external_filter_strain_restricted').innerHTML = ''
 
             // load style of table
-            genome_table.html(genome_table_skeleton);
+            genome_table.html(genome_table_skeleton)
 
             // load table
             $.ajax({
@@ -176,48 +177,60 @@
                 data: {columns: JSON.stringify(get_sorted_selectors())},
                 url: "../table-load-script/",
                 dataType: "script",
-            }).done(function () {
-                    sleep(1500).then(function () {
-                        document.getElementById('yadcf-filter--table-0')[0].text = 'show all'
-                        document.getElementById('yadcf-filter--table-1')[0].text = 'show all'
-                        document.getElementById('yadcf-filter--table-2')[0].text = 'show all'
-                    })
-                }
-            );
+            })
 
             setTimeout(function () {
                 // adjust height based on window (timeout: 0.5 sec)
-                window.dispatchEvent(new Event('resize'));
-            }, 500);
+                window.dispatchEvent(new Event('resize'))
+            }, 500)
 
             // close sidenav
-            closeNav();
+            closeNav()
         }
 
         function loop_columns() {
-            let column_dict = {};
+            let column_dict = {}
 
-            c = 0;
+            c = 0
             data_table.columns().every(function () {
-                column_dict[c] = this.header().firstChild.textContent;
-                c += 1;
-            });
+                column_dict[c] = this.header().firstChild.textContent
+                c += 1
+            })
+        }
+
+        // improve labels in sidebar
+        let waitForFail = function (timeout = 500) {
+            if (Boolean(jQuery('#yadcf-filter--table-0').length) && !document.getElementById('yadcf-filter--table-0')[0].text) {
+                document.getElementById('yadcf-filter--table-0')[0].text = 'all'
+                document.getElementById('yadcf-filter--table-1')[0].text = 'all'
+                document.getElementById('yadcf-filter--table-2')[0].text = 'all'
+                document.getElementById('yadcf-filter--table-0')[1].text = 'no'
+                document.getElementById('yadcf-filter--table-1')[1].text = 'no'
+                document.getElementById('yadcf-filter--table-2')[1].text = 'no'
+                document.getElementById('yadcf-filter--table-0')[2].text = 'only'
+                document.getElementById('yadcf-filter--table-1')[2].text = 'only'
+                document.getElementById('yadcf-filter--table-2')[2].text = 'only'
+            }
+
+            setTimeout(function () {
+                waitForFail()
+            }, timeout)
         }
 
         function getElementByXpath(path) {
-            return document.evaluate(path, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+            return document.evaluate(path, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue
         }
 
         function calcTableSize() {
-            let table_start = document.getElementById("custom-table-wrapper").offsetTop;  //distance top-table
-            let navigator_height = getElementByXpath("/html/body/div[2]/div/div[3]").offsetHeight;  //text and navigator below table
+            let table_start = document.getElementById("custom-table-wrapper").offsetTop  //distance top-table
+            let navigator_height = getElementByXpath("/html/body/div[2]/div/div[3]").offsetHeight  //text and navigator below table
 
-            let table_size = window.innerHeight - table_start - navigator_height * 2 - 100;
+            let table_size = window.innerHeight - table_start - navigator_height * 2 - 100
 
             if (table_size < 300) {  // ensure no negative numbers
-                return 300;
+                return 300
             } else {
-                return table_size;
+                return table_size
             }
         }
 

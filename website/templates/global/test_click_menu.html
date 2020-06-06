@@ -13,6 +13,7 @@
             margin-top: 3rem;
             padding: 1rem 1rem;
             justify-content: center;
+            flex-wrap: wrap;
         }
     </style>
 
@@ -48,7 +49,7 @@
             </div>
         </div>
 
-        <div class="container">
+        <div class="container" id="genome-container">
             <div class="test-div border border-primary">
                 {% for x in genomes %}
                     {{ x.html| safe }}
@@ -92,9 +93,13 @@
                 if ($(this).hasClass('genome')) {
                     this.setAttribute('onclick', `showGenomeClickMenu(event)`)
                 } else if ($(this).hasClass('annotation')) {
-                    this.setAttribute('onclick', `showAnnotationClickMenu(event, '${this.textContent}')`)
+                    this.setAttribute('onclick', `showAnnotationClickMenu(event, 'auto', 'auto', '#genome-container', 'auto')`)
                 } else if ($(this).hasClass('gene')) {
-                    this.setAttribute('onclick', `showGeneClickMenu(event, '${this.textContent}')`)
+                    this.setAttribute('onclick', `showGeneClickMenu(event)`)
+                } else if ($(this).hasClass('taxid')) {
+                    this.setAttribute('onclick', `showTaxidClickMenu(event)`)
+                } else if ($(this).hasClass('strain')) {
+                    this.setAttribute('onclick', `showStrainClickMenu(event)`)
                 }
             })
         });

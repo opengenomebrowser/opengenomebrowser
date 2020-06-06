@@ -92,7 +92,7 @@ let loadTree = async function (genomes, method, target, newick_target, type, lay
                     .attr("data-species-label", label.textContent)
                     .on("click", function (data) {
                         d3.event.stopPropagation()
-                        ShowTaxidContextMenu([10, 12], data.data.id) // could use d3.event insted of null
+                        showTaxidClickMenu([10, 12], data.data.id) // could use d3.event insted of null
                     })
             });
         }
@@ -110,7 +110,7 @@ let loadTree = async function (genomes, method, target, newick_target, type, lay
                 .attr("data-species-label", species_dict[label.textContent])
                 .on("click", function (data) {
                     d3.event.stopPropagation()
-                    ShowGenomeContextMenu([10, 12], data.data.id, []) // could use d3.event insted of null
+                    showGenomeClickMenu([10, 12], data.data.id, species_dict[label.textContent])
                 })
         });
 

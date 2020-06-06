@@ -176,14 +176,14 @@
                             }
                         }).each(function () {
                             if ($(this).hasClass('genome')) {
-                                this.setAttribute('onclick', `ShowGenomeContextMenu(event, '${this.textContent}')`)
+                                this.setAttribute('onclick', `showGenomeClickMenu(event, 'auto', 'auto', $(this).parent().parent() )`)
                             } else if ($(this).hasClass('annotation')) {
-                                this.setAttribute('onclick', `ShowAnnotationContextMenu(event, '${this.textContent}')`)
+                                this.setAttribute('onclick', `showAnnotationClickMenu(event, 'auto', $(this).parent().parent().parent(), $(this).parent().parent().parent().parent() )`)
                             }
                         })
                     $('.group-table-container tbody [data-genes]').each(function(){
-                        //todo: this!
-                        this.setAttribute('onclick', `console.log('test click on', '${$(this).data('genes')}')`)
+                        //todo: this?
+                        this.setAttribute('onclick', `console.log('the genes behind this are:', '${$(this).data('genes')}')`)
                     })
                     }
                 )
@@ -217,14 +217,12 @@
 
                 $.getJSON('{% url "website:api-genome-identifier-to-species" %}', {'genomes[]': genomes}, function (data) {
                     delete data.success;
-                    console.log("DATAAAA:", data);
 
                     $('#real-genomes').empty()
                     $('#real-genomes').append(create_read_only_strain_div(Object.keys(data), data))
                 });
 
                 $.getJSON('{% url "website:api-annotation-to-type" %}', {'annotations[]': annotations}, function (data) {
-                    console.log("DATAAAA annotation-to-type:", data);
 
                     $('#real-annotations').empty()
                     $('#real-annotations').append(create_read_only_annotations_div(Object.keys(data), data))

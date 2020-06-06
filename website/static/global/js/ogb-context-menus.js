@@ -1,5 +1,7 @@
 "use strict";
 
+let runninglisteners = []
+
 /**
  * Create context menu with custom contents.
  * Can be used like this:
@@ -19,13 +21,10 @@
  */
 class ClickMenu {
     constructor(event, menu_id) {
-        console.log('run', event, 'ev')
         if (Array.isArray(event)) {
-            console.log('create context ref element', event)
             createRefElement(event[0], event[1])
             this.target = $('#ref_box')
         } else {
-            console.log('stop event', event)
             event.preventDefault();
             event.stopPropagation()
             this.target = event.target
@@ -85,23 +84,23 @@ class ClickMenu {
                 },
             });
 
-        console.log('show', this.dropdown)
-
         this.dropdown.show();
 
-        // add listener to close the menu
-        $(document).on('click.context-menu-event', function (e) {
-            // console.log('context-menu listener speaking. target:', e.target);
+        if (!runninglisteners.includes(menu_id)) {
+            // add listener to close the menu
+            $(document).on('click.context-menu-event', function (e) {
 
-            if (e.altKey || e.metaKey || $('#' + menu_id).has(e.target).length == 1 || $('#' + menu_id).is(e.target)) {
-                // ignore clicks with alt or meta keys
-                // ignore clicks on dropdown
-            } else {
-                // hide div
-                console.log('hide context menu')
-                mydropdown.hide();
-            }
-        });
+                if (e.altKey || e.metaKey || $('#' + menu_id).has(e.target).length == 1 || $('#' + menu_id).is(e.target)) {
+                    // ignore clicks with alt or meta keys
+                    // ignore clicks on dropdown
+                } else {
+                    // hide div
+                    $('#' + menu_id).hide()
+                }
+            });
+
+            runninglisteners.push(menu_id)
+        }
     };
 }
 
@@ -115,7 +114,11 @@ let autoDiscoverSelf = function (event, self_string) {
 }
 
 let autoDiscoverSiblings = function (event, self_string, siblings, type) {
-    if (siblings === 'auto') {
+    if (siblings instanceof jQuery) {
+        return siblings.find('.' + type).map(function () {
+            return $(this).text()
+        }).get()
+    } else if (siblings === 'auto') {
         siblings = [self_string]
         $(event.target).siblings().each(function () {
             if ($(this).hasClass(type)) {
@@ -137,19 +140,66 @@ let autoDiscoverSiblings = function (event, self_string, siblings, type) {
 }
 
 let autoDiscoverSpecies = function (event, species) {
+    console.log('XXXXXXXXXXXXXXXXX', event, species)
     if (species === 'auto') {
         species = $(event.target).data('species')
+    } else if (species === 'none') {
+        species = false
     } else {
         assert(typeof species === 'string' || species instanceof String, 'Error: Could not discover species.')
     }
     return species
 }
 
+let autoDiscoverGenomes = function (genomes) {
+    if (genomes === 'none') {
+        return []
+    } else if (Array.isArray(genomes)) {
+        return genomes
+    } else if (genomes instanceof jQuery) {
+        return genomes.find('.genome').map(function () {
+            return $(this).text()
+        }).get()
+    } else {
+        // assume genomes is a pointer. find all .genome children and return array
+        return $(genomes).find('.genome').map(function () {
+            return $(this).text()
+        }).get()
+    }
+}
 
-let showGenomeClickMenu = function (event, genome = 'auto', species = 'auto', siblings = 'auto') {
-    console.log('showGenomeClickMenu', 'event:', event, 'genome:', genome, 'siblings:', siblings)
+let showStrainClickMenu = function (event, strain = 'auto', species = 'auto', siblings = 'auto') {
+    console.log('showTaxidClickMenu event:', event, 'strain', strain, 'siblings', siblings);
     // auto-discover species
     species = autoDiscoverSpecies(event, species)
+
+    // auto-discover annotation
+    strain = autoDiscoverSelf(event, strain)
+
+    // auto-discover siblings (nothing to do with them yet)
+    // siblings = autoDiscoverSiblings(event, taxname, siblings, 'strain')
+
+    // initiate context menu
+    let cm = new ClickMenu(event, 'strain-context-menu');
+
+    // list of elements to click on
+    cm.appendElement(`
+<h6 class="dropdown-header context-menu-header" data-species="${species}">
+${strain}</h6>
+<a href="/strain/${strain}" class="dropdown-item context-menu-icon context-menu-icon-strain">
+Open strain info</a>
+`)
+
+    cm.show();
+};
+
+
+let showGenomeClickMenu = function (event, genome = 'auto', species = 'auto', siblings = 'auto') {
+    console.log('showGenomeClickMenu', 'event:', event, 'genome:', genome, 'species', species, 'siblings:', siblings)
+    // auto-discover species
+    species = autoDiscoverSpecies(event, species)
+
+    console.log('aspelasfjalsdfjasfd0', species, Boolean(species))
 
     // auto-discover genome
     genome = autoDiscoverSelf(event, genome)
@@ -160,11 +210,17 @@ let showGenomeClickMenu = function (event, genome = 'auto', species = 'auto', si
     let cm = new ClickMenu(event, 'genome-context-menu')
 
     // list of elements to click on
-    cm.appendElement(`
-<h6 class="dropdown-header context-menu-header">
-${genome}</h6>
-<a data-species="${species}" href="/taxname/${species}" class="dropdown-item context-menu-icon context-menu-icon-taxid">
-${species}</a>
+    let html = `
+<h6 class="dropdown-header context-menu-header" data-species="${species}">
+${genome}</h6>`
+
+    if (species) {
+        html += `
+<a href="/taxname/${species}" class="dropdown-item context-menu-icon context-menu-icon-taxid">
+${species}</a>`
+    }
+
+    html += `
 <a href="/genome/${genome}" class="dropdown-item context-menu-icon context-menu-icon-strain">
 Open genome info</a>
 <a onclick="CopyToClipboard('${genome}')" class="dropdown-item context-menu-icon context-menu-icon-copy">
@@ -175,23 +231,23 @@ Open genome on KEGG map</a>
 Search for annotations in genome</a>
 <a href="/blast/?genomes=${genome}" class="dropdown-item context-menu-icon context-menu-icon-blast">
 Blast genome</a>
-`)
-
+`
+    cm.appendElement(html)
 
     if (siblings.length > 1) {
-        siblings = siblings.join('+')
+        let siblings_str = siblings.join('+')
         cm.appendElement(`
 <h6 class="dropdown-header context-menu-header">
 ${siblings.length} selected genomes</h6>
-<a href="/trees/?genomes=${siblings}" class="dropdown-item context-menu-icon context-menu-icon-tree">
+<a href="/trees/?genomes=${siblings_str}" class="dropdown-item context-menu-icon context-menu-icon-tree">
 Show phylogenetic trees</a>
 <a onclick="CopyToClipboard('FAM21277-i1-1.1, FAM19036-p1-1.1, FAM19471-i1-1.1, FAM1079-i1-1.1, FAM22472-i1-1.1')" class="dropdown-item context-menu-icon context-menu-icon-copy">
 Copy selected genomes</a>
-<a href="/kegg/?genomes=${siblings}" class="dropdown-item context-menu-icon context-menu-icon-pathway">
+<a href="/kegg/?genomes=${siblings_str}" class="dropdown-item context-menu-icon context-menu-icon-pathway">
 Open genomes on KEGG map</a>
-<a href="/annotation-search/?genomes=${siblings}" class="dropdown-item context-menu-icon context-menu-icon-annotations">
+<a href="/annotation-search/?genomes=${siblings_str}" class="dropdown-item context-menu-icon context-menu-icon-annotations">
 Search for annotations in genomes</a>
-<a href="/blast/?genomes=${siblings}" class="dropdown-item context-menu-icon context-menu-icon-blast">
+<a href="/blast/?genomes=${siblings_str}" class="dropdown-item context-menu-icon context-menu-icon-blast">
 Blast genomes</a>
 </div>
 `)
@@ -199,21 +255,23 @@ Blast genomes</a>
     cm.show();
 };
 
+let showAnnotationClickMenu = function (event, annotation = 'auto', siblings = 'auto', genomes = 'none', annotype = 'auto') {
+    console.log('showAnnotationClickMenu', 'event:', event, 'annotation:', annotation, 'siblings:', siblings, 'genomes', genomes, 'annotype', annotype)
 
-let showAnnotationClickMenu = function (event, annotation = 'auto', siblings = 'auto', genomes = 'auto') {
-    console.log('showAnnotationClickMenu', 'event:', event, 'annotation:', annotation, 'siblings:', siblings, 'genomes', genomes)
-
-    // auto-discover annotation
+    // auto-discover
     annotation = autoDiscoverSelf(event, annotation)
-
-    // auto-discover siblings
     siblings = autoDiscoverSiblings(event, annotation, siblings, 'annotation')
+    genomes = autoDiscoverGenomes(genomes)
+
+    if (annotype === 'auto') {
+        annotype = $(event.target).data('annotype')
+    }
 
     let cm = new ClickMenu(event, 'annotation-context-menu')
 
     // list of elements to click on
     cm.appendElement(`
-<h6 class="dropdown-header context-menu-header">
+<h6 class="dropdown-header context-menu-header" data-annotype="${annotype}">
 ${annotation}</h6>
 <a href="/annotation/${annotation}" class="dropdown-item context-menu-icon context-menu-icon-annotation">
 Show details about this annotation</a>
@@ -221,23 +279,32 @@ Show details about this annotation</a>
 Copy annotation</a>
 `)
 
-
+    let siblings_repl = urlReplBlanks(siblings)
     if (siblings.length > 1) {
-        let siblings_repl = urlReplBlanks(siblings)
         cm.appendElement(`
 <h6 class="dropdown-header context-menu-header">
 ${siblings.length} selected annotations</h6>
 <a href="/annotation-search/?annotations=${siblings_repl}" class="dropdown-item context-menu-icon context-menu-icon-annotations">
-Search for annotations in annotations</a>
+Search for annotations</a>
 </div>
 `)
     }
+
+    if (genomes.length > 1) {
+        cm.appendElement(`
+<h6 class="dropdown-header context-menu-header">
+${genomes.length} selected genomes</h6>
+<a href="/compare-genes/?genomes=${genomes.join('+')}&annotations=${siblings_repl}" class="dropdown-item context-menu-icon context-menu-icon-annotations">
+Compare the genes of this annotation</a>
+</div>
+`)
+    }
+
     cm.show();
 };
 
-
 let showGeneClickMenu = function (event, gene = 'auto', siblings = 'auto') {
-    console.log('showGeneClickMenu gene:', event, gene, siblings);
+    console.log('showGeneClickMenu event:', event, 'gene', gene, 'siblings', siblings);
 
     // auto-discover annotation
     gene = autoDiscoverSelf(event, gene)
@@ -246,13 +313,13 @@ let showGeneClickMenu = function (event, gene = 'auto', siblings = 'auto') {
     siblings = autoDiscoverSiblings(event, gene, siblings, 'gene')
 
     // initiate context menu
-    let cm = new ContextMenu(event, 'gene-context-menu');
+    let cm = new ClickMenu(event, 'gene-context-menu');
 
     // list of elements to click on
     cm.appendElement(`
 <h6 id='gene-context-menu-species-missing' class="dropdown-header context-menu-header">
 ${gene}</h6>
-<a href="/gene/${gene}" class="dropdown-item context-menu-icon context-menu-icon-gene" target="_blank">
+<a href="/gene/${gene}" class="dropdown-item context-menu-icon context-menu-icon-gene">
 Open gene info</a>
 `)
 
@@ -260,7 +327,7 @@ Open gene info</a>
         cm.appendElement(`
 <h6 class="dropdown-header context-menu-header">
 ${siblings.length} selected genes</h6>
-<a href="/compare-genes/?genes=${siblings}" class="dropdown-item context-menu-icon context-menu-icon-annotations">
+<a href="/compare-genes/?genes=${siblings.join('+')}" class="dropdown-item context-menu-icon context-menu-icon-annotations">
 Compare genes</a>
 </div>
 `)
@@ -268,7 +335,6 @@ Compare genes</a>
 
 
     $.getJSON("/api/get-gene", {'gene_identifier': gene}, function (data) {
-        console.log('API GET GENE')
         let genome = data['genome']
         let taxid = data['taxid']
         let species = data['species']
@@ -277,7 +343,7 @@ Compare genes</a>
         document.getElementById('gene-context-menu-species-missing').setAttribute('data-species', species);
 
         let html = `
-<h6 class="dropdown-header context-menu-header" onclick="showGenomeClickMenu(event)">
+<h6 class="dropdown-header context-menu-header" data-species="${species}" onclick="showGenomeClickMenu(event)">
 ${genome}</h6>
 <a href="/genome/${genome}" class="dropdown-item context-menu-icon context-menu-icon-strain">
 Open genome info</a>
@@ -285,7 +351,6 @@ Open genome info</a>
 Annotations</h6>
 `
         for (const [anno_type, annotations] of Object.entries(annotype_to_gene)) {
-            console.log('xxxxxxxxxxxxxxxxxxxxxxxxxxx', anno_type, annotations);
             html += `
 <div style="display: inline-flex;">
     <div class="dropdown-item context-menu-icon context-menu-icon-annotations" data-annotype="${annotations[0]['anno_type']}">
@@ -296,7 +361,6 @@ Annotations</h6>
         <div class="dropdown-menu" style="width: 400px">`
 
             annotations.forEach(a => {
-                console.log('anno', a)
                 html += `
             <a class="dropdown-item context-menu-icon context-menu-icon-annotation" style="display: flex; flex-wrap: wrap; white-space: inherit" href="/annotation/${a['name']}">
             ${a['name']} (${a['description']})</a>`
@@ -306,35 +370,33 @@ Annotations</h6>
         </div>
     </div>
 </div>`
-
-
         }
-
         cm.appendElement(html)
-
         cm.popper.update()
-
     });
-
-    cm.show('top');
-
-
+    cm.show();
 };
 
-/*
-* This function creates dummy elements. Necessary for popups that emerge from canvas/svg.
-*/
-let createRefElement = function (marginLeftRight, marginTopBottom) {
-    let ref = $('<div>', {
-        id: 'ref_box',
-        style: `width: ${marginLeftRight * 2}px; height: ${marginTopBottom * 2}px; position: absolute; z-index: -1; top: ${jmouseY - marginTopBottom}px; left: ${jmouseX - marginLeftRight}px`,
-    });
+let showTaxidClickMenu = function (event, taxname = 'auto', siblings = 'auto') {
+    console.log('showTaxidClickMenu event:', event, 'taxname', taxname, 'siblings', siblings);
 
-    if (!document.getElementById('ref_box')) {
-        // create new menu
-        ref.appendTo('body');
-    } else {
-        // overwrite menu
-        $('#ref_box').replaceWith(ref)
-    }
-}
+    // auto-discover annotation
+    taxname = autoDiscoverSelf(event, taxname)
+
+    // auto-discover siblings (nothing to do with them yet)
+    // siblings = autoDiscoverSiblings(event, taxname, siblings, 'taxid')
+
+    // initiate context menu
+    let cm = new ClickMenu(event, 'taxid-context-menu');
+
+    // list of elements to click on
+    cm.appendElement(`
+<h6 class="dropdown-header context-menu-header" data-species="${taxname}">
+${taxname}</h6>
+<a href="/taxname/${taxname}" class="dropdown-item context-menu-icon context-menu-icon-taxid">
+Open taxid info</a>
+`)
+
+    cm.show();
+};
+

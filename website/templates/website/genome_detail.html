@@ -3,8 +3,7 @@
 
 {% block styles %}
     <!-- Site-specific css/js -->
-    <link rel="stylesheet" type="text/css" href="{% static 'website/css/secondary-navbar.css' %}"/>
-    <link rel="stylesheet" type="text/css" href="{% static 'global/css/taxid_color.css' %}" id="taxid-color-stylesheet" disabled/>
+    <link rel="stylesheet" type="text/css" href="{% static 'global/css/taxid_color.css' %}" id="taxid-color-stylesheet"/>
     <link rel="stylesheet" type="text/css" href="{% static 'global/css/tag_color.css' %}"/>
     <link rel="stylesheet" type="text/css" href="{% static 'website/css/detail.css' %}"/>
     <link href="{% static 'website/css/jquery-ui.css' %}" rel="stylesheet"/>
@@ -54,11 +53,11 @@
         <div class="container black-links">
             <!-- genome -->
             <span class="type-label">genome:</span>
-            <span class="h1">{{ genome.identifier }}</span>
+            <span class="h1" onclick="showGenomeClickMenu(event, 'auto', '{{ genome.taxid }}')">{{ genome.identifier }}</span>
 
             <!-- strain -->
             <span class="type-label">strain:</span>
-            <a class="h2" href="{% url 'website:strain' slug=genome.strain %}">{{ genome.strain }}</a>
+            <span class="h2" onclick="showStrainClickMenu(event, 'auto', '{{ genome.taxid }}')">{{ genome.strain }}</span>
 
             <!-- old identifier -->
             {% if genome.old_identifier %}
@@ -69,8 +68,9 @@
             <!-- taxid -->
             {% if genome.taxid %}<br>
                 <span class="type-label">species:</span>
-                <a class="h3" href="{% url 'website:taxid' slug=genome.taxid.id %}">{{ genome.taxid }} <span
-                        style="{{ genome.taxid.html_style }}">(taxid: {{ genome.taxid.id }})</span></a>
+                <span class="h3">{{ genome.taxid }}</span>
+                <span class="type-label">taxid:</span>
+                <span class="h3" style="{{ genome.taxid.html_style }}" onclick="showTaxidClickMenu(event, '{{ genome.taxid }}')">{{ genome.taxid.id }}</span>
             {% endif %}
 
             <hr class="featurette-divider">

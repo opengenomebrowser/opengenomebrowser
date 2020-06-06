@@ -22,13 +22,15 @@ urlpatterns = [
     # ex: /strain/{name}
     path('genome/<str:slug>/', GenomeDetailView.as_view(), name='genome'),
 
-    # ex: /taxid/{taxid}
+    # ex: /taxid/{taxid} and /taxname/{taxscientificname}
     path('taxid/<str:slug>/', TaxIDDetailView.as_view(), name='taxid'),
-    # ex: /taxname/{taxscientificname}
     path('taxname/<str:slug>/', TaxIDDetailView.redirect_taxname, name='taxname'),
 
     # ex: /gene/{name}
     path('gene/<str:slug>/', GeneDetailView.as_view(), name='gene'),
+
+    # ex: /annotation/{name}
+    path('annotation/<str:slug>/', AnnotationDetailView.as_view(), name='annotation'),
 
     # ex: /kegg-single/?keggmap={00030}&genomes={strain1}+{strain2}
     path('kegg/', KeggView.kegg_view, name='kegg'),
@@ -36,8 +38,8 @@ urlpatterns = [
     # ex: /trees/?genomes={strain1}+{strain2}
     path('trees/', Trees.trees, name='trees'),
 
-    # ex: /annotation/{name}
-    path('annotation/<str:slug>/', AnnotationDetailView.as_view(), name='annotation'),
+    # ex: /compare-genes/?genes={gene 1}+{gene 2}
+    path('compare-genes/', CompareGenes.compare, name='compare-genes'),
 
     # ex: /annotation-search/?annotations={K01626}+{EC:4.4.4.4}&genomes={strain1}+{strain2}
     path('annotation-search/', AnnotationSearch.annotation_view, name='annotation-search'),
@@ -63,7 +65,8 @@ urlpatterns = [
     path('api/genome-identifier-to-species/', Api.genome_identifier_to_species,
          name='api-genome-identifier-to-species'),
     path('api/annotation-to-type/', Api.annotation_to_type, name='api-annotation-to-type'),
-    path('api/dna-feature-viewer/', Api.dna_feature_viewer, name='api-dna-feature-viewer'),
+    path('api/dna-feature-viewer-single/', Api.dna_feature_viewer_single, name='api-dna-feature-viewer'),
+    path('api/dna-feature-viewer-multi/', Api.dna_feature_viewer_multi, name='api-dna-feature-viewer'),
     path('api/get-gene/', Api.get_gene, name='api-get-gene'),
     path('api/get-tree/', Api.get_tree, name='api-get-tree'),
 

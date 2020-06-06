@@ -1,6 +1,5 @@
 from django.shortcuts import render, HttpResponse
 import pandas as pd
-import re
 
 from website.models import GenomeContent, Gene
 from website.models.Annotation import Annotation

@@ -1,4 +1,6 @@
 /* Set the width of the side navigation to 500px */
+sidebarlisterner_running = false
+
 function openNav(event) {
 
     event.stopPropagation()
@@ -6,17 +8,18 @@ function openNav(event) {
     document.getElementById("mySidenav").style.width = "500px";
 
     // add listener to close the menu
-    $(document).on('click', function (e) {
-        if (e.altKey || e.metaKey || $('#mySidenav').has(e.target).length == 1 || $('#mySidenav').is(e.target)) {
-            // ignore clicks with alt or meta keys
-            // ignore clicks on dropdown
-        } else {
-            // hide div
-            closeNav(event)
-            // destroy listener
-            $(this).off('click')
-        }
-    });
+    if (!sidebarlisterner_running) {
+        $(document).on('click', function (e) {
+            if (e.altKey || e.metaKey || $('#mySidenav').has(e.target).length == 1 || $('#mySidenav').is(e.target)) {
+                // ignore clicks with alt or meta keys
+                // ignore clicks on dropdown
+            } else {
+                // hide div
+                closeNav(event)
+            }
+        });
+        sidebarlisterner_running = true
+    }
 
 }
 
