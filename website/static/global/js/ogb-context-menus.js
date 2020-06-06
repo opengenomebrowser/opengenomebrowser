@@ -294,8 +294,18 @@ Search for annotations</a>
         cm.appendElement(`
 <h6 class="dropdown-header context-menu-header">
 ${genomes.length} selected genomes</h6>
-<a href="/compare-genes/?genomes=${genomes.join('+')}&annotations=${siblings_repl}" class="dropdown-item context-menu-icon context-menu-icon-annotations">
+<a href="/compare-genes/?genomes=${genomes.join('+')}&annotations=${urlReplBlanks([annotation])}" class="dropdown-item context-menu-icon context-menu-icon-genes">
 Compare the genes of this annotation</a>
+</div>
+`)
+    }
+
+    if (genomes.length > 1 && siblings.length > 1) {
+        cm.appendElement(`
+<h6 class="dropdown-header context-menu-header">
+${genomes.length} genomes and ${siblings.length} annotations</h6>
+<a href="/compare-genes/?genomes=${genomes.join('+')}&annotations=${siblings_repl}" class="dropdown-item context-menu-icon context-menu-icon-genes">
+Compare the genes of these annotations</a>
 </div>
 `)
     }
@@ -319,6 +329,8 @@ let showGeneClickMenu = function (event, gene = 'auto', siblings = 'auto') {
     cm.appendElement(`
 <h6 id='gene-context-menu-species-missing' class="dropdown-header context-menu-header">
 ${gene}</h6>
+<h6 id='gene-context-menu-gene-product-missing' class="dropdown-header context-menu-header" hidden>
+'hidden gene product name'</h6>
 <a href="/gene/${gene}" class="dropdown-item context-menu-icon context-menu-icon-gene">
 Open gene info</a>
 `)
@@ -340,6 +352,10 @@ Compare genes</a>
         let species = data['species']
         let annotype_to_gene = data['annotype_to_gene']
 
+        if (annotype_to_gene['GP'][0]["name"] != undefined) {
+            $('#gene-context-menu-gene-product-missing').text(annotype_to_gene['GP'][0]["name"]).removeAttr('hidden')
+        }
+
         document.getElementById('gene-context-menu-species-missing').setAttribute('data-species', species);
 
         let html = `
@@ -353,7 +369,7 @@ Annotations</h6>
         for (const [anno_type, annotations] of Object.entries(annotype_to_gene)) {
             html += `
 <div style="display: inline-flex;">
-    <div class="dropdown-item context-menu-icon context-menu-icon-annotations" data-annotype="${annotations[0]['anno_type']}">
+    <div class="dropdown-item context-menu-icon context-menu-icon-annotations" data-annotype="${anno_type}">
     ${annotations[0]['anno_type_verbose']} (${annotations.length})</div>
     <div class="btn-group dropright">
     <button class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="font-size: 1rem; padding: 0rem 0.8rem;">

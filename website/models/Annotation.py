@@ -132,7 +132,7 @@ class Annotation(models.Model):
         try:
             with BinaryFileSearch(file=file_path, sep="\t", string_mode=True) as bfs:
                 return_value = bfs.search(query=F"{prefix}{query}")[0][1]
-        except FileNotFoundError:
+        except (FileNotFoundError, KeyError):
             # When file does not exist.
             return '-'
         except Annotation.DoesNotExist:

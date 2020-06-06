@@ -451,7 +451,7 @@
                         if (has_gradient_info && annos_to_strains[anno].length) {
                             let strains = annos_to_strains[anno];
                             let expand_item_header = $('<h6>', {
-                                text: `Positive strains (${strains.length})`,
+                                text: `Positive genomes (${strains.length})`,
                                 class: 'dropdown-header context-menu-header'
                             });
 
@@ -492,11 +492,14 @@
 
             all_annotations = all_annotations.map(x => formatKegg(x));
 
-            cm.appendElement(`
+            if (have !== undefined) {
+                console.log(have)
+                cm.appendElement(`
 <div style="display: inline-flex;">
     <a class="dropdown-item context-menu-icon context-menu-icon-annotations" href="/annotation-search/?annotations=${urlReplBlanks(all_annotations)}&genomes=${have.join('+')}">
-    Search these annotations in the genomes</a>
+    Search annotations in positive genomes</a>
 </div>`)
+            }
 
             event.stopPropagation();
 
