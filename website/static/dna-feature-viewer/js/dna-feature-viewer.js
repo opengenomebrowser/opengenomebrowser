@@ -23,9 +23,11 @@ function load_dna_feature_viewer_multi(gene_identifiers, target_div) {
 
         target_div.append(data['plot_div'])
         eval(data['script'])
+    }).done(function () {
+        $('#gene-loci-spinner').hide()
     });
 }
 
 function geneLabelClicked(label) {
-    showGeneClickMenu([50,50], label);
+    showGeneClickMenu([50, 50], label);
 }
