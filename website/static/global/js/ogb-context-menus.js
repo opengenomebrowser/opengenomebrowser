@@ -39,7 +39,7 @@ class ClickMenu {
         });
     }
 
-    createMenu = function (id) {
+    createMenu (id) {
         let new_menu = $('<div>', {
             id: id,
             display: 'flex',
@@ -55,15 +55,15 @@ class ClickMenu {
         }
     };
 
-    appendElement = function (element) {
+    appendElement (element) {
         this.dropdown.append(element);
     };
 
-    appendSeparator = function () {
+    appendSeparator () {
         this.dropdown.append(this.dropdown_separator_div)
     };
 
-    appendHeader = function (text) {
+    appendHeader (text) {
         this.dropdown.append($('<h6>', {
                 text: text, class: 'dropdown-header context-menu-header'
             })
@@ -71,7 +71,7 @@ class ClickMenu {
     };
 
     // add listener (to close the menu), place and show it.
-    show = function (placement = 'bottom') {
+    show (placement = 'bottom') {
         let mydropdown = this.dropdown;
         let menu_id = this.menu_id;
 
@@ -90,7 +90,7 @@ class ClickMenu {
             // add listener to close the menu
             $(document).on('click.context-menu-event', function (e) {
 
-                if (e.altKey || e.metaKey || $('#' + menu_id).has(e.target).length == 1 || $('#' + menu_id).is(e.target)) {
+                if (e.altKey || e.metaKey || e.which === 3 || $('#' + menu_id).has(e.target).length == 1 || $('#' + menu_id).is(e.target)) {
                     // ignore clicks with alt or meta keys
                     // ignore clicks on dropdown
                 } else {
@@ -140,7 +140,6 @@ let autoDiscoverSiblings = function (event, self_string, siblings, type) {
 }
 
 let autoDiscoverSpecies = function (event, species) {
-    console.log('XXXXXXXXXXXXXXXXX', event, species)
     if (species === 'auto') {
         species = $(event.target).data('species')
     } else if (species === 'none') {
@@ -198,8 +197,6 @@ let showGenomeClickMenu = function (event, genome = 'auto', species = 'auto', si
     console.log('showGenomeClickMenu', 'event:', event, 'genome:', genome, 'species', species, 'siblings:', siblings)
     // auto-discover species
     species = autoDiscoverSpecies(event, species)
-
-    console.log('aspelasfjalsdfjasfd0', species, Boolean(species))
 
     // auto-discover genome
     genome = autoDiscoverSelf(event, genome)
@@ -261,6 +258,7 @@ let showAnnotationClickMenu = function (event, annotation = 'auto', siblings = '
     // auto-discover
     annotation = autoDiscoverSelf(event, annotation)
     siblings = autoDiscoverSiblings(event, annotation, siblings, 'annotation')
+    let siblings_repl = urlReplBlanks(siblings)
     genomes = autoDiscoverGenomes(genomes)
 
     if (annotype === 'auto') {
@@ -279,7 +277,6 @@ Show details about this annotation</a>
 Copy annotation</a>
 `)
 
-    let siblings_repl = urlReplBlanks(siblings)
     if (siblings.length > 1) {
         cm.appendElement(`
 <h6 class="dropdown-header context-menu-header">

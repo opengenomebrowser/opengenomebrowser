@@ -21,7 +21,7 @@ class CompareGenes:
                 gene_ids = request.GET['genes'].split(' ')
                 overlap_genes = Gene.objects.filter(
                     Q(identifier__in=gene_ids),
-                    Q(genomecontent__in=genomes) | Q(annotations__in=annotations)
+                    Q(genomecontent__in=genomes) & Q(annotations__in=annotations)
                 )
             else:
                 overlap_genes = Gene.objects.filter(
