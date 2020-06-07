@@ -70,15 +70,13 @@ lib/assembly_stats/assembly-stats/
 website/static/global/css/tag_color.css
 website/static/global/css/taxid_color.css
 
-
-
-
 /lib/orthofinder/OrthoFinder/
 /db_setup/huey.db
 /static_root/
-/huey.db
+/huey.db*
 /OpenGenomeBrowser/settings.py
 /website/static/kegg/svg
 
 /lib/gene_ontology/go.obo
 /lib/gene_ontology/go.obo.converted
+

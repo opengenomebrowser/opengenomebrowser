@@ -16,10 +16,13 @@ import os
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
+# See https://docs.djangoproject.com/en/dev/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '6y^g-36fw^2=%+k_)0vd-i2u=h-)vi92$3mgq*z3$thsn^hav1'
+SECRET_KEY = ''
+assert SECRET_KEY != '', 'Change the security key in OpenGenomeBrowser/settings.py to a random string!'
+
+CSRF_COOKIE_SECURE = True
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
