@@ -25,6 +25,13 @@ _OpenGenomeBrowser is a dynamic and scalable web platform for comparative genomi
 
 
 
+## Get help
+If you find a bug that has not already been reported, submit an issue on this github.
+
+If you want to chat, contact me via [discord](https://discord.gg/mDm4fqf).
+
+
+
 ## Prerequisites
 
 ### Folder structure
@@ -186,23 +193,23 @@ EXAMPLE1234-2-1.1_000008	K000001, K000002
 
 ### Basic steps
 
--   install dependencies
--   create Python 3.6+ venv
--   create Postgresql 10+ database
--   clone this repository, adapt settings
--   populate Postgresql database
--   configure nginx and uwsgi (for deployment only)
+1.   install dependencies
+1.   create Python 3.6+ venv
+1.   create Postgresql 10+ database
+1.   clone this repository, adapt settings
+1.   populate Postgresql database
+1.   configure nginx and uwsgi (for deployment only)
 
 ### Example commands (Note: these commands were used on CentOS 8
 
-##### install dependencies
+##### 1. install dependencies
 
 ```
 sudo dnf install python3-devel python3-numpy postgresql postgresql-devel postgresql-server libpq-devel python3-psycopg2 pcre-devel
 # these packages may have other names in other operating systems!
 ```
 
-##### create Python 3.6+ venv (in an appropriate location)
+##### 2. create Python 3.6+ venv (in an appropriate location)
 
 ```
 python3 -m venv ogb_venv
@@ -211,7 +218,7 @@ pip install --upgrade pip
 pip install setuptools wheel
 ```
 
-##### create Postgresql 10+ database
+##### 3. create Postgresql 10+ database
 
 ```
 sudo postgresql-setup initdb
@@ -247,7 +254,7 @@ sudo su - postgres
 # note: now re-run "python manage.py makemigrations && python manage.py migrate" to recreate the database schemes
 ```
 
-##### clone this repository (into an appropriate location), adapt settings
+##### 4. clone this repository (into an appropriate location), adapt settings
 
 ```
 git clone https://gitlab.bioinformatics.unibe.ch/troder/opengenomebrowser.git
@@ -261,19 +268,19 @@ Create and edit settings.py:
 cp OpenGenomeBrowser/settings_template.py OpenGenomeBrowser/settings.py
 vi OpenGenomeBrowser/settings.py
 ```
--   change DEBUG to True **only** for development!
--   change DEBUG to True **only** for development!
--   change GENOMIC_DATABASE to the path to your folder structure
--   change DATABASES[PASSWORD] to the passwort you just set for Postgresql
--   change ALLOWED_HOSTS to the URL/IP you are planning to serve OpenGenomeBrowser as (example: `['opengenomebrowser.yourdomain.com']`)
--   change SECRET_KEY to a randomly created string; such strings can be created like this:
+-   change `DEBUG` to `True` **only** for development!
+-   change `DEBUG` to `True` **only** for development!
+-   change `GENOMIC_DATABASE` to the path to your folder structure
+-   change `DATABASES[PASSWORD]` to the passwort you just set for Postgresql
+-   change `ALLOWED_HOSTS` to the URL/IP you are planning to serve OpenGenomeBrowser as (example: `['opengenomebrowser.yourdomain.com']`)
+-   change `SECRET_KEY` to a randomly created string; such strings can be created like this:
 ```python
 # in a python console of a venv with django installed
 from django.core.management.utils import get_random_secret_key
 get_random_secret_key()
 ```
 
-##### populate Postgresql database
+##### 5. populate Postgresql database
 Create schemes and tables in the database
 ```
 python manage.py makemigrations
@@ -291,7 +298,7 @@ python db_setup/import_database.py
 ```
 
 
-##### configure nginx and uwsgi (for deployment only)
+##### 6. configure nginx and uwsgi (for deployment only)
 If you are developing, you can run the website using `python manage.py runserver` and open [http://127.0.0.1:8000/](http://127.0.0.1:8000/)
 I recommend PyCharm Pro (free for students) as IDE as it supports Django.
 

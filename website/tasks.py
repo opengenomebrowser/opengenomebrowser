@@ -1,18 +1,6 @@
-import time
-
-from huey import crontab
-from huey.contrib.djhuey import task, periodic_task, db_task
+from huey.contrib.djhuey import task
 from lib.ortho_ani.ortho_ani_wrapper import OrthoANI
 from lib.orthofinder.orthofinder import Orthofinder
-
-
-# def tprint(s, c=32):
-#     # Helper to print messages from within tasks using color, to make them
-#     # stand out in examples.
-#     print('\x1b[1;%sm%s\x1b[0m' % (c, s))
-
-
-# Tasks used in examples.
 
 
 @task()

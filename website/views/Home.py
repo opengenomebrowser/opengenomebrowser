@@ -65,6 +65,25 @@ def home_view(request):
             )
         ],
 
+        Contact=[
+            dict(
+                name='GitLab',
+                img='/static/index/images/GitLab.svg',
+                img_cls='square',
+                role='Code repository',
+                href='https://gitlab.bioinformatics.unibe.ch/troder/opengenomebrowser',
+                did=[]
+            ),
+            dict(
+                name='Discord',
+                img='/static/index/images/Discord.svg',
+                img_cls='square',
+                role='Informal chat and support',
+                href='https://discord.gg/mDm4fqf',
+                did=[]
+            )
+        ],
+
         Software=[
             dict(
                 name='OrthoFinder',
