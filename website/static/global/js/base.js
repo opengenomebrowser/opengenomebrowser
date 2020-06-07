@@ -43,23 +43,13 @@ function assert(condition, message) {
 }
 
 /*
- * For compatibility with old browsers.
- */
-function escapeRegExp(string) {
-    return string.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-}
-function replaceAll(string, find, replace) {
-    return string.replace(new RegExp(escapeRegExp(find), 'g'), replace);
-}
-
-/*
  * Encode blanks as !!!, join array
  * E.g. ['OG0000006', 'OG0000010S24', 'S24 family peptidase']
  * becomes "OG0000006+OG0000010S24+S24!!!family!!!peptidase"
  */
 let urlReplBlanks = function (arr) {
     let encode = function (str) {
-        return replaceAll(' ', '!!!')
+        return str.replaceAll(' ', '!!!')
     }
     return arr.map(str => encode(str)).join('+')
 }
@@ -70,7 +60,7 @@ let urlReplBlanks = function (arr) {
  * becomes ['OG0000010S24', 'S24 family peptidase']
  */
 let undoReplBlanks = function (arr) {
-    return arr.map(str => replaceAll('!!!', ' '))
+    return arr.map(str => str.replaceAll('!!!', ' '))
 }
 
 /*

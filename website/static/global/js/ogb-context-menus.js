@@ -39,7 +39,7 @@ class ClickMenu {
         });
     }
 
-    createMenu (id) {
+    createMenu = function (id) {
         let new_menu = $('<div>', {
             id: id,
             display: 'flex',
@@ -55,15 +55,15 @@ class ClickMenu {
         }
     };
 
-    appendElement (element) {
+    appendElement = function (element) {
         this.dropdown.append(element);
     };
 
-    appendSeparator () {
+    appendSeparator = function () {
         this.dropdown.append(this.dropdown_separator_div)
     };
 
-    appendHeader (text) {
+    appendHeader = function (text) {
         this.dropdown.append($('<h6>', {
                 text: text, class: 'dropdown-header context-menu-header'
             })
@@ -71,7 +71,7 @@ class ClickMenu {
     };
 
     // add listener (to close the menu), place and show it.
-    show (placement = 'bottom') {
+    show = function (placement = 'bottom') {
         let mydropdown = this.dropdown;
         let menu_id = this.menu_id;
 
