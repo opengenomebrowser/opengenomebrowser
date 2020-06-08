@@ -1,23 +1,27 @@
-"use strict";
+"use strict"
 
-let runninglisteners = []
+/*
+ * Contains id's of context-menus.
+ * The most recently clicked is at the end of the queue.
+ * See ClickMenu.reorder()
+ */
+let contextMenuQueue = []
 
 /**
  * Create context menu with custom contents.
  * Can be used like this:
 
- let cm = new ClickMenu(event, 'my-context-menu');
+ let cm = new ClickMenu(event, 'my-context-menu')
  let some_element = $('<a>', {
     class: "dropdown-item",  // important: prevents collapse on click
     href: "https://www.example.com",
     target: "_blank",
     text: "Example Dot Com",
- });
- cm.appendElement(some_element);
- cm.appendSeparator();
- // event.stopPropagation();
- cm.show();
-
+ })
+ cm.appendElement(some_element)
+ cm.appendSeparator()
+ // event.stopPropagation()
+ cm.show()
  */
 class ClickMenu {
     constructor(event, menu_id) {
@@ -25,18 +29,18 @@ class ClickMenu {
             createRefElement(event[0], event[1])
             this.target = $('#ref_box')
         } else {
-            event.preventDefault();
+            event.preventDefault()
             event.stopPropagation()
             this.target = event.target
         }
-        this.menu_id = menu_id;
-        this.createMenu(this.menu_id);
-        this.dropdown = $('#' + this.menu_id);
-        this.popper = null;
+        this.menu_id = menu_id
+        this.createMenu(this.menu_id)
+        this.dropdown = $('#' + this.menu_id)
+        this.popper = null
 
         this.dropdown_separator_div = $('<div>', {
             class: 'dropdown-divider'
-        });
+        })
     }
 
     createMenu = function (id) {
@@ -45,35 +49,51 @@ class ClickMenu {
             display: 'flex',
             class: 'ogb-click-menu',
             'aria-labelledby': 'dropdownMenuButton',
-        });
+        })
         if (!document.getElementById(id)) {
             // create new menu
-            new_menu.appendTo('body');
+            new_menu.appendTo('body')
         } else {
             // overwrite menu
             $('#' + id).replaceWith(new_menu)
         }
-    };
+    }
+
+    reorder = function () {
+        // ensure the most recently clicked menu is on top
+        // remove this.menu from the list and add it to the end of the queue
+        const index = contextMenuQueue.indexOf(this.menu_id);
+        if (index > -1) {
+            contextMenuQueue.splice(index, 1);
+        }
+        contextMenuQueue.push(this.menu_id)
+
+        // set z-index accordingly, starting at z-index 10
+        for (const [idx, menu_id] of Object.entries(contextMenuQueue)) {
+            document.getElementById(menu_id).style.zIndex = 10 + idx
+        }
+
+    }
 
     appendElement = function (element) {
-        this.dropdown.append(element);
-    };
+        this.dropdown.append(element)
+    }
 
     appendSeparator = function () {
         this.dropdown.append(this.dropdown_separator_div)
-    };
+    }
 
     appendHeader = function (text) {
         this.dropdown.append($('<h6>', {
                 text: text, class: 'dropdown-header context-menu-header'
             })
         )
-    };
+    }
 
     // add listener (to close the menu), place and show it.
     show = function (placement = 'bottom') {
-        let mydropdown = this.dropdown;
-        let menu_id = this.menu_id;
+        let mydropdown = this.dropdown
+        let menu_id = this.menu_id
 
         // add the kegg-menu to the page, place it below relative_element
         this.popper = new Popper(this.target, this.dropdown,
@@ -82,12 +102,10 @@ class ClickMenu {
                 modifiers: {
                     eventsEnabled: {enabled: true},
                 },
-            });
+            })
 
-        this.dropdown.show();
-
-        if (!runninglisteners.includes(menu_id)) {
-            // add listener to close the menu
+        if (!contextMenuQueue.includes(menu_id)) {
+            // add listener to close the menu (only one listener for every menu_id)
             $(document).on('click.context-menu-event', function (e) {
 
                 if (e.altKey || e.metaKey || e.which === 3 || $('#' + menu_id).has(e.target).length == 1 || $('#' + menu_id).is(e.target)) {
@@ -97,11 +115,16 @@ class ClickMenu {
                     // hide div
                     $('#' + menu_id).hide()
                 }
-            });
+            })
 
-            runninglisteners.push(menu_id)
+            contextMenuQueue.push(menu_id)
+
         }
-    };
+
+        this.reorder()
+
+        this.dropdown.show()
+    }
 }
 
 let autoDiscoverSelf = function (event, self_string) {
@@ -124,7 +147,7 @@ let autoDiscoverSiblings = function (event, self_string, siblings, type) {
             if ($(this).hasClass(type)) {
                 siblings.push($(this).text())
             }
-        });
+        })
     } else if (typeof (siblings) === 'string') {
         let target = siblings
         siblings = []
@@ -132,7 +155,7 @@ let autoDiscoverSiblings = function (event, self_string, siblings, type) {
             if ($(this).hasClass(type)) {
                 siblings.push($(this).text())
             }
-        });
+        })
     } else {
         assert(Array.isArray(siblings), 'This function expects an array, a JQuery selector or nothing!!')
     }
@@ -168,7 +191,7 @@ let autoDiscoverGenomes = function (genomes) {
 }
 
 let showStrainClickMenu = function (event, strain = 'auto', species = 'auto', siblings = 'auto') {
-    console.log('showTaxidClickMenu event:', event, 'strain', strain, 'siblings', siblings);
+    console.log('showTaxidClickMenu event:', event, 'strain', strain, 'siblings', siblings)
     // auto-discover species
     species = autoDiscoverSpecies(event, species)
 
@@ -179,7 +202,7 @@ let showStrainClickMenu = function (event, strain = 'auto', species = 'auto', si
     // siblings = autoDiscoverSiblings(event, taxname, siblings, 'strain')
 
     // initiate context menu
-    let cm = new ClickMenu(event, 'strain-context-menu');
+    let cm = new ClickMenu(event, 'strain-context-menu')
 
     // list of elements to click on
     cm.appendElement(`
@@ -189,8 +212,8 @@ ${strain}</h6>
 Open strain info</a>
 `)
 
-    cm.show();
-};
+    cm.show()
+}
 
 
 let showGenomeClickMenu = function (event, genome = 'auto', species = 'auto', siblings = 'auto') {
@@ -249,8 +272,8 @@ Blast genomes</a>
 </div>
 `)
     }
-    cm.show();
-};
+    cm.show()
+}
 
 let showAnnotationClickMenu = function (event, annotation = 'auto', siblings = 'auto', genomes = 'none', annotype = 'auto') {
     console.log('showAnnotationClickMenu', 'event:', event, 'annotation:', annotation, 'siblings:', siblings, 'genomes', genomes, 'annotype', annotype)
@@ -307,11 +330,11 @@ Compare the genes of these annotations</a>
 `)
     }
 
-    cm.show();
-};
+    cm.show()
+}
 
 let showGeneClickMenu = function (event, gene = 'auto', siblings = 'auto') {
-    console.log('showGeneClickMenu event:', event, 'gene', gene, 'siblings', siblings);
+    console.log('showGeneClickMenu event:', event, 'gene', gene, 'siblings', siblings)
 
     // auto-discover annotation
     gene = autoDiscoverSelf(event, gene)
@@ -320,7 +343,7 @@ let showGeneClickMenu = function (event, gene = 'auto', siblings = 'auto') {
     siblings = autoDiscoverSiblings(event, gene, siblings, 'gene')
 
     // initiate context menu
-    let cm = new ClickMenu(event, 'gene-context-menu');
+    let cm = new ClickMenu(event, 'gene-context-menu')
 
     // list of elements to click on
     cm.appendElement(`
@@ -342,7 +365,6 @@ Compare genes</a>
 `)
     }
 
-
     $.getJSON("/api/get-gene", {'gene_identifier': gene}, function (data) {
         let genome = data['genome']
         let taxid = data['taxid']
@@ -353,7 +375,7 @@ Compare genes</a>
             $('#gene-context-menu-gene-product-missing').text(annotype_to_gene['GP'][0]["name"]).removeAttr('hidden')
         }
 
-        document.getElementById('gene-context-menu-species-missing').setAttribute('data-species', species);
+        document.getElementById('gene-context-menu-species-missing').setAttribute('data-species', species)
 
         let html = `
 <h6 class="dropdown-header context-menu-header" data-species="${species}" onclick="showGenomeClickMenu(event)">
@@ -365,11 +387,11 @@ Annotations</h6>
 `
         for (const [anno_type, annotations] of Object.entries(annotype_to_gene)) {
             html += `
-<div style="display: inline-flex;">
+<div style="display: inline-flex">
     <div class="dropdown-item context-menu-icon context-menu-icon-annotations" data-annotype="${anno_type}">
     ${annotations[0]['anno_type_verbose']} (${annotations.length})</div>
     <div class="btn-group dropright">
-    <button class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="font-size: 1rem; padding: 0rem 0.8rem;">
+    <button class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="font-size: 1rem; padding: 0rem 0.8rem">
     </button>
         <div class="dropdown-menu" style="width: 400px">`
 
@@ -386,12 +408,12 @@ Annotations</h6>
         }
         cm.appendElement(html)
         cm.popper.update()
-    });
-    cm.show();
-};
+    })
+    cm.show()
+}
 
 let showTaxidClickMenu = function (event, taxname = 'auto', siblings = 'auto') {
-    console.log('showTaxidClickMenu event:', event, 'taxname', taxname, 'siblings', siblings);
+    console.log('showTaxidClickMenu event:', event, 'taxname', taxname, 'siblings', siblings)
 
     // auto-discover annotation
     taxname = autoDiscoverSelf(event, taxname)
@@ -400,7 +422,7 @@ let showTaxidClickMenu = function (event, taxname = 'auto', siblings = 'auto') {
     // siblings = autoDiscoverSiblings(event, taxname, siblings, 'taxid')
 
     // initiate context menu
-    let cm = new ClickMenu(event, 'taxid-context-menu');
+    let cm = new ClickMenu(event, 'taxid-context-menu')
 
     // list of elements to click on
     cm.appendElement(`
@@ -410,6 +432,6 @@ ${taxname}</h6>
 Open taxid info</a>
 `)
 
-    cm.show();
-};
+    cm.show()
+}
 

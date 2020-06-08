@@ -65,18 +65,23 @@
         <div class="container black-links">
             <!-- locus tag -->
             <span class="type-label">locus tag:</span>
-            <span class="h1">{{ gene }}</span>
+            <span class="h1" onclick="showGeneClickMenu(event, '{{ gene }}', [])">
+                {{ gene }}</span>
 
             <!-- genome -->
             <span class="type-label">genome:</span>
-            <a class="h2" href="{% url 'website:genome' slug=gene.genomecontent %}">{{ gene.genomecontent }}</a>
+            <span class="h2" onclick="showGenomeClickMenu(event, 'auto', '{{ gene.genomecontent.taxid }}')">{{ gene.genomecontent }}</span>
 
             <!-- taxid -->
             {% if gene.genomecontent.taxid %}<br>
                 <span class="type-label">species:</span>
-                <a class="h3" href="{% url 'website:taxid' slug=gene.genomecontent.taxid.id %}">{{ gene.genomecontent.taxid }} <span
-                        style="{{ gene.genomecontent.taxid.html_style }}">(taxid: {{ gene.genomecontent.taxid.id }})</span></a>
+                <span class="h3" onclick="showTaxidClickMenu(event, '{{ gene.genomecontent.taxid }}')">
+                    {{ gene.genomecontent.taxid }}</span>
+                <span class="type-label">taxid:</span>
+                <span class="h3" style="{{ gene.genomecontent.taxid.html_style }}"
+                      onclick="showTaxidClickMenu(event, '{{ gene.genomecontent.taxid }}')">{{ gene.genomecontent.taxid.id }}</span>
             {% endif %}
+
         </div>
 
 

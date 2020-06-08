@@ -68,7 +68,8 @@
             <!-- taxid -->
             {% if genome.taxid %}<br>
                 <span class="type-label">species:</span>
-                <span class="h3">{{ genome.taxid }}</span>
+                <span class="h3" onclick="showTaxidClickMenu(event, '{{ genome.taxid }}')">
+                    {{ genome.taxid }}</span>
                 <span class="type-label">taxid:</span>
                 <span class="h3" style="{{ genome.taxid.html_style }}"
                       onclick="showTaxidClickMenu(event, '{{ genome.taxid }}')">{{ genome.taxid.id }}</span>

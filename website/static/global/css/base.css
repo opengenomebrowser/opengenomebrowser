@@ -159,7 +159,7 @@ convert hex (e.g. #2980b9) to filter: https://codepen.io/sosuke/pen/Pjoqqp
 .breadcrumb-fixed {
     /* keep breadcrumb on top of page */
     position: fixed;
-    z-index: 2;
+    z-index: 20;
     width: 100%;
     margin-top: -14px;
 }

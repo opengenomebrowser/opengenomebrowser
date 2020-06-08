@@ -47,7 +47,8 @@
             <!-- taxid -->
             {% if strain.taxid %}<br>
                 <span class="type-label">species:</span>
-                <span class="h3">{{ strain.taxid }}</span>
+                <span class="h3" onclick="showTaxidClickMenu(event, '{{ strain.taxid }}')">
+                    {{ strain.taxid }}</span>
                 <span class="type-label">taxid:</span>
                 <span class="h3" style="{{ strain.taxid.html_style }}"
                       onclick="showTaxidClickMenu(event, '{{ strain.taxid }}')">{{ strain.taxid.id }}</span>

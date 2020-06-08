@@ -38,11 +38,13 @@
         <div class="container black-links">
             <!-- species name -->
             <span class="type-label">name:</span>
-            <span class="h1">{{ taxid }} </span>
+            <span class="h1" onclick="showTaxidClickMenu(event, '{{ taxid }}')">
+                {{ taxid }} </span>
 
             <!-- species taxid -->
             <span class="type-label">taxid:</span>
-            <span class="h1" style="{{ taxid.html_style }}" onclick="showTaxidClickMenu(event, '{{ taxid }}')">{{ taxid.id }} </span>
+            <span class="h1" style="{{ taxid.html_style }}" onclick="showTaxidClickMenu(event, '{{ taxid }}')">
+                {{ taxid.id }} </span>
 
             <!-- species rank --><br>
             <span class="type-label">rank:</span>
@@ -51,12 +53,13 @@
             {% if taxid.parent %}<br>
                 <!-- parent name -->
                 <span class="type-label">parent:</span>
-                <span class="h1">{{ taxid.parent }} </span>
+                <span class="h1" onclick="showTaxidClickMenu(event, '{{ taxid.parent }}')">
+                    {{ taxid.parent }} </span>
 
                 <!-- parent taxid -->
                 <span class="type-label">taxid:</span>
-                <span class="h1" style="{{ taxid.parent.html_style }}"
-                      onclick="showTaxidClickMenu(event, '{{ taxid.parent }}')">{{ taxid.parent.id }} </span>
+                <span class="h1" style="{{ taxid.parent.html_style }}" onclick="showTaxidClickMenu(event, '{{ taxid.parent }}')">
+                    {{ taxid.parent.id }} </span>
             {% endif %}
             <hr class="featurette-divider">
 
