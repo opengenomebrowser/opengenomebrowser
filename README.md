@@ -20,8 +20,8 @@ _OpenGenomeBrowser is a dynamic and scalable web platform for comparative genomi
 ### Key concepts
 
 -   _Strain_: biological entity
--   _Member_: sequencing variant
--   _Representative_: best member of strain
+-   _Genome_: sequencing variant
+-   _Representative_: best genome of strain
 
 
 
@@ -67,7 +67,7 @@ If you want to chat, contact me via [discord](https://discord.gg/mDm4fqf).
 ### Metadata (NOTE: these specifications are not final!)
 
 ##### Notes:
--    paths are relative to the member folder, i.e. it's fine to have files in a subfolders of the member folder
+-    paths are relative to the genome folder, i.e. it's fine to have files in a subfolders of the genome folder
 -    date format: `"%Y-%m-%d"`, i.e. `2000-12-31`
 
 ##### strain.json:
