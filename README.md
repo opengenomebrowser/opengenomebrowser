@@ -37,7 +37,7 @@ _OpenGenomeBrowser is a dynamic and scalable web platform for comparative genomi
 ## Get help
 If you find a bug that has not already been reported, submit an issue on this github.
 
-If you want to chat, contact me via [discord](https://discord.gg/mDm4fqf).
+If you want to chat, contact me via [Discord](https://discord.gg/mDm4fqf).
 
 
 
@@ -61,13 +61,12 @@ If you want to chat, contact me via [discord](https://discord.gg/mDm4fqf).
               ├── generalfeatureformat.gff
               ├── annotations.ko
               └── annotations.eggnog
-└── OrthoFinder
 ```
 
 ##### Notes:
 
 -   genome names must start with the name of the corresponding strain
-    -   we suggest to use this suffix format:
+    -   we _suggest_ to use this suffix format:
         `strain`-`isolate`-`assembly`-`annotation`
     -   example: strain=`EXAMPLE1234` -> `EXAMPLE1234-2-1.1`
 -   gene locus tags must start with the genome identifier, then an underline (`_`)
@@ -194,6 +193,42 @@ EXAMPLE1234-2-1.1_000008	K000001, K000002
         }
     ]
 }
+```
+
+### OrthoFinder (recommended, not required)
+
+OrthoFinder can be found [here](https://github.com/davidemms/OrthoFinder).
+
+If you choose to add OrthoFinder, prepare as follows:
+```
+├── strains
+    └── ...
+└── OrthoFinder
+     └── fastas
+         ├── <genome-identifier>.faa -> ../../strains/.../genomes/<genome-identifier>/protein.faa
+         ├── <genome-identifier>.faa -> ../../strains/.../genomes/<genome-identifier>/protein.faa
+         └── ...
+```
+
+-   Link (or copy) all protein fastas you want to be available for OrthoFinder-based trees and orthogroup annotations
+into the folder "fastas".
+-   In other words, if your database is very big, you could exclude non-representative and contaminated genomes, for 
+example.
+-   The fastas **must** be named as follows: `<genome-identifier>.faa`
+-   Run OrthoFinder (`orthofinder -f /path/to/OrthoFinder/fastas`)
+-   The great thing about OrthoFinder is that one can add or remove species efficiently, by recycling previous 
+pairwise comparisons. See [OrthoFinder docs](https://github.com/davidemms/OrthoFinder#advanced-usage) for more 
+information.
+
+When OrthoFinder is done, the folder structure should look like this:
+```
+└── strains
+    └── ...
+└── OrthoFinder
+     └── fastas
+         ├── ...
+         └── OrthoFinder
+             └── ...
 ```
 
 
