@@ -1,6 +1,8 @@
 from huey.contrib.djhuey import task
 from lib.ani.orthoani_wrapper import OrthoANI as AniWrapper
 from lib.orthofinder.orthofinder import Orthofinder
+import psutil
+import time
 
 
 @task()
@@ -33,6 +35,12 @@ def calculate_ani(g1, g2) -> float:
 
 @task()
 def calculate_orthofinder(genomes) -> str:
+    # ensure only one orthofinder process is running:
+    orthofinder_running = "orthofinder" in (p.name() for p in psutil.process_iter())
+    while orthofinder_running:
+        time.sleep(5)
+        orthofinder_running = "orthofinder" in (p.name() for p in psutil.process_iter())
+
     from website.models.GenomeContent import GenomeContent
     from website.models.CoreGenomeDendrogram import CoreGenomeDendrogram
     identifiers = sorted(set(g.identifier for g in genomes))
