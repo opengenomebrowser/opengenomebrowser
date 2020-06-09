@@ -64,7 +64,8 @@ database/*
 lib/get_tax_info/data/*
 lib/custom_kegg/data/*
 lib/ncbi_blast/ncbi-blast-2.10.0+/
-lib/ortho_ani/OAT_cmd.jar
+lib/ani/*.jar
+lib/ani/usearch
 lib/assembly_stats/assembly-stats/
 
 website/static/global/css/tag_color.css

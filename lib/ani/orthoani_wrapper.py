@@ -1,7 +1,7 @@
-import os
-from subprocess import call, run, PIPE
-import tempfile
 import multiprocessing as mp
+import os
+import tempfile
+from subprocess import call, run, PIPE
 
 
 class OrthoANI:
@@ -21,13 +21,13 @@ class OrthoANI:
         assert os.path.isfile(self.ortho_ani_path)
 
         # Test if Java is installed
-        assert call(['java', '-version'], stderr=PIPE, stdout=PIPE) == 0, 'ortho_ani requires Java 8!'
+        assert call(['java', '-version'], stderr=PIPE, stdout=PIPE) == 0, 'ani requires Java 8!'
 
     def calculate_similarity(self, fasta1: str, fasta2: str, ncpu: int = None) -> float:
         """
         :param fasta1: path to first assembly fasta
         :param fasta2: path to second assembly fasta
-        :return: float: ortho_ani similarity score. 1 = 100 %, 0 = 0 %
+        :return: float: ani similarity score. 1 = 100 %, 0 = 0 %
         """
         assert os.path.isfile(fasta1), "path is invalid: '{}'".format(fasta1)
         assert os.path.isfile(fasta2), "path is invalid: '{}'".format(fasta2)
@@ -83,8 +83,10 @@ class OrthoANI:
         pool = mp.Pool(mp.cpu_count())
         return pool.map(calculate_one, fasta_tuple_list)
 
-# oa = OrthoANI()
-# print(os.getcwd())
-# res = oa.calculate_similarity('../../database/strains/FAM18119/genomes/FAM18119/1_assembly/FAM18119.fna',
-#                               '../../database/strains/FAM22277/genomes/FAM22277/1_assembly/FAM22277.fna')
-# print(res)
+
+if __name__ == '__main__':
+    oa = OrthoANI()
+    print(os.getcwd())
+    res = oa.calculate_similarity('../../database/strains/FAM13496/genomes/FAM13496-i1-1.1/1_assembly/FAM13496-i1-1.fna',
+                                  '../../database/strains/FAM18815/genomes/FAM18815-i1-1.1/1_assembly/FAM18815-i1-1.fna')
+    print(res)

@@ -1,5 +1,5 @@
 from huey.contrib.djhuey import task
-from lib.ortho_ani.ortho_ani_wrapper import OrthoANI
+from lib.ani.orthoani_wrapper import OrthoANI as AniWrapper
 from lib.orthofinder.orthofinder import Orthofinder
 
 
@@ -14,7 +14,7 @@ def calculate_ani(g1, g2) -> float:
     print(F'start ANI calc {g1.identifier} :: {g2.identifier}')
 
     try:
-        ani_score = OrthoANI().calculate_similarity(g1.genome.assembly_fasta(relative=False), g2.genome.assembly_fasta(relative=False), ncpu=8)
+        ani_score = AniWrapper().calculate_similarity(g1.genome.assembly_fasta(relative=False), g2.genome.assembly_fasta(relative=False), ncpu=8)
     except Exception as e:
         ani_obj = ANI.objects.get(from_genome=g1, to_genome=g2)
         if ani_obj.status in ['R', 'F']:
