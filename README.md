@@ -1,6 +1,11 @@
 # OpenGenomeBrowser
 
-ALERT: This software is still under development! If you want to try it out, contact the developer.
+**ALERT: This software is still under development! If you want to try it out, contact the developer first!**
+
+**Prototype:** [opengenomebrowser.bioinformatics.unibe.ch](https://opengenomebrowser.bioinformatics.unibe.ch/)
+
+To talk to the developer informally, join the OpenGenomeBrowser [Discord channel](https://discord.gg/mDm4fqf).
+<hr>
 
 _OpenGenomeBrowser is a dynamic and scalable web platform for comparative genomics._
 
@@ -16,6 +21,10 @@ _OpenGenomeBrowser is a dynamic and scalable web platform for comparative genomi
 -   OpenGenomeBrowser is flexible:
     - Orthofinder is recommended, but not required
     - Computationally intensive processes can be outsourced to a cluster
+
+<div align="center">
+<img src="/website/static/global/customicons/ogb-full.svg"  width="500px">
+</div>
 
 ### Key concepts
 
