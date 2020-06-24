@@ -16,52 +16,51 @@ class Genome(models.Model):
     """
 
     # MANDATORY general information about the isolate
-    identifier = models.CharField('Unique Identifier', max_length=50, unique=True)
+    identifier = models.CharField('Unique identifier', max_length=50, unique=True)
     strain = models.ForeignKey(Strain, on_delete=models.CASCADE)
     representative = models.OneToOneField(Strain, related_name="representative",
                                           on_delete=models.CASCADE, blank=True, null=True)
     genomecontent = models.OneToOneField(GenomeContent, on_delete=models.CASCADE)
 
-    tags = models.ManyToManyField(Tag)
+    tags = models.ManyToManyField(Tag, blank=True)
     contaminated = models.BooleanField('Contaminated?', default=False)
-    old_identifier = models.CharField('Old Identifier', max_length=50, null=True, blank=True)
+    old_identifier = models.CharField('Old identifier', max_length=50, null=True, blank=True)
 
     # information about isolation
-    isolation_date = models.DateField('Date of Isolation', null=True, blank=True)
-    env_broad_scale = JSONField(default=list)
-    env_local_scale = JSONField(default=list)
-    env_medium = JSONField(default=list)
-    growth_condition = models.CharField('Growth Condition', max_length=100, null=True, blank=True)
-    geographical_coordinates = models.CharField('Geographical Coordinates', max_length=200, null=True, blank=True)
-    geographical_name = models.CharField('Geographical Name', max_length=50, null=True, blank=True)
+    isolation_date = models.DateField('Isolation date', null=True, blank=True)
+    env_broad_scale = JSONField(default=list, blank=True, null=True)
+    env_local_scale = JSONField(default=list, blank=True, null=True)
+    env_medium = JSONField(default=list, blank=True, null=True)
+    growth_condition = models.CharField('Growth vondition', max_length=100, null=True, blank=True)
+    geographical_coordinates = models.CharField('Geographical coordinates', max_length=200, null=True, blank=True)
+    geographical_name = models.CharField('Geographical name', max_length=50, null=True, blank=True)
 
     # information about sequencing
-    sequencing_tech = models.CharField('Sequencing Technology', max_length=40, null=True, blank=True)
-    sequencing_tech_version = models.CharField('Sequencing Technology Version', max_length=20, null=True, blank=True)
-    sequencing_date = models.CharField('Date of Sequencing', max_length=30, null=True,
-                                       blank=True)  # 2018.01.01//2019.01.01
-    sequencing_coverage = models.CharField('Sequencing Coverage', max_length=8, null=True, blank=True)
+    sequencing_tech = models.CharField('Sequencing technology', max_length=40, null=True, blank=True)
+    sequencing_tech_version = models.CharField('Sequencing technology version', max_length=20, null=True, blank=True)
+    sequencing_date = models.DateField('Sequencing date', null=True, blank=True)
+    sequencing_coverage = models.CharField('Sequencing coverage', max_length=8, null=True, blank=True)
 
     # information about assembly
-    assembly_tool = models.CharField('Assembly Tool', max_length=40, null=True, blank=True)
-    assembly_version = models.CharField('Assembly Version', max_length=40, null=True, blank=True)
-    assembly_date = models.CharField('Date of Assembly', max_length=30, null=True, blank=True)  # 2018.01.01//2019.01.01
+    assembly_tool = models.CharField('Assembly tool', max_length=40, null=True, blank=True)
+    assembly_version = models.CharField('Assembly version', max_length=40, null=True, blank=True)
+    assembly_date = models.DateField('Assembly date', null=True, blank=True)
 
     assembly_fasta_file = models.CharField(max_length=200)
-    assembly_longest_scf = models.IntegerField('Longest Scaffold', null=True, blank=True)
-    assembly_size = models.IntegerField('Assembly Size', null=True, blank=True)
-    assembly_nr_scaffolds = models.IntegerField('Number of Scaffolds', null=True, blank=True)
-    assembly_n50 = models.IntegerField('Assembly N50', null=True, blank=True)
-    nr_replicons = models.IntegerField('Number of Replicons', null=True, blank=True)
+    assembly_longest_scf = models.IntegerField('Longest scaffold', null=True, blank=True)
+    assembly_size = models.IntegerField('Assembly size', null=True, blank=True)
+    assembly_nr_scaffolds = models.IntegerField('Number of scaffolds', null=True, blank=True)
+    assembly_n50 = models.IntegerField('N50', null=True, blank=True)
+    nr_replicons = models.IntegerField('Number of replicons', null=True, blank=True)
 
     # contamination analysis
-    origin_included_sequences = JSONField(default=list)
-    origin_excluded_sequences = JSONField(default=list)
+    origin_included_sequences = JSONField(default=list, blank=True, null=True)
+    origin_excluded_sequences = JSONField(default=list, blank=True, null=True)
 
     # information about CDS prediction
-    cds_tool = models.CharField('Primary Annotation Tool', max_length=50, null=True, blank=True)
-    cds_tool_date = models.DateField('Date of Primary Annotation', null=True, blank=True)
-    cds_tool_version = models.CharField('Version of Primary Annotation', max_length=20, null=True, blank=True)
+    cds_tool = models.CharField('Primary annotation tool', max_length=50, null=True, blank=True)
+    cds_tool_date = models.DateField('Date of primary annotation', null=True, blank=True)
+    cds_tool_version = models.CharField('Version of primary annotation', max_length=20, null=True, blank=True)
     cds_tool_faa_file = models.CharField(max_length=200)  # MANDATORY
     cds_tool_gbk_file = models.CharField(max_length=200)  # MANDATORY
     cds_tool_gff_file = models.CharField(max_length=200)  # MANDATORY
@@ -70,12 +69,12 @@ class Genome(models.Model):
 
     sixteen_s = JSONField(default=dict)  # {'16S NCBI-db': [{'description': 'E. coli', 'taxid': 123, 'evalue': 0.0}, ...], ...}
 
-    BUSCO = JSONField(default=dict)  # {C:2,D:2,F:2,M:2,S:2,T:2]}
+    BUSCO = JSONField(default=dict)  # {C:2,D:2,F:2,M:2,S:2,T:2]}  +  {busco_db: firmicutes_odb9}
     BUSCO_percent_single = models.DecimalField(max_digits=3, decimal_places=1, null=True, blank=True)
     # format(self.BUSCO['S'] / self.BUSCO['T'], ".1%")
 
     # information about annotation
-    custom_annotations = JSONField(default=list)  # [{"date": "2016-02-29", "file": "FAM19038.ko", "type": "KEGG"}]
+    custom_annotations = JSONField(default=list, blank=True, null=True)  # [{"date": "2016-02-29", "file": "FAM19038.ko", "type": "KEGG"}]
 
     # accession numbers if the genome has been published
     bioproject_accession = models.CharField(max_length=20, null=True, blank=True)
@@ -83,7 +82,7 @@ class Genome(models.Model):
     genome_accession = models.CharField(max_length=20, null=True, blank=True)
 
     # literature references
-    literature_references = JSONField(default=list)  # ["ref1", "ref2",]
+    literature_references = JSONField(default=list, blank=True, null=True)  # ["ref1", "ref2",]
 
     def natural_key(self):
         return self.identifier
@@ -94,6 +93,10 @@ class Genome(models.Model):
 
     def set_representative(self):
         self.strain.set_representative(self)
+
+    @property
+    def taxid(self) -> TaxID:
+        return self.strain.taxid
 
     @property
     def taxscientificname(self):
@@ -125,8 +128,8 @@ class Genome(models.Model):
         return self.strain.restricted
 
     @property
-    def taxid(self) -> TaxID:
-        return self.strain.taxid
+    def genomecontent__n_genes(self) -> int:
+        return self.genomecontent.n_genes
 
     def base_path(self, relative=True) -> str:
         rel = F"strains/{self.strain.name}/genomes/{self.identifier}"
@@ -316,6 +319,7 @@ class Genome(models.Model):
             'cds_tool': {'filter_type': 'no-filter', 'description': 'CDS Tool'},
             'cds_tool_version': {'filter_type': 'no-filter', 'description': 'CDS Tool Version'},
             'cds_tool_date': {'filter_type': 'no-filter', 'description': 'CDS Date'},
+            'genomecontent__n_genes': {'filter_type': 'no-filter', 'description': 'Number of genes'},
             'BUSCO_percent_single': {'filter_type': 'no-filter', 'description': 'BUSCO [%S]'},
             'bioproject_accession': {'filter_type': 'no-filter', 'description': 'Bioproject'},
             'biosample_accession': {'filter_type': 'no-filter', 'description': 'Biosample'},

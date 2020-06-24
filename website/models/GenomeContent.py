@@ -15,7 +15,10 @@ class GenomeContent(models.Model):
     """
     identifier = models.CharField('unique identifier', max_length=50, unique=True, primary_key=True)
 
-    gbk_file_size = models.IntegerField()
+    n_genes = models.IntegerField('Number of genes', default=0)
+
+    gbk_file_size = models.IntegerField(default=0)
+
     custom_files = JSONField(default=list)  # list [{"date": "2016-02-29", "file": "FAM19038.ko", "type": "KEGG"}]
 
     annotations = models.ManyToManyField(Annotation)
@@ -150,6 +153,7 @@ class GenomeContent(models.Model):
         Gene.annotations.through.objects.bulk_create(objects)
 
         # Save file size of imported gbk.
+        self.n_genes = len(gene_id_set)
         self.gbk_file_size = os.stat(self.genome.cds_gbk(relative=False)).st_size
 
         # load custom files:

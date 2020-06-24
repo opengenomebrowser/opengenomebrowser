@@ -1,13 +1,13 @@
 from django_datatables_view.base_datatable_view import BaseDatatableView
 from django.db.models import Q
-from django.contrib.postgres.aggregates.general import StringAgg, ArrayAgg
+from django.contrib.postgres.aggregates.general import ArrayAgg
 
 from website.models import Genome
 
-from django.db.models import Aggregate, CharField, Value
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 
-class GenomeTableAjax(BaseDatatableView):
+class GenomeTableAjax(LoginRequiredMixin, BaseDatatableView):
     # The model we're going to show
     model = Genome
 

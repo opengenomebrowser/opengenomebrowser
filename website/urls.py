@@ -1,4 +1,5 @@
 from django.conf.urls import url
+from django.views.generic import RedirectView
 from django.urls import path, re_path
 from website.views import *
 
@@ -7,6 +8,9 @@ app_name = 'website'
 urlpatterns = [
     # ex: /
     path('', Home.home_view, name='index'),
+
+    # favicon.ico
+    path('favicon.ico', RedirectView.as_view(url='/static/global/customicons/ogb-circle.svg')),
 
     # ex: /download
     re_path(r'download/.*$', Download.download_view, name='download'),

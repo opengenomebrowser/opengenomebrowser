@@ -1,8 +1,9 @@
 from website.models import Strain
 from django.views.generic import DetailView
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 
-class StrainDetailView(DetailView):
+class StrainDetailView(LoginRequiredMixin, DetailView):
     model = Strain
     slug_field = 'name'
     template_name = 'website/strain_detail.html'

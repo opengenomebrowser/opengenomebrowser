@@ -1,9 +1,8 @@
 import os
-from django.shortcuts import render, HttpResponse, HttpResponseRedirect
+from django.shortcuts import render, HttpResponse
 from OpenGenomeBrowser import settings
 from website.models.GenomeContent import GenomeContent
 from django.conf import settings
-# from dal import autocomplete
 from django.http import HttpResponseBadRequest
 from django import forms
 from django.core.exceptions import ValidationError

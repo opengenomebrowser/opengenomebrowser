@@ -64,14 +64,14 @@ class GlasbeyWrapper:
         :returns color: in rgb-string format, e.g. "255,255,255"
         :returns text_color_white: True if :param color: is dark, False if color is bright
 
-        Picks the color that matches :param tag: from database/tag_color_dict.json if possible.
-        Otherwise, it assigns a new color from non_assigned_colors in tag_color_dict.json.
+        Picks the color that matches :param tag: from database/tag_to_color.json if possible.
+        Otherwise, it assigns a new color from non_assigned_colors in tag_to_color.json.
         If this is not possible either, new distinct colors are generated using Glasbey.
         """
         from OpenGenomeBrowser import settings
         from website.models import Tag
         import json
-        color_json_path = F"{settings.GENOMIC_DATABASE}/tag_color_dict.json"
+        color_json_path = F"{settings.GENOMIC_DATABASE}/tag_to_color.json"
         if os.path.isfile(color_json_path):
             with open(color_json_path, 'r') as f:
                 color_json = json.load(f)

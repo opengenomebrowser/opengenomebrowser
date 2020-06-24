@@ -17,4 +17,3 @@ def kegg_view(request):
     print(context)
 
     return render(request, 'website/kegg.html', context)
-

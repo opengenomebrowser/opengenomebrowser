@@ -1,4 +1,4 @@
-from website.models import GenomeContent, Gene, Annotation
+from website.models import Annotation
 from django.views.generic import DetailView
 
 

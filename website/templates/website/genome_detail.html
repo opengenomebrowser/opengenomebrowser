@@ -131,9 +131,6 @@
                             <div class="card-body">
                                 <h5 class="card-title"
                                     style="color: {% if tag.text_color_white %}white{% else %}black{% endif %}">{{ tag.tag }}</h5>
-                                <h6 class="card-subtitle mb-2"
-                                    style="color: {% if tag.text_color_white %}#EFEEEC{% else %}#444444{% endif %}">Card
-                                    subtitle</h6>
                                 <div class="card-textbox rounded">
                                     <p class="card-text">{{ tag.description|default:"no description" }}</p>
                                 </div>

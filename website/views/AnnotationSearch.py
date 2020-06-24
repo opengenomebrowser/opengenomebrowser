@@ -104,7 +104,8 @@ class MatrixMaker:
 
     @staticmethod
     def get_genes(annotation: Annotation, genomes: [GenomeContent]) -> [Gene]:
-        return annotation.gene_set.filter(genomecontent__in=genomes).order_by('genomecontent__identifier').prefetch_related('genomecontent__genome__strain__taxid')
+        return annotation.gene_set.filter(genomecontent__in=genomes).order_by('genomecontent__identifier').prefetch_related(
+            'genomecontent__genome__strain__taxid')
 
     def get_group_to_table(self) -> dict:
         return {grp_id: self.__create_group_table(grp_id, genomes) for grp_id, genomes in self.grp_to_genomes.items()}

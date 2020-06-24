@@ -1,4 +1,4 @@
-from django.shortcuts import render, HttpResponse
+from django.shortcuts import render
 
 
 def trees(request):

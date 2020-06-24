@@ -1,13 +1,39 @@
 from django.db import models
 from django.db.utils import ProgrammingError
 from OpenGenomeBrowser import settings
+import json
 import os
+
+
+class TagManager(models.Manager):
+    def create(self, *args, **kwargs):
+        tag_name = kwargs['tag']
+
+        if 'description' in kwargs and kwargs['description'] is not None:
+            tag_desciptions.set_key(key=tag_name, value=kwargs['description'])
+        else:
+            try:
+                description = tag_desciptions.get_key(key=tag_name)
+            except KeyError:
+                description = '-'
+                tag_desciptions.set_key(key=tag_name, value=description)
+            kwargs['description'] = description
+
+        from lib.tax_id_to_color.glasbey_wrapper import GlasbeyWrapper
+        color, text_color_white = GlasbeyWrapper.get_color_from_tag(tag=tag_name)
+
+        kwargs['color'] = color
+        kwargs['text_color_white'] = text_color_white
+
+        return super(TagManager, self).create(*args, **kwargs)
 
 
 class Tag(models.Model):
     """
     Tags for strains
     """
+
+    objects = TagManager()
 
     tag = models.CharField(max_length=20, unique=True)
     description = models.TextField(blank=True)
@@ -17,31 +43,6 @@ class Tag(models.Model):
 
     def natural_key(self):
         return self.tag
-
-    @staticmethod
-    def get_or_create_tag(tag: str):
-        """
-        Add Strain or Genome to Tag if it already exists, create new one otherwise.
-
-        :param tag: tag-string
-        :returns Tag:
-        """
-        t = Tag.objects.filter(tag=tag)
-        if len(t) == 1:
-            # get existing Tag
-            t = t[0]
-        else:
-            # create new Tag
-            from lib.tax_id_to_color.glasbey_wrapper import GlasbeyWrapper
-            color, text_color_white = GlasbeyWrapper.get_color_from_tag(tag=tag)
-            t = Tag(
-                tag=tag,
-                color=color,
-                text_color_white=text_color_white
-            )
-            t.save()
-
-        return t
 
     def get_html_badge(self):
         return '<span class="ogb-tag" data-tag="{tag}">{tag}</span>'.format(tag=self.tag)
@@ -85,3 +86,25 @@ class Tag(models.Model):
     def invariant(self):
         # assert self.strains.count() > 0
         return True
+
+
+class TagDescriptions:
+    def __init__(self):
+        self.description_file = F'{settings.GENOMIC_DATABASE}/tag_to_description.json'
+        if not os.path.isfile(self.description_file):
+            json.dump({}, open(self.description_file, 'w'))
+
+    def get_dict(self) -> dict:
+        return json.load(open(self.description_file))
+
+    def get_key(self, key) -> str:
+        tmp_dict = self.get_dict()
+        return tmp_dict[key]
+
+    def set_key(self, key, value):
+        tmp_dict = self.get_dict()
+        tmp_dict[key] = value
+        json.dump(tmp_dict, open(self.description_file, 'w'), indent=4)
+
+
+tag_desciptions = TagDescriptions()

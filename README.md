@@ -211,7 +211,7 @@ If you choose to add OrthoFinder, prepare as follows:
 ```
 
 -   Link (or copy) all protein fastas you want to be available for OrthoFinder-based trees and orthogroup annotations
-into the folder "fastas".
+into the folder `OrthoFinder/fastas`.
 -   In other words, if your database is very big, you could exclude non-representative and contaminated genomes, for 
 example.
 -   The fastas **must** be named as follows: `<genome-identifier>.faa`

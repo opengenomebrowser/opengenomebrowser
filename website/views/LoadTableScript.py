@@ -1,7 +1,6 @@
 import json
 from website.models import Tag, Genome
 from django.shortcuts import render
-from lib.django_template_increment_counter import Counter
 
 # prepare yadcf settings
 selector_to_description_dict = Genome.get_selector_to_description_dict()

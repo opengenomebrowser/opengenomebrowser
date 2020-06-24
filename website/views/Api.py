@@ -1,8 +1,6 @@
 from django.shortcuts import HttpResponse
 from django.http import JsonResponse
 import json
-import os
-from django.http import HttpResponseBadRequest
 
 from OpenGenomeBrowser import settings
 from website.models.Annotation import Annotation

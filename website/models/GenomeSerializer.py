@@ -17,6 +17,7 @@ class GenomeSerializer():
         genome_dict.pop('assembly_size')
         genome_dict.pop('assembly_nr_scaffolds')
         genome_dict.pop('assembly_n50')
+        genome_dict.pop('cds_tool_n_genes')
         genome_dict.pop('BUSCO_percent_single')
         return genome_dict
 
@@ -48,7 +49,7 @@ class GenomeSerializer():
         else:
             print(": create new")
 
-            genomecontent, created = GenomeContent.objects.get_or_create(identifier=genome_dict['identifier'], gbk_file_size=0)
+            genomecontent, created = GenomeContent.objects.get_or_create(identifier=genome_dict['identifier'])
             genome_dict['genomecontent'] = genomecontent.pk
 
             new_data = '[{"model": "' + Genome._meta.label_lower + '", "fields": ' + json.dumps(genome_dict) + '}]'
@@ -86,7 +87,7 @@ class GenomeSerializer():
 
         return_d['representative'] = None  # assign representative after first save
 
-        return_d['tags'] = [Tag.get_or_create_tag(tag=tag_string).pk for tag_string in return_d['tags']]
+        return_d['tags'] = [Tag.objects.get_or_create_tag(tag=tag_string).pk for tag_string in return_d['tags']]
 
         if 'S' in return_d['BUSCO'] and 'T' in return_d['BUSCO']:
             return_d['BUSCO_percent_single'] = round(return_d['BUSCO']['S'] / return_d['BUSCO']['T'], 1)

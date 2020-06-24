@@ -1,9 +1,10 @@
 from website.models import TaxID
 from django.views.generic import DetailView
 from django.shortcuts import redirect
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 
-class TaxIDDetailView(DetailView):
+class TaxIDDetailView(LoginRequiredMixin, DetailView):
     model = TaxID
     slug_field = 'id'
     template_name = 'website/taxid_detail.html'

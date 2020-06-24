@@ -1,0 +1,116 @@
+{% extends "global/base.html" %}
+
+{% block styles %}
+
+    <style>
+        .box {
+            width: 500px;
+            padding: 40px;
+            background: #343a40;;
+            text-align: center;
+            transition: 0.25s;
+            margin-top: 100px
+        }
+
+        .box input[type="text"],
+        .box input[type="password"] {
+            border: 0;
+            background: none;
+            display: block;
+            margin: 20px auto;
+            text-align: center;
+            border: 2px solid #86bed4;
+            padding: 10px 10px;
+            width: 250px;
+            outline: none;
+            color: white;
+            border-radius: 24px;
+            transition: 0.25s
+        }
+
+        .box h1 {
+            color: white;
+            text-transform: uppercase;
+            font-weight: 500
+        }
+
+        .box input[type="text"]:focus,
+        .box input[type="password"]:focus {
+            width: 300px;
+            border-color: #9f6fc6
+        }
+
+        .box input[type="submit"] {
+            border: 0;
+            background: none;
+            display: block;
+            margin: 20px auto;
+            text-align: center;
+            border: 2px solid #89c6af;
+            padding: 14px 40px;
+            outline: none;
+            color: white;
+            border-radius: 24px;
+            transition: 0.25s;
+            cursor: pointer
+        }
+
+        .box input[type="submit"]:hover {
+            background: #9f6fc6
+        }
+
+        .forgot {
+            text-decoration: underline
+        }
+
+        .login-container {
+            display: flex;
+            justify-content: center;
+        }
+
+    </style>
+
+{% endblock %}
+
+
+
+
+{% block body %}
+
+    <div class="container">
+
+        {% if form.errors %}
+            <div class="alert alert-danger" role="alert">
+                Your username and password didn't match. Please try again.
+            </div>
+        {% endif %}
+
+        {% if next %}
+            {% if user.is_authenticated %}
+                <div class="alert alert-warning" role="alert">
+                    Your account doesn't have access to this page. To proceed,
+                    please login with an account that has access.
+                </div>
+            {% else %}
+                <div class="alert alert-warning" role="alert">
+                    Please login to see this page.
+                </div>
+            {% endif %}
+        {% endif %}
+
+        <div class="login-container">
+            <form class="box" method="post" action="{% url 'login' %}">
+                {% csrf_token %}
+                <h1>Login</h1>
+                <p class="text-muted">Please enter your username and password!</p>
+                <p class="text-muted">If this is the OpenGenomeBrowser test server, try test:testtesttest!</p>
+                <input id=id_username" type="text" name="username" placeholder="Username" maxlength="150" autocomplete="username" required>
+                <input id="id_password" type="password" name="password" placeholder="Password" autocomplete="current-password" required>
+                <a class="forgot text-muted" href="{% url 'password_reset' %}">Forgot password?</a>
+                <input type="submit" value="login">
+                <input type="hidden" name="next" value="{% if next %}{{ next }}{% else %}/{% endif %}">
+            </form>
+        </div>
+    </div>
+
+{% endblock %}
