@@ -55,6 +55,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'OpenGenomeBrowser.login_required_middleware.LoginRequiredMiddleware',
 ]
 
 ROOT_URLCONF = 'OpenGenomeBrowser.urls'
@@ -130,6 +131,11 @@ STATIC_ROOT = 'static_root/'
 # https://pypi.org/project/django-remote-submission/
 MEDIA_URL = '/media/'
 MEDIA_ROOT = 'dist/media'
+
+# Require login by default, see also OpenGenomeBrowser.login_required_middleware.LoginRequiredMiddleware
+# https://stackoverflow.com/questions/3214589/56579091#56579091
+AUTH_EXEMPT_ROUTES = ('login', 'index')
+AUTH_LOGIN_ROUTE = 'login'
 
 GENOMIC_DATABASE = '/path/to/fb'
 assert os.path.isdir(GENOMIC_DATABASE), F"The path in settings.py doesn't point to a folder: {GENOMIC_DATABASE}"
