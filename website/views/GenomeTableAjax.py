@@ -20,7 +20,7 @@ class GenomeTableAjax(LoginRequiredMixin, BaseDatatableView):
             html = [F'<span data-tag="{tag}">{tag}</span>' for tag in row.genome_tags if tag]
             return ' '.join(html)
         if column == 'strain_tags':
-            html = [F'<span data-tag="{tag}">{tag}</span>' for tag in row.genome_tags if tag]
+            html = [F'<span data-tag="{tag}">{tag}</span>' for tag in row.strain_tags if tag]
             return ' '.join(html)
         if column == 'representative':
             return 'True' if row.representative else 'False'

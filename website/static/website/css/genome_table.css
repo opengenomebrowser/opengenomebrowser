@@ -193,10 +193,35 @@ table tbody td {
 
 .yadcf-filter-wrapper {
     white-space: nowrap;
+    display: flex;
+    align-items: center;
+}
+
+.yadcf-filter-reset-button {
+    color: transparent;
+    border: none;
+    border-radius: 5px;
+    margin-left: 5px;
+    height: 28px;
+    width: 28px;
+    padding:unset
+}
+
+.yadcf-filter-reset-button:hover {
+    background-color: red;
+}
+
+.yadcf-filter-reset-button:before {
+  display: block;
+  content: ' ';
+  background-image: url('/static/global/ionicons/ios-close.svg');
+  background-size: 28px 28px;
+  height: 28px;
+  width: 28px;
 }
 
 .select2-search__field {
-	/*margin-top: 0;*/
+    /*margin-top: 0;*/
 }
 
 .select2-container--default {
