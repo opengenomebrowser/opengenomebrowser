@@ -4,9 +4,6 @@
 [submodule "lib/get_tax_info"]
 	path = lib/get_tax_info
 	url = https://binfgitlab.unibe.ch/troder/get_tax_info
-[submodule "lib/custom_kegg"]
-	path = lib/custom_kegg
-	url = https://binfgitlab.unibe.ch/troder/custom_kegg
 [submodule "lib/orthofinder_tools"]
 	path = lib/orthofinder_tools
 	url = https://binfgitlab.unibe.ch/troder/orthofinder_tools
