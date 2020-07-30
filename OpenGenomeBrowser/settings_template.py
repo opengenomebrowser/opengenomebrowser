@@ -137,9 +137,15 @@ MEDIA_ROOT = 'dist/media'
 AUTH_EXEMPT_ROUTES = ('login', 'index')
 AUTH_LOGIN_ROUTE = 'login'
 
-GENOMIC_DATABASE = '/path/to/fb'
+GENOMIC_DATABASE = '/path/to/db'
 assert os.path.isdir(GENOMIC_DATABASE), F"The path in settings.py doesn't point to a folder: {GENOMIC_DATABASE}"
 GENOMIC_DATABASE_BN = os.path.basename(GENOMIC_DATABASE)
+
+PATHWAY_MAPS_RELATIVE = 'pathway_maps'
+PATHWAY_MAPS = os.path.join(GENOMIC_DATABASE, PATHWAY_MAPS_RELATIVE)  # do not change this line!
+assert os.path.isdir(PATHWAY_MAPS), F"The path in settings.py doesn't point to a folder: {PATHWAY_MAPS}"
+assert os.path.isdir(F'{PATHWAY_MAPS}/svg'), F"Error in settings.py: {PATHWAY_MAPS}/svg does not exist!"
+assert os.path.isfile(F'{PATHWAY_MAPS}/type_dictionary.json'), F"Error in settings.py: {PATHWAY_MAPS}/type_dictionary.json does not exist!"
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
 

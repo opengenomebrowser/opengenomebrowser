@@ -4,7 +4,7 @@ from .GenomeTable import genome_list_view
 from .GenomeDetailView import GenomeDetailView
 from .GenomeTableAjax import GenomeTableAjax
 from .LoadTableScript import render_script
-from .KeggView import kegg_view
+from .PathwayView import pathway_view
 from .TaxIDDetailView import TaxIDDetailView
 from .GeneDetailView import GeneDetailView
 from .AnnotationSearch import annotation_view

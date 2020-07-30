@@ -36,8 +36,8 @@ urlpatterns = [
     # ex: /annotation/{name}
     path('annotation/<str:slug>/', AnnotationDetailView.as_view(), name='annotation'),
 
-    # ex: /kegg-single/?keggmap={00030}&genomes={strain1}+{strain2}
-    path('kegg/', KeggView.kegg_view, name='kegg'),
+    # ex: /pathway/?map_slug={kegg-map-00400}&genomes={strain1}+{strain2}
+    path('pathway/', PathwayView.pathway_view, name='pathway'),
 
     # ex: /trees/?genomes={strain1}+{strain2}
     path('trees/', Trees.trees, name='trees'),
@@ -57,14 +57,13 @@ urlpatterns = [
 
     # ex: /api/{...}
     path('api/autocomplete-annotations/', Api.autocomplete_annotations, name='api-autocomplete-annotations'),
-    path('api/autocomplete-kegg-map/', Api.autocomplete_kegg_map, name='api-autocomplete-kegg-map'),
+    path('api/autocomplete-pathway/', Api.autocomplete_pathway, name='api-autocomplete-pathway'),
     path('api/autocomplete-genome-identifier/', Api.autocomplete_genome_identifiers,
          name='api-autocomplete-genome-identifier'),
     path('api/search-genes/', Api.search_genes, name='api-search-genes'),
-    path('api/validate-keggmap/', Api.validate_keggmap, name='api-validate-keggmap'),
+    path('api/validate-pathwaymap/', Api.validate_pathwaymap, name='api-validate-pathwaymap'),
     path('api/validate-genomes/', Api.validate_genomes, name='api-validate-genomes'),
     path('api/validate-annotations/', Api.validate_annotations, name='api-validate-annotations'),
-    path('api/get-kegg-annos/', Api.get_kegg_annos, name='api-get-kegg-annos'),
     path('api/get-anno-description/', Api.get_anno_description, name='api-get-anno-description'),
     path('api/genome-identifier-to-species/', Api.genome_identifier_to_species,
          name='api-genome-identifier-to-species'),

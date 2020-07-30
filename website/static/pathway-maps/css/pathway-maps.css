@@ -1,0 +1,9 @@
+#map-context-menu .read-only-div {
+    font-size: 0.8rem;
+    padding: 2px;
+}
+
+.anno-dropdown-item {
+    display: flex;
+    align-items: center;
+}

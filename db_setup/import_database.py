@@ -14,7 +14,7 @@ from django.conf import settings
 
 application = get_wsgi_application()
 
-from website.models import Strain, Genome, Tag, TaxID, GenomeContent, Gene, KeggMap
+from website.models import Strain, Genome, Tag, TaxID, GenomeContent, Gene, PathwayMap
 from website.models.GenomeSerializer import GenomeSerializer
 from website.models.StrainSerializer import StrainSerializer
 
@@ -83,9 +83,9 @@ class Importer:
 
         self.check_invariants()
 
-    def load_kegg_maps(self, reload_data=True, re_render=True):
-        from website.models import KeggMap
-        KeggMap.load_maps(reload_data=reload_data, re_render=re_render)
+    def load_pathway_maps(self):
+        from website.models import PathwayMap
+        PathwayMap.load_maps()
 
     def remove_missing_strains(self, strains_path, auto_delete_missing):
         all_strains = []
@@ -191,7 +191,7 @@ class Importer:
             Importer.print_warning("DO YOU REALLY WANT TO RESET THE DATABASE?", color=Fore.MAGENTA)
             Importer.confirm_delete(color=Fore.MAGENTA)
 
-        for model in [Strain, Genome, Tag, TaxID, GenomeContent, Gene, KeggMap, Annotation]:
+        for model in [Strain, Genome, Tag, TaxID, GenomeContent, Gene, PathwayMap, Annotation]:
             model.objects.all().delete()
 
     @staticmethod
@@ -227,11 +227,12 @@ class Importer:
 def main():
     si = Importer()
     # si.reset_database(auto_delete=True)
-    si.import_database(auto_delete_missing=False, reload_orthologs=True)
-    si.load_kegg_maps(reload_data=False, re_render=True)  # if all false: only recreate KEGG map database entries
+    si.import_database(auto_delete_missing=False, reload_orthologs=False)
+    # si.load_pathway_maps()
 
     # TODO: hook install_orthofinder.py
     # TODO: hook notice if oat is missing
+
 
 if __name__ == "__main__":
     main()

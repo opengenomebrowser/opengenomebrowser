@@ -42,10 +42,10 @@ class Annotation(models.Model):
         GENECODE = 'GC', _('Gene Code')
         ORTHOLOG = "OL", _('Ortholog')
         CUSTOM = 'CU', _('Custom Annotation')
-        KEGGGENE = 'KG', _('Kegg Gene')
-        KEGGREACTION = 'KR', _('Kegg Reaction')
-        ENZYMECOMMISSION = 'EC', _('Enzyme Commission Number')
-        GENEONTOLOGY = 'GO', _('Gene Ontology Number')
+        KEGGGENE = 'KG', _('KEGG Gene')
+        KEGGREACTION = 'KR', _('KEGG Reaction')
+        ENZYMECOMMISSION = 'EC', _('Enzyme Commission')
+        GENEONTOLOGY = 'GO', _('Gene Ontology')
 
     anno_type = models.CharField(
         max_length=2,

@@ -135,9 +135,9 @@ class GenomeContent(models.Model):
         Gene.objects.bulk_create([Gene(identifier=identifier, genomecontent=self) for identifier in gene_id_set])
 
         # Create Annotation-Objects
-        self.add_many_annotations(self=self, anno_type='GC', annos_to_add=gene_code_set)
-        self.add_many_annotations(self=self, anno_type='GP', annos_to_add=product_set)
-        self.add_many_annotations(self=self, anno_type='EC', annos_to_add=ec_set)
+        self.add_many_annotations(model=self, anno_type='GC', annos_to_add=gene_code_set)
+        self.add_many_annotations(model=self, anno_type='GP', annos_to_add=product_set)
+        self.add_many_annotations(model=self, anno_type='EC', annos_to_add=ec_set)
 
         # Create many-to-many relationships
         # Gene-Codes
@@ -220,7 +220,7 @@ class GenomeContent(models.Model):
 
         # Create Annotation-Objects and many-to-many relationships
         for all_annotations, annotations_relationships, regex in (go, ec, kegg, r):
-            self.add_many_annotations(self=self, anno_type=regex.value, annos_to_add=all_annotations)
+            self.add_many_annotations(model=self, anno_type=regex.value, annos_to_add=all_annotations)
             objects = [Gene.annotations.through(gene_id=gene, annotation_id=anno) for gene, anno in
                        annotations_relationships]
             Gene.annotations.through.objects.bulk_create(objects, ignore_conflicts=True)
@@ -263,13 +263,13 @@ class GenomeContent(models.Model):
                 line = f.readline().strip()
 
         # Create Annotation-Objects and many-to-many relationships
-        self.add_many_annotations(self=self, anno_type=anno_type.value, annos_to_add=all_annotations)
+        self.add_many_annotations(model=self, anno_type=anno_type.value, annos_to_add=all_annotations)
         objects = [Gene.annotations.through(gene_id=gene, annotation_id=anno) for gene, anno in
                    annotations_relationships]
         Gene.annotations.through.objects.bulk_create(objects, ignore_conflicts=True)
 
     @staticmethod
-    def add_many_annotations(self, anno_type: str, annos_to_add: set):
+    def add_many_annotations(model, anno_type: str, annos_to_add: set):
         # static method because it's also used in KeggMap
         assert anno_type in Annotation.AnnotationTypes.values
 
@@ -280,6 +280,6 @@ class GenomeContent(models.Model):
             Annotation.objects.bulk_create([Annotation(name=name, anno_type=anno_type) for name in db_lacks])
 
         # add new annotations to existing annotations
-        map_has = set(self.annotations.all().values_list('name', flat=True))
+        map_has = set(model.annotations.all().values_list('name', flat=True))
         map_should_have = map_has.union(annos_to_add)
-        self.annotations.set(Annotation.objects.filter(name__in=map_should_have))
+        model.annotations.set(Annotation.objects.filter(name__in=map_should_have))

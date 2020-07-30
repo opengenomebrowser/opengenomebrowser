@@ -10,9 +10,9 @@
 
     <!-- autocomplete -->
     <link href="{% static 'website/css/jquery-ui.css' %}" rel="stylesheet"/>
-    <link href="{% static 'kegg/css/jquery.tag-editor.css' %}" rel="stylesheet"/>
-    <script src="{% static 'kegg/js/jquery.caret.min.js' %}"></script>
-    <script src="{% static 'kegg/js/jquery.tag-editor.min.js' %}"></script>
+    <link href="{% static 'global/css/jquery.tag-editor.css' %}" rel="stylesheet"/>
+    <script src="{% static 'global/js/jquery.caret.min.js' %}"></script>
+    <script src="{% static 'global/js/jquery.tag-editor.min.js' %}"></script>
 
 {% endblock %}
 
@@ -219,7 +219,7 @@
                     delete data.success;
 
                     $('#real-genomes').empty()
-                    $('#real-genomes').append(create_read_only_strain_div(Object.keys(data), data))
+                    $('#real-genomes').append(create_read_only_genome_div(Object.keys(data), data))
                 });
 
                 $.getJSON('{% url "website:api-annotation-to-type" %}', {'annotations[]': annotations}, function (data) {

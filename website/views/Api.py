@@ -4,7 +4,7 @@ import json
 
 from OpenGenomeBrowser import settings
 from website.models.Annotation import Annotation
-from website.models import GenomeContent, Genome, KeggMap, Gene, TaxID, ANI
+from website.models import GenomeContent, Genome, PathwayMap, Gene, TaxID, ANI
 from website.models.Tree import TaxIdTree, AniTree, OrthofinderTree, TreeNotDoneError
 from django.db.models.functions import Concat
 from django.db.models import CharField, Value as V
@@ -68,7 +68,7 @@ class Api:
         return JsonResponse(annotation_to_type)
 
     @staticmethod
-    def autocomplete_kegg_map(request):
+    def autocomplete_pathway(request):
         # http://flaviusim.com/blog/AJAX-Autocomplete-Search-with-Django-and-jQuery/
         if not 'term' in request.GET:
             return err('"term" not in request.GET')
@@ -77,17 +77,17 @@ class Api:
 
         # create 'synthetic' charfield
         # https://docs.djangoproject.com/en/2.2/ref/models/database-functions/#concat
-        all_keggmaps = KeggMap.objects.annotate(map_id_and_name=Concat(
-            'map_id', V(' : '), 'map_name',
+        all_keggmaps = PathwayMap.objects.annotate(slug_and_title=Concat(
+            'slug', V(' : '), 'title',
             output_field=CharField()
         )).all()
 
-        maps = all_keggmaps.filter(map_id_and_name__icontains=q)[:20]  # return 20 results
+        maps = all_keggmaps.filter(slug_and_title__icontains=q)[:20]  # return 20 results
         results = []
         for map in maps:
             results.append({
-                'label': F"{map.map_id_and_name} ({map.map_name})",
-                'value': map.map_id_and_name
+                'label': map.slug_and_title,
+                'value': map.slug_and_title
             })
         data = json.dumps(results)
         mimetype = 'application/json'
@@ -182,17 +182,19 @@ class Api:
         return JsonResponse(dict(success=success))
 
     @staticmethod
-    def validate_keggmap(request):
+    def validate_pathwaymap(request):
         """
         Test if map_id exist in the database.
         """
         if not request.GET:
             return err('did not receive valid JSON')
 
-        if not 'map_id' in request.GET:
-            return err('did not receive map_id')
+        if not 'slug' in request.GET:
+            return err('did not receive slug')
 
-        success = KeggMap.objects.filter(map_id=request.GET['map_id']).exists()
+        success = PathwayMap.objects.filter(slug=request.GET['slug']).exists()
+
+        print(success, request.GET['slug'])
 
         return JsonResponse(dict(success=success))
 
@@ -214,39 +216,39 @@ class Api:
 
         return JsonResponse(dict(success=success))
 
-    @staticmethod
-    def get_kegg_annos(request):
-        """
-        Get the annotations a strain has for a given KEGG map.
-
-        Queries: map_id, genomes
-
-        Returns: {k: ['K0000', ...], r: [], ec: []}
-        """
-        if not request.GET:
-            return err('did not receive valid JSON')
-
-        if not ('map_id' and 'genomes[]' in request.GET):
-            return err(F"missing parameters. required: 'map_id' and 'genomes[]'. Got: {request.GET.keys()}")
-
-        map_id = request.GET['map_id']
-        genomes = request.GET.getlist('genomes[]')
-
-        strain_to_annotations = {}
-
-        map_annos = Annotation.objects.filter(keggmap=map_id)
-
-        for identifier in genomes:
-            if not GenomeContent.objects.filter(pk=identifier).exists():
-                return err(F"could not find genome for genome='{identifier}'")
-
-            strain_to_annotations[identifier] = dict(
-                k=list(map_annos.filter(anno_type='KG', genomecontent=identifier).values_list(flat=True)),
-                r=list(map_annos.filter(anno_type='KR', genomecontent=identifier).values_list(flat=True)),
-                ec=list(map_annos.filter(anno_type='EC', genomecontent=identifier).values_list(flat=True))
-            )
-
-        return JsonResponse(strain_to_annotations)
+    # @staticmethod
+    # def get_pathway_annos(request):
+    #     """
+    #     Get the annotations a strain has for a given KEGG map.
+    #
+    #     Queries: map_id, genomes
+    #
+    #     Returns: {k: ['K0000', ...], r: [], ec: []}
+    #     """
+    #     if not request.GET:
+    #         return err('did not receive valid JSON')
+    #
+    #     if not ('map_id' and 'genomes[]' in request.GET):
+    #         return err(F"missing parameters. required: 'map_id' and 'genomes[]'. Got: {request.GET.keys()}")
+    #
+    #     map_id = request.GET['map_id']
+    #     genomes = request.GET.getlist('genomes[]')
+    #
+    #     strain_to_annotations = {}
+    #
+    #     map_annos = Annotation.objects.filter(keggmap=map_id)
+    #
+    #     for identifier in genomes:
+    #         if not GenomeContent.objects.filter(pk=identifier).exists():
+    #             return err(F"could not find genome for genome='{identifier}'")
+    #
+    #         strain_to_annotations[identifier] = dict(
+    #             k=list(map_annos.filter(anno_type='KG', genomecontent=identifier).values_list(flat=True)),
+    #             r=list(map_annos.filter(anno_type='KR', genomecontent=identifier).values_list(flat=True)),
+    #             ec=list(map_annos.filter(anno_type='EC', genomecontent=identifier).values_list(flat=True))
+    #         )
+    #
+    #     return JsonResponse(strain_to_annotations)
 
     @staticmethod
     def get_anno_description(request):

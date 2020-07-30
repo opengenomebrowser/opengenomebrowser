@@ -55,7 +55,14 @@
 }
 
 .read-only-div {
-    padding: 6px 6px 6px 6px
+    padding: 6px 6px 6px 6px;
+    display: flex;
+    flex-wrap: wrap;
+    height: unset;
+    background-color: #e9ecef;
+    border: 1px solid #ced4da;
+    border-radius: .25rem;
+    justify-content: space-around;
 }
 
 /*
@@ -134,9 +141,7 @@ convert hex (e.g. #2980b9) to filter: https://codepen.io/sosuke/pen/Pjoqqp
 
 .tag-editor {
     padding: .375rem .375rem !important;
-    font-size: 1rem !important;
-    font-weight: 400 !important;
-    line-height: 1.5 !important;
+    font: unset !important;
     border: 1px solid #ced4da !important;
     border-radius: .25rem !important;
     transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out !important;

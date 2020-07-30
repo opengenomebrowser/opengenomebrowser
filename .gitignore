@@ -57,12 +57,11 @@ docs/_build/
 *_lut.npz
 
 website/migrations/*
-website/static/kegg/svg/*
+website/static/pathway-maps/svg/*
 species_color_dict.json
 
 database/*
 lib/get_tax_info/data/*
-lib/custom_kegg/data/*
 lib/ncbi_blast/ncbi-blast-2.10.0+/
 lib/ani/*.jar
 lib/ani/usearch
@@ -76,7 +75,7 @@ website/static/global/css/taxid_color.css
 /static_root/
 /huey.db*
 /OpenGenomeBrowser/settings.py
-/website/static/kegg/svg
+/website/static/pathway-maps/svg
 
 /lib/gene_ontology/go.obo
 /lib/gene_ontology/go.obo.converted

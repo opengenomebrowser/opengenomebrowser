@@ -1,8 +1,7 @@
 from django.db import models
-from django.db.utils import IntegrityError
-import os
 from .TaxID import TaxID
 from .Tag import Tag
+from OpenGenomeBrowser import settings
 
 
 # class StrainManager(models.Manager):
@@ -63,6 +62,18 @@ class Strain(models.Model):
         return self.name
 
     def invariant(self):
+        # sanity check
         assert self.genome_set.count() > 0, "Error in strain {}: Has no genome!".format(self.name)
         assert hasattr(self, 'representative'), "Error in strain {}: Has no representative!".format(self.name)
+
+        # ensure metadata matches genome
+        import json
+        from website.models.StrainSerializer import StrainSerializer
+        from dictdiffer import diff
+        ss = StrainSerializer()
+        im_dict = json.loads(open(F'{settings.GENOMIC_DATABASE}/strains/{self.name}/strain.json').read())
+        im_dict = ss._convert_natural_keys_to_pks(im_dict)
+        exp_dict = ss.export_strain(self.name)
+        assert im_dict == exp_dict, F'\n{im_dict}\n{exp_dict}\n{list(diff(im_dict, exp_dict))}'
+
         return True

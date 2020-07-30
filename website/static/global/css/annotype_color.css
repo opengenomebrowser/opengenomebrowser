@@ -6,3 +6,5 @@
 [data-annotype="CU"] {background-color: rgb(222,203,228) !important; color: black !important}
 [data-annotype="GC"] {background-color: rgb(204,235,197) !important; color: black !important}
 [data-annotype="GP"] {background-color: rgb(255,163,254) !important; color: black !important}
+
+[data-annotype="fake"] {background-color: lightgrey !important; color: black !important}

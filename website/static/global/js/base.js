@@ -100,24 +100,6 @@ let createRefElement = function (marginLeftRight, marginTopBottom) {
     }
 }
 
-// /*
-// * This function creates dummy elements. Necessary for popups that emerge from canvas/svg.
-// */
-// let createContextRefElement = function (marginLeftRight, marginTopBottom) {
-//     let ref = $('<div>', {
-//         id: 'ref_box',
-//         style: `width: ${marginLeftRight * 2}px; height: ${marginTopBottom * 2}px; position: absolute; z-index: -1; top: ${jmouseY - marginTopBottom}px; left: ${jmouseX - marginLeftRight}px`,
-//     });
-//
-//     if (!document.getElementById('ref_box')) {
-//         // create new menu
-//         ref.appendTo('body');
-//     } else {
-//         // overwrite menu
-//         $('#ref_box').replaceWith(ref)
-//     }
-// }
-
 
 /**
  * Copies the current selected text to the SO clipboard
@@ -151,358 +133,6 @@ let CopyToClipboard = function (text, fallback) {
         fb();
     }
 };
-//
-// /**
-//  * Create context menu with custom contents.
-//  * Can be used like this:
-//
-//  let cm = new ContextMenu(event, temp0);
-//  let some_element = $('<a>', {
-//     class: "dropdown-item",  // important: prevents collapse on click
-//     href: "https://www.example.com",
-//     target: "_blank",
-//     text: "Example Dot Com",
-//  });
-//  cm.appendElement(some_element);
-//  cm.appendSeparator();
-//  // event.stopPropagation();
-//  cm.show();
-//
-//  */
-// class ContextMenu {
-//     constructor(event, menu_id) {
-//         console.log('run', event, 'ev')
-//         if (Array.isArray(event)) {
-//             console.log('create context ref element', event)
-//             createContextRefElement(event[0], event[1])
-//             this.target = $('#ref_box')
-//         } else {
-//             console.log('stop event', event)
-//             event.preventDefault();
-//             event.stopPropagation()
-//             this.target = event.target
-//         }
-//         this.menu_id = menu_id;
-//         this.createMenu(this.menu_id);
-//         this.dropdown = $('#' + this.menu_id);
-//         this.popper = null;
-//
-//         this.dropdown_separator_div = $('<div>', {
-//             class: 'dropdown-divider'
-//         });
-//     }
-//
-//     createMenu = function (id) {
-//         let new_menu = $('<div>', {
-//             id: id,
-//             display: 'flex',
-//             class: 'dropdown',
-//             'aria-labelledby': 'dropdownMenuButton',
-//             css: {
-//                 'background-color': 'white',
-//                 padding: '.5rem 0',
-//                 border: '1px solid rgba(0,0,0,.15)',
-//                 display: 'flex',
-//                 'flex-direction': 'column',
-//                 'max-width': '400px',
-//                 'min-width': '250px'
-//             },
-//         });
-//         if (!document.getElementById(id)) {
-//             // create new menu
-//             new_menu.appendTo('body');
-//         } else {
-//             // overwrite menu
-//             $('#' + id).replaceWith(new_menu)
-//         }
-//     };
-//
-//     appendElement = function (element) {
-//         this.dropdown.append(element);
-//     };
-//
-//     appendSeparator = function () {
-//         this.dropdown.append(this.dropdown_separator_div)
-//     };
-//
-//     appendHeader = function (text) {
-//         this.dropdown.append($('<h6>', {
-//                 text: text, class: 'dropdown-header context-menu-header'
-//             })
-//         )
-//     };
-//
-//     // add listener (to close the menu), place and show it.
-//     show = function (placement = 'bottom') {
-//         let mydropdown = this.dropdown;
-//         let menu_id = this.menu_id;
-//
-//         // add the kegg-menu to the page, place it below relative_element
-//         this.popper = new Popper(this.target, this.dropdown,
-//             {
-//                 placement: placement,
-//                 modifiers: {
-//                     eventsEnabled: {enabled: true},
-//                 },
-//             });
-//
-//         console.log('show', this.dropdown)
-//
-//         this.dropdown.show();
-//
-//         // add listener to close the menu
-//         $(document).on('click.context-menu-event', function (e) {
-//             // console.log('context-menu listener speaking. target:', e.target);
-//
-//             if (e.altKey || e.metaKey || $('#' + menu_id).has(e.target).length == 1 || $('#' + menu_id).is(e.target)) {
-//                 // ignore clicks with alt or meta keys
-//                 // ignore clicks on dropdown
-//             } else {
-//                 // hide div
-//                 console.log('hide context menu')
-//                 mydropdown.hide();
-//             }
-//         });
-//     };
-// }
-//
-// /**
-//  * Create context menu for a Genome.
-//  * Can be used like this:
-//
-//  ShowGenomeContextMenu(event, genome_identifier)
-//  or:
-//  ShowGenomeContextMenu(event, genome_identifier, [sibling-id-1, sibling-id-2, ...])
-//
-//  */
-// let ShowGenomeContextMenu = function (event, genome, siblings = 'auto') {
-//     console.log('ShowGenomeContextMenu', 'event:', event, 'genome:', genome, 'siblings:', siblings);
-//
-//     // auto-discover siblings
-//     if (siblings === 'auto') {
-//         console.log('autodiscover')
-//
-//         siblings = [genome]
-//         $(event.target).siblings().each(function () {
-//             if ($(this).hasClass('genome')) {
-//                 siblings.push($(this).text())
-//             }
-//         });
-//     } else if (typeof (siblings) === 'string') {
-//         console.log('autodiscover')
-//         let target = siblings
-//         siblings = []
-//         $(target).children().each(function () {
-//             if ($(this).hasClass('genome')) {
-//                 siblings.push($(this).text())
-//             }
-//         });
-//
-//     } else {
-//         assert(Array.isArray(siblings), 'This function expects an array, a JQuery selector or nothing!!')
-//     }
-//
-//     let cm = new ContextMenu(event, 'genome-context-menu');
-//
-//     // list of elements to click on
-//     cm.appendHeader(genome);
-//
-//     cm.appendElement($('<a>', {
-//         text: 'Open genome info',
-//         href: `/genome/${genome}`,
-//         class: "dropdown-item context-menu-icon context-menu-icon-strain", target: "_blank"
-//     }));
-//
-//     cm.appendElement($('<a>', {
-//         text: 'Copy identifier',
-//         onclick: `CopyToClipboard('${genome}')`,
-//         class: "dropdown-item context-menu-icon context-menu-icon-copy", target: "_blank"
-//     }));
-//
-//     cm.appendElement($('<a>', {
-//         text: 'Open genome on KEGG map',
-//         href: `/kegg/?genomes=${genome}`,
-//         class: "dropdown-item context-menu-icon context-menu-icon-pathway", target: "_blank"
-//     }));
-//
-//     cm.appendElement($('<a>', {
-//         text: 'Search for annotations in genome',
-//         href: `/annotation-search/?genomes=${genome}`,
-//         class: "dropdown-item context-menu-icon context-menu-icon-annotation", target: "_blank"
-//     }));
-//
-//     cm.appendElement($('<a>', {
-//         text: 'Blast genome',
-//         href: `/blast/?genomes=${genome}`,
-//         class: "dropdown-item context-menu-icon context-menu-icon-blast", target: "_blank"
-//     }));
-//
-//
-//     if (siblings.length > 1) {
-//         cm.appendHeader(`${siblings.length} selected genomes`);
-//
-//         cm.appendElement($('<a>', {
-//             text: 'Show phylogenetic trees',
-//             href: `/trees/?genomes=${siblings.join('+')}`,
-//             class: "dropdown-item context-menu-icon context-menu-icon-tree", target: "_blank"
-//         }));
-//
-//         cm.appendElement($('<a>', {
-//             text: 'Copy selected genomes',
-//             onclick: `CopyToClipboard('${siblings.join(', ')}')`,
-//             class: "dropdown-item context-menu-icon context-menu-icon-copy", target: "_blank"
-//         }));
-//
-//         cm.appendElement($('<a>', {
-//             text: 'Open genomes on KEGG map',
-//             href: `/kegg/?genomes=${siblings.join('+')}`,
-//             class: "dropdown-item context-menu-icon context-menu-icon-pathway", target: "_blank"
-//         }));
-//
-//         cm.appendElement($('<a>', {
-//             text: 'Search for annotations in genomes',
-//             href: `/annotation-search/?genomes=${siblings.join('+')}`,
-//             class: "dropdown-item context-menu-icon context-menu-icon-annotations", target: "_blank"
-//         }));
-//
-//         cm.appendElement($('<a>', {
-//             text: 'Blast genomes',
-//             href: `/blast/?genomes=${siblings.join('+')}`,
-//             class: "dropdown-item context-menu-icon context-menu-icon-blast", target: "_blank"
-//         }));
-//     }
-//
-//     cm.show();
-// };
-//
-// /**
-//  * Create context menu for an Annotation.
-//  * Can be used like this:
-//
-//  ShowAnnotationContextMenu(event, annotation)
-//  or:
-//  ShowAnnotationContextMenu(event, annotation, [sibling-id-1, sibling-id-2, ...])
-//  */
-// let ShowAnnotationContextMenu = function (event, annotation, siblings = 'auto') {
-//     console.log('ShowAnnotationContextMenu', 'event:', event, 'annotation:', annotation, 'siblings:', siblings);
-//
-//     // auto-discover siblings
-//     if (siblings === 'auto') {
-//         console.log('autodiscover')
-//
-//         siblings = [annotation]
-//         $(event.target).siblings().each(function () {
-//             if ($(this).hasClass('annotation')) {
-//                 siblings.push($(this).text())
-//             }
-//         });
-//     } else if (typeof (siblings) === 'string') {
-//         console.log('autodiscover')
-//         let target = siblings
-//         siblings = []
-//         $(target).children().each(function () {
-//             if ($(this).hasClass('genome')) {
-//                 siblings.push($(this).text())
-//             }
-//         });
-//
-//     } else {
-//         assert(Array.isArray(siblings), 'This function expects an array, a JQuery selector or nothing!!')
-//     }
-//
-//     let cm = new ContextMenu(event, 'annotation-context-menu');
-//
-//     // list of elements to click on
-//     cm.appendHeader(annotation);
-//
-//     let annolink = urlReplBlanks([annotation])
-//
-//     cm.appendElement($('<a>', {
-//         text: 'Search genes',
-//         href: `/annotation-search/?annotations=${annolink}`,
-//         class: "dropdown-item context-menu-icon context-menu-icon-annotation", target: "_blank"
-//     }));
-//
-//     cm.appendElement($('<a>', {
-//         text: 'Copy name',
-//         onclick: `CopyToClipboard('${annotation}')`,
-//         class: "dropdown-item context-menu-icon context-menu-icon-copy", target: "_blank"
-//     }));
-//
-//     if (siblings.length > 1) {
-//         cm.appendHeader(`${siblings.length} selected annotations`);
-//
-//         let siblingslink = urlReplBlanks(siblings)
-//
-//         cm.appendElement($('<a>', {
-//             text: 'Search genes',
-//             href: `/annotation-search/?annotations=${siblingslink}`,
-//             class: "dropdown-item context-menu-icon context-menu-icon-tree", target: "_blank"
-//         }));
-//
-//
-//         cm.appendElement($('<a>', {
-//             text: 'Copy selected annotations',
-//             onclick: `CopyToClipboard('${siblings.join(', ')}')`,
-//             class: "dropdown-item context-menu-icon context-menu-icon-copy", target: "_blank"
-//         }));
-//     }
-//
-//     cm.show();
-// };
-//
-//
-// /**
-//  * Create context menu for a Gene.
-//  * Can be used like this:
-//
-//  ShowGeneContextMenu(event, gene_identifier)
-//
-//  */
-// let ShowGeneContextMenu = function (event, gene_identifier) {
-//     console.log('ShowGeneContextMenu gene:', event, gene_identifier);
-//
-//     // initiate context menu
-//     let cm = new ContextMenu(event, 'gene-context-menu');
-//
-//     // list of elements to click on
-//     cm.appendHeader(gene_identifier);
-//
-//     cm.appendElement($('<a>', {
-//         text: 'Open gene info',
-//         href: `/gene/${gene_identifier}`,
-//         class: "dropdown-item context-menu-icon context-menu-icon-world", target: "_blank"
-//     }));
-//
-//     $.getJSON("/api/get-gene", {gene_identifier}, function (data) {
-//         cm.appendHeader('Genome');
-//         cm.appendElement($('<p>', {
-//             class: "dropdown-item context-menu-icon context-menu-icon-strain", target: "_blank"
-//         }).append(data['genome_html']));
-//
-//         cm.appendHeader('Annotations');
-//
-//         for (let idx in data['annotations']) {
-//             cm.appendElement($('<p>', {
-//                 class: "dropdown-item context-menu-icon context-menu-icon-annotation", target: "_blank"
-//             }).append(data['annotations'][idx]['html']));
-//         }
-//
-//         cm.popper.update()
-//
-//         $('#context-menu [data-toggle="tooltip"]').tooltip({
-//             title: function () {
-//                 return $(this).attr('data-species');
-//             }
-//         })
-//
-//     });
-//
-//     cm.show('top');
-//
-//
-// };
-
 
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -513,8 +143,8 @@ function validate_genomes(genomes) {
     });
 }
 
-function validate_keggmap(map_id) {
-    return $.getJSON("/api/validate-keggmap", {map_id}, function (data) {
+function validate_pathwaymap(slug) {
+    return $.getJSON("/api/validate-pathwaymap", {slug}, function (data) {
     });
 }
 
@@ -523,26 +153,24 @@ function validate_annotations(annotations) {
     });
 }
 
-function create_read_only_strain_div(strain_array, genome_to_species) {
-    let read_only_strain_div = $('<div>', {
-        class: "read-only-div",
-        css: {'display': 'flex', 'flex-wrap': 'wrap'},
-        onclick: `CopyToClipboard('${strain_array.join(', ')}')`
+function create_read_only_genome_div(genome_array, genome_to_species, additional_classes = '') {
+    let read_only_genome_div = $('<div>', {
+        class: "read-only-div " + additional_classes,
+        onclick: `CopyToClipboard('${genome_array.join(', ')}')`
     });
 
-    for (let idx in strain_array) {
-        read_only_strain_div.append($('<div>', {
-            // class: "dropdown-clickprotect",
-            text: strain_array[idx],
+    for (let idx in genome_array) {
+        read_only_genome_div.append($('<div>', {
+            text: genome_array[idx],
             class: 'genome ogb-tag',
             onclick: `showGenomeClickMenu(event)`,
-            'data-species': genome_to_species[strain_array[idx]]['sciname'],
-            'title': genome_to_species[strain_array[idx]]['sciname'],
+            'data-species': genome_to_species[genome_array[idx]]['sciname'],
+            'title': genome_to_species[genome_array[idx]]['sciname'],
             'data-toggle': 'tooltip'
         }).tooltip());
     }
 
-    return read_only_strain_div
+    return read_only_genome_div
 }
 
 function create_read_only_annotations_div(annotations_array, annotation_to_type) {

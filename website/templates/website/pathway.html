@@ -1,0 +1,242 @@
+{% extends 'global/base.html' %}
+{% load static %}
+
+{% block styles %}
+    <!-- Site-specific css/js -->
+    <link rel="stylesheet" type="text/css" href="{% static 'global/css/taxid_color.css' %}"
+          id="taxid-color-stylesheet"/>
+    <link href="{% static 'global/css/annotype_color.css' %}" rel="stylesheet"/>
+    <link href="{% static 'pathway-maps/css/pathway-maps.css' %}" rel="stylesheet"/>
+
+    <!-- Pathway SVG library -->
+    <script src="{% static 'pathway-maps/js/PathwaySvgLib.js' %}"></script>
+    <script src="{% static 'pathway-maps/js/chroma.min.js' %}"></script>
+    <script src="{% static 'pathway-maps/js/html2canvas.min.js' %}"></script>
+
+    <!-- autocomplete -->
+    <link href="{% static 'website/css/jquery-ui.css' %}" rel="stylesheet"/>
+    <link href="{% static 'global/css/jquery.tag-editor.css' %}" rel="stylesheet"/>
+    <script src="{% static 'global/js/jquery.caret.min.js' %}"></script>
+    <script src="{% static 'global/js/jquery.tag-editor.min.js' %}"></script>
+
+{% endblock %}
+
+{% block sidebar %}
+
+    <div class="sidebar-subcontent form-check form-check-inline">
+        <label class="form-check-label" for="colorize-tax-checkbox"><a>Colorize taxonomy?</a></label>
+        <input class="form-check-input" type="checkbox" id="colorize-tax-checkbox" onclick="toggle_colorize_tax()"
+               checked>
+    </div>
+
+    <div class="sidebar-subcontent form-check form-check-inline">
+        <button type="button" class="btn btn-light" onclick="saveDivAsPng('map-container')">Save as PNG</button>
+    </div>
+
+{% endblock %}
+
+{% block body %}
+
+    <section>
+        <div class="container">
+            <form>
+                {% csrf_token %}
+                <div class="form-group row">
+                    <label for="get-map" class="col-sm-2 col-form-label" style="white-space: nowrap">Pathway Map:</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" id="get-map"
+                               value="{% if map %}{{ map.slug }} : {{ map.title }}{% endif %}">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="get-genomes">Genomes:</label>
+                    <input type="text" class="form-control" id="get-genomes" value="{% for genome in genomes %}{{ genome.identifier }}, {% endfor %}">
+                </div>
+
+                <button type="button" class="btn btn-primary" onclick="submit_function()">Submit</button>
+            </form>
+
+            {% if map and genomes %}
+                <hr class="featurette-divider">
+
+                <form>
+                    <div class="form-group row">
+                        <label for="real-map" class="col-sm-2 col-form-label" style="white-space: nowrap">Pathway Map:</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="real-map" value="{{ map.slug }} : {{ map.title }}" readonly>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="real-genomes">Genomes:</label>
+                        <div class="read-only-div" id="real-genomes">
+                            {% for genome in genomes %}{{ genome.html|safe }}{% endfor %}
+                        </div>
+                    </div>
+                </form>
+
+                </div>
+            {% endif %}
+
+    </section>
+
+    <section style="text-align: center">
+
+        <div class="overflow-auto" id="pathway-map-container">
+            <!-- pathway map svg -->
+        </div>
+
+    </section>
+{% endblock %}
+
+{% block end %}
+    <script>
+        "use strict"
+        let genome_to_species =
+        {{ genome_to_species|safe }}
+        const type_dict = {{ type_dict|safe }}
+
+            $(document).ready(function () {
+                init_autocomplete_genomes('#get-genomes')
+
+                $("#get-map").autocomplete({
+                    source: '{% url "website:api-autocomplete-pathway" %}',
+                    minLength: 2,
+                })
+
+
+                $('#real-genomes .ogb-tag').tooltip({
+                    title: function () {
+                        return $(this).attr('data-species');
+                    }
+                }).click(function () {
+                    showGenomeClickMenu(event)
+                })
+                $('#pathway-map-container').load(`/download/{{ PATHWAY_MAPS_RELATIVE }}/svg/{{ map.filename }}`, function () {
+                    $('.shape').tooltip()
+
+                    $('.shape').click(function (event) {
+                        showMapClickMenu(event, this)
+                    })
+
+                    let strains, colors;
+                    highlightStrains(
+                        strains = {{ strains|safe }},
+                        colors = ['yellow', 'red']
+                    )
+
+                })
+            })
+
+        function submit_function() {
+            const genomes = $('#get-genomes').val().split(',')
+            const map_slug = $('#get-map').val().split(' : ')[0]
+
+            $.when(validate_pathwaymap(map_slug), validate_genomes(genomes)).done(function (map_valid, genomes_valid) {
+                map_valid = map_valid[2].responseJSON['success']
+                genomes_valid = genomes_valid[2].responseJSON['success']
+
+                if (map_valid) {
+                    $('#get-map').removeClass('is-invalid')
+                } else {
+                    $('#get-map').addClass('is-invalid')
+                }
+
+                if (genomes_valid) {
+                    $('#get-genomes').next().removeClass('is-invalid')
+                } else {
+                    $('#get-genomes').next().addClass('is-invalid')
+                }
+
+                if (map_valid && genomes_valid) {
+                    window.location.href = `/pathway?map=${map_slug}&genomes=${urlReplBlanks(genomes)}`;
+                }
+            })
+        }
+
+        let showMapClickMenu = function (event, shape) {
+            console.log('showMapClickMenu event:', event, 'shape', shape)
+
+            const genomes = $(shape).data('strains')
+            let covering = []
+            let not_covering = []
+            let total = 0
+            let percentage = 0
+            if (genomes !== undefined) {
+                covering = Array.from(genomes['covering'])
+                not_covering = Array.from(genomes['not-covering'])
+                total = covering.length + not_covering.length
+                percentage = Math.round(covering.length / (total) * 1000) / 10
+            }
+            console.log(covering, not_covering)
+
+            // initiate context menu
+            let cm = new ClickMenu(event, 'map-context-menu')
+
+            // coverage percentage
+            if (percentage > 0) {
+                const color = shape.firstElementChild.getAttribute('fill')
+                cm.appendHeader('Coverage')
+                cm.appendElement(`
+<p class="dropdown-item" style="background-color: ${color}">
+${percentage} % (${covering.length} out of ${not_covering.length})</p>`)
+            }
+
+            // annotations
+            const annotations = $(shape).data('annotations')
+            cm.appendHeader('Annotations')
+            $.each(annotations, function (index) {
+                const nCovered = ('strains' in this) ? this['strains'].size : 0
+                const annoType = type_dict[this['type']]
+                const description = ('description' in this) ? this['description'] : ''
+                const tag = (annoType === 'ignore') ? "<div class='annotation ogb-tag' data-annotype='fake'>" + this['name'] + "</div>" : `<div class="annotation ogb-tag" onclick="console.log('input', event, this);showAnnotationClickMenu(event, 'auto', '#map-context-menu', '#map-context-menu .positive' )" data-annotype="${annoType}" title="${description}">${this['name']}</div>`
+                const href = '/'
+                const hrefText = 'open on xxx'
+                let el = `
+<div style="display: inline-flex">
+    <div class="anno-dropdown-item dropdown-item context-menu-icon context-menu-icon-annotation">${tag}${(nCovered > 0) ? ' (' + nCovered + ')' : ''}</div>
+    <div class="btn-group dropright">
+        <button class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="font-size: 1rem; padding: 0rem 0.8rem;"></button>
+        <div class="dropdown-menu" style="width: 400px">
+        <h6 class="dropdown-header context-menu-header">Description</h6>
+        <a class="dropdown-item context-menu-icon context-menu-icon-copy" style="display: flex; flex-wrap: wrap; white-space: break-spaces;">${this['description']}</a>`
+
+                if (nCovered > 0) {
+                    el += `
+        <h6 class="dropdown-header context-menu-header">Positive genomes</h6>
+        <div class="read-only-div"> ${create_read_only_genome_div(Array.from(this['strains']), genome_to_species).html()} </div>`
+                }
+
+                el += `
+        </div>
+    </div>
+</div>`
+                cm.appendElement(el)
+            })
+
+
+            // covering genomes
+            if (covering.length > 0) {
+                cm.appendHeader('Positive genomes')
+                cm.appendElement(
+                    create_read_only_genome_div(covering, genome_to_species, 'positive')
+                )
+            }
+
+            // non-covering genomes
+            if (not_covering.length > 0 && not_covering.length !== total) {
+                cm.appendHeader('Negative genomes')
+                cm.appendElement(
+                    create_read_only_genome_div(not_covering, genome_to_species, 'negative')
+                )
+            }
+
+            cm.show()
+
+            $('#map-context-menu .ogb-tag').tooltip()
+        }
+
+
+    </script>
+{% endblock %}

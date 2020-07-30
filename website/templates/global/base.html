@@ -70,8 +70,8 @@
                    href="{% url 'website:genomes' %}">Genomes</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link text-nowrap {% if request.resolver_match.url_name == 'kegg' %}active{% endif %}" href="{% url 'website:kegg' %}">Kegg
-                    maps</a>
+                <a class="nav-link text-nowrap {% if request.resolver_match.url_name == 'pathway' %}active{% endif %}"
+                   href="{% url 'website:pathway' %}">Pathways</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link text-nowrap {% if request.resolver_match.url_name == 'annotation-search' %}active{% endif %}"
@@ -98,6 +98,26 @@
     </div>
 
 </nav>
+
+<section>
+    <!-- warning or danger messages -->
+    {% if error_warning %}
+        <!-- warning -->
+        <div class="container black-links">
+            <div class="alert alert-warning" role="alert">
+                {{ error_warning }}
+            </div>
+        </div>
+    {% endif %}
+    {% if error_danger %}
+        <!-- danger -->
+        <div class="container black-links">
+            <div class="alert alert-danger" role="alert">
+                {{ error_danger }}
+            </div>
+        </div>
+    {% endif %}
+</section>
 
 {% block body %}{% endblock %}
 

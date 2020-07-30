@@ -17,14 +17,13 @@ class GenomeSerializer():
         genome_dict.pop('assembly_size')
         genome_dict.pop('assembly_nr_scaffolds')
         genome_dict.pop('assembly_n50')
-        genome_dict.pop('cds_tool_n_genes')
         genome_dict.pop('BUSCO_percent_single')
         return genome_dict
 
     def import_genome(self, raw_genomes_dict: dict, parent_strain: Strain, is_representative: bool,
                       update_css=True) -> Genome:
 
-        genome_dict = self.__convert_natural_keys_to_pks(raw_genomes_dict, parent_strain)
+        genome_dict = self._convert_natural_keys_to_pks(raw_genomes_dict, parent_strain)
 
         if Genome.objects.filter(identifier=genome_dict['identifier']).exists():
             g = Genome.objects.get(identifier=genome_dict['identifier'])
@@ -79,7 +78,7 @@ class GenomeSerializer():
         return genome
 
     @classmethod
-    def __convert_natural_keys_to_pks(self, d: dict, parent_strain: Strain):
+    def _convert_natural_keys_to_pks(self, d: dict, parent_strain: Strain):
         return_d = {}  # create deep copy
         return_d.update(d)
 

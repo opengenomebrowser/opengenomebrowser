@@ -172,18 +172,18 @@ class Genome(models.Model):
         return self.identifier
 
     def invariant(self):
-        msg = "Error in Genome {}!".format(self.identifier)
+        msg = F"Error in Genome {self.identifier}!"
 
         assert self.identifier.startswith(self.strain.name), msg
 
         # Check if mandatory files exist:
         for file in [self.cds_faa, self.cds_gbk, self.cds_gff, self.assembly_fasta]:
-            assert os.path.isfile(file(relative=False)), "file does not exist: {}".format(file)
+            assert os.path.isfile(file(relative=False)), F"file does not exist: {file}"
 
         # Check if non-mandatory files exist:
         for file in [self.cds_sqn, self.cds_ffn]:
             if file(relative=False):
-                assert os.path.isfile(file(relative=False)), "file does not exist: {}".format(file)
+                assert os.path.isfile(file(relative=False)), F"file does not exist: {file}"
 
         # check all JSONFields:
         if self.origin_included_sequences:
@@ -227,6 +227,17 @@ class Genome(models.Model):
             import re
             assert re.match("^([0-9]{1,2})(\.[0-9]{1,4})? (N|S) ([0-9]{1,2})(\.[0-9]{1,4})? (W|E)$",
                             self.geographical_coordinates), msg
+
+        # ensure metadata matches genome
+        import json
+        from website.models.GenomeSerializer import GenomeSerializer
+        from dictdiffer import diff
+        gs = GenomeSerializer()
+        im_dict = json.loads(open(F'{settings.GENOMIC_DATABASE}/strains/{self.strain.name}/genomes/{self.identifier}/genome.json').read())
+        # im_dict = gs._convert_natural_keys_to_pks(im_dict, self.strain)
+        exp_dict = gs.export_genome(self.identifier)
+        assert im_dict == exp_dict, F'{msg}\nim:  {im_dict}\nexp: {exp_dict}\ndiff: {list(diff(im_dict, exp_dict))}'
+
         return True
 
     @property
@@ -282,7 +293,7 @@ class Genome(models.Model):
                 return True
             if env[:7] == 'FOODON:' and int(env[7:]) > 0 and len(env) == 15:
                 return True
-            print("Poorly formatted env: {}".format(env))
+            print(F"Poorly formatted env: {env}")
             return False
         return True
 

@@ -19,8 +19,7 @@ class StrainSerializer():
         return strain_dict
 
     def import_strain(self, raw_strain_dict: dict, update_css=True) -> Strain:
-        strain_dict = self.__convert_natural_keys_to_pks(raw_strain_dict)
-
+        strain_dict = self._convert_natural_keys_to_pks(raw_strain_dict)
         strain_dict.pop('representative')
 
         strain_json = json.dumps(strain_dict)
@@ -56,7 +55,7 @@ class StrainSerializer():
         return Strain.objects.get(name=strain_dict['name'])
 
     @classmethod
-    def __convert_natural_keys_to_pks(self, d: dict):
+    def _convert_natural_keys_to_pks(self, d: dict):
         return_d = {}  # create deep copy
         return_d.update(d)
 

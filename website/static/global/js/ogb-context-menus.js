@@ -95,7 +95,7 @@ class ClickMenu {
         let mydropdown = this.dropdown
         let menu_id = this.menu_id
 
-        // add the kegg-menu to the page, place it below relative_element
+        // add the click-menu to the page, place it below relative_element
         this.popper = new Popper(this.target, this.dropdown,
             {
                 placement: placement,
@@ -150,11 +150,10 @@ let autoDiscoverSiblings = function (event, self_string, siblings, type) {
         })
     } else if (typeof (siblings) === 'string') {
         let target = siblings
+        console.log('target', target)
         siblings = []
-        $(target).children().each(function () {
-            if ($(this).hasClass(type)) {
-                siblings.push($(this).text())
-            }
+        $(target).find('.' + type).each(function () {
+            siblings.push($(this).text())
         })
     } else {
         assert(Array.isArray(siblings), 'This function expects an array, a JQuery selector or nothing!!')
@@ -264,7 +263,7 @@ Show phylogenetic trees</a>
 <a onclick="CopyToClipboard('FAM21277-i1-1.1, FAM19036-p1-1.1, FAM19471-i1-1.1, FAM1079-i1-1.1, FAM22472-i1-1.1')" class="dropdown-item context-menu-icon context-menu-icon-copy">
 Copy selected genomes</a>
 <a href="/kegg/?genomes=${siblings_str}" class="dropdown-item context-menu-icon context-menu-icon-pathway">
-Open genomes on KEGG map</a>
+Open genomes on pathway map</a>
 <a href="/annotation-search/?genomes=${siblings_str}" class="dropdown-item context-menu-icon context-menu-icon-annotations">
 Search for annotations in genomes</a>
 <a href="/blast/?genomes=${siblings_str}" class="dropdown-item context-menu-icon context-menu-icon-blast">
@@ -281,6 +280,7 @@ let showAnnotationClickMenu = function (event, annotation = 'auto', siblings = '
     // auto-discover
     annotation = autoDiscoverSelf(event, annotation)
     siblings = autoDiscoverSiblings(event, annotation, siblings, 'annotation')
+    console.log('siblings', siblings)
     let siblings_repl = urlReplBlanks(siblings)
     genomes = autoDiscoverGenomes(genomes)
 
