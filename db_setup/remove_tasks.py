@@ -10,9 +10,9 @@ from django.core.wsgi import get_wsgi_application
 
 application = get_wsgi_application()
 
-from website.models import ANI, CoreGenomeDendrogram
+from website.models import GenomeSimilarity, CoreGenomeDendrogram
 
-failed_anis = ANI.objects.filter(status='F')
+failed_anis = GenomeSimilarity.objects.filter(status='F')
 print('deleting failed anis:', failed_anis)
 failed_anis.delete()
 
@@ -20,7 +20,7 @@ failed_dendros = CoreGenomeDendrogram.objects.filter(status='F')
 print('deleting failed dendros:', failed_dendros)
 failed_dendros.delete()
 
-running_anis = ANI.objects.filter(status='R')
+running_anis = GenomeSimilarity.objects.filter(status='R')
 print('deleting running anis:', running_anis)
 running_anis.delete()
 

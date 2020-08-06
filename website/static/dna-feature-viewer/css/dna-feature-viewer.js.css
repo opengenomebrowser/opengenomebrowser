@@ -1,0 +1,11 @@
+.handle-div {
+    background-image: url('/static/global/ionicons/md-move.svg');
+    background-repeat: no-repeat;
+    cursor: ns-resize;
+    width: 25px;
+}
+
+.locus-plot-header {
+	display: flex;
+	align-items: center;
+}

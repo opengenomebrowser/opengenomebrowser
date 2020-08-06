@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.postgres.fields import JSONField
+from django.db.models import JSONField
 from .Strain import Strain
 from .TaxID import TaxID
 from .Tag import Tag
@@ -67,7 +67,7 @@ class Genome(models.Model):
     cds_tool_ffn_file = models.CharField(max_length=200, null=True, blank=True)
     cds_tool_sqn_file = models.CharField(max_length=200, null=True, blank=True)
 
-    sixteen_s = JSONField(default=dict)  # {'16S NCBI-db': [{'description': 'E. coli', 'taxid': 123, 'evalue': 0.0}, ...], ...}
+    sixteen_s = JSONField(default=dict, blank=True, null=True)  # {'16S NCBI-db': [{'description': 'E. coli', 'taxid': 123, 'evalue': 0.0}, ...], ...}
 
     BUSCO = JSONField(default=dict)  # {C:2,D:2,F:2,M:2,S:2,T:2]}  +  {busco_db: firmicutes_odb9}
     BUSCO_percent_single = models.DecimalField(max_digits=3, decimal_places=1, null=True, blank=True)
@@ -168,6 +168,10 @@ class Genome(models.Model):
     def all_tags(self):
         return (self.tags.all() | self.strain.tags.all()).distinct()
 
+    @property
+    def metadata_json(self):
+        return F'{settings.GENOMIC_DATABASE}/strains/{self.strain.name}/genomes/{self.identifier}/genome.json'
+
     def __str__(self):
         return self.identifier
 
@@ -178,37 +182,37 @@ class Genome(models.Model):
 
         # Check if mandatory files exist:
         for file in [self.cds_faa, self.cds_gbk, self.cds_gff, self.assembly_fasta]:
-            assert os.path.isfile(file(relative=False)), F"file does not exist: {file}"
+            assert os.path.isfile(file(relative=False)), F"{msg} File does not exist: {file}"
 
         # Check if non-mandatory files exist:
         for file in [self.cds_sqn, self.cds_ffn]:
             if file(relative=False):
-                assert os.path.isfile(file(relative=False)), F"file does not exist: {file}"
+                assert os.path.isfile(file(relative=False)), F"{msg} File does not exist: {file}"
 
         # check all JSONFields:
         if self.origin_included_sequences:
             for entry in self.origin_included_sequences:
-                assert isinstance(entry['taxid'], int), msg
-                assert isinstance(entry['percentage'], float), msg
+                assert isinstance(entry['taxid'], int), F"{msg} {entry['taxid']}"
+                assert isinstance(entry['percentage'], float) or isinstance(entry['percentage'], int), F"{msg} {entry['percentage']}"
 
         if self.origin_excluded_sequences:
             for entry in self.origin_excluded_sequences:
-                assert isinstance(entry['taxid'], int), msg
-                assert isinstance(entry['percentage'], float), msg
+                assert isinstance(entry['taxid'], int), F"{msg} {entry['taxid']}"
+                assert isinstance(entry['percentage'], float) or isinstance(entry['percentage'], int), F"{msg} {entry['percentage']}"
 
         if self.BUSCO:
             for char in ['C', 'D', 'F', 'M', 'S', 'T']:
-                assert isinstance(self.BUSCO[char], int), msg
+                assert isinstance(self.BUSCO[char], int), F"{msg} {self.BUSCO[char]}"
 
         if self.custom_annotations:
             for tool in self.custom_annotations:
-                assert Genome.is_valid_date(tool['date']), msg
-                assert os.path.exists(F"{self.base_path(relative=False)}/{tool['file']}"), msg
-                assert isinstance(tool['type'], str), msg
+                assert Genome.is_valid_date(tool['date']), F"{msg} {tool['date']}"
+                assert os.path.exists(F"{self.base_path(relative=False)}/{tool['file']}"), F"{msg} {tool['file']}"
+                assert isinstance(tool['type'], str), F"{msg} {tool['type']}"
 
         for envs in [self.env_broad_scale, self.env_medium, self.env_local_scale]:
             if envs:
-                assert self.is_valid_env(envs), msg
+                assert self.is_valid_env(envs), F"{msg} {envs}"
 
         # test sequencing info
         if self.sequencing_date:
@@ -221,12 +225,12 @@ class Genome(models.Model):
         # Test certain string fields
         if self.literature_references:
             for reference in self.literature_references:
-                assert Genome.is_valid_reference(reference), msg
+                assert Genome.is_valid_reference(reference), F"{msg} {reference}"
 
         if self.geographical_coordinates:
             import re
             assert re.match("^([0-9]{1,2})(\.[0-9]{1,4})? (N|S) ([0-9]{1,2})(\.[0-9]{1,4})? (W|E)$",
-                            self.geographical_coordinates), msg
+                            self.geographical_coordinates), F"{msg} {self.geographical_coordinates}"
 
         # ensure metadata matches genome
         import json
@@ -234,9 +238,12 @@ class Genome(models.Model):
         from dictdiffer import diff
         gs = GenomeSerializer()
         im_dict = json.loads(open(F'{settings.GENOMIC_DATABASE}/strains/{self.strain.name}/genomes/{self.identifier}/genome.json').read())
+        if 'tags' in im_dict:
+            im_dict['tags'] = set(im_dict['tags'])
         # im_dict = gs._convert_natural_keys_to_pks(im_dict, self.strain)
         exp_dict = gs.export_genome(self.identifier)
-        assert im_dict == exp_dict, F'{msg}\nim:  {im_dict}\nexp: {exp_dict}\ndiff: {list(diff(im_dict, exp_dict))}'
+        difference = list(diff(im_dict, exp_dict))
+        assert len(difference) == 0, F'{msg}\nim:  {im_dict}\nexp: {exp_dict}\ndiff: {difference}'
 
         return True
 

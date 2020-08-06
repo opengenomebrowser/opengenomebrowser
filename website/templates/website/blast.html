@@ -39,23 +39,13 @@
 
     <section>
 
-        {% if submitted %}
-            <p class="success">
-                Your message was submitted successfully.
-            </p>
-
-        {% else %}
-
-            <div class="container">
-                <form method="post" id="blast-form" action="{% url "website:blast-submit" %}">
-                    {% csrf_token %}
-                    {{ form|crispy }}
-                    <button type="submit" class="btn btn-success">Blast!</button>
-                </form>
-            </div>
-
-        {% endif %}
-
+        <div class="container">
+            <form method="post" id="blast-form" action="{% url "website:blast-submit" %}">
+                {% csrf_token %}
+                {{ form|crispy }}
+                <button type="submit" class="btn btn-success">Blast!</button>
+            </form>
+        </div>
 
     </section>
 
@@ -63,6 +53,21 @@
     <div id="blast-alignments-table"></div>
     <div id="blast-single-alignment"></div>
 
+    <style>
+
+        #blast-single-alignment {
+            position: fixed;
+            bottom: 0;
+            background: white;
+            padding-top: 0 !important;
+            width: 100% !important;
+        }
+
+        #blast-single-alignment-pre {
+            padding: 0 !important;
+        }
+
+    </style>
 
 {% endblock %}
 
@@ -82,7 +87,7 @@
         });
 
 
-        var blasterjs = require("biojs-vis-blasterjs");
+        let blasterjs = require("biojs-vis-blasterjs");
 
         let frm = $('#blast-form');
         frm.submit(function () {
@@ -97,19 +102,26 @@
                 url: frm.attr('action'),
                 data: frm.serialize(),
                 success: function (data) {
-                    var instance = new blasterjs({
+                    let instance = new blasterjs({
                         string: data,
                         multipleAlignments: "blast-multiple-alignments",
                         alignmentsTable: "blast-alignments-table",
-                        singleAlignment: "blast-single-alignment"
+                        singleAlignment: "blast-single-alignment",
                     })
-
-
                 },
                 error: function (data) {
                     console.log('BLAST FAILED!', data)
                 }
-            });
+            }).done(function () {
+                // append click listener
+                waitForElement('#blast-alignments-table .alignment-table-description', function () {
+                    $('#blast-alignments-table .alignment-table-description').click(function () {
+                        const description = this.alignment.description
+                        const gene_locus_tag = description.split('|').slice(-1)[0].split(' ', 1)[0]
+                        showGeneClickMenu(event, gene_locus_tag)
+                    })
+                })
+            })
             return false;
         })
 

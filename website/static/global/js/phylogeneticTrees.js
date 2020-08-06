@@ -5,7 +5,7 @@
  * Create Phylogenetic Tree based on TaxIDs.
  *
  * genomes: list of identifiers
- * method: taxid, ani or orthofinder
+ * method: taxid, genome_similarity or orthofinder
  * target: div id
  * type: weighted, tree or dendrogram (see https://cdcgov.github.io/TidyTree/app/)
  * layout:
@@ -14,7 +14,7 @@
 
 
 /**
- * Create Phylogenetic Tree based on ANI similarity.
+ * Create Phylogenetic Tree.
  */
 let loadTree = async function (genomes, method, target, newick_target, type, layout, mode) {
     // load newick synchronously

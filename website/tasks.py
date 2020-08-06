@@ -1,36 +1,40 @@
 from huey.contrib.djhuey import task
-from lib.ani.orthoani_wrapper import OrthoANI as AniWrapper
+from lib.genome_similarity.gendiscal_wrapper import GenDisCal
 from lib.orthofinder.orthofinder import Orthofinder
 import psutil
 import time
 
 
 @task()
-def calculate_ani(g1, g2) -> float:
-    from website.models.ANI import ANI
+def calculate_genome_similarity(g1, g2) -> float:
+    from website.models.GenomeSimilarity import GenomeSimilarity
     from website.models.GenomeContent import GenomeContent
     g1: GenomeContent
     g2: GenomeContent
     # The multiprocessing function must be at the top level of the module for it to work with Django.
     # https://stackoverflow.com/questions/48046862/
-    print(F'start ANI calc {g1.identifier} :: {g2.identifier}')
+    print(F'start GenomeSimilarity calc {g1.identifier} :: {g2.identifier}')
 
     try:
-        ani_score = AniWrapper().calculate_similarity(g1.genome.assembly_fasta(relative=False), g2.genome.assembly_fasta(relative=False), ncpu=8)
+        sim_score = GenDisCal().calculate_similarity(
+            fasta1=g1.genome.assembly_fasta(relative=False),
+            fasta2=g2.genome.assembly_fasta(relative=False),
+            preset='approxANI'
+        )
     except Exception as e:
-        ani_obj = ANI.objects.get(from_genome=g1, to_genome=g2)
-        if ani_obj.status in ['R', 'F']:
-            ani_obj.status = 'F'  # FAILED
-            ani_obj.save()
+        sim_obj = GenomeSimilarity.objects.get(from_genome=g1, to_genome=g2)
+        if sim_obj.status in ['R', 'F']:
+            sim_obj.status = 'F'  # FAILED
+            sim_obj.save()
         print(F'ANI failed: {g1.identifier} :: {g2.identifier}')
         raise e
 
-    ani_obj = ANI.objects.get(from_genome=g1, to_genome=g2)
-    assert ani_obj.status == 'R'  # RUNNING
-    ani_obj.similarity = ani_score
-    ani_obj.status = 'D'  # DONE
-    ani_obj.save()
-    print(F'completed ANI: {g1.identifier} :: {g2.identifier} :: {ani_score}')
+    sim_obj = GenomeSimilarity.objects.get(from_genome=g1, to_genome=g2)
+    assert sim_obj.status == 'R'  # RUNNING
+    sim_obj.similarity = sim_score
+    sim_obj.status = 'D'  # DONE
+    sim_obj.save()
+    print(F'completed GenomeSimilarity: {g1.identifier} :: {g2.identifier} :: {sim_score}')
 
 
 @task()
@@ -41,7 +45,6 @@ def calculate_orthofinder(genomes) -> str:
         time.sleep(5)
         orthofinder_running = "orthofinder" in (p.name() for p in psutil.process_iter())
 
-    from website.models.GenomeContent import GenomeContent
     from website.models.CoreGenomeDendrogram import CoreGenomeDendrogram
     identifiers = sorted(set(g.identifier for g in genomes))
 
@@ -65,31 +68,3 @@ def calculate_orthofinder(genomes) -> str:
     print(F'completed OrthoFinder: {identifiers} :: {newick}')
 
     return newick
-
-# @db_task()  # Opens DB connection for duration of task.
-# def slow(n):
-#     tprint('going to sleep for %s seconds' % n)
-#     time.sleep(n)
-#     tprint('finished sleeping for %s seconds' % n)
-#     return n
-#
-#
-# @task(retries=1, retry_delay=5, context=True)
-# def flaky_task(task=None):
-#     if task is not None and task.retries == 0:
-#         tprint('flaky task succeeded on retry.')
-#         return 'succeeded on retry.'
-#     tprint('flaky task is about to raise an exception.', 31)
-#     raise Exception('flaky task failed!')
-
-
-# # Periodic tasks.
-#
-# @periodic_task(crontab(minute='*/2'))
-# def every_other_minute():
-#     tprint('This task runs every 2 minutes.', 35)
-#
-#
-# @periodic_task(crontab(minute='*/5'))
-# def every_five_mins():
-#     tprint('This task runs every 5 minutes.', 34)

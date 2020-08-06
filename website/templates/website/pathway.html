@@ -113,20 +113,23 @@
                 }).click(function () {
                     showGenomeClickMenu(event)
                 })
-                $('#pathway-map-container').load(`/download/{{ PATHWAY_MAPS_RELATIVE }}/svg/{{ map.filename }}`, function () {
-                    $('.shape').tooltip()
 
-                    $('.shape').click(function (event) {
-                        showMapClickMenu(event, this)
+                {% if strains %}
+                    $('#pathway-map-container').load(`/download/{{ PATHWAY_MAPS_RELATIVE }}/svg/{{ map.filename }}`, function () {
+                        $('.shape').tooltip()
+
+                        $('.shape').click(function (event) {
+                            showMapClickMenu(event, this)
+                        })
+
+                        let strains, colors;
+                        highlightStrains(
+                            strains = {{ strains|safe }},
+                            colors = ['yellow', 'red']
+                        )
+
                     })
-
-                    let strains, colors;
-                    highlightStrains(
-                        strains = {{ strains|safe }},
-                        colors = ['yellow', 'red']
-                    )
-
-                })
+                {% endif %}
             })
 
         function submit_function() {

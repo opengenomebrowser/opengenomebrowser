@@ -159,17 +159,18 @@ class TaxID(MPTTModel):
                      os.path.abspath(F'{settings.BASE_DIR}/static_root/global/css')]
 
         div_css = ''
-        label_css = ''
+        svg_css = '[data-species-label] { stroke-width: 3px; paint-order: stroke; cursor: pointer; }\n'
 
         for taxid in all_taxids:
             div_css += F'[data-species="{taxid.taxscientificname}"] {{' + \
                        F'background-color: rgb({taxid.color}) !important; ' + \
                        F'color: {"white" if taxid.text_color_white else "black"} !important' + \
                        '}\n'
-            label_css += F'[data-species-label="{taxid.taxscientificname}"] {{' + \
-                         F'text-shadow: 1px 0 3px rgb({taxid.color}), -1px 0 3px rgb({taxid.color}), 0 1px 3px rgb({taxid.color}), 0 -1px 3px rgb({taxid.color}); ' + \
-                         F'fill: {"white" if taxid.text_color_white else "black"} !important' + \
-                         '}\n'
+            svg_css += F'[data-species-label="{taxid.taxscientificname}"] {{' + \
+                       F'stroke: rgb({taxid.color}); ' + \
+                       F'fill: {"white" if taxid.text_color_white else "black"} !important' + \
+                       '}\n'
+            # F'text-shadow: 1px 0 3px rgb({taxid.color}), -1px 0 3px rgb({taxid.color}), 0 1px 3px rgb({taxid.color}), 0 -1px 3px rgb({taxid.color}); ' + \
 
         for basepath in basepaths:
             # ensure parent exists
@@ -180,4 +181,4 @@ class TaxID(MPTTModel):
             # ensure parent exists
             file = F'{basepath}/taxid_color_label.css'
             os.makedirs(os.path.dirname(file), exist_ok=True)
-            open(file, 'w').write(label_css)
+            open(file, 'w').write(svg_css)

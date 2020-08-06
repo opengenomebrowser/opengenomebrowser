@@ -64,7 +64,7 @@ database/*
 lib/get_tax_info/data/*
 lib/ncbi_blast/ncbi-blast-2.10.0+/
 lib/ani/*.jar
-lib/ani/usearch
+lib/genome_similarity/usearch
 lib/assembly_stats/assembly-stats/
 
 website/static/global/css/tag_color.css

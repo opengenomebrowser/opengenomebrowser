@@ -67,16 +67,16 @@ let undoReplBlanks = function (arr) {
  * Waits until an element exists
  *
  * Usage:
- * waitForEl(selector, function() {
+ * waitForElement(selector, function() {
  *    // work the magic
  * });
  */
-var waitForEl = function (selector, callback, timeout = 200) {
-    if (jQuery(selector).length) {
+let waitForElement = function (selector, callback, timeout = 200) {
+    if ($(selector).length) {
         callback();
     } else {
         setTimeout(function () {
-            waitForEl(selector, callback);
+            waitForElement(selector, callback);
         }, timeout);
     }
 };
@@ -290,3 +290,5 @@ function on_genomes_change(field, editor, tags) {
         return genome_to_species
     });
 }
+
+

@@ -20,7 +20,8 @@ class GenDisCal:
         """
         :param fasta1: path to first assembly fasta
         :param fasta2: path to second assembly fasta
-        :return: float: ani similarity score. 1 = 100 %, 0 = 0 %
+        :param preset: [PaSiT4, PaSiT6, TETRA, approxANI, combinedSpecies]
+        :return: float: genome_similarity similarity score. 1 = 100 %, 0 = 0 %
         """
         for fasta in [fasta1, fasta2]:
             assert os.path.isfile(fasta), "path is invalid: '{}'".format(fasta)
@@ -55,6 +56,7 @@ class GenDisCal:
     def calculate_many_similarities(fasta_tuple_list, preset='PaSiT6') -> list:
         """
         :param fasta_tuple_list: [(fasta1, fasta2), (fastaA, fastaB), ...]
+        :param preset: [PaSiT4, PaSiT6, TETRA, approxANI, combinedSpecies]
         :return: int list of same length as fasta_tuple_list
         """
 

@@ -12,10 +12,10 @@ class CompareGenes:
         if 'annotations' in request.GET or 'genomes' in request.GET:
             if not 'annotations' in request.GET and 'genomes' in request.GET:
                 return HttpResponse(F'annotations and genes only work together. Got: {request.GET.keys()}', status=400)
-            annotations = request.GET['annotations'].split(' ')
-            # annotations = Annotation.objects.filter(name__in=annotations)
+            annotations = [a.replace('!!!', ' ') for a in request.GET['annotations'].split(' ')]
             genomes = request.GET['genomes'].split(' ')
-            # genomes = Genome.objects.filter(identifier__in=genomes)
+
+            print(annotations, genomes)
 
             if 'genes' in request.GET:
                 gene_ids = request.GET['genes'].split(' ')

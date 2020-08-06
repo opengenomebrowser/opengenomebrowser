@@ -15,7 +15,7 @@ class DendrogramManager(models.Manager):
         except CoreGenomeDendrogram.DoesNotExist:
             pass
 
-        # create placeholder-ani in database, start huey job
+        # create placeholder-genome_similarity in database, start huey job
         new_dendrogram = CoreGenomeDendrogram(unique_id=hash, newick='', status='R')
         new_dendrogram.save()
 

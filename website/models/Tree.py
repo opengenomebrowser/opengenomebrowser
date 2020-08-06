@@ -1,6 +1,6 @@
 import os
 from django.db import models
-from website.models import TaxID, ANI, Annotation, Genome, GenomeContent, Strain, CoreGenomeDendrogram
+from website.models import TaxID, GenomeSimilarity, Annotation, Genome, GenomeContent, Strain, CoreGenomeDendrogram
 import pandas as pd
 from skbio import DistanceMatrix
 from skbio.tree import nj
@@ -74,13 +74,13 @@ class AniTree(AbstractTree):
             g1_existing_partners = g1.get_ani_partners()
             for g2 in genomes:
                 if g1 == g2:
-                    ani, created = ANI.objects.get_or_create(from_genome=g1, to_genome=g2)
+                    ani, created = GenomeSimilarity.objects.get_or_create(from_genome=g1, to_genome=g2)
                     anis.append(ani)
                     break
 
                 assert os.path.isfile(g1.genome.assembly_fasta(relative=False)), g1.genome.assembly_fasta(rel_path=False)
                 assert os.path.isfile(g2.genome.assembly_fasta(relative=False)), g2.genome.assembly_fasta(rel_path=False)
-                ani, created = ANI.objects.get_or_create(from_genome=g1, to_genome=g2)
+                ani, created = GenomeSimilarity.objects.get_or_create(from_genome=g1, to_genome=g2)
                 anis.append(ani)
 
         self.__anis = anis
@@ -88,7 +88,7 @@ class AniTree(AbstractTree):
 
     @property
     def newick(self) -> str:
-        def get_status(ani: ANI):
+        def get_status(ani: GenomeSimilarity):
             ani.refresh_from_db()
             return ani.status
 
@@ -105,7 +105,7 @@ class AniTree(AbstractTree):
                                    F'Finished: {n_done}, running: {n_running}, failed: {n_failed}')
 
         ani_matrix = pd.DataFrame(
-            {g1.identifier: [ANI.objects.get(g1, g2).similarity for g2 in self.__genomes]
+            {g1.identifier: [GenomeSimilarity.objects.get(g1, g2).similarity for g2 in self.__genomes]
              for g1 in self.__genomes})
         ani_matrix.rename({n: id for n, id in enumerate(self.__genomes.values_list('identifier', flat=True))},
                           inplace=True)

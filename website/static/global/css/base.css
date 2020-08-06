@@ -36,6 +36,7 @@
     margin: 3px 3px 3px 3px;
     border-radius: .25rem;
     padding: 0 6px;
+    cursor: pointer;
 }
 
 #context-menu .context-menu-icon-annotation {
@@ -133,6 +134,10 @@ convert hex (e.g. #2980b9) to filter: https://codepen.io/sosuke/pen/Pjoqqp
 
 .dropdown-item.context-menu-icon {
     padding-left: 2.2em !important;
+}
+
+.ogb-click-menu .dropdown-header {
+    white-space: unset;
 }
 
 .context-menu-header {

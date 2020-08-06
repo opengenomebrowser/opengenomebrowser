@@ -1,10 +1,11 @@
 from django.shortcuts import HttpResponse
 from django.http import JsonResponse
 import json
+import itertools
 
 from OpenGenomeBrowser import settings
 from website.models.Annotation import Annotation
-from website.models import GenomeContent, Genome, PathwayMap, Gene, TaxID, ANI
+from website.models import GenomeContent, Genome, PathwayMap, Gene, TaxID, GenomeSimilarity
 from website.models.Tree import TaxIdTree, AniTree, OrthofinderTree, TreeNotDoneError
 from django.db.models.functions import Concat
 from django.db.models import CharField, Value as V
@@ -16,6 +17,9 @@ from bokeh.embed import components
 def err(error_message):
     print(error_message)
     return JsonResponse(dict(status='false', message=error_message), status=500)
+
+
+UNIQUE_COLORS_HEX = json.load(open('lib/tax_id_to_color/300_different_colors.txt'))
 
 
 class Api:
@@ -128,8 +132,6 @@ class Api:
         if term is None and genome is None:
             return err('"term" and "genome" are not in request.GET')
 
-        print(genome, term)
-
         if genome:
             genes = Gene.objects.filter(genomecontent=genome, identifier__icontains=term if term else '').order_by('identifier')[:10]
         else:
@@ -139,7 +141,7 @@ class Api:
 
         data = json.dumps(results)
         mimetype = 'application/json'
-        print(results)
+
         return HttpResponse(data, mimetype)
 
     @staticmethod
@@ -193,8 +195,6 @@ class Api:
             return err('did not receive slug')
 
         success = PathwayMap.objects.filter(slug=request.GET['slug']).exists()
-
-        print(success, request.GET['slug'])
 
         return JsonResponse(dict(success=success))
 
@@ -284,7 +284,7 @@ class Api:
 
         Returns bokeh script and div
 
-        Todo: Span around gene_locus
+        Todo: Ability to change span around gene_locus
         """
 
         if not request.GET:
@@ -319,7 +319,9 @@ class Api:
 
         Returns bokeh script and div
 
-        Todo: Span around gene_locus
+        Todo: Color by orthogroup / annotations
+
+        Todo: Ability to change span around gene_locus
         """
 
         if not request.GET:
@@ -336,18 +338,58 @@ class Api:
             (g.genomecontent.genome.cds_gbk(relative=False), g.identifier, g.identifier)
             for g in gs]
 
-        locus_to_color_dict = {id: '#1984ff' for gbk, id, id_ in loci_of_interest}
-
         graphic_records = GraphicRecordLocus.get_multiple(
             loci_of_interest,
-            locus_to_color_dict=locus_to_color_dict,
             span=10000
         )
 
+        locus_tags = set()
+        for graphic_record in graphic_records:
+            locus_tags = locus_tags.union(graphic_record.get_locus_tags())
+
+        genes = Gene.objects.filter(identifier__in=locus_tags)
+
+        def get_ortholog(gene):
+            o = gene.annotations.filter(anno_type='OL').first()
+            if o is not None:
+                return o.name
+
+        locus_tag_to_ortholog = {gene.identifier: get_ortholog(gene) for gene in genes}
+        orthogroups = locus_tag_to_ortholog.values()
+        orthogroups_to_color = {o: c for o, c in zip(orthogroups, itertools.cycle(UNIQUE_COLORS_HEX))}
+
+        locus_tag_to_color = {identifier: orthogroups_to_color[ortholog]
+                              for identifier, ortholog in locus_tag_to_ortholog.items()
+                              if ortholog is not None}
+
+        # color selected genes in blue:
+        for gbk, id, id_ in loci_of_interest:
+            locus_tag_to_color[id] = '#1984ff'
+
+        for graphic_record in graphic_records:
+            graphic_record.colorize_graphic_record(locus_tag_to_color)
+
         plots = GraphicRecordLocus.plot_multiple_bokeh(graphic_records, viewspan=3000, auto_reverse=True)
 
-        script, plot_div = components(plots)
+        script, plot_divs = components(plots)
         script = script[33:-10]  # remove <script type="text/javascript"> and </script>
+
+        gene_divs = [g.html for g in gs]
+        species_divs = [g.genomecontent.strain.taxid.html for g in gs]
+
+        plot_div = ""
+        for gene, species, plot in zip(gene_divs, species_divs, plot_divs):
+            plot_div += F'''
+<div class='locus-plot'>
+    <div class='locus-plot-header'>
+        <div class='handle-div'>
+            <i class='handle'>&nbsp&nbsp&nbsp&nbsp</i>
+        </div>
+        {species} {gene}
+    </div>
+    {plot}
+</div>
+'''
 
         return JsonResponse(dict(script=script, plot_div=plot_div))
 
@@ -415,7 +457,7 @@ class Api:
             3) OrthoFinder-based (Based on single-copy-ortholog alignments, slowest)
 
         Query:
-            - method: 'taxid', 'ani' or 'orthofinder'
+            - method: 'taxid', 'genome-similarity' or 'orthofinder'
             - genomes[]: list of genome identifiers
         """
         if not request.GET:
@@ -425,22 +467,23 @@ class Api:
             return err(F"missing parameters. required: 'method'. Got: {request.GET.keys()}")
 
         method = request.GET.get('method')
-        if method not in ['taxid', 'ani', 'orthofinder']:
-            return err(F"method must be either taxid', 'ani' or 'orthofinder'. Got: {method}")
-
-        identifiers = set(request.GET.getlist('genomes[]'))
 
         if method == 'taxid':
             MODEL = Genome
             METHOD = TaxIdTree
 
-        if method == 'ani':
+        elif method == 'genome-similarity':
             MODEL = GenomeContent
             METHOD = AniTree
 
-        if method == 'orthofinder':
+        elif method == 'orthofinder':
             MODEL = GenomeContent
             METHOD = OrthofinderTree
+
+        else:
+            return err(F"method must be either taxid', 'genome-similarity' or 'orthofinder'. Got: {method}")
+
+        identifiers = set(request.GET.getlist('genomes[]'))
 
         objs = MODEL.objects.filter(identifier__in=identifiers)
         try:

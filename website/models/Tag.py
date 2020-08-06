@@ -27,6 +27,13 @@ class TagManager(models.Manager):
 
         return super(TagManager, self).create(*args, **kwargs)
 
+    def get_or_create(self, tag: str, description=None):
+        try:
+            tag_obj = Tag.objects.get(tag=tag)
+        except Tag.DoesNotExist:
+            tag_obj = Tag.objects.create(tag=tag, description=description)
+        return tag_obj
+
 
 class Tag(models.Model):
     """
@@ -84,7 +91,7 @@ class Tag(models.Model):
         return self.tag
 
     def invariant(self):
-        # assert self.strains.count() > 0
+        # currently nothing to check
         return True
 
 

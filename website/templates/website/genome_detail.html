@@ -156,7 +156,8 @@
                     <thead class="thead-dark">
                     <tr>
                         <th scope="col">Key Parameters</th>
-                        <th scope="col" class="expand-td"><img src="{% static 'global/ionicons/ios-arrow-down.svg' %}"></th></th>
+                        <th scope="col" class="expand-td"><img src="{% static 'global/ionicons/ios-arrow-down.svg' %}"></th>
+                        </th>
                     </tr>
                     </thead>
                 </table>
@@ -202,7 +203,8 @@
                     <thead class="thead-dark">
                     <tr>
                         <th scope="col">Sequencing Information</th>
-                        <th scope="col" class="expand-td"><img src="{% static 'global/ionicons/ios-arrow-down.svg' %}"></th></th>
+                        <th scope="col" class="expand-td"><img src="{% static 'global/ionicons/ios-arrow-down.svg' %}"></th>
+                        </th>
                     </tr>
                     </thead>
                 </table>
@@ -230,7 +232,8 @@
                     <thead class="thead-dark">
                     <tr>
                         <th scope="col">Assembly Information</th>
-                        <th scope="col" class="expand-td"><img src="{% static 'global/ionicons/ios-arrow-down.svg' %}"></th></th>
+                        <th scope="col" class="expand-td"><img src="{% static 'global/ionicons/ios-arrow-down.svg' %}"></th>
+                        </th>
                     </tr>
                     </thead>
                 </table>
@@ -258,7 +261,8 @@
                     <thead class="thead-dark">
                     <tr>
                         <th scope="col">Annotation Information</th>
-                        <th scope="col" class="expand-td"><img src="{% static 'global/ionicons/ios-arrow-down.svg' %}"></th></th>
+                        <th scope="col" class="expand-td"><img src="{% static 'global/ionicons/ios-arrow-down.svg' %}"></th>
+                        </th>
                     </tr>
                     </thead>
                 </table>
@@ -290,7 +294,7 @@
                 <h3>BUSCO</h3>
 
                 <div class="container flex-container">
-                    <div class="busco-flex-table">
+                    <div class=flex-table">
                         <table class="table table-sm" id="busco-table">
                             <thead class="thead-dark">
                             <tr>
@@ -335,7 +339,7 @@
                             </tbody>
                         </table>
                     </div>
-                    <div class="busco-flex-pie">
+                    <div class="flex-pie">
                         <div id="busco-pie-chart" class="pie-chart" height="260px" width="260px"></div>
                     </div>
                 </div>
@@ -343,15 +347,15 @@
         {% endif %}
 
         {% if included_sequences %}
-            <!-- busco -->
+            <!-- included_sequences -->
             <div class="container">
 
                 <hr class="featurette-divider">
 
-                <h3>Origin of excluded sequences</h3>
+                <h3>Origin of included sequences</h3>
 
                 <div class="container flex-container">
-                    <div>
+                    <div class=flex-table">
                         <table class="table table-sm" id="busco-table">
                             <thead class="thead-dark">
                             <tr>
@@ -359,24 +363,23 @@
                                 <th scope="col">Amount</th>
                             </tr>
                             </thead>
-                            <tbody>{% for taxid, sci_name, color, percentage in included_sequences %}
+                            <tbody>{% for taxid, html, sci_name, color, percentage in included_sequences %}
                                 <tr class="">
-                                    <th scope="row">{{ sci_name }}</th>
+                                    <th scope="row">{{ html|safe }}</th>
                                     <td>{{ percentage }}</td>
                                 </tr>{% endfor %}
                             </tbody>
                         </table>
                     </div>
-                    <div>
+                    <div class="flex-pie">
                         <div id="included-pie-chart" class="pie-chart" height="260px" width="260px"></div>
                     </div>
                 </div>
             </div>
         {% endif %}
 
-
         {% if excluded_sequences %}
-            <!-- busco -->
+            <!-- excluded_sequences -->
             <div class="container">
 
                 <hr class="featurette-divider">
@@ -384,7 +387,7 @@
                 <h3>Origin of excluded sequences</h3>
 
                 <div class="container flex-container">
-                    <div>
+                    <div class=flex-table">
                         <table class="table table-sm" id="busco-table">
                             <thead class="thead-dark">
                             <tr>
@@ -392,9 +395,9 @@
                                 <th scope="col">Amount</th>
                             </tr>
                             </thead>
-                            <tbody>{% for taxid, sci_name, color, percentage in excluded_sequences %}
+                            <tbody>{% for taxid, html, sci_name, color, percentage in excluded_sequences %}
                                 <tr class="">
-                                    <th scope="row">{{ sci_name }}</th>
+                                    <th scope="row">{{ html|safe }}</th>
                                     <td>{{ percentage }}</td>
                                 </tr>{% endfor %}
                             </tbody>
@@ -403,6 +406,23 @@
                     <div>
                         <div id="excluded-pie-chart" class="pie-chart" height="260px" width="260px"></div>
                     </div>
+                </div>
+            </div>
+        {% endif %}
+
+        {% if sixteen_s %}
+            <!-- sixteen_s -->
+            <div class="container">
+
+                <hr class="featurette-divider">
+
+                <h3>16S</h3>
+
+                <div class="container flex-container">
+                    {% for db_name, table in sixteen_s.items %}
+                        <h4>Database: {{ db_name }}</h4>
+                        {{ table|safe }}
+                    {% endfor %}
                 </div>
             </div>
         {% endif %}
@@ -483,6 +503,12 @@
                 position: {collision: "flip"}
             });
 
+            $(".ogb-tag.taxid").each(function (index) {
+                $(this).on("click", function () {
+                    showTaxidClickMenu(event)
+                })
+            })
+
         });
 
         function go_to_gene(gene) {
@@ -517,13 +543,13 @@
             function load_included_pie() {
                 let data = [{
                     values: [
-                        {% for taxid, sci_name, color, percentage in included_sequences %} {{percentage}}, {% endfor %}],
+                        {% for taxid, html, sci_name, color, percentage in included_sequences %} {{percentage}}, {% endfor %}],
                     labels: [
-                        {% for taxid, sci_name, color, percentage in included_sequences %} "{{sci_name}}", {% endfor %}],
+                        {% for taxid, html, sci_name, color, percentage in included_sequences %} "{{sci_name}}", {% endfor %}],
                     type: 'pie',
                     marker: {
                         colors: [
-                            {% for taxid, sci_name, color, percentage in included_sequences %} "rgb({{color}})", {% endfor %}]
+                            {% for taxid, html, sci_name, color, percentage in included_sequences %} "rgb({{color}})", {% endfor %}]
                     },
                 }];
 
@@ -536,13 +562,13 @@
             function load_excluded_pie() {
                 let data = [{
                     values: [
-                        {% for taxid, sci_name, color, percentage in excluded_sequences %} {{percentage}}, {% endfor %}],
+                        {% for taxid, html, sci_name, color, percentage in excluded_sequences %} {{percentage}}, {% endfor %}],
                     labels: [
-                        {% for taxid, sci_name, color, percentage in excluded_sequences %} "{{sci_name}}", {% endfor %}],
+                        {% for taxid, html, sci_name, color, percentage in excluded_sequences %} "{{sci_name}}", {% endfor %}],
                     type: 'pie',
                     marker: {
                         colors: [
-                            {% for taxid, sci_name, color, percentage in excluded_sequences %} "rgb({{color}})", {% endfor %}]
+                            {% for taxid, html, sci_name, color, percentage in excluded_sequences %} "rgb({{color}})", {% endfor %}]
                     },
                 }];
 

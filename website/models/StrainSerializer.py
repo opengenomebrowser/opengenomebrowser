@@ -16,13 +16,15 @@ class StrainSerializer():
         else:
             strain_dict['representative'] = "ERROR"
 
+        strain_dict['tags'] = set(strain_dict['tags'])
+
         return strain_dict
 
     def import_strain(self, raw_strain_dict: dict, update_css=True) -> Strain:
         strain_dict = self._convert_natural_keys_to_pks(raw_strain_dict)
         strain_dict.pop('representative')
 
-        strain_json = json.dumps(strain_dict)
+        strain_json = json.dumps(strain_dict, default=set_to_list)
 
         if Strain.objects.filter(name=strain_dict['name']).exists():
             s = Strain.objects.get(name=strain_dict['name'])
@@ -59,6 +61,12 @@ class StrainSerializer():
         return_d = {}  # create deep copy
         return_d.update(d)
 
-        return_d['tags'] = [Tag.objects.get_or_create_tag(tag=tag_string).id for tag_string in return_d['tags']]
+        return_d['tags'] = set(Tag.objects.get_or_create_tag(tag=tag_string).id for tag_string in return_d['tags'])
         return_d['taxid'] = TaxID.get_or_create(return_d['taxid']).pk
         return return_d
+
+
+def set_to_list(obj):
+    if isinstance(obj, set):
+        return list(obj)
+    raise TypeError

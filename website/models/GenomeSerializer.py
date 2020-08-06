@@ -1,10 +1,12 @@
 import os
+import shutil
 import json
 from django.core import serializers
 from website.models import Strain, Genome, Tag, TaxID, GenomeContent
+from dictdiffer import diff
 
 
-class GenomeSerializer():
+class GenomeSerializer:
     @staticmethod
     def export_genome(identifier: str) -> dict:
         g = Genome.objects.filter(identifier=identifier)
@@ -18,6 +20,7 @@ class GenomeSerializer():
         genome_dict.pop('assembly_nr_scaffolds')
         genome_dict.pop('assembly_n50')
         genome_dict.pop('BUSCO_percent_single')
+        genome_dict['tags'] = set(genome_dict['tags'])
         return genome_dict
 
     def import_genome(self, raw_genomes_dict: dict, parent_strain: Strain, is_representative: bool,
@@ -44,14 +47,14 @@ class GenomeSerializer():
             genome_dict['genomecontent'] = genomecontent.pk
 
             new_data = '[{"model": "' + Genome._meta.label_lower + '", "pk": ' + str(
-                g.pk) + ', "fields": ' + json.dumps(genome_dict) + '}]'
+                g.pk) + ', "fields": ' + json.dumps(genome_dict, default=set_to_list) + '}]'
         else:
             print(": create new")
 
             genomecontent, created = GenomeContent.objects.get_or_create(identifier=genome_dict['identifier'])
             genome_dict['genomecontent'] = genomecontent.pk
 
-            new_data = '[{"model": "' + Genome._meta.label_lower + '", "fields": ' + json.dumps(genome_dict) + '}]'
+            new_data = '[{"model": "' + Genome._meta.label_lower + '", "fields": ' + json.dumps(genome_dict, default=set_to_list) + '}]'
 
         c = 0
         for genome in serializers.deserialize("json", new_data):
@@ -86,7 +89,7 @@ class GenomeSerializer():
 
         return_d['representative'] = None  # assign representative after first save
 
-        return_d['tags'] = [Tag.objects.get_or_create_tag(tag=tag_string).pk for tag_string in return_d['tags']]
+        return_d['tags'] = set(Tag.objects.get_or_create(tag=tag_string).pk for tag_string in return_d['tags'])
 
         if 'S' in return_d['BUSCO'] and 'T' in return_d['BUSCO']:
             return_d['BUSCO_percent_single'] = round(return_d['BUSCO']['S'] / return_d['BUSCO']['T'], 1)
@@ -95,3 +98,27 @@ class GenomeSerializer():
             return_d['BUSCO_percent_single'] = None
 
         return return_d
+
+    @classmethod
+    def update_metadata_json(cls, genome: Genome, who_did_it='anonymous'):
+        from datetime import datetime
+        date = datetime.now().strftime("%Y_%b_%d_%H_%M_%S")
+
+        new_data = cls.export_genome(genome.identifier)
+
+        # create backup
+        bkp_dir = F'{os.path.dirname(genome.metadata_json)}/.bkp'
+        os.makedirs(bkp_dir, exist_ok=True)
+        bkp_file = F'{bkp_dir}/{date}_{who_did_it}_genome.json'
+        shutil.move(src=genome.metadata_json, dst=bkp_file)
+
+        # write new file
+        assert not os.path.isfile(genome.metadata_json)
+        with open(genome.metadata_json, 'w') as f:
+            json.dump(new_data, f, sort_keys=True, indent=4, default=set_to_list)
+
+
+def set_to_list(obj):
+    if isinstance(obj, set):
+        return list(obj)
+    raise TypeError

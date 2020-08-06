@@ -244,8 +244,8 @@ ${species}</a>`
 Open genome info</a>
 <a onclick="CopyToClipboard('${genome}')" class="dropdown-item context-menu-icon context-menu-icon-copy">
 Copy identifier</a>
-<a href="/kegg/?genomes=${genome}" class="dropdown-item context-menu-icon context-menu-icon-pathway">
-Open genome on KEGG map</a>
+<a href="/pathway/?genomes=${genome}" class="dropdown-item context-menu-icon context-menu-icon-pathway">
+Open genome on pathway map</a>
 <a href="/annotation-search/?genomes=${genome}" class="dropdown-item context-menu-icon context-menu-icon-annotation">
 Search for annotations in genome</a>
 <a href="/blast/?genomes=${genome}" class="dropdown-item context-menu-icon context-menu-icon-blast">
@@ -262,7 +262,7 @@ ${siblings.length} selected genomes</h6>
 Show phylogenetic trees</a>
 <a onclick="CopyToClipboard('FAM21277-i1-1.1, FAM19036-p1-1.1, FAM19471-i1-1.1, FAM1079-i1-1.1, FAM22472-i1-1.1')" class="dropdown-item context-menu-icon context-menu-icon-copy">
 Copy selected genomes</a>
-<a href="/kegg/?genomes=${siblings_str}" class="dropdown-item context-menu-icon context-menu-icon-pathway">
+<a href="/pathway/?genomes=${siblings_str}" class="dropdown-item context-menu-icon context-menu-icon-pathway">
 Open genomes on pathway map</a>
 <a href="/annotation-search/?genomes=${siblings_str}" class="dropdown-item context-menu-icon context-menu-icon-annotations">
 Search for annotations in genomes</a>
@@ -310,7 +310,9 @@ Search for annotations</a>
 `)
     }
 
-    if (genomes.length > 1) {
+    console.log(genomes)
+
+    if (genomes.length > 0) {
         cm.appendElement(`
 <h6 class="dropdown-header context-menu-header">
 ${genomes.length} selected genomes</h6>

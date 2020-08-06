@@ -1,9 +1,9 @@
 import os
 from django.db import models
-from django.contrib.postgres.fields import JSONField
+from django.db.models import JSONField
 from website.models.Annotation import Annotation, AnnotationRegex
 from .TaxID import TaxID
-from .ANI import ANI
+from .GenomeSimilarity import GenomeSimilarity
 from OpenGenomeBrowser import settings
 
 
@@ -23,7 +23,7 @@ class GenomeContent(models.Model):
 
     annotations = models.ManyToManyField(Annotation)
 
-    ani_similarity = models.ManyToManyField('self', through=ANI, symmetrical=True, related_name='ani_similarity+')
+    ani_similarity = models.ManyToManyField('self', through=GenomeSimilarity, symmetrical=True, related_name='ani_similarity+')
 
     @property
     def parent(self):
@@ -51,8 +51,8 @@ class GenomeContent(models.Model):
     def strain(self):
         return self.genome.strain
 
-    def get_ani_similarity(self, partner_genome) -> ANI:
-        return ANI.objects.get_or_create(self, partner_genome)
+    def get_ani_similarity(self, partner_genome) -> GenomeSimilarity:
+        return GenomeSimilarity.objects.get_or_create(self, partner_genome)
 
     def get_ani_partners(self) -> models.QuerySet:
         to_partners = GenomeContent.objects.filter(from_ani__in=self.to_ani.all())

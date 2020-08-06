@@ -58,6 +58,10 @@ class Strain(models.Model):
             genome.representative = self
             genome.save()
 
+    @property
+    def metadata_json(self):
+        return F'{settings.GENOMIC_DATABASE}/strains/{self.name}/strain.json'
+
     def __str__(self):
         return self.name
 

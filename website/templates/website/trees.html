@@ -47,7 +47,7 @@
     <div class="sidebar-subcontent form-check form-check-inline">
         <label for="mode-selector"><a>Mode</a></label>
         <select class="form-control" id="mode-selector"
-                onchange="[taxid_tree, ani_tree].forEach(t=>changeTree(t, 'mode', this.value))">
+                onchange="[taxid_tree, genome_similarity_tree].forEach(t=>changeTree(t, 'mode', this.value))">
             <option>smooth</option>
             <option>square</option>
             <option>straight</option>
@@ -67,7 +67,7 @@
                 </div>
                 <div style="display: flex; justify-content: space-evenly;">
                     <button type="button" class="btn btn-primary" onclick="validate_genomes_load_tree('taxid')">Reload Taxid-based tree</button>
-                    <button type="button" class="btn btn-success" onclick="validate_genomes_load_tree('ani')">Calculate ANI-based tree</button>
+                    <button type="button" class="btn btn-success" onclick="validate_genomes_load_tree('genome-similarity')">Calculate Genome-similarity-based tree</button>
                     <button type="button" class="btn btn-info" onclick="validate_genomes_load_tree('orthofinder')">Calculate Orthofinder-based tree
                     </button>
                 </div>
@@ -106,29 +106,29 @@
             <br>
         </div>
 
-        <div class="container" id="ani-tree-container" hidden>
-            <h2>ANI-based tree</h2>
-            <label for="layout-selector-ani">Layout</label>
-            <select class="form-control" id="layout-selector-ani"
-                    onchange="changeTree(ani_tree, 'layout', this.value)">
+        <div class="container" id="genome-similarity-tree-container" hidden>
+            <h2>Genome-similarity-based tree</h2>
+            <label for="layout-selector-genome-similarity">Layout</label>
+            <select class="form-control" id="layout-selector-genome-similarity"
+                    onchange="changeTree(genome_similarity_tree, 'layout', this.value)">
                 <option>horizontal</option>
                 <option selected>vertical</option>
                 <option>circular</option>
             </select>
 
-            <label for="type-selector-ani">Type</label>
-            <select class="form-control" id="type-selector-ani" onchange="changeTree(ani_tree, 'type', this.value)">
+            <label for="type-selector-genome-similarity">Type</label>
+            <select class="form-control" id="type-selector-genome-similarity" onchange="changeTree(genome_similarity_tree, 'type', this.value)">
                 <option>dendrogram</option>
                 <option selected>weighted</option>
                 <option>tree</option>
             </select>
 
-            <label for="ani-newick">Newick string</label>
-            <input class="form-control" type="text" id="ani-newick" placeholder="Loading..."
+            <label for="genome-similarity-newick">Newick string</label>
+            <input class="form-control" type="text" id="genome-similarity-newick" placeholder="Loading..."
                    onclick="CopyToClipboard(this.value)" readonly>
 
-            <label for="ani-tree">Dendrogram</label>
-            <div id="ani-tree" class="tree-div">
+            <label for="genome-similarity-tree">Dendrogram</label>
+            <div id="genome-similarity-tree" class="tree-div">
                 <div class="spinner-border text-dark" role="status">
                     <span class="sr-only">Loading...</span>
                 </div>
@@ -178,7 +178,7 @@
         let current_genomes = []
         let genome_to_species
         let taxid_tree
-        let ani_tree
+        let genome_similarity_tree
         let orthofinder_tree
         let doit
 
@@ -209,8 +209,8 @@
                     current_genomes = genomes
                     if (type === "taxid") {
                         load_taxid_tree(genomes)
-                    } else if (type === "ani") {
-                        load_ani_tree(genomes)
+                    } else if (type === "genome-similarity") {
+                        load_genome_similarity_tree(genomes)
                     } else if (type === "orthofinder") {
                         load_orthofinder_tree(genomes)
                     }
@@ -229,15 +229,15 @@
             add_resize_listener('taxid-tree', taxid_tree)
         }
 
-        function load_ani_tree(genomes) {
-            $('#ani-tree-container').attr("hidden", false)
-            ani_tree = loadTree(
-                genomes, 'ani', '#ani-tree', '#ani-newick',
-                $('#type-selector-ani').val(),
-                $('#layout-selector-ani').val(),
+        function load_genome_similarity_tree(genomes) {
+            $('#genome-similarity-tree-container').attr("hidden", false)
+            genome_similarity_tree = loadTree(
+                genomes, 'genome-similarity', '#genome-similarity-tree', '#genome-similarity-newick',
+                $('#type-selector-genome-similarity').val(),
+                $('#layout-selector-genome-similarity').val(),
                 $('#mode-selector').val()
             )
-            add_resize_listener('ani-tree', ani_tree)
+            add_resize_listener('genome-similarity-tree', genome_similarity_tree)
         }
 
         function load_orthofinder_tree(genomes) {
