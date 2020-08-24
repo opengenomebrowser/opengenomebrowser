@@ -70,6 +70,7 @@ urlpatterns = [
     path('api/annotation-to-type/', Api.annotation_to_type, name='api-annotation-to-type'),
     path('api/dna-feature-viewer-single/', Api.dna_feature_viewer_single, name='api-dna-feature-viewer'),
     path('api/dna-feature-viewer-multi/', Api.dna_feature_viewer_multi, name='api-dna-feature-viewer'),
+    path('api/align/', Api.align, name='api-align'),
     path('api/get-gene/', Api.get_gene, name='api-get-gene'),
     path('api/get-tree/', Api.get_tree, name='api-get-tree'),
 

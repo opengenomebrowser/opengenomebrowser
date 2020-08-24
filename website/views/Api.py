@@ -2,6 +2,12 @@ from django.shortcuts import HttpResponse
 from django.http import JsonResponse
 import json
 import itertools
+from collections import Counter
+
+from django.db.models.functions import Concat
+from django.db.models import CharField, Value as V
+from django.db.models.functions import Concat
+from django.db.models import CharField, Value as V
 
 from OpenGenomeBrowser import settings
 from website.models.Annotation import Annotation
@@ -12,6 +18,8 @@ from django.db.models import CharField, Value as V
 
 from lib.gene_loci_comparison.gene_loci_comparison import GraphicRecordLocus
 from bokeh.embed import components
+
+from lib.multiplesequencealignment.multiple_sequence_alignment import ClustalOmega, MAFFT, Muscle
 
 
 def err(error_message):
@@ -280,7 +288,7 @@ class Api:
         """
         Get dna_feature_viewer bokeh around gene_identifier.
 
-        Query: gene_identifier = "strain3_000345"
+        Query: gene_identifier = "strain3_000345", span=10000
 
         Returns bokeh script and div
 
@@ -293,17 +301,28 @@ class Api:
         if not ('gene_identifier' in request.GET):
             return err(F"missing parameters. required: 'gene_identifier'. Got: {request.GET.keys()}")
 
+        if not ('span' in request.GET):
+            return err(F"missing parameters. required: 'span'. Got: {request.GET.keys()}")
+
+        span = int(request.GET['span'])
+
         gene_identifier = request.GET.get('gene_identifier')
 
         g = Gene.objects.get(identifier=gene_identifier)
 
-        graphic_record = GraphicRecordLocus(gbk_file=g.genomecontent.genome.cds_gbk(relative=False), locus_tag=gene_identifier, span=30000)
+        graphic_record = GraphicRecordLocus(
+            gbk_file=g.genomecontent.genome.cds_gbk(relative=False),
+            locus_tag=gene_identifier,
+            span=span
+        )
 
         graphic_record.colorize_graphic_record({gene_identifier: '#1984ff'}, strict=False, default_color='#ffffff')
 
-        plot = graphic_record.plot_with_bokeh(figure_width=11.4,  # width of .container divs
-                                              figure_height='auto',
-                                              viewspan=3000)
+        plot = graphic_record.plot_with_bokeh(
+            figure_width=11.4,  # width of .container divs
+            figure_height='auto',
+            viewspan=3000
+        )
 
         script, plot_div = components(plot)
         script = script[33:-10]  # remove <script type="text/javascript"> and </script>
@@ -311,17 +330,19 @@ class Api:
         return JsonResponse(dict(script=script, plot_div=plot_div))
 
     @staticmethod
-    def dna_feature_viewer_multi(request):
+    def align(request):
         """
-        Get dna_feature_viewer bokeh around gene_identifier.
+        Align genes. (Multiple Sequence Alignment)
 
-        Query: gene_identifiers = ["strain3_000345", "strain2_000445"]
+        Three algorithms are currently supported:
+            1) Clustal Omega (clustalo)
+            2) MAFFT (mafft)
+            3) Muscle (muscle)
 
-        Returns bokeh script and div
-
-        Todo: Color by orthogroup / annotations
-
-        Todo: Ability to change span around gene_locus
+        Query:
+            - gene_identifiers[]: list of gene identifiers
+            - method = 'clustalo', mafft, muscle'
+            - sequence_type: 'dna', 'protein'
         """
 
         if not request.GET:
@@ -329,6 +350,73 @@ class Api:
 
         if not ('gene_identifiers[]' in request.GET):
             return err(F"missing parameters. required: 'gene_identifiers[]'. Got: {request.GET.keys()}")
+
+        if not ('method' in request.GET):
+            return err(F"missing parameters. required: 'method'. Got: {request.GET.keys()}")
+
+        if not ('sequence_type' in request.GET):
+            return err(F"missing parameters. required: 'sequence_type'. Got: {request.GET.keys()}")
+
+        print(request.GET)
+
+        gene_identifiers = request.GET.getlist('gene_identifiers[]')
+        print(gene_identifiers)
+        method = request.GET['method']
+        sequence_type = request.GET['sequence_type']
+
+        print(gene_identifiers, method, sequence_type)
+
+        genes = Gene.objects.filter(identifier__in=gene_identifiers)
+        if not len(set(gene_identifiers)) == len(genes):
+            return err(F"{len(set(gene_identifiers))} were submitted but only {len(genes)} genes were found.")
+
+        if sequence_type == 'dna':
+            FASTAS = [g.fasta_nucleotide() for g in genes]
+        elif sequence_type == 'protein':
+            try:
+                FASTAS = [g.fasta_protein() for g in genes]
+            except KeyError as e:
+                return err(str(e))
+        else:
+            return err(F"'sequence_type' must be either 'dna' or 'protein', got {sequence_type}.")
+
+        if method == 'clustalo':
+            METHOD = ClustalOmega()
+        elif method == 'mafft':
+            METHOD = MAFFT()
+        elif method == 'muscle':
+            METHOD = Muscle()
+        else:
+            return err(F"'method' must be either 'clustalo', 'mafft' or 'muscle', got {method}.")
+
+        version = METHOD.version()
+
+        print(version)
+        print(FASTAS)
+        alignment = METHOD.align(fastas=FASTAS, seq_type=sequence_type)
+
+        return JsonResponse(dict(fastas=FASTAS, method=method, version=version, alignment=alignment))
+
+    @staticmethod
+    def dna_feature_viewer_multi(request):
+        """
+        Get dna_feature_viewer bokeh around gene_identifier.
+
+        Query: gene_identifiers = ["strain3_000345", "strain2_000445"], span=10000
+
+        Returns bokeh script and div
+        """
+
+        if not request.GET:
+            return err('did not receive valid JSON')
+
+        if not ('gene_identifiers[]' in request.GET):
+            return err(F"missing parameters. required: 'gene_identifiers[]'. Got: {request.GET.keys()}")
+
+        if not ('span' in request.GET):
+            return err(F"missing parameters. required: 'span'. Got: {request.GET.keys()}")
+
+        span = int(request.GET['span'])
 
         gene_identifiers = request.GET.getlist('gene_identifiers[]')
 
@@ -340,7 +428,7 @@ class Api:
 
         graphic_records = GraphicRecordLocus.get_multiple(
             loci_of_interest,
-            span=10000
+            span=span
         )
 
         locus_tags = set()
@@ -355,12 +443,14 @@ class Api:
                 return o.name
 
         locus_tag_to_ortholog = {gene.identifier: get_ortholog(gene) for gene in genes}
-        orthogroups = locus_tag_to_ortholog.values()
-        orthogroups_to_color = {o: c for o, c in zip(orthogroups, itertools.cycle(UNIQUE_COLORS_HEX))}
+        # only color orthologs that occur more than once
+        orthologs = [ortholog for ortholog, counts in Counter(locus_tag_to_ortholog.values()).items() if counts > 1]
+        # assign random colors to orthologs
+        orthologs_to_color = {o: c for o, c in zip(orthologs, itertools.cycle(UNIQUE_COLORS_HEX))}
 
-        locus_tag_to_color = {identifier: orthogroups_to_color[ortholog]
+        locus_tag_to_color = {identifier: orthologs_to_color[ortholog]
                               for identifier, ortholog in locus_tag_to_ortholog.items()
-                              if ortholog is not None}
+                              if ortholog in orthologs_to_color and ortholog is not None}
 
         # color selected genes in blue:
         for gbk, id, id_ in loci_of_interest:

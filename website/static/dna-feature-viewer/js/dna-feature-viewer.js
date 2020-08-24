@@ -1,25 +1,25 @@
-"use strict";
+"use strict"
 
 /**
  * Load dna-feature-viewer svg for specific gene.
  */
-function load_dna_feature_viewer_single(gene_identifier, target_div) {
-    console.log('gene_identifier  :', gene_identifier);
+function load_dna_feature_viewer_single(gene_identifier, target_div, span=30000) {
+    console.log('gene_identifier  :', gene_identifier, span)
 
-    $.getJSON('/api/dna-feature-viewer-single/', {'gene_identifier': gene_identifier}, function (data) {
+    $.getJSON('/api/dna-feature-viewer-single/', {'gene_identifier': gene_identifier, 'span': span}, function (data) {
 
-        target_div.append(data['plot_div']);
+        target_div.append(data['plot_div'])
         eval(data['script'])
-    });
+    })
 }
 
 /**
  * Load dna-feature-viewer svg for multiple genes.
  */
-function load_dna_feature_viewer_multi(gene_identifiers, target_div) {
-    console.log('gene_identifiers  :', gene_identifiers);
+function load_dna_feature_viewer_multi(gene_identifiers, target_div, span=10000) {
+    console.log('gene_identifiers  :', gene_identifiers, span)
 
-    $.getJSON('/api/dna-feature-viewer-multi/', {'gene_identifiers': gene_identifiers}, function (data) {
+    $.getJSON('/api/dna-feature-viewer-multi/', {'gene_identifiers': gene_identifiers, 'span': span}, function (data) {
         target_div.append(data['plot_div'])
         eval(data['script'])
     }).done(function () {
@@ -39,9 +39,9 @@ function load_dna_feature_viewer_multi(gene_identifiers, target_div) {
         $('.ogb-tag.taxid').click(function (event) {
             showTaxidClickMenu(event)
         })
-    });
+    })
 }
 
 function geneLabelClicked(label) {
-    showGeneClickMenu([50, 50], label);
+    showGeneClickMenu([50, 50], label)
 }

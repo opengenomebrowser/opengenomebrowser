@@ -150,7 +150,6 @@ let autoDiscoverSiblings = function (event, self_string, siblings, type) {
         })
     } else if (typeof (siblings) === 'string') {
         let target = siblings
-        console.log('target', target)
         siblings = []
         $(target).find('.' + type).each(function () {
             siblings.push($(this).text())
@@ -216,7 +215,7 @@ Open strain info</a>
 
 
 let showGenomeClickMenu = function (event, genome = 'auto', species = 'auto', siblings = 'auto') {
-    console.log('showGenomeClickMenu', 'event:', event, 'genome:', genome, 'species', species, 'siblings:', siblings)
+    console.log('showGenomeClickMenu', 'event:', event, 'genome:', genome, 'species:', species, 'siblings:', siblings)
     // auto-discover species
     species = autoDiscoverSpecies(event, species)
 

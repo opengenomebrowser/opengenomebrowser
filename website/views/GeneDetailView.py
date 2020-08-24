@@ -17,10 +17,10 @@ class GeneDetailView(DetailView):
         context['title'] = g.identifier
 
         # Convert sequences to HTML for colorization. See also stylesheet 'sequence-viewer.css'
-        context['fasta_nucleotide'] = ''.join([F'<b class="{x}">{x}</b>' for x in g.fasta_nucleotide()])
+        context['fasta_nucleotide'] = ''.join([F'<b class="{x}">{x}</b>' for x in g.nucleotide_sequence()])
 
-        if g.fasta_protein():
-            context['fasta_protein'] = ''.join([F'<b class="{x}">{x}</b>' for x in g.fasta_protein()])
+        if g.protein_sequence():
+            context['fasta_protein'] = ''.join([F'<b class="{x}">{x}</b>' for x in g.protein_sequence()])
         else:
             context['fasta_protein'] = '-- no protein sequence --'
 

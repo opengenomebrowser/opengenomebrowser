@@ -29,9 +29,6 @@ class CompareGenes:
                 )
 
             overlap_genes_string = '+'.join(overlap_genes.values_list('identifier', flat=True))
-            print(F"/compare-genes/?genes={overlap_genes_string}")
-
-            print(len(overlap_genes))
             return redirect(F"/compare-genes/?genes={overlap_genes_string}")
 
         if 'genes' in request.GET:
@@ -48,7 +45,7 @@ class CompareGenes:
         if n_genes <= capping:
             context['key_genes'] = gene_ids
         else:
-            context['key_genes'] = gene_ids[:30]
-            context['capping'] = capping
+            context['key_genes'] = gene_ids[:capping]
+            context['error_warning'] = F'{n_genes} genes were capped at {capping}'
 
         return render(request, 'website/compare_genes.html', context)

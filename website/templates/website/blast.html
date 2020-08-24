@@ -117,7 +117,7 @@
                 waitForElement('#blast-alignments-table .alignment-table-description', function () {
                     $('#blast-alignments-table .alignment-table-description').click(function () {
                         const description = this.alignment.description
-                        const gene_locus_tag = description.split('|').slice(-1)[0].split(' ', 1)[0]
+                        const gene_locus_tag = description.split(' ')[1].split('|').slice(-1)[0]
                         showGeneClickMenu(event, gene_locus_tag)
                     })
                 })

@@ -24,12 +24,12 @@
     </div>
 
     <div class="sidebar-subcontent form-check form-check-inline">
-        <label class="form-check-label" for="formControlRange"><a>Example Range input</a></label>
-        <input type="range" class="form-control-range" id="formControlRange" min="3000" max="300000" value="3000">
+        <label class="form-check-label" for="formControlRange"><a>Set range around gene locus</a></label>
+        <input type="range" class="form-control-range" id="formControlRange" min="3000" max="300000" value="10000">
 
-        <div><a>3000</a></div>
+        <span>update range to <b id="range-span">10000</b> bp</span>
+        <button type="button" class="btn btn-primary" onclick="load_dfvm()">Reload Gene Locus</button>
     </div>
-
 
 {% endblock %}
 
@@ -180,10 +180,25 @@
     <script>
         let draw;
 
+        const gene = "{{ gene }}"
 
         $(document).ready(function () {
-            load_dna_feature_viewer_single('{{ gene }}', $('#gene-locus'))
-        });
+            load_dfvm()
+        })
+
+        let load_dfvm = function () {
+            $('#gene-locus').empty()
+            load_dna_feature_viewer_single(
+                gene_identifier = gene,
+                target_div = $('#gene-locus'),
+                span = parseInt($('#range-span').text())
+            )
+        }
+
+        $('#formControlRange').on('change', function (e) {
+            const span = $('#formControlRange').val()
+            $('#range-span').text(span)
+        })
 
 
     </script>

@@ -1,6 +1,6 @@
 import os
 from subprocess import run, PIPE
-from OpenGenomeBrowser.settings import GENOMIC_DATABASE
+from OpenGenomeBrowser import settings
 import shutil
 
 
@@ -35,16 +35,15 @@ class Orthofinder:
         identifiers = set(identifiers)
 
         # Note: only one instance of OrthoFinder can run at the same time!
-        precomputed_path = F'{GENOMIC_DATABASE}/OrthoFinder'
-        assert os.path.isdir(GENOMIC_DATABASE)
-        precomputed_folder = open(F'{precomputed_path}/orthofinder_folder.txt').read().strip()
-        precomputed_folder = F'{precomputed_path}/fastas/OrthoFinder/{precomputed_folder}/WorkingDirectory'
+        orthofinder_fastas = F'{settings.ORTHOFINDER_BASE}/fastas'
+        assert os.path.isdir(orthofinder_fastas)
+        precomputed_folder = F'{settings.ORTHOFINDER_LATEST_RUN}/WorkingDirectory'
         assert os.path.isdir(precomputed_folder)
         species_ids_path = F'{precomputed_folder}/SpeciesIDs.txt'
         assert os.path.isfile(species_ids_path)
 
         # backup SpeciesIDs.txt
-        species_ids_backup = F'{precomputed_path}/SpeciesIDs.txt.backup'
+        species_ids_backup = F'{orthofinder_fastas}/SpeciesIDs.txt.backup'
         if not os.path.isfile(species_ids_backup):
             print('Running Orthofinder for the first time.')
             for line in open(species_ids_path).read().strip().split('\n'):
@@ -65,7 +64,7 @@ class Orthofinder:
 
         # if old_identifiers == identifiers, simply return the already-computed newick tree.
         if old_identifiers == identifiers:
-            return open(F'{precomputed_path}/fastas/OrthoFinder/{precomputed_folder}/Species_Tree/SpeciesTree_rooted.txt').read().strip()
+            return open(F'{orthofinder_fastas}/fastas/OrthoFinder/{precomputed_folder}/Species_Tree/SpeciesTree_rooted.txt').read().strip()
 
         # raise OrthofinderError if an identifier is not amongst the precomputed fastas
         not_precomputed = identifiers.difference(old_identifiers)

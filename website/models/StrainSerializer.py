@@ -21,6 +21,9 @@ class StrainSerializer():
         return strain_dict
 
     def import_strain(self, raw_strain_dict: dict, update_css=True) -> Strain:
+        if 'tags' in raw_strain_dict:
+            raw_strain_dict['tags'] = set(raw_strain_dict['tags'])
+
         strain_dict = self._convert_natural_keys_to_pks(raw_strain_dict)
         strain_dict.pop('representative')
 

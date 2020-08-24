@@ -12,12 +12,12 @@ from lib.ncbiblast.ncbi_blast.blast_wrapper import Blast
 blast = Blast(system_blast=False, outfmt=5)
 
 choice_to_settings = dict(
-    blastn_ffn=dict(query_type='nucl', db_type='nucl', file_type='cds_ffn'),
-    blastn_fna=dict(query_type='nucl', db_type='nucl', file_type='assembly_fasta'),
-    blastp=dict(query_type='prot', db_type='prot', file_type='cds_faa'),
-    blastx=dict(query_type='nucl', db_type='prot', file_type='cds_faa'),
-    tblastn_ffn=dict(query_type='prot', db_type='nucl', file_type='cds_ffn'),
-    tblastn_fna=dict(query_type='prot', db_type='nucl', file_type='assembly_fasta')
+    blastn_ffn=dict(query_type='nucl', db_type='nucl', file_type='blast_db_ffn'),
+    blastn_fna=dict(query_type='nucl', db_type='nucl', file_type='blast_db_fna'),
+    blastp=dict(query_type='prot', db_type='prot', file_type='blast_db_faa'),
+    blastx=dict(query_type='nucl', db_type='prot', file_type='blast_db_faa'),
+    tblastn_ffn=dict(query_type='prot', db_type='nucl', file_type='blast_db_ffn'),
+    tblastn_fna=dict(query_type='prot', db_type='nucl', file_type='blast_db_fna')
 )
 
 
@@ -75,10 +75,11 @@ def blast_submit(request):
 
     file_type = choice_to_settings[blast_type]['file_type']
 
-    fasta_files = [os.path.join(settings.GENOMIC_DATABASE_BN, getattr(genome.genome, file_type)(relative=False))
-                   for genome in cd['genomes']]
+    fasta_files = [getattr(genome.genome.genomecontent, file_type)(relative=False) for genome in cd['genomes']]
 
     print(blast_type, blast_algorithm, query_type, db_type, fasta_files)
+
+    print(fasta_files)
 
     blast_output = blast.blast(fasta_string=query, db=fasta_files, mode=blast_algorithm)
 

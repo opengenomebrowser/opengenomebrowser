@@ -40,6 +40,12 @@
         <div class="container">
             <hr class="featurette-divider">
 
+            <h3>Description</h3>
+
+            <p>{{ annotation.description }}</p>
+
+            <hr class="featurette-divider">
+
             <h3>Genomes that cover the annotation</h3>
 
             <table class="table table-bordered table-sm white-links">
@@ -49,7 +55,7 @@
                     <th style="width: min-content">Genes</th>
                 </tr>
                 </thead>
-                <tbody>
+                <tbody class="genome-and-anno-container">
                 {% for genome, genes in genome_to_gene.items %}
                     <tr>
                         <td>{{ genome.html|safe }}</td>
@@ -76,7 +82,7 @@
                     return $(this).attr('data-species');
                 }
             }).each(function () {
-                this.setAttribute('onclick', `showGenomeClickMenu(event)`)
+                this.setAttribute('onclick', "showGenomeClickMenu(event, 'auto', 'auto', '.genome-and-anno-container')")
             })
 
             $('.gene').tooltip({
@@ -84,7 +90,7 @@
                     return $(this).attr('data-species');
                 }
             }).each(function () {
-                this.setAttribute('onclick', `showGeneClickMenu(event)`)
+                this.setAttribute('onclick', "showGeneClickMenu(event, 'auto', '.genome-and-anno-container')")
             })
 
         });

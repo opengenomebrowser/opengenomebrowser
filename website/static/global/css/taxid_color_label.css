@@ -1,4 +1,5 @@
-[data-species-label] { stroke-width: 3px; paint-order: stroke; cursor: pointer; }[data-species-label="root"] {stroke: rgb(152,236,159); fill: black !important}
+[data-species-label] { stroke-width: 3px; paint-order: stroke; cursor: pointer; }
+[data-species-label="root"] {stroke: rgb(152,236,159); fill: black !important}
 [data-species-label="cellular organisms"] {stroke: rgb(255,236,210); fill: black !important}
 [data-species-label="Bacteria"] {stroke: rgb(211,255,241); fill: black !important}
 [data-species-label="Terrabacteria group"] {stroke: rgb(251,235,255); fill: black !important}

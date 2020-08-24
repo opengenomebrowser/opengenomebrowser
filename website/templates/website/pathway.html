@@ -115,7 +115,7 @@
                 })
 
                 {% if strains %}
-                    $('#pathway-map-container').load(`/download/{{ PATHWAY_MAPS_RELATIVE }}/svg/{{ map.filename }}`, function () {
+                    $('#pathway-map-container').load(`/download/{{ PATHWAY_MAPS_RELATIVE }}/{{ map.filename }}`, function () {
                         $('.shape').tooltip()
 
                         $('.shape').click(function (event) {

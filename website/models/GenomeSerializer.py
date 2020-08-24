@@ -25,6 +25,8 @@ class GenomeSerializer:
 
     def import_genome(self, raw_genomes_dict: dict, parent_strain: Strain, is_representative: bool,
                       update_css=True) -> Genome:
+        if 'tags' in raw_genomes_dict:
+            raw_genomes_dict['tags'] = set(raw_genomes_dict['tags'])
 
         genome_dict = self._convert_natural_keys_to_pks(raw_genomes_dict, parent_strain)
 
@@ -56,13 +58,14 @@ class GenomeSerializer:
 
             new_data = '[{"model": "' + Genome._meta.label_lower + '", "fields": ' + json.dumps(genome_dict, default=set_to_list) + '}]'
 
-        c = 0
+        # create genome object using deserializer
         for genome in serializers.deserialize("json", new_data):
-            assert c == 0, "there can only be one object"
-            c += 1
+            pass
 
         genome.save()
         genome = Genome.objects.get(identifier=genome_dict['identifier'])
+
+        # update assembly stats
         genome.update_assembly_info()
 
         # update genomecontent

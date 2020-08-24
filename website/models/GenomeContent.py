@@ -17,7 +17,7 @@ class GenomeContent(models.Model):
 
     n_genes = models.IntegerField('Number of genes', default=0)
 
-    gbk_file_size = models.IntegerField(default=0)
+    _gbk_file_size = models.IntegerField(default=0)
 
     custom_files = JSONField(default=list)  # list [{"date": "2016-02-29", "file": "FAM19038.ko", "type": "KEGG"}]
 
@@ -36,6 +36,18 @@ class GenomeContent(models.Model):
     @property
     def taxscientificname(self):
         return self.taxid.taxscientificname
+
+    def blast_dbs_path(self, relative=True):
+        return F'{self.genome.base_path(relative=relative)}/.blast_dbs'
+
+    def blast_db_fna(self, relative=True):
+        return F'{self.blast_dbs_path(relative=relative)}/fna/{self.identifier}.fna'
+
+    def blast_db_faa(self, relative=True):
+        return F'{self.blast_dbs_path(relative=relative)}/faa/{self.identifier}.faa'
+
+    def blast_db_ffn(self, relative=True):
+        return F'{self.blast_dbs_path(relative=relative)}/ffn/{self.identifier}.ffn'
 
     def __str__(self):
         return self.identifier
@@ -61,8 +73,9 @@ class GenomeContent(models.Model):
 
     def update(self):
         # was the gbk file changed? if so -> reload everything
-        if self.gbk_file_size != os.stat(self.genome.cds_gbk(relative=False)).st_size:
+        if self._gbk_file_size != os.stat(self.genome.cds_gbk(relative=False)).st_size:
             self.load_genome()
+            self.create_blast_dbs(reload=True)
             self.save()
             return
 
@@ -86,7 +99,6 @@ class GenomeContent(models.Model):
     def load_genome(self):
         from .Gene import Gene
         from Bio import SeqIO, SeqRecord
-        import re
         print("       (re)loading gbk")
         self.wipe_data()
 
@@ -154,12 +166,32 @@ class GenomeContent(models.Model):
 
         # Save file size of imported gbk.
         self.n_genes = len(gene_id_set)
-        self.gbk_file_size = os.stat(self.genome.cds_gbk(relative=False)).st_size
+        self._gbk_file_size = os.stat(self.genome.cds_gbk(relative=False)).st_size
 
         # load custom files:
         for file_dict in self.genome.custom_annotations:
             if file_dict not in self.custom_files:
                 self.load_custom_file(file_dict)
+
+    def create_blast_dbs(self, reload=False):
+        # do nothing if the .blast_dbs-folder exists
+        if os.path.isdir(self.blast_dbs_path(relative=False)) and not reload:
+            return
+
+        blastable_files = [
+            (self.genome.assembly_fasta(relative=False), self.blast_db_fna(relative=False), 'nucl'),
+            (self.genome.cds_faa(relative=False), self.blast_db_faa(relative=False), 'prot'),
+            (self.genome.cds_ffn(relative=False), self.blast_db_ffn(relative=False), 'nucl')
+        ]
+
+        from lib.ncbiblast.ncbi_blast.blast_wrapper import Blast
+        blast = Blast()
+
+        for src, dst, dbtype in blastable_files:
+            if not os.path.isfile(dst):
+                os.makedirs(os.path.dirname(dst))
+                os.link(src=src, dst=dst)
+            blast.mkblastdb(file=dst, dbtype=dbtype, overwrite=True)
 
     def load_custom_file(self, file_dict):
         print("       add new file:", file_dict)
@@ -224,8 +256,6 @@ class GenomeContent(models.Model):
             objects = [Gene.annotations.through(gene_id=gene, annotation_id=anno) for gene, anno in
                        annotations_relationships]
             Gene.annotations.through.objects.bulk_create(objects, ignore_conflicts=True)
-
-
 
     def load_regular_file(self, file_dict):
         from .Gene import Gene

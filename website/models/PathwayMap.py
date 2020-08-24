@@ -30,10 +30,8 @@ class PathwayMap(models.Model):
     @staticmethod
     def _get_type_dict():
         print('getting type dict')
-        file = F'{settings.PATHWAY_MAPS}/type_dictionary.json'
-        if os.path.isfile(file):
-            print(file)
-            return json.load(open(file))
+        if settings.PATHWAY_MAPS_TYPE_DICT:
+            return json.load(open(settings.PATHWAY_MAPS_TYPE_DICT))
         else:
             print('default type dict')
             type_dict = {a.label: a.value for a in Annotation.AnnotationTypes}

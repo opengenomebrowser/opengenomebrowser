@@ -7,6 +7,9 @@
     <link rel="stylesheet" type="text/css" href="{% static 'global/css/taxid_color.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'dna-feature-viewer/css/dna-feature-viewer.js.css' %}">
 
+    <script src="{% static 'align/js/align.js' %}"></script>
+    <script src="{% static 'align/js/msa.min.js' %}"></script>
+
     <script src="{% static 'dna-feature-viewer/js/dna-feature-viewer.js' %}"></script>
     <script src="{% static 'global/js/bokeh-2.1.1.min.js' %}"></script>
     <script src="{% static 'global/js/bokeh-tables-2.1.1.min.js' %}"></script>
@@ -28,18 +31,39 @@
 {% block sidebar %}
 
     <div class="sidebar-subcontent form-check form-check-inline">
-        <label class="form-check-label" for="colorize-sequence-checkbox"><a>Colorize sequences?</a></label>
-        <input class="form-check-input" type="checkbox" id="colorize-sequence-checkbox"
-               onclick="toggle_colorize_sequence()">
+        <label class="form-check-label" for="form-control-range"><a>Set range around gene locus</a></label>
+        <input type="range" class="form-control-range" id="form-control-range" min="3000" max="300000" value="10000">
+
+        <span>update range to <b id="range-span">10000</b> bp</span>
     </div>
 
     <div class="sidebar-subcontent form-check form-check-inline">
-        <label class="form-check-label" for="formControlRange"><a>Example Range input</a></label>
-        <input type="range" class="form-control-range" id="formControlRange" min="3000" max="300000" value="3000">
-
-        <div><a>3000</a></div>
+        <button type="button" class="btn btn-primary" onclick="load_dfvm()">Reload Gene Locus</button>
     </div>
 
+    <hr>
+
+
+    <div class="sidebar-subcontent form-check form-check-inline">
+        <label for="msa-method"><a>Alignment method</a></label>
+        <select class="form-control" id="msa-method">
+            <option value="clustalo">Clustal Omega</option>
+            <option value="mafft">MAFFT</option>
+            <option value="muscle">Muscle</option>
+        </select>
+    </div>
+
+    <div class="sidebar-subcontent form-check form-check-inline">
+        <label for="msa-seqence-type"><a>Alignment sequence type</a></label>
+        <select class="form-control" id="msa-seqence-type">
+            <option value="protein">Protein</option>
+            <option value="dna">DNA</option>
+        </select>
+    </div>
+
+    <div class="sidebar-subcontent form-check form-check-inline">
+        <button type="button" class="btn btn-primary" onclick="load_aln()">Reload multiple sequence alignment</button>
+    </div>
 
 {% endblock %}
 
@@ -47,23 +71,16 @@
 
     <section>
 
-        {% if capping %}
-            <div class="container">
-                <div class="alert alert-danger" role="alert">
-                    Genes were capped at {{ capping }}.
-                </div>
-                <hr class="featurette-divider">
-            </div>
-        {% endif %}
-
         <!-- Gene Locus -->
         <div class="container">
 
             <h3>Alignments</h3>
 
-            <div id="alignmentss">
-                <p>not implemented yet</p>
+            <div id="alignments">
+                <button type="button" class="btn btn-primary" onclick="load_aln()">Perform multiple sequence alignment</button>
             </div>
+
+            <span id="loading"></span>
 
         </div>
 
@@ -89,11 +106,36 @@
     <script>
         let draw;
 
+        const genes = {% if key_genes %} {{key_genes|safe}} {% else %} [] {% endif %}
+
 
         $(document).ready(function () {
-            load_dna_feature_viewer_multi([{% if key_genes %} '{{ key_genes|join:"', '" }}' {% else %}{% endif %}], $('#gene-loci'))
-        });
+            load_dfvm()
+        })
 
+        let load_dfvm = function () {
+            $('#gene-loci').empty()
+            load_dna_feature_viewer_multi(
+                genes, $('#gene-loci'),
+                span = parseInt($('#range-span').text())
+            )
+        }
+
+        $('#form-control-range').on('change', function (e) {
+            const span = $('#form-control-range').val()
+            $('#range-span').text(span)
+        })
+
+        let load_aln = function () {
+            $('#alignments').empty()
+
+            load_alignment(
+                genes,
+                $('#alignments'),
+                $('#msa-method').val(),
+                $('#msa-seqence-type').val()
+            )
+        }
 
     </script>
 {% endblock %}

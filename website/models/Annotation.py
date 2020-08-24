@@ -2,12 +2,19 @@ import re
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from binary_file_search.BinaryFileSearch import BinaryFileSearch
-from lib.orthofinder_tools.orthogroup_to_gene_name import OrthogroupToGeneName
 from lib.gene_ontology.gene_ontology import GeneOntology
 from enum import Enum
 from OpenGenomeBrowser import settings
 
 gene_ontology = GeneOntology()
+
+ORTHOGROUP_BESTNAMES_TSV = F'{settings.GENOMIC_DATABASE}/OrthoFinder/Orthogroup_BestNames.tsv'
+FILENAME_SETTINGS = {
+    'ko.tsv': ('ko:', 'lib/custom_kegg/data/rest_data/ko.tsv'),
+    'rn.tsv': ('rn:', 'lib/custom_kegg/data/rest_data/rn.tsv'),
+    'compound.tsv': ('cpd:', 'lib/custom_kegg/data/rest_data/rn.tsv'),
+    'Orthogroup_BestNames.tsv': ('N0.', ORTHOGROUP_BESTNAMES_TSV)
+}
 
 
 class AnnotationRegex(Enum):
@@ -21,7 +28,7 @@ class AnnotationRegex(Enum):
     KEGGGENE = ('KG', re.compile('^K[0-9]{5}$'), re.compile('^[Kk][0-9]{1,5}$'))
     KEGGREACTION = ('KR', re.compile('^R[0-9]{5}$'), re.compile('^[Rr][0-9]{1,5}$'))
     GENEONTOLOGY = ('GO', re.compile('^GO:[0-9]{7}$'), re.compile('^[Gg][Oo]:[0-9]{1,7}$'))
-    ORTHOLOG = ('OL', re.compile('^OG[0-9]{7}$'), re.compile('^[Oo][Gg][0-9]{1,7}$'))
+    ORTHOLOG = ('OL', re.compile('^HOG[0-9]{7}$'), re.compile('^[Oo][Gg][0-9]{1,7}$'))
     GENECODE = ('GC', re.compile('^[0-9a-zA-Z\_\/\-\ \']{3,11}$'), re.compile('^[0-9a-zA-Z\_\/\-\ \']{2,11}$'))
     PRODUCT = ('GP', re.compile('^.*$'), re.compile('^.*$'))
     # Note: COMPOUND is not a type that is allowed in the database!
@@ -118,16 +125,10 @@ class Annotation(models.Model):
             except KeyError:
                 return '-'
 
-        filename_settings = {
-            'ko.tsv': ('ko:', 'lib/custom_kegg/data/rest_data/ko.tsv'),
-            'rn.tsv': ('rn:', 'lib/custom_kegg/data/rest_data/rn.tsv'),
-            'compound.tsv': ('cpd:', 'lib/custom_kegg/data/rest_data/rn.tsv'),
-            'Orthogroup_BestNames.tsv': ('', F'{settings.GENOMIC_DATABASE}/OrthoFinder/Orthogroup_BestNames.tsv')
-        }
-        assert filename in filename_settings.keys(), F'Supported filenames: {filename_settings.keys()}. You provided: {filename}'
+        assert filename in FILENAME_SETTINGS.keys(), F'Supported filenames: {FILENAME_SETTINGS.keys()}. You provided: {filename}'
 
-        prefix = filename_settings[filename][0]
-        file_path = filename_settings[filename][1]
+        prefix = FILENAME_SETTINGS[filename][0]
+        file_path = FILENAME_SETTINGS[filename][1]
 
         try:
             with BinaryFileSearch(file=file_path, sep="\t", string_mode=True) as bfs:
@@ -151,76 +152,84 @@ class Annotation(models.Model):
     @staticmethod
     def reload_orthofinder():
         import os
+        from pathlib import Path
         from . import GenomeContent, Gene
+        from lib.orthofinder_tools.orthogroup_to_gene_name import OrthogroupToGeneName
 
-        orthofinder_base = F'{settings.GENOMIC_DATABASE}/OrthoFinder/'
+        assert hasattr(settings, 'ORTHOFINDER_BASE')
+        assert os.path.isdir(settings.ORTHOFINDER_BASE), settings.ORTHOFINDER_BASE
 
-        with open(F'{orthofinder_base}/orthofinder_folder.txt') as f:
-            orthofinder_folder = f.read().strip()
-
-        fastas_path = orthofinder_base + 'fastas/'
-        orthogroups_dir = fastas_path + F'OrthoFinder/{orthofinder_folder}/Orthogroups/'
-        orthogroups_txt = orthogroups_dir + 'Orthogroups.txt'
-        orthogroups_tsv = orthogroups_dir + 'Orthogroups.tsv'
-        orthogroups_best_names = orthogroups_dir + 'Orthogroup_BestNames.tsv'
-        orthogroups_best_names_symlink = orthofinder_base + 'Orthogroup_BestNames.tsv'
+        PATH_TO_ORTHOFINDER_FASTAS = F'{settings.ORTHOFINDER_BASE}/fastas'
+        N0_TSV = F'{settings.ORTHOFINDER_LATEST_RUN}/Phylogenetic_Hierarchical_Orthogroups/N0.tsv'
 
         print('Deleting all orthogroup-annotations.')
         Annotation.objects.filter(anno_type='OL').delete()
-        if os.path.isfile(orthogroups_best_names_symlink):
-            os.unlink(orthogroups_best_names_symlink)
-
-        if not os.path.isfile(orthogroups_txt):
-            print("No Orthogroups.txt specified. (This is not obligatory. To add one, save it here: {})".format(
-                orthogroups_txt))
-            return
 
         print('Importing OrthoFinder/Orthogroups. Step 1/5: Read Orthogroups.txt.', end=' ', flush=True)
 
-        with open(orthogroups_txt, 'r') as f:
-            line = f.readline().strip()
+        all_genomecontents = set(GenomeContent.objects.all().values_list('identifier', flat=True))
+        all_genes = set(Gene.objects.all().values_list('identifier', flat=True))
+        orthogroups = []
+        genomecontent_to_ortholog_links = []
+        gene_to_ortholog_links = []
 
-            all_genomecontents = set(GenomeContent.objects.all().values_list('identifier', flat=True))
-            all_genes = set(Gene.objects.all().values_list('identifier', flat=True))
-            orthogroups = []
-            genomecontent_to_ortholog_links = []
-            gene_to_ortholog_links = []
-            while line:
-                orthogroup, gene_identifiers = line.split(': ', maxsplit=1)
-                gene_identifiers = [s.rsplit('|', maxsplit=1)[-1] for s in gene_identifiers.split(" ")]
-                strains = [gene_id.split("_", maxsplit=1)[0] for gene_id in gene_identifiers]
+        with open(N0_TSV, 'r') as f:
+            header = f.readline().rstrip().split('\t')
+            assert header[:3] == ['HOG', 'OG', 'Gene Tree Parent Clade']
+            genome_identifiers = header[3:]
 
-                if len(strains) == 1:
-                    break
+            for line in f:
+                line = line[:-1].split('\t')
+                hog, og, gtpc, gene_identifier_list = line[0], line[1], line[2], line[3:]
 
-                orthogroups.append(orthogroup)
+                assert hog.startswith('N0.')
+                hog = hog[3:]
 
-                for gene_id in gene_identifiers:
-                    if gene_id in all_genes:
-                        gene_to_ortholog_links.append(
-                            Gene.annotations.through(gene_id=gene_id, annotation_id=orthogroup))
+                gene_identifier_list = [gids.split(',') if gids != '' else None for gids in gene_identifier_list]
+                assert len(genome_identifiers) == len(gene_identifier_list)
 
-                for strain in set(strains):
-                    if strain in all_genomecontents:
-                        genomecontent_to_ortholog_links.append(
-                            GenomeContent.annotations.through(genomecontent_id=strain, annotation_id=orthogroup))
+                strains = []
+                gene_identifiers = []
+                for genome_identifier, gene_list in zip(genome_identifiers, gene_identifier_list):
+                    if gene_list:
+                        strains.append(genome_identifier)
+                        gene_identifiers.extend(gene_list)
 
-                line = f.readline().strip()
+                gene_identifiers = [gid.rsplit('|', maxsplit=1)[1] for gid in gene_identifiers]
+
+                if len(gene_identifiers) > 0:
+                    orthogroups.append(hog)
+
+                    gene_to_ortholog_links.extend(
+                        [
+                            Gene.annotations.through(gene_id=gene_id, annotation_id=hog)
+                            for gene_id in gene_identifiers
+                            if gene_id in all_genes
+                        ]
+                    )
+
+                    genomecontent_to_ortholog_links.extend(
+                        [
+                            GenomeContent.annotations.through(genomecontent_id=strain, annotation_id=hog)
+                            for strain in set(strains)
+                            if strain in all_genomecontents
+                        ]
+                    )
+                else:
+                    print(hog)
 
         # Create Annotation-Objects
-        print('Step 2/5: Add orthogroup-annotations to database.', end=' ', flush=True)
+        print(F'Step 2/5: Add {len(orthogroups)} orthogroup-annotations to database.', end=' ', flush=True)
         Annotation.objects.bulk_create([Annotation(name=group, anno_type='OL') for group in orthogroups])
 
         # Create many-to-many relationships
-        print('Step 3/5: Link orthogroup-annotations to genomes.', end=' ', flush=True)
+        print(F'Step 3/5: Link {len(genomecontent_to_ortholog_links)} orthogroup-annotations to genomes.', end=' ', flush=True)
         GenomeContent.annotations.through.objects.bulk_create(genomecontent_to_ortholog_links)
-        print('Step 4/5: Link orthogroup-annotations to genes.', end=' ', flush=True)
+        print(F'Step 4/5: Link {len(gene_to_ortholog_links)} orthogroup-annotations to genes.', end=' ', flush=True)
         Gene.annotations.through.objects.bulk_create(gene_to_ortholog_links)
 
         print('Step 5/5: Create Orthogroup_BestNames.tsv.', end=' ', flush=True)
-        OrthogroupToGeneName.run(orthogroups_tsv=orthogroups_tsv, fasta_dir=fastas_path, write=True)
-        if os.path.islink(orthogroups_best_names_symlink):
-            os.remove(orthogroups_best_names_symlink)
-        os.symlink(os.path.abspath(orthogroups_best_names), orthogroups_best_names_symlink)
+        OrthogroupToGeneName(n0_tsv=N0_TSV, index_column='HOG') \
+            .run(fasta_dir=PATH_TO_ORTHOFINDER_FASTAS, file_endings=settings.ORTHOFINDER_FASTA_ENDINGS, out=ORTHOGROUP_BESTNAMES_TSV)
 
         print('Success.')

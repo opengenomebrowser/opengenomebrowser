@@ -34,13 +34,22 @@ class Gene(models.Model):
         return F'<div class="gene ogb-tag" data-species="{tsi}" data-toggle="tooltip">{self.identifier}</div>'
 
     def gc_content(self) -> float:
-        return GC(self.fasta_nucleotide())
+        return GC(self.nucleotide_sequence())
 
     def fasta_nucleotide(self) -> str:
+        return F'>{self.identifier}\n{self.nucleotide_sequence()}'
+
+    def nucleotide_sequence(self) -> str:
         self.__load_gbk_seqrecord()
         return str(self._gbk_record.seq).upper()
 
     def fasta_protein(self):
+        sequence = self.protein_sequence()
+        if sequence is None:
+            raise KeyError(F'The gene {self.identifier} is not protein-coding.')
+        return F'>{self.identifier}\n{self.protein_sequence()}'
+
+    def protein_sequence(self):
         self.__load_gbk_seqrecord()
         if 'translation' in self._all_qualifiers:
             return self._all_qualifiers['translation'][0].upper()

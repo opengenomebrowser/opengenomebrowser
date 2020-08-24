@@ -40,7 +40,7 @@ class Importer:
         strain_folders_len = len(list(os.scandir(strains_path)))
         strain_folders = os.scandir(strains_path)
 
-        print("Number of strains to import: {}".format(strain_folders_len))
+        print(F"Number of strains to import: {strain_folders_len}")
 
         for strain_folder in progressbar(strain_folders, max_value=strain_folders_len, redirect_stdout=True):
             current_strain = strain_folder.name
@@ -50,12 +50,11 @@ class Importer:
                 strain_dict = json.loads(file.read())
 
             assert current_strain == strain_dict["name"], \
-                "'name' in strain.json doesn't match folder name: {}".format(strain_folder.path)
+                F"'name' in strain.json doesn't match folder name: {strain_folder.path}"
 
             representative_identifier = strain_dict["representative"]
             assert os.path.isdir(strain_folder.path + "/genomes/" + representative_identifier), \
-                "Error: Representative doesn't exist! Strain: {}, Representative: {}" \
-                    .format(strain_folder.name, representative_identifier)
+                F"Error: Representative doesn't exist! Strain: {strain_folder.name}, Representative: {representative_identifier}"
 
             s = strain_serializer.import_strain(strain_dict, update_css=False)
 
@@ -67,16 +66,16 @@ class Importer:
                     genome_dict = json.loads(file.read())
 
                 assert current_genome.startswith(strain_folder.name), \
-                    "genome name '{}' doesn't start with corresponding strain name '{}'.".format(current_genome,
-                                                                                                 current_strain)
+                    F"genome name '{current_genome}' doesn't start with corresponding strain name '{current_strain}'."
                 assert current_genome == genome_dict["identifier"], \
-                    "'name' in genome.json doesn't match folder name: {}".format(genome_folder.path)
+                    F"'name' in genome.json doesn't match folder name: {genome_folder.path}"
 
                 is_representative = current_genome == representative_identifier
 
                 genome_serializer.import_genome(genome_dict, s, is_representative, update_css=False)
 
-        if reload_orthologs: Annotation.reload_orthofinder()
+        if reload_orthologs:
+            Annotation.reload_orthofinder()
 
         Tag.create_tag_color_css()
         TaxID.create_taxid_color_css()
@@ -96,52 +95,11 @@ class Importer:
             for genome_folder in os.scandir(strain_folder.path + "/genomes"):
                 all_genomes.append(genome_folder.name)
 
-                # OVERWRITE genome.JSON
-                # print(genome_folder.name)
-                # genome_json_path = genome_folder.path + "/genome.json"
-                # assert os.path.isfile(genome_json_path)
-                # genome_dict = genomeSerializer.export_genome(genome_folder.name)
-                # with open(genome_json_path, 'w') as file:
-                #     file.write(json.dumps(genome_dict, indent=4))
-
-                # with open(genome_folder.path + "/genome.json") as file:
-                #     genome_dict = json.loads(file.read())
-                # # print(genome_dict)
-                # for file in ['assembly_fasta_file', 'cds_tool_faa_file', 'cds_tool_gbk_file',
-                #              'cds_tool_gff_file', 'cds_tool_sqn_file', 'cds_tool_ffn_file']:
-                #     if file.startswith('ass'):
-                #         folder = '1_assembly'
-                #     else:
-                #         folder = '2_cds'
-                #     fn = genome_dict[file + 'name']
-                #     del genome_dict[file + 'name']
-                #     if fn is not None:
-                #         fn = F'{folder}/{fn}'
-                #     genome_dict[file] = fn
-                #
-                # assert 'custom_annotations' in genome_dict
-                # cus_ann = genome_dict['custom_annotations']
-                # for ann in cus_ann:
-                #     ann['file'] = '3_annotation/' + ann['file']
-                #     assert os.path.isfile(genome_folder.path+"/"+ann['file'])
-                #
-                # print(genome_dict['custom_annotations'])
-                # for key in genome_dict.keys():
-                #     assert 'filename' not in key
-
-                # exit(0)
-
-                # with open(genome_folder.path + "/genome.json", 'w') as file:
-                #     file.write(json.dumps(genome_dict, indent=4))
-
-        # exit(0)
-
         for genome in Genome.objects.all():
             if genome.identifier not in all_genomes:
                 if not auto_delete_missing:
                     Importer.print_warning(
-                        "Genome '{}' is missing from the database-folder. Remove it from the database?"
-                            .format(genome.identifier), color=Fore.MAGENTA)
+                        F"Genome '{genome.identifier}' is missing from the database-folder. Remove it from the database?", color=Fore.MAGENTA)
                     Importer.confirm_delete(color=Fore.MAGENTA)
                 genome.delete()
 
@@ -149,8 +107,7 @@ class Importer:
             if strain.name not in all_strains:
                 if not auto_delete_missing:
                     Importer.print_warning(
-                        "Strain '{}' is missing from the database-folder. Remove it from the database?"
-                            .format(strain.name), color=Fore.MAGENTA)
+                        F"Strain '{strain.name}' is missing from the database-folder. Remove it from the database?", color=Fore.MAGENTA)
                     Importer.confirm_delete(color=Fore.MAGENTA)
                 strain.delete()
 
@@ -197,28 +154,27 @@ class Importer:
     @staticmethod
     def check_invariants():
         print()
-        print("Checking class invariants...")
+        print("Performing sanity checks...")
         # TaxID and Tag check their own invariants upon saving.
         strains = Strain.objects.all()
         for strain in strains:
-            assert strain.invariant(), "Class invariant failed for strain '{}'!".format(strain.name)
+            assert strain.invariant(), F"Class invariant failed for strain '{strain.name}'!"
 
         genomes = Genome.objects.all()
         for genome in genomes:
-            assert genome.invariant(), "Class invariant failed for genome '{}'!".format(genome.identifier)
+            assert genome.invariant(), F"Class invariant failed for genome '{genome.identifier}'!"
 
         tags = Tag.objects.all()
         for tag in tags:
-            assert tag.invariant(), "Class invariant failed for tag '{}'!".format(tag.tag)
+            assert tag.invariant(), F"Class invariant failed for tag '{tag.tag}'!"
 
         taxids = TaxID.objects.all()
         for taxid in taxids:
-            assert taxid.invariant(), "Class invariant failed for TaxID '{} - {}'!".format(taxid.id,
-                                                                                           taxid.scientific_name)
+            assert taxid.invariant(), F"Class invariant failed for TaxID '{taxid.id} - {taxid.scientific_name}'!"
         assert Annotation.invariant()
 
-        print("Successfully imported {} strains and {} genomes, belonging to {} species.".format(
-            len(strains), len(genomes), len(Strain.objects.values('taxid').distinct())))
+        print(F"Successfully imported: {len(strains)} strains and {len(genomes)} genomes, " +
+              F"belonging to {len(Strain.objects.values('taxid').distinct())} species.")
 
     # def export_database(self):
     #     for strain in Strain.objects.all()
