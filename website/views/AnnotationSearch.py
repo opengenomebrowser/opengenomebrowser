@@ -1,8 +1,10 @@
 from django.shortcuts import render, HttpResponse
 import pandas as pd
 
-from website.models import GenomeContent, Gene
+from website.models import Genome, Gene, GenomeContent
 from website.models.Annotation import Annotation
+
+from .helpers.magic_string import MagicString
 
 
 def annotation_view(request):
@@ -26,10 +28,11 @@ def annotation_matrix(request):
         return HttpResponse('Request failed! Please POST genomes[] and annotations[].')
 
     identifiers = set(request.POST.getlist('genomes[]'))
-    genomes = GenomeContent.objects.filter(identifier__in=identifiers).order_by('identifier')
 
-    if len(identifiers) != len(genomes):
-        return HttpResponse('Request failed: genomes[] incorrect.')
+    try:
+        genomes = MagicString.get_genomes(identifiers)
+    except ValueError as e:
+        return HttpResponse('Request failed: genomes[] incorrect. ' + str(e))
 
     annotations = set(request.POST.getlist('annotations[]'))
     try:
@@ -54,12 +57,12 @@ def annotation_matrix(request):
 
 
 class MatrixMaker:
-    def __init__(self, genomes: [GenomeContent], annotations: [Annotation]):
+    def __init__(self, genomes: [Genome], annotations: [Annotation]):
         self.genomes = genomes
 
         self._genome_to_html = {}  # cannot be done using list comprehension
         for genome in genomes:
-            self._genome_to_html[genome] = genome.genome.html
+            self._genome_to_html[genome] = genome.html
 
         self.annotations = annotations
 
@@ -103,8 +106,8 @@ class MatrixMaker:
                     <tr><th scope="row">#genomes</th>{footer_genomes}</tr></tfoot>""", 1)
 
     @staticmethod
-    def get_genes(annotation: Annotation, genomes: [GenomeContent]) -> [Gene]:
-        return annotation.gene_set.filter(genomecontent__in=genomes).order_by('genomecontent__identifier').prefetch_related(
+    def get_genes(annotation: Annotation, genomes: [Genome]) -> [Gene]:
+        return annotation.gene_set.filter(genomecontent__genome__in=genomes).order_by('genomecontent__genome__identifier').prefetch_related(
             'genomecontent__genome__strain__taxid')
 
     def get_group_to_table(self) -> dict:
@@ -128,13 +131,13 @@ class MatrixMaker:
 
         return self.pandas_to_html(table, id=F'table_{grp_id}')
 
-    def __get_count_gene_tuple(self, genome: GenomeContent, anno: Annotation) -> (int, list):
-        genes = list(anno.gene_set.filter(genomecontent=genome).values_list('identifier', flat=True))
+    def __get_count_gene_tuple(self, genome: Genome, anno: Annotation) -> (int, list):
+        genes = list(anno.gene_set.filter(genomecontent__genome=genome).values_list('identifier', flat=True))
         genes_to_js = ' '.join(genes)
         return len(genes), genes_to_js
 
-    def __count_genes(self, genome: GenomeContent, anno: Annotation) -> int:
-        return anno.gene_set.filter(genomecontent=genome).count()
+    def __count_genes(self, genome: Genome, anno: Annotation) -> int:
+        return anno.gene_set.filter(genomecontent__genome=genome).count()
 
     def __create_coverage_matrix(self) -> (pd.DataFrame, dict):
         pattern_to_genomes = self.create_patterns()
@@ -170,7 +173,7 @@ class MatrixMaker:
                 pattern_to_genomes[pattern] = [genome]
         return pattern_to_genomes
 
-    def get_pattern(self, genome: GenomeContent) -> tuple:
+    def get_pattern(self, genome: Genome) -> tuple:
         """
         :returns a tuple of len(annotations) filled with booleans: True if genome covers annotation
         Example: (False, False, False, True, False)

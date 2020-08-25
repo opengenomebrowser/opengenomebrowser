@@ -82,9 +82,9 @@ class Importer:
 
         self.check_invariants()
 
-    def load_pathway_maps(self):
+    def reload_pathway_maps(self):
         from website.models import PathwayMap
-        PathwayMap.load_maps()
+        PathwayMap.reload_maps()
 
     def remove_missing_strains(self, strains_path, auto_delete_missing):
         all_strains = []
@@ -183,8 +183,8 @@ class Importer:
 def main():
     si = Importer()
     # si.reset_database(auto_delete=True)
-    si.import_database(auto_delete_missing=False, reload_orthologs=False)
-    # si.load_pathway_maps()
+    # si.import_database(auto_delete_missing=False, reload_orthologs=False)
+    si.reload_pathway_maps()
 
     # TODO: hook install_orthofinder.py
     # TODO: hook notice if oat is missing

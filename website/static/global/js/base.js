@@ -247,7 +247,7 @@ function init_autocomplete_genomes(div_name) {
     // https://goodies.pixabay.com/jquery/tag-editor/demo.html
     $(div_name).tagEditor({
         autocomplete: {
-            source: '/api/autocomplete-genome-identifier/',
+            source: '/api/autocomplete-genomes/',
             minLength: 2
         },
         forceLowercase: false,

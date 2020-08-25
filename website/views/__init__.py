@@ -15,3 +15,5 @@ from .Api import Api
 from .Download import download_view
 from .ClickMenu import click_view
 from .CompareGenes import CompareGenes
+
+from .helpers.magic_string import MagicString

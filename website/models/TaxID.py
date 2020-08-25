@@ -60,9 +60,9 @@ class TaxID(MPTTModel):
         from .Genome import Genome
         strain_qs = self.get_child_strains()
         if representatives_only:
-            return strain_qs.select_related('representative')  # Faster!
+            return Genome.objects.filter(representative__isnull=False, strain__in=strain_qs)
         else:
-            return Genome.objects.filter(strain__in=list(strain_qs.values_list(flat=True)))
+            return Genome.objects.filter(strain__in=strain_qs)
 
     @staticmethod
     def get_or_create(taxid: int):

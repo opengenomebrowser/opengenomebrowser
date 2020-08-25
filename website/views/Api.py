@@ -4,11 +4,6 @@ import json
 import itertools
 from collections import Counter
 
-from django.db.models.functions import Concat
-from django.db.models import CharField, Value as V
-from django.db.models.functions import Concat
-from django.db.models import CharField, Value as V
-
 from OpenGenomeBrowser import settings
 from website.models.Annotation import Annotation
 from website.models import GenomeContent, Genome, PathwayMap, Gene, TaxID, GenomeSimilarity
@@ -20,6 +15,7 @@ from lib.gene_loci_comparison.gene_loci_comparison import GraphicRecordLocus
 from bokeh.embed import components
 
 from lib.multiplesequencealignment.multiple_sequence_alignment import ClustalOmega, MAFFT, Muscle
+from .helpers.magic_string import MagicString
 
 
 def err(error_message):
@@ -31,31 +27,6 @@ UNIQUE_COLORS_HEX = json.load(open('lib/tax_id_to_color/300_different_colors.txt
 
 
 class Api:
-    @staticmethod
-    def genome_identifier_to_species(request):
-        if not request.GET:
-            return err('did not receive valid JSON')
-
-        if not ('genomes[]' in request.GET):
-            return err(F"missing parameter 'genomes[]'. Got: {request.GET.keys()}")
-
-        genomes = set(request.GET.getlist('genomes[]'))
-
-        genome_to_species = Genome.objects.filter(identifier__in=genomes).prefetch_related('strain', 'strain__taxid') \
-            .values('identifier', 'strain__taxid', 'strain__taxid__taxscientificname')
-
-        genome_to_species = {m['identifier']:
-            dict(
-                taxid=m['strain__taxid'],
-                sciname=m['strain__taxid__taxscientificname']
-            ) for m in genome_to_species}
-
-        if len(genome_to_species) != len(genomes):
-            missing = set(genomes).difference(set(genome_to_species.keys()))
-            return err(F"could not find genome for genomes='{missing}'")
-
-        return JsonResponse(genome_to_species)
-
     @staticmethod
     def annotation_to_type(request):
         if not request.GET:
@@ -81,7 +52,6 @@ class Api:
 
     @staticmethod
     def autocomplete_pathway(request):
-        # http://flaviusim.com/blog/AJAX-Autocomplete-Search-with-Django-and-jQuery/
         if not 'term' in request.GET:
             return err('"term" not in request.GET')
 
@@ -107,14 +77,11 @@ class Api:
 
     @staticmethod
     def autocomplete_annotations(request):
-        # http://flaviusim.com/blog/AJAX-Autocomplete-Search-with-Django-and-jQuery/
         if not 'term' in request.GET:
             return err('"term" not in request.GET')
 
         q = request.GET.get('term', '')
 
-        # create 'synthetic' charfield
-        # https://docs.djangoproject.com/en/2.2/ref/models/database-functions/#concat
         try:
             annotations = Annotation.objects.filter(name__istartswith=q)[:20]
         except Annotation.DoesNotExist:
@@ -132,7 +99,6 @@ class Api:
 
     @staticmethod
     def search_genes(request):
-        # http://flaviusim.com/blog/AJAX-Autocomplete-Search-with-Django-and-jQuery/
         term = request.GET.get('term', None)
 
         genome = request.GET.get('genome', None)
@@ -153,22 +119,63 @@ class Api:
         return HttpResponse(data, mimetype)
 
     @staticmethod
-    def autocomplete_genome_identifiers(request):
-        # http://flaviusim.com/blog/AJAX-Autocomplete-Search-with-Django-and-jQuery/
+    def autocomplete_genomes(request):
         if not 'term' in request.GET:
             return err('"term" not in request.GET')
+
         q = request.GET.get('term', '')
-        genomes = GenomeContent.objects.filter(identifier__icontains=q)[:20]
-        genomes.prefetch_related('strain__taxid')
         results = []
-        for genome in genomes:
-            results.append({
-                'label': F"{genome.identifier} ({genome.strain.taxid.taxscientificname})",
-                'value': genome.identifier
-            })
+
+        if q.startswith('@'):
+            results.extend(MagicString.autocomplete(magic_string=q))
+        else:
+            genomes = GenomeContent.objects.filter(identifier__icontains=q)[:20]
+            genomes.prefetch_related('strain__taxid')
+            for genome in genomes:
+                results.append({
+                    'label': F"{genome.identifier} ({genome.strain.taxid.taxscientificname})",
+                    'value': genome.identifier
+                })
+
         data = json.dumps(results)
         mimetype = 'application/json'
         return HttpResponse(data, mimetype)
+
+    @staticmethod
+    def validate_genomes(request):
+        """
+        Test if genomes exist in the database.
+
+        Queries may also be "magic words"
+        """
+        if not request.GET:
+            return err('did not receive valid JSON')
+
+        if not 'genomes[]' in request.GET:
+            return err('did not receive genomes[]')
+
+        qs = set(request.GET.getlist('genomes[]'))
+
+        try:
+            MagicString.validate(queries=qs)
+        except ValueError as e:
+            return JsonResponse(dict(success=False, message=str(e)))
+
+        return JsonResponse(dict(success=True))
+
+    @staticmethod
+    def genome_identifier_to_species(request):
+        if not request.GET:
+            return err('did not receive valid JSON')
+
+        if not ('genomes[]' in request.GET):
+            return err(F"missing parameter 'genomes[]'. Got: {request.GET.keys()}")
+
+        qs = set(request.GET.getlist('genomes[]'))
+
+        genome_to_species = MagicString.to_species(queries=qs)
+
+        return JsonResponse(genome_to_species)
 
     @staticmethod
     def validate_annotations(request):
@@ -205,58 +212,6 @@ class Api:
         success = PathwayMap.objects.filter(slug=request.GET['slug']).exists()
 
         return JsonResponse(dict(success=success))
-
-    @staticmethod
-    def validate_genomes(request):
-        """
-        Test if genomes exist in the database.
-        """
-        if not request.GET:
-            return err('did not receive valid JSON')
-
-        if not 'genomes[]' in request.GET:
-            return err('did not receive genomes[]')
-
-        query_genomes = set(request.GET.getlist('genomes[]'))
-        found_genomes = set(Genome.objects.filter(identifier__in=query_genomes).values_list('identifier', flat=True))
-
-        success = query_genomes == found_genomes
-
-        return JsonResponse(dict(success=success))
-
-    # @staticmethod
-    # def get_pathway_annos(request):
-    #     """
-    #     Get the annotations a strain has for a given KEGG map.
-    #
-    #     Queries: map_id, genomes
-    #
-    #     Returns: {k: ['K0000', ...], r: [], ec: []}
-    #     """
-    #     if not request.GET:
-    #         return err('did not receive valid JSON')
-    #
-    #     if not ('map_id' and 'genomes[]' in request.GET):
-    #         return err(F"missing parameters. required: 'map_id' and 'genomes[]'. Got: {request.GET.keys()}")
-    #
-    #     map_id = request.GET['map_id']
-    #     genomes = request.GET.getlist('genomes[]')
-    #
-    #     strain_to_annotations = {}
-    #
-    #     map_annos = Annotation.objects.filter(keggmap=map_id)
-    #
-    #     for identifier in genomes:
-    #         if not GenomeContent.objects.filter(pk=identifier).exists():
-    #             return err(F"could not find genome for genome='{identifier}'")
-    #
-    #         strain_to_annotations[identifier] = dict(
-    #             k=list(map_annos.filter(anno_type='KG', genomecontent=identifier).values_list(flat=True)),
-    #             r=list(map_annos.filter(anno_type='KR', genomecontent=identifier).values_list(flat=True)),
-    #             ec=list(map_annos.filter(anno_type='EC', genomecontent=identifier).values_list(flat=True))
-    #         )
-    #
-    #     return JsonResponse(strain_to_annotations)
 
     @staticmethod
     def get_anno_description(request):

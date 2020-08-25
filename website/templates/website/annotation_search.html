@@ -87,80 +87,80 @@
 {% block end %}
     <script>
 
-        "use strict";
+        "use strict"
 
-        let current_annotations = [];
-        let current_genomes = [];
+        let current_annotations = []
+        let current_genomes = []
 
-        let genome_to_species;
+        let genome_to_species
 
         $(document).ready(function () {
-            let original_annotations = [{% if key_annotations %} '{{ key_annotations|join:"', '" }}' {% else %}{% endif %}];
-            init_autocomplete_annotations("#get-annotations");
-            let original_genomes = [{% if key_genomes %} '{{ key_genomes|join:"', '" }}' {% else %}{% endif %}];
-            genome_to_species = init_autocomplete_genomes("#get-genomes");
+            let original_annotations = [{% if key_annotations %} '{{ key_annotations|join:"', '" }}' {% else %}{% endif %}]
+            init_autocomplete_annotations("#get-annotations")
+            let original_genomes = [{% if key_genomes %} '{{ key_genomes|join:"', '" }}' {% else %}{% endif %}]
+            genome_to_species = init_autocomplete_genomes("#get-genomes")
 
-            loadAnnotationTable(original_annotations, original_genomes, true);
-        });
+            loadAnnotationTable(original_annotations, original_genomes, true)
+        })
 
         window.addEventListener('popstate', function (e) {
                 // manage history stack
-                let genomes, annotations;
+                let genomes, annotations
 
                 if (e.state == null) {
-                    annotations = [{% if key_annotations %} '{{ key_annotations|join:"', '" }}' {% else %}{% endif %}];
-                    genomes = [{% if key_genomes %} '{{ key_genomes|join:"', '" }}' {% else %}{% endif %}];
+                    annotations = [{% if key_annotations %} '{{ key_annotations|join:"', '" }}' {% else %}{% endif %}]
+                    genomes = [{% if key_genomes %} '{{ key_genomes|join:"', '" }}' {% else %}{% endif %}]
                 } else {
-                    annotations = undoReplBlanks(e.state[0]);
-                    genomes = e.state[1];
+                    annotations = undoReplBlanks(e.state[0])
+                    genomes = e.state[1]
                 }
 
-                loadAnnotationTable(annotations, genomes, false);
+                loadAnnotationTable(annotations, genomes, false)
             }
-        );
+        )
 
 
         function submit_function() {
-            let annotations = $('#get-annotations').val().split(',');
-            let genomes = $('#get-genomes').val().split(',');
+            let annotations = $('#get-annotations').val().split(',')
+            let genomes = $('#get-genomes').val().split(',')
 
-            console.log('annotations:', annotations);
-            console.log('genomes:', genomes);
+            console.log('annotations:', annotations)
+            console.log('genomes:', genomes)
 
             $.when(validate_annotations(annotations), validate_genomes(genomes)).done(function (annotations_valid, genomes_valid) {
-                annotations_valid = annotations_valid[2].responseJSON['success'];
-                genomes_valid = genomes_valid[2].responseJSON['success'];
+                annotations_valid = annotations_valid[2].responseJSON['success']
+                genomes_valid = genomes_valid[2].responseJSON['success']
 
                 if (annotations_valid) {
-                    $('#get-annotations').next().removeClass('is-invalid');
+                    $('#get-annotations').next().removeClass('is-invalid')
                 } else {
                     $('#get-annotations').next().addClass('is-invalid')
                 }
 
                 if (genomes_valid) {
-                    $('#get-genomes').next().removeClass('is-invalid');
+                    $('#get-genomes').next().removeClass('is-invalid')
                 } else {
                     $('#get-genomes').next().addClass('is-invalid')
                 }
 
                 if (annotations_valid && genomes_valid) {
-                    console.log('FORM CONTROL SUCCESS', annotations, genomes, true);
-                    loadAnnotationTable(annotations, genomes, true);
+                    console.log('FORM CONTROL SUCCESS', annotations, genomes, true)
+                    loadAnnotationTable(annotations, genomes, true)
                 }
 
-            });
+            })
 
         }
 
         function loadAnnotationTable(annotations, genomes, push_state) {
-            console.log('CHANGE ANNOTATIONS: ', current_annotations, '----->', annotations);
-            console.log('CHANGE genome:      ', current_genomes, '----->', genomes);
+            console.log('CHANGE ANNOTATIONS: ', current_annotations, '----->', annotations)
+            console.log('CHANGE genome:      ', current_genomes, '----->', genomes)
 
             if (
                 genomes.sort().join('+') === current_genomes.sort().join('+') &&
                 annotations.sort().join('+') === current_annotations.sort().join('+')
             ) {
-                console.log('no change');
+                console.log('no change')
                 return
             }
 
@@ -172,7 +172,7 @@
                         // activate tooltips in newly loaded container
                         $('#annotation-matrix-container .ogb-tag').tooltip({
                             title: function () {
-                                return $(this).attr('data-species');
+                                return $(this).attr('data-species')
                             }
                         }).each(function () {
                             if ($(this).hasClass('genome')) {
@@ -189,21 +189,21 @@
                 )
 
                 finalize()
-            };
+            }
 
 
             let finalize = function () {
-                console.log('fin');
+                console.log('fin')
                 if (push_state) {
-                    let state = [[], []];
-                    let url = '';
+                    let state = [[], []]
+                    let url = ''
 
                     if (annotations.length !== 0) {
-                        state[0] = annotations;
+                        state[0] = annotations
                         url += `?annotations=${urlReplBlanks(annotations)}`
                     }
                     if (genomes.length !== 0) {
-                        state[1] = genomes;
+                        state[1] = genomes
                         if (annotations.length === 0) {
                             url += `?genomes=${urlReplBlanks(genomes)}`
                         } else {
@@ -211,35 +211,35 @@
                         }
                     }
 
-                    console.log("PUSH STATE");
-                    window.history.pushState(state, null, url);
+                    console.log("PUSH STATE")
+                    window.history.pushState(state, null, url)
                 }
 
                 $.getJSON('{% url "website:api-genome-identifier-to-species" %}', {'genomes[]': genomes}, function (data) {
-                    delete data.success;
+                    delete data.success
 
                     $('#real-genomes').empty()
                     $('#real-genomes').append(create_read_only_genome_div(Object.keys(data), data))
-                });
+                })
 
                 $.getJSON('{% url "website:api-annotation-to-type" %}', {'annotations[]': annotations}, function (data) {
 
                     $('#real-annotations').empty()
                     $('#real-annotations').append(create_read_only_annotations_div(Object.keys(data), data))
 
-                });
+                })
 
 
                 current_annotations = annotations
                 current_genomes = genomes
 
-            };
+            }
 
             if (annotations === [] || genomes === []) {
                 // nothing to display
                 $('#annotation-matrix-container').empty()
 
-                finalize();
+                finalize()
 
                 return
             }

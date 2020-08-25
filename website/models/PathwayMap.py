@@ -47,7 +47,7 @@ class PathwayMap(models.Model):
             return type_dict
 
     @staticmethod
-    def load_maps():
+    def reload_maps():
         from progressbar import progressbar  # pip install progressbar2
 
         print('Reloading svg maps using ', end='')
