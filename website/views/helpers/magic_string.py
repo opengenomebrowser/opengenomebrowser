@@ -40,7 +40,7 @@ class MagicString:
     ]
 
     @classmethod
-    def split(cls, queries: [str]) -> ({str}, {str}):
+    def __split_query(cls, queries: [str]) -> ({str}, {str}):
         """split queries into regular genome identifiers and magic strings"""
         genome_identifiers, magic_words = set(), set()
         for q in queries:
@@ -55,7 +55,7 @@ class MagicString:
         """
         :raises ValueError
         """
-        genome_identifiers, magic_strings = cls.split(queries)
+        genome_identifiers, magic_strings = cls.__split_query(queries)
 
         # validate genome_identifiers
         found_genomes = set(Genome.objects.filter(identifier__in=genome_identifiers).values_list('identifier', flat=True))
@@ -109,7 +109,7 @@ class MagicString:
     def to_species(cls, queries: [str]) -> {}:
         genome_to_species = dict()
 
-        genome_identifiers, magic_strings = cls.split(queries)
+        genome_identifiers, magic_strings = cls.__split_query(queries)
 
         # process genome_identifiers
         genome_queryset = Genome.objects.filter(identifier__in=genome_identifiers).prefetch_related('strain', 'strain__taxid') \
@@ -176,7 +176,7 @@ class MagicString:
 
     @classmethod
     def get_genomes(cls, queries: [str]) -> QuerySet:
-        genome_identifiers, magic_strings = cls.split(queries)
+        genome_identifiers, magic_strings = cls.__split_query(queries)
 
         # process regular identifiers
         genomes = Genome.objects.filter(identifier__in=genome_identifiers)
@@ -196,7 +196,7 @@ class MagicString:
     def __get_genomes(cls, magic_object) -> QuerySet:
         if type(magic_object) is TaxID:
             magic_object: TaxID
-            return magic_object.get_child_genomes(representatives_only=True)
+            return magic_object.get_child_genomes(representative=True, contaminated=False, restricted=False)
 
     @classmethod
     def __get_taxid(cls, magic_object) -> str:

@@ -79,8 +79,8 @@ def create_table(data: dict, table_id: str) -> str:
     return html
 
 
-def dataframe_to_bootstrap_html(df: pd.DataFrame, table_id: str) -> str:
-    html = df.to_html(escape=False, index=False, table_id=table_id)
+def dataframe_to_bootstrap_html(df: pd.DataFrame, table_id: str, index=False) -> str:
+    html = df.to_html(escape=False, index=index, table_id=table_id)
 
     html = html \
         .replace('border="1" class="dataframe"',

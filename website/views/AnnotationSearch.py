@@ -117,7 +117,7 @@ class MatrixMaker:
             tmp.columns = [self._genome_to_html[g] for g in tmp.columns]
         tmp.index = [self._annotation_to_html[a] for a in tmp.index]
 
-        html = dataframe_to_bootstrap_html(tmp, table_id=id)
+        html = dataframe_to_bootstrap_html(tmp, table_id=id, index=True)
 
         return html
 

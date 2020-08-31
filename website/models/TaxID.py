@@ -56,13 +56,20 @@ class TaxID(MPTTModel):
         from .Strain import Strain
         return Strain.objects.filter(taxid__in=list(taxid_qs.values_list(flat=True)))
 
-    def get_child_genomes(self, representatives_only=True) -> QuerySet:
+    def get_child_genomes(self, representative=None, contaminated=None, restricted=None) -> QuerySet:
         from .Genome import Genome
         strain_qs = self.get_child_strains()
-        if representatives_only:
-            return Genome.objects.filter(representative__isnull=False, strain__in=strain_qs)
-        else:
-            return Genome.objects.filter(strain__in=strain_qs)
+
+        filter = dict(strain__in=strain_qs)
+
+        if representative is not None:
+            filter.update(dict(representative__isnull=not representative))
+        if contaminated is not None:
+            filter.update(dict(contaminated=contaminated))
+        if restricted is not None:
+            filter.update(dict(strain__restricted=restricted))
+
+        return Genome.objects.filter(**filter)
 
     @staticmethod
     def get_or_create(taxid: int):
