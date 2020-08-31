@@ -3,10 +3,12 @@
 /**
  * Load dna-feature-viewer svg for specific gene.
  */
-function load_alignment(gene_identifiers, target_div, method = 'clustalo', sequence_type = 'protein') {
+async function load_alignment(gene_identifiers, target_div, method = 'clustalo', sequence_type = 'protein') {
     console.log('start MSA:', gene_identifiers, target_div, method, sequence_type);
 
-    $.getJSON('/api/align/', {'gene_identifiers': gene_identifiers, 'method': method, 'sequence_type': sequence_type}, function (data) {
+    let result
+
+    await $.getJSON('/api/align/', {'gene_identifiers': gene_identifiers, 'method': method, 'sequence_type': sequence_type}, function (data) {
 
         console.log('MSA complete:', data)
 
@@ -28,6 +30,8 @@ function load_alignment(gene_identifiers, target_div, method = 'clustalo', seque
 
         m.render()
 
+        result = data['alignment']
+
     }).fail(function (data) {
         const msg = data.responseJSON['message']
         console.log(msg)
@@ -36,5 +40,9 @@ function load_alignment(gene_identifiers, target_div, method = 'clustalo', seque
                 ${msg}
         </div>
         `)
+
+        result = 'failure'
     })
+
+    return result
 }

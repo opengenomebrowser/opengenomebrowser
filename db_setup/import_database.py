@@ -183,8 +183,8 @@ class Importer:
 def main():
     si = Importer()
     # si.reset_database(auto_delete=True)
-    # si.import_database(auto_delete_missing=False, reload_orthologs=False)
-    si.reload_pathway_maps()
+    si.import_database(auto_delete_missing=False, reload_orthologs=False)
+    # si.reload_pathway_maps()
 
     # TODO: hook install_orthofinder.py
     # TODO: hook notice if oat is missing

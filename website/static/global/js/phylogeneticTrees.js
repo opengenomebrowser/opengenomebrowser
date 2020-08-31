@@ -22,7 +22,7 @@ let loadTree = async function (genomes, method, target, newick_target, type, lay
 
     let load_tree = function () {
         // abort if current_genomes have changed
-        if (genomes.join('::') != current_genomes.join('::')) {
+        if (genomes.join('::') != genomes.join('::')) {
             go_on = false
             return null
         }

@@ -102,14 +102,6 @@ def home_view(request):
                 did=['Calculation of average nucleotide identity between assemblies']
             ),
             dict(
-                name='Kyoto Enzyclopedia of Genes',
-                img='/static/index/images/kegg.png',
-                img_cls='square',
-                role='square',
-                href='https://www.kegg.jp/',
-                did=['Pathway maps']
-            ),
-            dict(
                 name='National Center for Biotechnology Information',
                 img='/static/index/images/ncbi.png',
                 img_cls='circle',

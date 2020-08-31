@@ -51,7 +51,7 @@
 
                 <div class="form-group">
                     <label for="get-genomes">Genomes:</label>
-                    <input type="text" class="form-control" id="get-genomes" value="{% for genome in genomes %}{{ genome.identifier }}, {% endfor %}">
+                    <input type="text" class="form-control" id="get-genomes" value="{{ genomes|join:", " }}">
                 </div>
 
                 <button type="button" class="btn btn-primary" onclick="submit_function()">Submit</button>
@@ -93,9 +93,9 @@
 {% block end %}
     <script>
         "use strict"
-        let genome_to_species = {{ genome_to_species|safe }}
+        let genome_to_species = {{ genome_to_species|safe }};
 
-        const type_dict = {{ type_dict|safe }}
+        const type_dict = {{ type_dict|safe }};
 
             $(document).ready(function () {
                 init_autocomplete_genomes('#get-genomes')
@@ -114,7 +114,7 @@
                     showGenomeClickMenu(event)
                 })
 
-                {% if strains %}
+                {% if strains_to_annotations %}
                     $('#pathway-map-container').load(`/download/{{ PATHWAY_MAPS_RELATIVE }}/{{ map.filename }}`.replace(/\s/g, '%20'), function () {
                         $('.shape').tooltip()
 
@@ -124,7 +124,7 @@
 
                         let strains, colors;
                         highlightStrains(
-                            strains = {{ strains|safe }},
+                            strains = {{ strains_to_annotations|safe }},
                             colors = ['yellow', 'red']
                         )
 
@@ -199,7 +199,7 @@ ${percentage} % (${covering.length} out of ${not_covering.length})</p>`)
                 let el = `
 <div style="display: inline-flex">
     <div class="anno-dropdown-item dropdown-item context-menu-icon context-menu-icon-annotation">${tag}${(nCovered > 0) ? ' (' + nCovered + ')' : ''}</div>
-    <div class="btn-group dropright">
+    <div class="btn-group dropabrowright">
         <button class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="font-size: 1rem; padding: 0rem 0.8rem;"></button>
         <div class="dropdown-menu" style="width: 400px">
         <h6 class="dropdown-header context-menu-header">Description</h6>
@@ -208,7 +208,7 @@ ${percentage} % (${covering.length} out of ${not_covering.length})</p>`)
                 if (nCovered > 0) {
                     el += `
         <h6 class="dropdown-header context-menu-header">Positive genomes</h6>
-        <div class="read-only-div"> ${create_read_only_genome_div(Array.from(this['strains']), genome_to_species).html()} </div>`
+        <div class="read-only-div"> ${create_read_only_genome_div(Array.from(this['strains']), genome_to_species, 'positive', '#map-context-menu').html()} </div>`
                 }
 
                 el += `
@@ -223,7 +223,7 @@ ${percentage} % (${covering.length} out of ${not_covering.length})</p>`)
             if (covering.length > 0) {
                 cm.appendHeader('Positive genomes')
                 cm.appendElement(
-                    create_read_only_genome_div(covering, genome_to_species, 'positive')
+                    create_read_only_genome_div(covering, genome_to_species, 'positive', '#map-context-menu')
                 )
             }
 

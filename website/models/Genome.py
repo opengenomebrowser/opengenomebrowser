@@ -54,8 +54,7 @@ class Genome(models.Model):
     nr_replicons = models.IntegerField('Number of replicons', null=True, blank=True)
 
     # contamination analysis
-    origin_included_sequences = JSONField(default=list, blank=True, null=True)
-    origin_excluded_sequences = JSONField(default=list, blank=True, null=True)
+    custom_tables = JSONField(default=list, blank=True, null=True)
 
     # information about CDS prediction
     cds_tool = models.CharField('Primary annotation tool', max_length=50, null=True, blank=True)
@@ -66,8 +65,6 @@ class Genome(models.Model):
     cds_tool_gff_file = models.CharField(max_length=200)  # MANDATORY
     cds_tool_ffn_file = models.CharField(max_length=200, null=True, blank=True)
     cds_tool_sqn_file = models.CharField(max_length=200, null=True, blank=True)
-
-    sixteen_s = JSONField(default=dict, blank=True, null=True)  # {'16S NCBI-db': [{'description': 'E. coli', 'taxid': 123, 'evalue': 0.0}, ...], ...}
 
     BUSCO = JSONField(default=dict)  # {C:2,D:2,F:2,M:2,S:2,T:2]}  +  {busco_db: firmicutes_odb9}
     BUSCO_percent_single = models.DecimalField(max_digits=3, decimal_places=1, null=True, blank=True)
@@ -190,15 +187,10 @@ class Genome(models.Model):
                 assert os.path.isfile(file(relative=False)), F"{msg} File does not exist: {file}"
 
         # check all JSONFields:
-        if self.origin_included_sequences:
-            for entry in self.origin_included_sequences:
-                assert isinstance(entry['taxid'], int), F"{msg} {entry['taxid']}"
-                assert isinstance(entry['percentage'], float) or isinstance(entry['percentage'], int), F"{msg} {entry['percentage']}"
-
-        if self.origin_excluded_sequences:
-            for entry in self.origin_excluded_sequences:
-                assert isinstance(entry['taxid'], int), F"{msg} {entry['taxid']}"
-                assert isinstance(entry['percentage'], float) or isinstance(entry['percentage'], int), F"{msg} {entry['percentage']}"
+        if self.custom_tables:
+            for table_name, table in self.custom_tables.items():
+                assert 'rows' in table
+                assert 'index_col' in table
 
         if self.BUSCO:
             for char in ['C', 'D', 'F', 'M', 'S', 'T']:

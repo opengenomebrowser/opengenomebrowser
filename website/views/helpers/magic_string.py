@@ -47,7 +47,7 @@ class MagicString:
             if q.startswith('@'):
                 magic_words.add(q)
             else:
-                genome_identifiers.add(q)
+                genome_identifiers.add(q.replace('!!!', ' '))
         return genome_identifiers, magic_words
 
     @classmethod
@@ -88,13 +88,17 @@ class MagicString:
             # process taxids
             if magic_word.startswith('tax'):
                 if magic_word == 'tax':
+                    attr = 'taxscientificname'
                     taxids = TaxID.objects.filter(taxscientificname__icontains=query)
                 else:
+                    attr = magic_word
                     taxids = TaxID.objects.filter(taxscientificname__icontains=query, **{'rank': magic_word[3:]})
+
+                taxids = taxids[:20]
                 for taxid in taxids:
                     results.append({
-                        'label': F"@{magic_word}:{getattr(taxid, magic_word)}",
-                        'value': F"@{magic_word}:{getattr(taxid, magic_word)}"
+                        'label': F"@{magic_word}:{getattr(taxid, attr)}",
+                        'value': F"@{magic_word}:{getattr(taxid, attr)}"
                     })
             else:
                 raise AssertionError(F'Failed to process magic word! {magic_word}')
@@ -139,6 +143,8 @@ class MagicString:
 
         :raises ValueError upon error
         """
+        magic_string = magic_string.replace('!!!', ' ')
+
         magic_word, query = magic_string[1:].split(':', maxsplit=1)
 
         if magic_word not in cls.MAGIC_WORDS:
@@ -160,6 +166,8 @@ class MagicString:
 
     @classmethod
     def magic_string_isvalid(cls, magic_string: str) -> bool:
+        magic_string = magic_string.replace('!!!', ' ')
+
         try:
             magic_object = cls.get_magic_object(magic_string=magic_string)
         except ValueError as e:

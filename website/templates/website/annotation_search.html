@@ -28,20 +28,19 @@
 
 {% block body %}
 
-
     <section>
+
         <div class="container">
             <form>
                 {% csrf_token %}
                 <div class="form-group">
                     <label for="get-annotations">Annotations:</label>
-                    <input type="text" class="form-control" id="get-annotations" value="{{ key_annotations|join:", " }}">
+                    <input type="text" class="form-control" id="get-annotations" value="{{ annotations|join:", " }}">
                 </div>
-
 
                 <div class="form-group">
                     <label for="get-genomes">Genome:</label>
-                    <input type="text" class="form-control" id="get-genomes" value="{{ key_genomes|join:", " }}">
+                    <input type="text" class="form-control" id="get-genomes" value="{{ genomes|join:", " }}">
                 </div>
 
                 <button type="button" class="btn btn-primary" onclick="submit_function()">Submit</button>
@@ -50,30 +49,30 @@
             <hr class="featurette-divider">
         </div>
 
-        <div class="container">
+
+        {% if genomes and annotations %}
+            <hr class="featurette-divider">
+
             <form>
                 <div class="form-group">
                     <label for="real-annotations">Annotations:</label>
                     <div class="form-control"
                          style="height: unset; padding: unset; background-color: #e9ecef; border: 1px solid #ced4da"
                          id="real-annotations">
+                        {% for annotation in annotations %}{{ annotation.html|safe }}{% endfor %}
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label for="real-genomes">Genome:</label>
-                    <div class="form-control"
-                         style="height: unset; padding: unset; background-color: #e9ecef; border: 1px solid #ced4da"
-                         id="real-genomes">
+                    <label for="real-genomes">Genomes:</label>
+                    <div class="read-only-div" id="real-genomes">
+                        {% for genome in genomes %}{{ genome.html|safe }}{% endfor %}
                     </div>
                 </div>
             </form>
 
-            <hr class="featurette-divider">
-        </div>
-
-
-        {% csrf_token %}
+            </div>
+        {% endif %}
 
     </section>
 
@@ -89,40 +88,28 @@
 
         "use strict"
 
-        let current_annotations = []
-        let current_genomes = []
+        let annotations = [{% if annotations %} '{{ annotations|join:"', '" }}' {% else %}{% endif %}]
+        let genomes = [{% if genomes %} '{{ genomes|join:"', '" }}' {% else %}{% endif %}]
 
         let genome_to_species
 
         $(document).ready(function () {
-            let original_annotations = [{% if key_annotations %} '{{ key_annotations|join:"', '" }}' {% else %}{% endif %}]
             init_autocomplete_annotations("#get-annotations")
-            let original_genomes = [{% if key_genomes %} '{{ key_genomes|join:"', '" }}' {% else %}{% endif %}]
             genome_to_species = init_autocomplete_genomes("#get-genomes")
 
-            loadAnnotationTable(original_annotations, original_genomes, true)
+            $('#real-genomes .genome').click(function (event) {
+                showGenomeClickMenu(event)
+            })
+            $('#real-annotations .annotation').click(function (event) {
+                showAnnotationClickMenu(event, 'auto', 'auto', $('#real-genomes'))
+            })
+
+            loadTable(annotations, genomes, true)
         })
-
-        window.addEventListener('popstate', function (e) {
-                // manage history stack
-                let genomes, annotations
-
-                if (e.state == null) {
-                    annotations = [{% if key_annotations %} '{{ key_annotations|join:"', '" }}' {% else %}{% endif %}]
-                    genomes = [{% if key_genomes %} '{{ key_genomes|join:"', '" }}' {% else %}{% endif %}]
-                } else {
-                    annotations = undoReplBlanks(e.state[0])
-                    genomes = e.state[1]
-                }
-
-                loadAnnotationTable(annotations, genomes, false)
-            }
-        )
-
 
         function submit_function() {
             let annotations = $('#get-annotations').val().split(',')
-            let genomes = $('#get-genomes').val().split(',')
+            const genomes = $('#get-genomes').val().split(',')
 
             console.log('annotations:', annotations)
             console.log('genomes:', genomes)
@@ -144,66 +131,14 @@
                 }
 
                 if (annotations_valid && genomes_valid) {
-                    console.log('FORM CONTROL SUCCESS', annotations, genomes, true)
-                    loadAnnotationTable(annotations, genomes, true)
-                }
+                    console.log('FORM CONTROL SUCCESS', annotations, genomes)
+                    console.log('FORWARD TO NEW URL!')
 
-            })
-
-        }
-
-        function loadAnnotationTable(annotations, genomes, push_state) {
-            console.log('CHANGE ANNOTATIONS: ', current_annotations, '----->', annotations)
-            console.log('CHANGE genome:      ', current_genomes, '----->', genomes)
-
-            if (
-                genomes.sort().join('+') === current_genomes.sort().join('+') &&
-                annotations.sort().join('+') === current_annotations.sort().join('+')
-            ) {
-                console.log('no change')
-                return
-            }
-
-            let loadTable = async function () {
-                await $('#annotation-matrix-container').load('{% url "website:annotation-matrix" %}', {
-                        annotations: annotations,
-                        genomes: genomes
-                    }, function () {
-                        // activate tooltips in newly loaded container
-                        $('#annotation-matrix-container .ogb-tag').tooltip({
-                            title: function () {
-                                return $(this).attr('data-species')
-                            }
-                        }).each(function () {
-                            if ($(this).hasClass('genome')) {
-                                this.setAttribute('onclick', `showGenomeClickMenu(event, 'auto', 'auto', $(this).parent().parent() )`)
-                            } else if ($(this).hasClass('annotation')) {
-                                this.setAttribute('onclick', `showAnnotationClickMenu(event, 'auto', $(this).parent().parent().parent(), $(this).parent().parent().parent().parent() )`)
-                            }
-                        })
-                    $('.group-table-container tbody [data-genes]').each(function(){
-                        //todo: this?
-                        this.setAttribute('onclick', `console.log('the genes behind this are:', '${$(this).data('genes')}')`)
-                    })
-                    }
-                )
-
-                finalize()
-            }
-
-
-            let finalize = function () {
-                console.log('fin')
-                if (push_state) {
-                    let state = [[], []]
                     let url = ''
-
                     if (annotations.length !== 0) {
-                        state[0] = annotations
                         url += `?annotations=${urlReplBlanks(annotations)}`
                     }
                     if (genomes.length !== 0) {
-                        state[1] = genomes
                         if (annotations.length === 0) {
                             url += `?genomes=${urlReplBlanks(genomes)}`
                         } else {
@@ -211,40 +146,42 @@
                         }
                     }
 
-                    console.log("PUSH STATE")
-                    window.history.pushState(state, null, url)
+                    window.location.href = url
                 }
+            })
+        }
 
-                $.getJSON('{% url "website:api-genome-identifier-to-species" %}', {'genomes[]': genomes}, function (data) {
-                    delete data.success
+        async function loadTable(annotations, genomes) {
+            console.log('LOAD ANNOTATIONS: ', annotations, '----->', annotations)
+            console.log('LOAD GENOME:      ', genomes, '----->', genomes)
 
-                    $('#real-genomes').empty()
-                    $('#real-genomes').append(create_read_only_genome_div(Object.keys(data), data))
-                })
-
-                $.getJSON('{% url "website:api-annotation-to-type" %}', {'annotations[]': annotations}, function (data) {
-
-                    $('#real-annotations').empty()
-                    $('#real-annotations').append(create_read_only_annotations_div(Object.keys(data), data))
-
-                })
-
-
-                current_annotations = annotations
-                current_genomes = genomes
-
-            }
-
-            if (annotations === [] || genomes === []) {
-                // nothing to display
-                $('#annotation-matrix-container').empty()
-
-                finalize()
-
+            if (annotations.length === 0 && genomes.length === 0) {
+                console.log('no annotations or no genomes!')
                 return
             }
 
-            loadTable()
+            await $('#annotation-matrix-container').load('{% url "website:annotation-matrix" %}', {
+                    annotations: annotations,
+                    genomes: genomes
+                }, function () {
+                    // activate tooltips in newly loaded container
+                    $('#annotation-matrix-container .ogb-tag').tooltip({
+                        title: function () {
+                            return $(this).attr('data-species')
+                        }
+                    }).each(function () {
+                        if ($(this).hasClass('genome')) {
+                            this.setAttribute('onclick', `showGenomeClickMenu(event, 'auto', 'auto', $(this).parent().parent() )`)
+                        } else if ($(this).hasClass('annotation')) {
+                            this.setAttribute('onclick', `showAnnotationClickMenu(event, 'auto', $(this).parent().parent().parent(), $(this).parent().parent().parent().parent() )`)
+                        }
+                    })
+                    $('.group-table-container tbody [data-genes]').each(function () {
+                        this.setAttribute('onclick', `showGenesClickMenu(event, $(event.target).data('genes').split(' '), $($(event.target).closest('table').find('th')[$(event.target).parent().index()].firstChild).data('species'))`)
+                    })
+                }
+            )
+
 
         }
 

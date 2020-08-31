@@ -59,24 +59,53 @@
 
 {% block body %}
     <section>
-        <div class="container">
-            <form>
-                {% csrf_token %}
-                <div class="form-group">
-                    <label for="get-genomes">Genome:</label>
-                    <input type="text" class="form-control" id="get-genomes" value="{{ key_genomes|join:", " }}">
-                </div>
-                <div style="display: flex; justify-content: space-evenly;">
-                    <button type="button" class="btn btn-primary" onclick="validate_genomes_load_tree('taxid')">Reload Taxid-based tree</button>
-                    <button type="button" class="btn btn-success" onclick="validate_genomes_load_tree('genome-similarity')">Calculate Genome-similarity-based tree</button>
-                    <button type="button" class="btn btn-info" onclick="validate_genomes_load_tree('orthofinder')">Calculate Orthofinder-based tree
-                    </button>
-                </div>
-            </form>
-            <br>
-        </div>
+        <section>
+            <div class="container">
+                <form>
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="get-genomes">Genomes:</label>
+                        <input type="text" class="form-control" id="get-genomes" value="{{ genomes|join:", " }}">
+                    </div>
 
-        <div class="container" id="taxid-tree-container">
+                    <button type="button" class="btn btn-primary" onclick="submit_function()">Submit</button>
+                </form>
+
+                {% if can_calculate_trees %}
+                    <hr class="featurette-divider">
+
+                    <form>
+                        <div class="form-group">
+                            <label for="real-genomes">Genomes:</label>
+                            <div class="read-only-div" id="real-genomes">
+                                {% for genome in genomes %}{{ genome.html|safe }}{% endfor %}
+                            </div>
+                        </div>
+                    </form>
+
+                    </div>
+
+                    <form>
+                        {% csrf_token %}
+                        <div style="display: flex; justify-content: space-evenly;">
+                            <button type="button" class="btn btn-primary" onclick="load_taxid_tree(genomes)">
+                                Reload Taxid-based tree
+                            </button>
+                            <button type="button" class="btn btn-success" onclick="load_genome_similarity_tree(genomes)">
+                                Calculate Genome-similarity-based tree
+                            </button>
+                            <button type="button" class="btn btn-info" onclick="load_orthofinder_tree(genomes)">
+                                Calculate Orthofinder-based tree
+                            </button>
+                        </div>
+                    </form>
+
+                {% endif %}
+
+        </section>
+
+
+        <div class="container" id="taxid-tree-container" {% if not can_calculate_trees %} hidden {% endif %}>
             <h2>Taxid-based tree</h2>
             <label for="layout-selector-taxid">Layout</label>
             <select class="form-control" id="layout-selector-taxid"
@@ -176,49 +205,45 @@
     <script>
         "use strict"
 
-        let current_genomes = []
-        let genome_to_species
+        let genome_to_species = {{ genome_to_species|safe }};
+
+        const genomes = [{% if genomes %} '{{ genomes|join:"', '" }}' {% else %}{% endif %}]
+
         let taxid_tree
         let genome_similarity_tree
         let orthofinder_tree
-        let doit
+
+        let ajax_timer
 
         $(document).ready(function () {
-            let original_genomes = [{% if key_genomes %} '{{ key_genomes|join:"', '" }}' {% else %}{% endif %}]
-            current_genomes = original_genomes
+
             genome_to_species = init_autocomplete_genomes("#get-genomes")
 
-            if (current_genomes.length >= 3) {
+            if (genomes.length >= 3) {
                 console.log('load tree!')
-                load_taxid_tree(current_genomes)
+                load_taxid_tree(genomes)
             }
+
         })
 
-        function validate_genomes_load_tree(type) {
-            let genomes = $('#get-genomes').val().split(',')
+        function submit_function() {
+            const genomes = $('#get-genomes').val().split(',')
+
             $.when(validate_genomes(genomes)).done(function (genomes_valid) {
-                let success = genomes_valid['success']
-                if (genomes.length < 3) {
-                    success = false
-                }
-                if (success) {
+                genomes_valid = genomes_valid['success']
+
+                if (genomes_valid) {
                     $('#get-genomes').next().removeClass('is-invalid')
                 } else {
                     $('#get-genomes').next().addClass('is-invalid')
                 }
-                if (success) {
-                    current_genomes = genomes
-                    if (type === "taxid") {
-                        load_taxid_tree(genomes)
-                    } else if (type === "genome-similarity") {
-                        load_genome_similarity_tree(genomes)
-                    } else if (type === "orthofinder") {
-                        load_orthofinder_tree(genomes)
-                    }
+
+                if (genomes_valid) {
+                    window.location.href = `/trees?genomes=${urlReplBlanks(genomes)}`;
                 }
             })
-
         }
+
 
         function load_taxid_tree(genomes) {
             taxid_tree = loadTree(
@@ -258,8 +283,8 @@
             tree.then(function () {
                 addResizeListener(document.getElementById(target), function () {
                     console.log('resize')
-                    clearTimeout(doit)
-                    doit = setTimeout(function () {
+                    clearTimeout(ajax_timer)
+                    ajax_timer = setTimeout(function () {
                         redrawTree(tree)
                     }, 500)
                 });

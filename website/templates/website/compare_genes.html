@@ -15,6 +15,12 @@
     <script src="{% static 'global/js/bokeh-tables-2.1.1.min.js' %}"></script>
     <script src="{% static 'global/js/bokeh-widgets-2.1.1.min.js' %}"></script>
 
+    <!-- autocomplete -->
+    <link href="{% static 'website/css/jquery-ui.css' %}" rel="stylesheet"/>
+    <link href="{% static 'global/css/jquery.tag-editor.css' %}" rel="stylesheet"/>
+    <script src="{% static 'global/js/jquery.caret.min.js' %}"></script>
+    <script src="{% static 'global/js/jquery.tag-editor.min.js' %}"></script>
+
     <!-- SortableJS - https://github.com/SortableJS/Sortable -->
     <script src="{% static 'website/js/Sortable.min.js' %}"></script>
 
@@ -71,54 +77,138 @@
 
     <section>
 
-        <!-- Gene Locus -->
         <div class="container">
+            <form>
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="get-genes">Genes:</label>
+                    <input type="text" class="form-control" id="get-genes" value="{{ genes|join:", " }}">
+                </div>
 
-            <h3>Alignments</h3>
-
-            <div id="alignments">
-                <button type="button" class="btn btn-primary" onclick="load_aln()">Perform multiple sequence alignment</button>
-            </div>
-
-            <span id="loading"></span>
-
+                <button type="button" class="btn btn-primary" onclick="submit_function()">Submit</button>
+            </form>
         </div>
 
 
-        <!-- Gene Locus -->
-        <div class="container">
-            <hr class="featurette-divider">
+        {% if genes %}
+            <div class="container">
+                <hr class="featurette-divider">
 
-            <h3>Gene Loci</h3>
-            <div id="gene-loci-spinner" class="spinner-border text-dark" role="status">
-                <span class="sr-only">Loading...</span>
+                <form>
+                    <div class="form-group">
+                        <label for="real-genes">Genes:</label>
+                        <div class="read-only-div" id="real-genes">
+                            {% for gene in genes %}{{ gene.html|safe }}{% endfor %}
+                        </div>
+                    </div>
+                </form>
+
             </div>
-            <div id="gene-loci"></div>
-
-        </div>
-
+        {% endif %}
 
     </section>
+
+    {% if genes %}
+
+        <section>
+
+            <!-- Gene Locus -->
+            <div class="container">
+                <hr class="featurette-divider">
+
+                <h3>Alignments</h3>
+
+                <button id="alignment-button" type="button" class="btn btn-primary" onclick="load_aln()">Perform multiple sequence alignment</button>
+
+                <div id="alignments-spinner" class="spinner-border text-dark" role="status" hidden>
+                    <span class="sr-only">Loading...</span>
+                </div>
+
+                <div id="alignments-container">
+                    <div id="alignments"></div>
+                </div>
+
+                <span id="loading"></span>
+
+            </div>
+
+
+            <!-- Gene Locus -->
+            <div class="container">
+                <hr class="featurette-divider">
+
+                <h3>Gene Loci</h3>
+
+                <button id="gene-loci-button" type="button" class="btn btn-primary" onclick="load_dfvm()">Compare gene loci</button>
+
+                <div id="gene-loci-spinner" class="spinner-border text-dark" role="status" hidden>
+                    <span class="sr-only">Loading...</span>
+                </div>
+
+                <div id="gene-loci"></div>
+
+            </div>
+
+
+        </section>
+
+    {% endif %}
 
 {% endblock %}
 
 {% block end %}
     <script>
-        let draw;
+        const genes = {% if genes %} ["{{genes|join:'", "'}}"] {% else %} [] {% endif %}
 
-        const genes = {% if key_genes %} {{key_genes|safe}} {% else %} [] {% endif %}
+        let alignment  // will contain the MSA (not currently used)
 
+        let genome_to_species
 
         $(document).ready(function () {
-            load_dfvm()
+            genome_to_species = init_autocomplete_genes("#get-genes")
+
+            $('#real-genes .gene').click(function (event) {
+                showGeneClickMenu(event)
+            })
         })
 
-        let load_dfvm = function () {
+        function submit_function() {
+            const genes = $('#get-genes').val().split(',')
+
+            console.log('genes:', genes)
+
+            $.when(validate_genes(genes)).done(function (genes_valid) {
+
+                genes_valid = genes_valid.success
+
+                if (genes_valid) {
+                    $('#get-genes').next().removeClass('is-invalid')
+                } else {
+                    $('#get-annotations').next().addClass('is-invalid')
+                }
+
+                if (genes_valid) {
+                    console.log('FORM CONTROL SUCCESS', genes)
+                    console.log('FORWARD TO NEW URL!')
+
+                    window.location.href = `?genes=${urlReplBlanks(genes)}`
+                }
+            })
+        }
+
+
+        function load_dfvm() {
+            $('#gene-loci-button').attr('hidden', true)
+            $('#gene-loci-spinner').attr('hidden', false)
             $('#gene-loci').empty()
+
             load_dna_feature_viewer_multi(
-                genes, $('#gene-loci'),
+                gene_identifiers = genes,
+                target_div = $('#gene-loci'),
                 span = parseInt($('#range-span').text())
-            )
+            ).then(function () {
+                $('#gene-loci-spinner').attr('hidden', true)
+            })
         }
 
         $('#form-control-range').on('change', function (e) {
@@ -126,15 +216,22 @@
             $('#range-span').text(span)
         })
 
-        let load_aln = function () {
-            $('#alignments').empty()
+        function load_aln() {
+            alignment = undefined
+
+            $('#alignment-button').attr('hidden', true)
+            $('#alignments-spinner').attr('hidden', false)
+            $('#alignments-container').html('<div id="alignments"></div>')
 
             load_alignment(
-                genes,
-                $('#alignments'),
-                $('#msa-method').val(),
-                $('#msa-seqence-type').val()
-            )
+                gene_identifiers = genes,
+                target_div = $('#alignments'),
+                method = $('#msa-method').val(),
+                sequence_type = $('#msa-seqence-type').val()
+            ).then(function (result) {
+                alignment = result
+                $('#alignments-spinner').attr('hidden', true)
+            })
         }
 
     </script>

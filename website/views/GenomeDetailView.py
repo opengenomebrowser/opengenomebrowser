@@ -40,66 +40,66 @@ class GenomeDetailView(DetailView):
         ann_parameters = ['cds_tool', 'cds_tool_date', 'cds_tool_version']
         context['ann_parameters'] = [[self.__verbose(attr), getattr(g, attr)] for attr in ann_parameters]
 
-        # origin of sequences
-        if g.origin_excluded_sequences:
-            sorted_list = sorted(g.origin_excluded_sequences, key=lambda entry: entry['percentage'], reverse=True)
-            context['excluded_sequences'] = [create_entry(entry['taxid'], entry['percentage'])
-                                             for entry in sorted_list]
-        if g.origin_included_sequences:
-            sorted_list = sorted(g.origin_included_sequences, key=lambda entry: entry['percentage'], reverse=True)
-            context['included_sequences'] = [create_entry(entry['taxid'], entry['percentage'])
-                                             for entry in sorted_list]
+        context['custom_tables'] = []
+        if g.custom_tables:
+            context['custom_tables'] = [
+                (
+                    title,
+                    create_table(data, table_id=F'custom_table_{title}'),
+                    data['pie_chart_col'] if 'pie_chart_col' in data else None
+                )
+                for title, data in g.custom_tables.items()]
 
-        if g.sixteen_s and len(g.sixteen_s) > 0:
-            context['sixteen_s'] = {db_name: covert_sixteen_s(data) for db_name, data in g.sixteen_s.items()}
+        # # origin of sequences
+        # if g.origin_excluded_sequences:
+        #     sorted_list = sorted(g.origin_excluded_sequences, key=lambda entry: entry['percentage'], reverse=True)
+        #     context['excluded_sequences'] = [create_entry(entry['taxid'], entry['percentage'])
+        #                                      for entry in sorted_list]
+        # if g.origin_included_sequences:
+        #     sorted_list = sorted(g.origin_included_sequences, key=lambda entry: entry['percentage'], reverse=True)
+        #     context['included_sequences'] = [create_entry(entry['taxid'], entry['percentage'])
+        #                                      for entry in sorted_list]
+        #
+        # if g.sixteen_s and len(g.sixteen_s) > 0:
+        #     context['sixteen_s'] = {db_name: covert_sixteen_s(data) for db_name, data in g.sixteen_s.items()}
 
         return context
 
 
-def covert_sixteen_s(data: dict):
-    df = pd.DataFrame(data)
-    df.set_index('taxid', inplace=True)
+def create_table(data: dict, table_id: str) -> str:
+    df = pd.DataFrame(data['rows'])
+    df.set_index(data['index_col'])
     df.index.name = None
 
-    df['species'] = [create_html_entry(taxid)[1] for taxid in df.index]
+    for taxid_col in data['taxid_cols']:
+        df[taxid_col] = df[taxid_col].apply(taxid_to_html)
 
-    if 'evalue' in df.columns:
-        val_colname = 'evalue'
-    else:
-        assert 'confidence' in df.columns
-        val_colname = 'confidence'
+    html = dataframe_to_bootstrap_html(df, table_id)
 
-    df = df[['species', 'description', val_colname]]
+    return html
 
-    df.columns = df.columns.str.capitalize()
-    html = df.to_html(escape=False, index=False)
+
+def dataframe_to_bootstrap_html(df: pd.DataFrame, table_id: str) -> str:
+    html = df.to_html(escape=False, index=False, table_id=table_id)
 
     html = html \
         .replace('border="1" class="dataframe"',
-                 F'id="{id}" class="table table-bordered table-sm white-links"', 1) \
+                 F'class="table table-bordered table-sm white-links"', 1) \
         .replace('<thead>', '<thead class="thead-dark">', 1) \
         .replace('<th>g', '<th scope="col">g', len(df.columns))
 
     return html
 
 
-def create_html_entry(taxid: int):
+def taxid_to_html(taxid: int):
     try:
         t = TaxID.objects.get(id=taxid)
-        color = t.color
-        sci_name = t.taxscientificname
         html = t.html
     except TaxID.DoesNotExist:
         t = RawTaxID(taxid=taxid)
         color = tuple(np.random.randint(256, size=3))  # random color
-        sci_name = t.scientific_name
-        html = F"""<div class="ogb-tag" style="background-color:rgb{color}; color:{'white' if is_text_color_white(color) else 'black'}">{sci_name} (taxid {taxid})</div>"""
-    return taxid, html, sci_name, color
-
-
-def create_entry(taxid: int, percentage: float):
-    taxid, html, sci_name, color = create_html_entry(taxid)
-    return taxid, html, sci_name, color, percentage
+        html = F"""<div class="ogb-tag" style="background-color:rgb{color}; color:{'white' if is_text_color_white(color) else 'black'}">{t.scientific_name} (taxid {taxid})</div>"""
+    return html
 
 
 def is_text_color_white(color: (int, int, int)) -> bool:

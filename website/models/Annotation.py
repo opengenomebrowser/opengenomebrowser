@@ -35,12 +35,6 @@ class AnnotationRegex(Enum):
     COMPOUND = ('CP', re.compile('^C[0-9]{5}$'), re.compile('^[Cc][0-9]{1,5}$'))
 
 
-# todo: this doesn't work!
-# def validate_annotation_name(name: str):
-#     if ',' in name or ';' in name:
-#         raise ValidationError(F"Annotation names may not contain ',' or ';'. Problem occurred here: {name}")
-
-
 class Annotation(models.Model):
     name = models.CharField(max_length=200, unique=True, primary_key=True)
 
@@ -81,6 +75,9 @@ class Annotation(models.Model):
         elif self.anno_type == self.AnnotationTypes.GENEONTOLOGY.value:
             self._descr = self._get_description_from_file(filename='go.obo', query=self.name)
         return self._descr
+
+    def __str__(self):
+        return self.name
 
     @property
     def html(self):

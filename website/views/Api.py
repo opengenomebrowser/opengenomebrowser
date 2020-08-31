@@ -142,6 +142,26 @@ class Api:
         return HttpResponse(data, mimetype)
 
     @staticmethod
+    def autocomplete_genes(request):
+        if not 'term' in request.GET:
+            return err('"term" not in request.GET')
+
+        q = request.GET.get('term', '')
+        results = []
+
+        genes = Gene.objects.filter(identifier__icontains=q)[:20]
+        genes.prefetch_related('genomecontent__genome__strain__taxid')
+        for gene in genes:
+            results.append({
+                'label': F"{gene.identifier} ({gene.genomecontent.genome.strain.taxid.taxscientificname})",
+                'value': gene.identifier
+            })
+
+        data = json.dumps(results)
+        mimetype = 'application/json'
+        return HttpResponse(data, mimetype)
+
+    @staticmethod
     def validate_genomes(request):
         """
         Test if genomes exist in the database.
@@ -160,6 +180,27 @@ class Api:
             MagicString.validate(queries=qs)
         except ValueError as e:
             return JsonResponse(dict(success=False, message=str(e)))
+
+        return JsonResponse(dict(success=True))
+
+    @staticmethod
+    def validate_genes(request):
+        """
+        Test if genomes exist in the database.
+
+        Queries may also be "magic words"
+        """
+        if not request.GET:
+            return err('did not receive valid JSON')
+
+        if not 'genes[]' in request.GET:
+            return err('did not receive genes[]')
+
+        qs = set(request.GET.getlist('genes[]'))
+
+        found_genes = set(Gene.objects.filter(identifier__in=qs).values_list('identifier', flat=True))
+        if not qs == found_genes:
+            return JsonResponse(dict(success=False, message='Could not find some identifiers.'))
 
         return JsonResponse(dict(success=True))
 

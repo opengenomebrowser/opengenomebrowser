@@ -117,8 +117,6 @@ If you want to chat, contact me via [Discord](https://discord.gg/mDm4fqf).
     "assembly_version": null,
     "assembly_date": null,
     "nr_replicons": null,
-    "origin_included_sequences": [],
-    "origin_excluded_sequences": [],
     "cds_tool": null,
     "cds_tool_date": null,
     "cds_tool_version": null,
@@ -129,12 +127,12 @@ If you want to chat, contact me via [Discord](https://discord.gg/mDm4fqf).
     "cds_tool_ffn_file": null,
     "assembly_fasta_file": "assembly.fna",
     "custom_annotations": [],
-    "sixteen_s": {},
     "BUSCO": {},
     "bioproject_accession": null,
     "biosample_accession": null,
     "genome_accession": null,
     "literature_references": [],
+    "custom_tables": {},
     "tags": []
 }
 ```
@@ -182,16 +180,20 @@ EXAMPLE1234-2-1.1_000004
 EXAMPLE1234-2-1.1_000008	K000001, K000002
 ```
 
-##### 16S format:
+##### Custom tables format:
 ```
-"sixteen_s": {
-    "ref db name": [
-        {
-            "description": "Fakebacillus bullshitingis strain 42 16S ribosomal RNA, partial sequence",
-            "taxid": 0,
-            "evalue": 0.0
-        }
-    ]
+"custom_tables": {
+    "Table 1 Title": {
+        "index_col": "taxid",
+        "taxid_cols": ["taxid"],
+        "rows": [
+            {
+                "description": "Fakebacillus bullshitingis strain 42 16S ribosomal RNA, partial sequence",
+                "taxid": 0,
+                "evalue": 0.0
+            }
+        ]
+    }
 }
 ```
 

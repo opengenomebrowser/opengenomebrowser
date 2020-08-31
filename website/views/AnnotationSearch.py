@@ -4,18 +4,51 @@ import pandas as pd
 from website.models import Genome, Gene, GenomeContent
 from website.models.Annotation import Annotation
 
+from .GenomeDetailView import dataframe_to_bootstrap_html
+
 from .helpers.magic_string import MagicString
 
 
 def annotation_view(request):
     context = dict(title='Annotation search')
 
+    genomes_valid = False
+    annotations_valid = False
+
     if 'genomes' in request.GET:
-        context['key_genomes'] = request.GET['genomes'].split(' ')
+        qs = set(request.GET['genomes'].split(' '))
+
+        try:
+            genomes = MagicString.get_genomes(queries=qs)
+            genome_to_species = {genome.identifier: genome.taxscientificname for genome in genomes}
+            context['genomes'] = genomes
+            context['genome_to_species'] = genome_to_species
+            genomes_valid = True
+        except ValueError as e:
+            context['error_danger'] = str(e)
 
     if 'annotations' in request.GET:
-        annotation_name_list = [ann.replace('!!!', ' ') for ann in request.GET['annotations'].split(' ')]
-        context['key_annotations'] = Annotation.objects.filter(name__in=annotation_name_list).values_list('name', flat=True)
+        annotation_name_list = set(ann.replace('!!!', ' ') for ann in request.GET['annotations'].split(' '))
+        annotations = Annotation.objects.filter(name__in=annotation_name_list)
+        context['annotations'] = annotations
+        if not len(annotation_name_list) == len(set(annotations.values_list('name', flat=True))):
+            context['error_danger'] = F'Could not interpret these annotations: {annotation_name_list.symmetric_difference(annotations)}'
+        else:
+            annotations_valid = True
+
+    if genomes_valid and annotations_valid:
+        mm = MatrixMaker(genomes, annotations)
+
+        group_to_table = mm.get_group_to_table()
+
+        context.update(dict(
+            matrix_header=mm.matrix.columns.to_list(),
+            matrix_body=zip(mm.matrix.index, mm.matrix.values.tolist()),
+            matrix_footer_covered=mm.matrix.sum().values.tolist(),
+            matrix_footer_genomes=[len(g) for g in mm.grp_to_genomes.values()],
+            matrix=mm.html_matrix,
+            group_to_table=group_to_table
+        ))
 
     return render(request, 'website/annotation_search.html', context)
 
@@ -83,13 +116,8 @@ class MatrixMaker:
         else:
             tmp.columns = [self._genome_to_html[g] for g in tmp.columns]
         tmp.index = [self._annotation_to_html[a] for a in tmp.index]
-        html = tmp.to_html(escape=False)
 
-        html = html \
-            .replace('border="1" class="dataframe"',
-                     F'id="{id}" class="table table-bordered table-sm white-links"', 1) \
-            .replace('<thead>', '<thead class="thead-dark">', 1) \
-            .replace('<th>g', '<th scope="col">g', len(table.columns))
+        html = dataframe_to_bootstrap_html(tmp, table_id=id)
 
         return html
 

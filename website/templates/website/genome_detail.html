@@ -346,86 +346,33 @@
             </div>
         {% endif %}
 
-        {% if included_sequences %}
+        {% if custom_tables %} {% for title, table, pie_chart_col in custom_tables %}
             <!-- included_sequences -->
             <div class="container">
 
                 <hr class="featurette-divider">
 
-                <h3>Origin of included sequences</h3>
+                <h3>{{ title }}</h3>
 
-                <div class="container flex-container">
-                    <div class=flex-table">
-                        <table class="table table-sm" id="busco-table">
-                            <thead class="thead-dark">
-                            <tr>
-                                <th scope="col">Species</th>
-                                <th scope="col">Amount</th>
-                            </tr>
-                            </thead>
-                            <tbody>{% for taxid, html, sci_name, color, percentage in included_sequences %}
-                                <tr class="">
-                                    <th scope="row">{{ html|safe }}</th>
-                                    <td>{{ percentage }}</td>
-                                </tr>{% endfor %}
-                            </tbody>
-                        </table>
+                {% if pie_chart_col %}
+                    <div class="container flex-container">
+                        <div class=flex-table">
+                            {{ table|safe }}
+                        </div>
+                        <div>
+                            <div id="{{ title }}-pie-chart" class="pie-chart" height="260px" width="260px"></div>
+                        </div>
                     </div>
-                    <div class="flex-pie">
-                        <div id="included-pie-chart" class="pie-chart" height="260px" width="260px"></div>
-                    </div>
-                </div>
+
+                {% else %}
+
+                    {{ table|safe }}
+
+                {% endif %}
+
             </div>
-        {% endif %}
+        {% endfor %}{% endif %}
 
-        {% if excluded_sequences %}
-            <!-- excluded_sequences -->
-            <div class="container">
-
-                <hr class="featurette-divider">
-
-                <h3>Origin of excluded sequences</h3>
-
-                <div class="container flex-container">
-                    <div class=flex-table">
-                        <table class="table table-sm" id="busco-table">
-                            <thead class="thead-dark">
-                            <tr>
-                                <th scope="col">Species</th>
-                                <th scope="col">Amount</th>
-                            </tr>
-                            </thead>
-                            <tbody>{% for taxid, html, sci_name, color, percentage in excluded_sequences %}
-                                <tr class="">
-                                    <th scope="row">{{ html|safe }}</th>
-                                    <td>{{ percentage }}</td>
-                                </tr>{% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                    <div>
-                        <div id="excluded-pie-chart" class="pie-chart" height="260px" width="260px"></div>
-                    </div>
-                </div>
-            </div>
-        {% endif %}
-
-        {% if sixteen_s %}
-            <!-- sixteen_s -->
-            <div class="container">
-
-                <hr class="featurette-divider">
-
-                <h3>16S</h3>
-
-                <div class="container flex-container">
-                    {% for db_name, table in sixteen_s.items %}
-                        <h4>Database: {{ db_name }}</h4>
-                        {{ table|safe }}
-                    {% endfor %}
-                </div>
-            </div>
-        {% endif %}
 
         <!-- download files -->
         <div class="container black-links">
@@ -487,21 +434,21 @@
         $(document).ready(function () {
             $('[data-toggle="tooltip"]').tooltip({
                 title: function () {
-                    return $(this).attr('data-species');
+                    return $(this).attr('data-species')
                 }
-            });
+            })
 
             $("#gene-search").autocomplete({
                 source: function (request, response) {
                     jQuery.get("/api/search-genes", {
                         term: request.term
                     }, function (data) {
-                        response(data);
-                    });
+                        response(data)
+                    })
                 },
                 minLength: 3,
                 position: {collision: "flip"}
-            });
+            })
 
             $(".ogb-tag.taxid").each(function (index) {
                 $(this).on("click", function () {
@@ -509,22 +456,22 @@
                 })
             })
 
-        });
+        })
 
         function go_to_gene(gene) {
             console.log(gene)
-            window.open(`/gene/${gene}`);
+            window.open(`/gene/${gene}`)
         }
 
         const pie_layout = {
             height: 370,
             width: 370,
             showlegend: false
-        };
+        }
 
         const pie_settings = {
             displayModeBar: false
-        };
+        }
 
         function load_busco_pie() {
             let data = [{
@@ -534,9 +481,9 @@
                 marker: {
                     colors: ['#8fd19e', '#b8daff', '#ffdf7e', '#ed969e']
                 },
-            }];
+            }]
 
-            Plotly.newPlot('busco-pie-chart', data, pie_layout, pie_settings);
+            Plotly.newPlot('busco-pie-chart', data, pie_layout, pie_settings)
         }
 
         {% if included_sequences %}
@@ -551,44 +498,78 @@
                         colors: [
                             {% for taxid, html, sci_name, color, percentage in included_sequences %} "rgb({{color}})", {% endfor %}]
                     },
-                }];
+                }]
 
 
-                Plotly.newPlot('included-pie-chart', data, pie_layout, pie_settings);
+                Plotly.newPlot('included-pie-chart', data, pie_layout, pie_settings)
             }
         {% endif %}
 
-        {% if excluded_sequences %}
-            function load_excluded_pie() {
-                let data = [{
-                    values: [
-                        {% for taxid, html, sci_name, color, percentage in excluded_sequences %} {{percentage}}, {% endfor %}],
-                    labels: [
-                        {% for taxid, html, sci_name, color, percentage in excluded_sequences %} "{{sci_name}}", {% endfor %}],
-                    type: 'pie',
-                    marker: {
-                        colors: [
-                            {% for taxid, html, sci_name, color, percentage in excluded_sequences %} "rgb({{color}})", {% endfor %}]
-                    },
-                }];
+        function load_custom_table_pie(title, pie_chart_col) {
+            const chart_id = `${title}-pie-chart`
+            const table_id = `custom_table_${title}`
 
-                Plotly.newPlot('excluded-pie-chart', data, pie_layout, pie_settings);
+            const table = document.getElementById(table_id)
+
+            // get column index with values
+            const values_idx = $(table).find('th').map(function () {
+                return this.innerHTML
+            }).get().indexOf(pie_chart_col)
+
+            // get column index description
+            const descr_idx = values_idx === 0 ? 1 : 0
+
+            // get values
+            const values = $(table).find('tbody tr').map(function () {
+                return $(this).find('td')[values_idx].innerText
+            }).get()
+
+            // get descriptions
+            const descrs = $(table).find('tbody tr').map(function () {
+                return $(this).find('td')[descr_idx].innerText
+            }).get()
+
+            // try to find a color for each row
+            function get_color(row) {
+                let col
+                row.find('*').each(function (index, el) {
+                    const _col = window.getComputedStyle(this, null).getPropertyValue("background-color")
+                    if (_col !== 'rgba(0, 0, 0, 0)') {
+                        col = _col
+                    }
+                })
+                return col
             }
-        {% endif %}
+
+            const colors = $(table).find('tbody tr').map(function () {
+                return get_color($(this))
+            }).get()
+
+            let data = [{
+                values: values,
+                labels: descrs,
+                type: 'pie',
+                marker: {
+                    colors: colors
+                }
+            }]
+
+            Plotly.newPlot(chart_id, data, pie_layout, pie_settings)
+        }
 
         window.onload = function () {
             {% if genome.BUSCO %}
-                load_busco_pie();
+                load_busco_pie()
             {% endif %}
 
-            {% if included_sequences %}
-                load_included_pie();
-            {% endif %}
 
-            {% if excluded_sequences %}
-                load_excluded_pie();
+            {% if custom_tables %} {% for title, table, pie_chart_col in custom_tables %}
+            {% if pie_chart_col %}
+                load_custom_table_pie('{{ title }}', '{{ pie_chart_col }}')
             {% endif %}
-        };
+            {% endfor %}{% endif %}
+
+        }
 
 
     </script>
