@@ -1,10 +1,8 @@
 {% extends 'global/base.html' %}
 {% load static %}
-{% load crispy_forms_tags %}
 
 {% block styles %}
     <!-- Site-specific css/js -->
-    <link rel="stylesheet" type="text/css" href="{% static 'annotation_search/css/blast.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'global/css/annotype_color.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'global/css/taxid_color.css' %}"
           id="taxid-color-stylesheet"/>
@@ -40,12 +38,64 @@
     <section>
 
         <div class="container">
-            <form method="post" id="blast-form" action="{% url "website:blast-submit" %}">
+            <form>
                 {% csrf_token %}
-                {{ form|crispy }}
-                <button type="submit" class="btn btn-success">Blast!</button>
+                <div class="form-group">
+                    <label for="get-genomes">Genomes:</label>
+                    <input type="text" class="form-control" id="get-genomes" value="{{ genomes|join:", " }}">
+                </div>
+
+                <button type="button" class="btn btn-primary" onclick="submit_function()">Submit</button>
             </form>
         </div>
+
+        {% if genomes %}
+            <div class="container">
+
+                <hr class="featurette-divider">
+
+                <form id="blast-form" method="POST" action="{% url 'website:blast-submit' %}">
+                    {% csrf_token %}
+
+                    <div class="form-group">
+                        <label for="real-genomes">Genes:</label>
+                        <div name="abc" class="read-only-div" id="real-genomes">
+                            {% for genome in genomes %}{{ genome.html|safe }}{% endfor %}
+                        </div>
+                    </div>
+
+
+                    <div class="form-group">
+                        <label for="id_blast_type" class=" requiredField">Blast type</label>
+                        <div>
+                            <select name="blast_type" class="select form-control" id="id_blast_type">
+                                <option value="blastp">blastp: protein -> protein cds</option>
+                                <option value="blastn_ffn">blastn: nucleotides -> nucleotide cds</option>
+                                <option value="blastn_fna">blastn: nucleotides -> nucleotide assembly</option>
+                                <option value="blastx">blastx: nucleotides -> protein cds</option>
+                                <option value="tblastn_ffn">tblastn: protein -> nucleotide cds</option>
+                                <option value="tblastn_fna">tblastn: protein -> nucleotide assembly</option>
+
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="id_blast_input" class=" requiredField">Blast input</label>
+                        <div>
+                            <textarea name="blast_input"
+                                      id="blast_input" cols="40" rows="10"
+                                      style="font-family: Courier" spellcheck="false"
+                                      class="textarea form-control" required>></textarea>
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn btn-primary" onclick="blast()">Blast</button>
+                </form>
+
+            </div>
+
+        {% endif %}
 
     </section>
 
@@ -75,32 +125,65 @@
 
     <script>
 
-        "use strict";
+        "use strict"
 
-        let current_annotations = [];
-        let current_genomes = [];
+        let current_annotations = []
+        let current_genomes = []
 
-        let genome_to_species;
+        let genome_to_species
 
         $(document).ready(function () {
-            genome_to_species = init_autocomplete_genomes("#id_genomes");
-        });
+            genome_to_species = init_autocomplete_genomes("#get-genomes")
+        })
 
 
-        let blasterjs = require("biojs-vis-blasterjs");
+        function submit_function() {
 
-        let frm = $('#blast-form');
-        frm.submit(function () {
+            const genomes = $('#get-genomes').val().split(',')
+
+            console.log('genomes:', genomes)
+
+            $.when(validate_genomes(genomes)).done(function (genomes_valid) {
+
+                genomes_valid = genomes_valid['success']
+
+                if (genomes_valid) {
+                    $('#get-genomes').next().removeClass('is-invalid')
+                } else {
+                    $('#get-genomes').next().addClass('is-invalid')
+                }
+
+                if (genomes_valid) {
+                    console.log('FORM CONTROL SUCCESS', genomes)
+                    console.log('FORWARD TO NEW URL!')
+
+                    window.location.href = `?genomes=${urlReplBlanks(genomes)}`
+                }
+            })
+
+        }
+
+        let blasterjs = require("biojs-vis-blasterjs")
+
+        function blast() {
             // remove old results
-            $("#blast-multiple-alignments").empty();
-            $("#blast-alignments-table").empty();
-            $("#blast-single-alignment").empty();
+            $("#blast-multiple-alignments").empty()
+            $("#blast-alignments-table").empty()
+            $("#blast-single-alignment").empty()
+
+            let frm = $('#blast-form')
+
+            const genomes = $.map($('#real-genomes .genome'), function (x) {
+                return x.innerText
+            })
+
+            const serialized_query = frm.serialize() + '&genomes[]=' + urlReplBlanks(genomes)
 
             // load new blast results
             $.ajax({
                 type: frm.attr('method'),
                 url: frm.attr('action'),
-                data: frm.serialize(),
+                data: serialized_query,
                 success: function (data) {
                     let instance = new blasterjs({
                         string: data,
@@ -110,7 +193,8 @@
                     })
                 },
                 error: function (data) {
-                    console.log('BLAST FAILED!', data)
+                    console.log('BLAST FAILED!', serialized_query, data)
+                    alert('BLAST FAILED!')
                 }
             }).done(function () {
                 // append click listener
@@ -122,9 +206,8 @@
                     })
                 })
             })
-            return false;
-        })
-
+            return false
+        }
 
     </script>
 

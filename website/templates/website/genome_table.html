@@ -132,8 +132,7 @@
             $('#table').on('contextmenu', 'tr', function (event) {
                 event.preventDefault()
 
-                console.log('click on ')
-                console.log(event)
+                console.log('click on table', event)
 
                 let this_row_idx = $(this).index()
                 let id_col_idx = all_colnames.indexOf('Identifier')
