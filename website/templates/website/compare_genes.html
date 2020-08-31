@@ -44,11 +44,21 @@
     </div>
 
     <div class="sidebar-subcontent form-check form-check-inline">
+        <label for="colorization-anno-type"><a>Colorize genes based on...</a></label>
+        <select class="form-control" id="colorization-anno-type" data-selected="OL">
+            {% for anno_type in anno_types %}
+                <option value="{{ anno_type }}" {% if anno_type == 'OL' %} selected {% endif %}>{{ anno_type.label }} ({{ anno_type }})
+                </option>{% endfor %}
+            <option value="--">Highlight only selected gene</option>
+        </select>
+    </div>
+
+
+    <div class="sidebar-subcontent form-check form-check-inline">
         <button type="button" class="btn btn-primary" onclick="load_dfvm()">Reload Gene Locus</button>
     </div>
 
     <hr>
-
 
     <div class="sidebar-subcontent form-check form-check-inline">
         <label for="msa-method"><a>Alignment method</a></label>
@@ -205,7 +215,8 @@
             load_dna_feature_viewer_multi(
                 gene_identifiers = genes,
                 target_div = $('#gene-loci'),
-                span = parseInt($('#range-span').text())
+                span = parseInt($('#range-span').text()),
+                colorize_by = $('#colorization-anno-type').val()
             ).then(function () {
                 $('#gene-loci-spinner').attr('hidden', true)
             })

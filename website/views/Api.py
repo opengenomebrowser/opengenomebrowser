@@ -412,7 +412,14 @@ class Api:
         if not ('span' in request.GET):
             return err(F"missing parameters. required: 'span'. Got: {request.GET.keys()}")
 
+        if not ('colorize_by' in request.GET):
+            return err(F"missing parameters. required: 'colorize_by'. Got: {request.GET.keys()}")
+
         span = int(request.GET['span'])
+
+        colorize_by = request.GET['colorize_by']
+        if colorize_by not in Annotation.AnnotationTypes.values + ['--']:
+            return err(F"colorize_by must be one of the following: {Annotation.AnnotationTypes.values + ['--']}, but is {colorize_by}")
 
         gene_identifiers = request.GET.getlist('gene_identifiers[]')
 
@@ -434,7 +441,7 @@ class Api:
         genes = Gene.objects.filter(identifier__in=locus_tags)
 
         def get_ortholog(gene):
-            o = gene.annotations.filter(anno_type='OL').first()
+            o = gene.annotations.filter(anno_type=colorize_by).first()
             if o is not None:
                 return o.name
 

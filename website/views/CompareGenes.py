@@ -10,6 +10,8 @@ class CompareGenes:
     def compare(request):
         context = dict(title='Compare Genes')
 
+        context['anno_types'] = Annotation.AnnotationTypes
+
         # If annotations and genomes in query: find genes and redirect to here.
         if 'annotations' in request.GET or 'genomes' in request.GET:
             if not 'annotations' in request.GET and 'genomes' in request.GET:

@@ -3,7 +3,7 @@
 /**
  * Load dna-feature-viewer svg for specific gene.
  */
-async function load_dna_feature_viewer_single(gene_identifier, target_div, span=30000) {
+async function load_dna_feature_viewer_single(gene_identifier, target_div, span = 30000) {
     console.log('gene_identifier  :', gene_identifier, span)
 
     await $.getJSON('/api/dna-feature-viewer-single/', {'gene_identifier': gene_identifier, 'span': span}, function (data) {
@@ -16,10 +16,14 @@ async function load_dna_feature_viewer_single(gene_identifier, target_div, span=
 /**
  * Load dna-feature-viewer svg for multiple genes.
  */
-async function load_dna_feature_viewer_multi(gene_identifiers, target_div, span=10000) {
-    console.log('gene_identifiers  :', gene_identifiers, span)
+async function load_dna_feature_viewer_multi(gene_identifiers, target_div, span = 10000, colorize_by = '--') {
+    console.log('gene_identifiers  :', gene_identifiers, 'span', span, 'colorize_by', colorize_by)
 
-    await $.getJSON('/api/dna-feature-viewer-multi/', {'gene_identifiers': gene_identifiers, 'span': span}, function (data) {
+    await $.getJSON('/api/dna-feature-viewer-multi/', {
+        'gene_identifiers': gene_identifiers,
+        'span': span,
+        'colorize_by': colorize_by
+    }, function (data) {
         target_div.append(data['plot_div'])
         eval(data['script'])
     }).done(function () {

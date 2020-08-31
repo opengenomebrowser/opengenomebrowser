@@ -1,7 +1,7 @@
 "use strict"
 
 /**
- * Load dna-feature-viewer svg for specific gene.
+ * Align multiple genes.
  */
 async function load_alignment(gene_identifiers, target_div, method = 'clustalo', sequence_type = 'protein') {
     console.log('start MSA:', gene_identifiers, target_div, method, sequence_type);

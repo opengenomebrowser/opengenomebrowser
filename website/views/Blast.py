@@ -3,15 +3,27 @@ from website.views.helpers.magic_string import MagicString
 from django.http import HttpResponseBadRequest
 from lib.ncbiblast.ncbi_blast.blast_wrapper import Blast
 
-blast = Blast(system_blast=False, outfmt=5)
+blast = Blast(system_blast=True, outfmt=5)
 
 choice_to_settings = dict(
-    blastn_ffn=dict(query_type='nucl', db_type='nucl', file_type='blast_db_ffn'),
-    blastn_fna=dict(query_type='nucl', db_type='nucl', file_type='blast_db_fna'),
-    blastp=dict(query_type='prot', db_type='prot', file_type='blast_db_faa'),
-    blastx=dict(query_type='nucl', db_type='prot', file_type='blast_db_faa'),
-    tblastn_ffn=dict(query_type='prot', db_type='nucl', file_type='blast_db_ffn'),
-    tblastn_fna=dict(query_type='prot', db_type='nucl', file_type='blast_db_fna')
+    blastn_ffn=dict(
+        query_type='nucl', db_type='nucl', file_type='blast_db_ffn'
+    ),
+    blastn_fna=dict(
+        query_type='nucl', db_type='nucl', file_type='blast_db_fna'
+    ),
+    blastp=dict(
+        query_type='prot', db_type='prot', file_type='blast_db_faa'
+    ),
+    blastx=dict(
+        query_type='nucl', db_type='prot', file_type='blast_db_faa'
+    ),
+    tblastn_ffn=dict(
+        query_type='prot', db_type='nucl', file_type='blast_db_ffn'
+    ),
+    tblastn_fna=dict(
+        query_type='prot', db_type='nucl', file_type='blast_db_fna'
+    )
 )
 
 
@@ -30,13 +42,10 @@ def blast_view(request):
         except ValueError as e:
             context['error_danger'] = str(e)
 
-    print('come here')
-
     return render(request, 'website/blast.html', context)
 
 
 def blast_submit(request):
-    print('blast-submit')
     if not request.method == 'POST':
         return HttpResponseBadRequest('Only POST requests allowed.')
 
