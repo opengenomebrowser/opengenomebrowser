@@ -97,40 +97,40 @@
 
         const type_dict = {{ type_dict|safe }};
 
-            $(document).ready(function () {
-                init_autocomplete_genomes('#get-genomes')
+        $(document).ready(function () {
+            init_autocomplete_genomes('#get-genomes')
 
-                $("#get-map").autocomplete({
-                    source: '{% url "website:api-autocomplete-pathway" %}',
-                    minLength: 2,
-                })
-
-
-                $('#real-genomes .ogb-tag').tooltip({
-                    title: function () {
-                        return $(this).attr('data-species');
-                    }
-                }).click(function () {
-                    showGenomeClickMenu(event)
-                })
-
-                {% if strains_to_annotations %}
-                    $('#pathway-map-container').load(`/download/{{ PATHWAY_MAPS_RELATIVE }}/{{ map.filename }}`.replace(/\s/g, '%20'), function () {
-                        $('.shape').tooltip()
-
-                        $('.shape').click(function (event) {
-                            showMapClickMenu(event, this)
-                        })
-
-                        let strains, colors;
-                        highlightStrains(
-                            strains = {{ strains_to_annotations|safe }},
-                            colors = ['yellow', 'red']
-                        )
-
-                    })
-                {% endif %}
+            $("#get-map").autocomplete({
+                source: '{% url "website:api-autocomplete-pathway" %}',
+                minLength: 2,
             })
+
+
+            $('#real-genomes .ogb-tag').tooltip({
+                title: function () {
+                    return $(this).attr('data-species');
+                }
+            }).click(function () {
+                showGenomeClickMenu(event)
+            })
+
+            {% if strains_to_annotations %}
+                $('#pathway-map-container').load(`/download/{{ PATHWAY_MAPS_RELATIVE }}/{{ map.filename }}`.replace(/\s/g, '%20'), function () {
+                    $('.shape').tooltip()
+
+                    $('.shape').click(function (event) {
+                        showMapClickMenu(event, this)
+                    })
+
+                    let strains, colors;
+                    highlightStrains(
+                        strains = {{ strains_to_annotations|safe }},
+                        colors = ['yellow', 'red']
+                    )
+
+                })
+            {% endif %}
+        })
 
         function submit_function() {
             const genomes = $('#get-genomes').val().split(',')
@@ -172,7 +172,6 @@
                 total = covering.length + not_covering.length
                 percentage = Math.round(covering.length / (total) * 1000) / 10
             }
-            console.log(covering, not_covering)
 
             // initiate context menu
             let cm = new ClickMenu(event, 'map-context-menu')
@@ -183,7 +182,7 @@
                 cm.appendHeader('Coverage')
                 cm.appendElement(`
 <p class="dropdown-item" style="background-color: ${color}">
-${percentage} % (${covering.length} out of ${not_covering.length})</p>`)
+${percentage} % (${covering.length} out of ${total})</p>`)
             }
 
             // annotations
