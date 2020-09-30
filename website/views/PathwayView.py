@@ -40,7 +40,7 @@ def pathway_view(request):
             context['error_danger'] = str(e)
 
     if map_is_valid and genomes_are_valid:
-        context['strains_to_annotations'] = {
+        context['organism_to_annotations'] = {
             genome.identifier: list(map.annotations.filter(genomecontent__genome=genome).values_list(flat=True))
             for genome in found_genomes
         }

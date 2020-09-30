@@ -1,6 +1,6 @@
 from django.db import models
 from django.db.models import JSONField
-from .Strain import Strain
+from .Organism import Organism
 from .TaxID import TaxID
 from .Tag import Tag
 from .GenomeContent import GenomeContent
@@ -10,15 +10,15 @@ from OpenGenomeBrowser import settings
 
 class Genome(models.Model):
     """
-    Represents a measurement of a strain.
+    Represents a measurement of a organism.
 
-    Imported from database/genomes/strain/genomes/*
+    Imported from database/genomes/organism/genomes/*
     """
 
     # MANDATORY general information about the isolate
     identifier = models.CharField('Unique identifier', max_length=50, unique=True)
-    strain = models.ForeignKey(Strain, on_delete=models.CASCADE)
-    representative = models.OneToOneField(Strain, related_name="representative",
+    organism = models.ForeignKey(Organism, on_delete=models.CASCADE)
+    representative = models.OneToOneField(Organism, related_name="representative",
                                           on_delete=models.CASCADE, blank=True, null=True)
     genomecontent = models.OneToOneField(GenomeContent, on_delete=models.CASCADE)
 
@@ -89,11 +89,11 @@ class Genome(models.Model):
         return self.taxid
 
     def set_representative(self):
-        self.strain.set_representative(self)
+        self.organism.set_representative(self)
 
     @property
     def taxid(self) -> TaxID:
-        return self.strain.taxid
+        return self.organism.taxid
 
     @property
     def taxscientificname(self):
@@ -122,14 +122,14 @@ class Genome(models.Model):
 
     @property
     def restricted(self) -> bool:
-        return self.strain.restricted
+        return self.organism.restricted
 
     @property
     def genomecontent__n_genes(self) -> int:
         return self.genomecontent.n_genes
 
     def base_path(self, relative=True) -> str:
-        rel = F"strains/{self.strain.name}/genomes/{self.identifier}"
+        rel = F"organisms/{self.organism.name}/genomes/{self.identifier}"
         if relative:
             return rel
         else:
@@ -163,11 +163,11 @@ class Genome(models.Model):
 
     @property
     def all_tags(self):
-        return (self.tags.all() | self.strain.tags.all()).distinct()
+        return (self.tags.all() | self.organism.tags.all()).distinct()
 
     @property
     def metadata_json(self):
-        return F'{settings.GENOMIC_DATABASE}/strains/{self.strain.name}/genomes/{self.identifier}/genome.json'
+        return F'{settings.GENOMIC_DATABASE}/organisms/{self.organism.name}/genomes/{self.identifier}/genome.json'
 
     def __str__(self):
         return self.identifier
@@ -175,7 +175,7 @@ class Genome(models.Model):
     def invariant(self):
         msg = F"Error in Genome {self.identifier}!"
 
-        assert self.identifier.startswith(self.strain.name), msg
+        assert self.identifier.startswith(self.organism.name), msg
 
         # Check if mandatory files exist:
         for file in [self.cds_faa, self.cds_gbk, self.cds_gff, self.assembly_fasta]:
@@ -229,10 +229,10 @@ class Genome(models.Model):
         from website.models.GenomeSerializer import GenomeSerializer
         from dictdiffer import diff
         gs = GenomeSerializer()
-        im_dict = json.loads(open(F'{settings.GENOMIC_DATABASE}/strains/{self.strain.name}/genomes/{self.identifier}/genome.json').read())
+        im_dict = json.loads(open(F'{settings.GENOMIC_DATABASE}/organisms/{self.organism.name}/genomes/{self.identifier}/genome.json').read())
         if 'tags' in im_dict:
             im_dict['tags'] = set(im_dict['tags'])
-        # im_dict = gs._convert_natural_keys_to_pks(im_dict, self.strain)
+        # im_dict = gs._convert_natural_keys_to_pks(im_dict, self.organism)
         exp_dict = gs.export_genome(self.identifier)
         difference = list(diff(im_dict, exp_dict))
         assert len(difference) == 0, F'{msg}\nim:  {im_dict}\nexp: {exp_dict}\ndiff: {difference}'
@@ -241,7 +241,7 @@ class Genome(models.Model):
 
     @property
     def get_tag_html(self) -> str:
-        tags = (self.tags.all() | self.strain.tags.all()).distinct()
+        tags = (self.tags.all() | self.organism.tags.all()).distinct()
         html = [tag.get_html_badge() for tag in tags.order_by('tag')]
         return " ".join(html)
 
@@ -299,14 +299,14 @@ class Genome(models.Model):
     @staticmethod
     def get_selector_to_description_dict():
         selector_to_description_dict = {
-            'strain.name': {'filter_type': 'text', 'description': 'Strain'},
+            'organism.name': {'filter_type': 'text', 'description': 'Organism'},
             'identifier': {'filter_type': 'text', 'description': 'Identifier'},
             'old_identifier': {'filter_type': 'text', 'description': 'Old Identifier'},
             'representative': {'filter_type': 'binary', 'description': 'Representative'},
-            'strain.restricted': {'filter_type': 'binary', 'description': 'Restricted'},
+            'organism.restricted': {'filter_type': 'binary', 'description': 'Restricted'},
             'contaminated': {'filter_type': 'binary', 'description': 'Contaminated'},
             'genome_tags': {'filter_type': 'custom-tags', 'description': 'Genome-Tags'},
-            'strain_tags': {'filter_type': 'custom-tags', 'description': 'Strain-Tags'},
+            'organism_tags': {'filter_type': 'custom-tags', 'description': 'Organism-Tags'},
             'isolation_date': {'filter_type': 'range_date', 'description': 'Isolation date'},
             'env_broad_scale': {'filter_type': 'no-filter', 'description': 'Broad Isolation Environment'},
             'env_local_scale': {'filter_type': 'no-filter', 'description': 'Local Isolation Environment'},
@@ -335,15 +335,15 @@ class Genome(models.Model):
             'biosample_accession': {'filter_type': 'no-filter', 'description': 'Biosample'},
             'genome_accession': {'filter_type': 'no-filter', 'description': 'Genome Accession'},
             'literature_references': {'filter_type': 'no-filter', 'description': 'Literature References'},
-            'strain.taxid.taxsuperkingdom': {'filter_type': 'multi_select', 'description': 'Superkingdom'},
-            'strain.taxid.taxphylum': {'filter_type': 'multi_select', 'description': 'Phylum'},
-            'strain.taxid.taxclass': {'filter_type': 'multi_select', 'description': 'Class'},
-            'strain.taxid.taxorder': {'filter_type': 'multi_select', 'description': 'Order'},
-            'strain.taxid.taxfamily': {'filter_type': 'multi_select', 'description': 'Family'},
-            'strain.taxid.taxgenus': {'filter_type': 'multi_select', 'description': 'Genus'},
-            'strain.taxid.taxspecies': {'filter_type': 'multi_select', 'description': 'Species'},
-            'strain.taxid.taxsubspecies': {'filter_type': 'multi_select', 'description': 'Subspecies'},
-            'strain.taxid.taxscientificname': {'filter_type': 'multi_select', 'description': 'Taxonomy'},
-            'strain.taxid.id': {'filter_type': 'multi_select', 'description': 'TaxID'}
+            'organism.taxid.taxsuperkingdom': {'filter_type': 'multi_select', 'description': 'Superkingdom'},
+            'organism.taxid.taxphylum': {'filter_type': 'multi_select', 'description': 'Phylum'},
+            'organism.taxid.taxclass': {'filter_type': 'multi_select', 'description': 'Class'},
+            'organism.taxid.taxorder': {'filter_type': 'multi_select', 'description': 'Order'},
+            'organism.taxid.taxfamily': {'filter_type': 'multi_select', 'description': 'Family'},
+            'organism.taxid.taxgenus': {'filter_type': 'multi_select', 'description': 'Genus'},
+            'organism.taxid.taxspecies': {'filter_type': 'multi_select', 'description': 'Species'},
+            'organism.taxid.taxsubspecies': {'filter_type': 'multi_select', 'description': 'Subspecies'},
+            'organism.taxid.taxscientificname': {'filter_type': 'multi_select', 'description': 'Taxonomy'},
+            'organism.taxid.id': {'filter_type': 'multi_select', 'description': 'TaxID'}
         }
         return selector_to_description_dict

@@ -11,7 +11,7 @@ class GenomeContent(models.Model):
     """
     Represents a genomes content.
 
-    Imported from database/genomes/strain/genomes/{1_assemblies,2_annotations}
+    Imported from database/genomes/organisms/genomes/{1_assemblies,2_annotations}
     """
     identifier = models.CharField('unique identifier', max_length=50, unique=True, primary_key=True)
 
@@ -60,8 +60,8 @@ class GenomeContent(models.Model):
         return F'<div class="genome ogb-tag" data-species="{self.genome.taxid.taxscientificname}" data-toggle="tooltip">{self.identifier}</div>'
 
     @property
-    def strain(self):
-        return self.genome.strain
+    def organism(self):
+        return self.genome.organism
 
     def get_ani_similarity(self, partner_genome) -> GenomeSimilarity:
         return GenomeSimilarity.objects.get_or_create(self, partner_genome)

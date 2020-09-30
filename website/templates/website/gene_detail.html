@@ -43,9 +43,9 @@
             <li class="breadcrumb-item">
                 <a href="{% url 'website:taxid' slug=gene.genomecontent.genome.taxid.id %}"> TAXID {{ gene.genomecontent.genome.taxid.id }}</a>
             </li>
-            <!-- Strain -->
+            <!-- Organism -->
             <li class="breadcrumb-item">
-                <a href="{% url 'website:strain' slug=gene.genomecontent.strain %}"> STRAIN {{ gene.genomecontent.strain }}</a>
+                <a href="{% url 'website:organism' slug=gene.genomecontent.organism %}"> ORGANISM {{ gene.genomecontent.organism }}</a>
             </li>
             <!-- Genome -->
             <li class="breadcrumb-item">

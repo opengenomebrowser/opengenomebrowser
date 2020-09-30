@@ -130,10 +130,10 @@ class Api:
             results.extend(MagicString.autocomplete(magic_string=q))
         else:
             genomes = GenomeContent.objects.filter(identifier__icontains=q)[:20]
-            genomes.prefetch_related('strain__taxid')
+            genomes.prefetch_related('organism__taxid')
             for genome in genomes:
                 results.append({
-                    'label': F"{genome.identifier} ({genome.strain.taxid.taxscientificname})",
+                    'label': F"{genome.identifier} ({genome.organism.taxid.taxscientificname})",
                     'value': genome.identifier
                 })
 
@@ -150,10 +150,10 @@ class Api:
         results = []
 
         genes = Gene.objects.filter(identifier__icontains=q)[:20]
-        genes.prefetch_related('genomecontent__genome__strain__taxid')
+        genes.prefetch_related('genomecontent__genome__organism__taxid')
         for gene in genes:
             results.append({
-                'label': F"{gene.identifier} ({gene.genomecontent.genome.strain.taxid.taxscientificname})",
+                'label': F"{gene.identifier} ({gene.genomecontent.genome.organism.taxid.taxscientificname})",
                 'value': gene.identifier
             })
 
@@ -284,7 +284,7 @@ class Api:
         """
         Get dna_feature_viewer bokeh around gene_identifier.
 
-        Query: gene_identifier = "strain3_000345", span=10000
+        Query: gene_identifier = "organism3_000345", span=10000
 
         Returns bokeh script and div
 
@@ -398,7 +398,7 @@ class Api:
         """
         Get dna_feature_viewer bokeh around gene_identifier.
 
-        Query: gene_identifiers = ["strain3_000345", "strain2_000445"], span=10000
+        Query: gene_identifiers = ["organism3_000345", "organism2_000445"], span=10000
 
         Returns bokeh script and div
         """
@@ -468,7 +468,7 @@ class Api:
         script = script[33:-10]  # remove <script type="text/javascript"> and </script>
 
         gene_divs = [g.html for g in gs]
-        species_divs = [g.genomecontent.strain.taxid.html for g in gs]
+        species_divs = [g.genomecontent.organism.taxid.html for g in gs]
 
         plot_div = ""
         for gene, species, plot in zip(gene_divs, species_divs, plot_divs):
@@ -491,7 +491,7 @@ class Api:
         """
         Get information about a gene.
 
-        Query: gene_identifier = "strain3_000345"
+        Query: gene_identifier = "organism3_000345"
 
         Returns JSON
         """
@@ -589,7 +589,7 @@ class Api:
             print(F"Could not find these {type(objs.first()).__name__}s: {identifiers.difference(found)}")
             return err(F"Could not find these {type(objs.first()).__name__}s: {identifiers.difference(found)}")
 
-        # create dictionary: strain -> color based on taxid
+        # create dictionary: organism -> color based on taxid
         species_dict = {o.identifier: o.taxid.taxscientificname for o in objs}
 
         return JsonResponse(dict(method=method, newick=newick, color_dict=species_dict))

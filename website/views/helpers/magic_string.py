@@ -112,13 +112,13 @@ class MagicString:
         genome_identifiers, magic_strings = cls.__split_query(queries)
 
         # process genome_identifiers
-        genome_queryset = Genome.objects.filter(identifier__in=genome_identifiers).prefetch_related('strain', 'strain__taxid') \
-            .values('identifier', 'strain__taxid', 'strain__taxid__taxscientificname')
+        genome_queryset = Genome.objects.filter(identifier__in=genome_identifiers).prefetch_related('organism', 'organism__taxid') \
+            .values('identifier', 'organism__taxid', 'organism__taxid__taxscientificname')
 
         for m in genome_queryset:
             genome_to_species[m['identifier']] = dict(
-                taxid=m['strain__taxid'],
-                sciname=m['strain__taxid__taxscientificname']
+                taxid=m['organism__taxid'],
+                sciname=m['organism__taxid__taxscientificname']
             )
 
         if len(genome_to_species) != len(genome_identifiers):

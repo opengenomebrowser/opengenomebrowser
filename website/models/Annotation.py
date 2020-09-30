@@ -185,11 +185,11 @@ class Annotation(models.Model):
                 gene_identifier_list = [gids.split(',') if gids != '' else None for gids in gene_identifier_list]
                 assert len(genome_identifiers) == len(gene_identifier_list)
 
-                strains = []
+                organisms = []
                 gene_identifiers = []
                 for genome_identifier, gene_list in zip(genome_identifiers, gene_identifier_list):
                     if gene_list:
-                        strains.append(genome_identifier)
+                        organisms.append(genome_identifier)
                         gene_identifiers.extend(gene_list)
 
                 gene_identifiers = [gid.rsplit('|', maxsplit=1)[1] for gid in gene_identifiers]
@@ -207,9 +207,9 @@ class Annotation(models.Model):
 
                     genomecontent_to_ortholog_links.extend(
                         [
-                            GenomeContent.annotations.through(genomecontent_id=strain, annotation_id=hog)
-                            for strain in set(strains)
-                            if strain in all_genomecontents
+                            GenomeContent.annotations.through(genomecontent_id=organism, annotation_id=hog)
+                            for organism in set(organisms)
+                            if organism in all_genomecontents
                         ]
                     )
                 else:

@@ -11,37 +11,37 @@ class GenomeLooper:
         self.db_path = db_path
 
     def loop_genomes(self):
-        strains_path = os.path.join(self.db_path, 'strains')
-        strain_folders = os.scandir(strains_path)
-        for strain_folder in strain_folders:
-            current_strain = strain_folder.name
-            print(current_strain)
+        organism_path = os.path.join(self.db_path, 'organism')
+        organism_folders = os.scandir(organism_path)
+        for organism_folder in organism_folders:
+            current_organism = organism_folder.name
+            print(current_organism)
 
-            with open(strain_folder.path + "/strain.json") as file:
-                strain_dict = json.loads(file.read())
+            with open(organism_folder.path + "/organism.json") as file:
+                organism_dict = json.loads(file.read())
 
-            assert current_strain == strain_dict["name"], \
-                "'name' in strain.json doesn't match folder name: {}".format(strain_folder.path)
+            assert current_organism == organism_dict["name"], \
+                "'name' in organism.json doesn't match folder name: {}".format(organism_folder.path)
 
-            representative_identifier = strain_dict["representative"]
-            assert os.path.isdir(strain_folder.path + "/genomes/" + representative_identifier), \
-                "Error: Representative doesn't exist! Strain: {}, Representative: {}" \
-                    .format(strain_folder.name, representative_identifier)
+            representative_identifier = organism_dict["representative"]
+            assert os.path.isdir(organism_folder.path + "/genomes/" + representative_identifier), \
+                "Error: Representative doesn't exist! organism: {}, Representative: {}" \
+                    .format(organism_folder.name, representative_identifier)
 
-            for genome_folder in os.scandir(strain_folder.path + "/genomes"):
+            for genome_folder in os.scandir(organism_folder.path + "/genomes"):
                 current_genome = genome_folder.name
                 print("   └── " + current_genome)
 
                 with open(genome_folder.path + "/genome.json") as file:
                     genome_dict = json.loads(file.read())
 
-                assert current_genome.startswith(strain_folder.name), \
-                    "genome name '{}' doesn't start with corresponding strain name '{}'.".format(current_genome,
-                                                                                                 current_strain)
+                assert current_genome.startswith(organism_folder.name), \
+                    "genome name '{}' doesn't start with corresponding organism name '{}'.".format(current_genome,
+                                                                                                 current_organism)
                 assert current_genome == genome_dict["identifier"], \
                     "'name' in genome.json doesn't match folder name: {}".format(genome_folder.path)
 
-                self.process(strain_dict, genome_dict)
+                self.process(organism_dict, genome_dict)
 
-    def process(self, strain_dict, genome_dict):
+    def process(self, organism_dict, genome_dict):
         pass

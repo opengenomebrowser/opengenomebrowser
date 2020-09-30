@@ -193,26 +193,26 @@ let autoDiscoverGenomes = function (genomes) {
     }
 }
 
-let showStrainClickMenu = function (event, strain = 'auto', species = 'auto', siblings = 'auto') {
-    console.log('showTaxidClickMenu event:', event, 'strain', strain, 'siblings', siblings)
+let showOrganismClickMenu = function (event, organism = 'auto', species = 'auto', siblings = 'auto') {
+    console.log('showTaxidClickMenu event:', event, 'organism', organism, 'siblings', siblings)
     // auto-discover species
     species = autoDiscoverSpecies(event, species)
 
     // auto-discover annotation
-    strain = autoDiscoverSelf(event, strain)
+    organism = autoDiscoverSelf(event, organism)
 
     // auto-discover siblings (nothing to do with them yet)
-    // siblings = autoDiscoverSiblings(event, taxname, siblings, 'strain')
+    // siblings = autoDiscoverSiblings(event, taxname, siblings, 'organism')
 
     // initiate context menu
-    let cm = new ClickMenu(event, 'strain-context-menu')
+    let cm = new ClickMenu(event, 'organism-context-menu')
 
     // list of elements to click on
     cm.appendElement(`
 <h6 class="dropdown-header context-menu-header" data-species="${species}">
-${strain}</h6>
-<a href="/strain/${strain}" class="dropdown-item context-menu-icon context-menu-icon-strain">
-Open strain info</a>
+${organism}</h6>
+<a href="/organism/${organism}" class="dropdown-item context-menu-icon context-menu-icon-organism">
+Open organism info</a>
 `)
 
     cm.show()
@@ -248,7 +248,7 @@ ${species}</a>`
     }
 
     html += `
-<a href="/genome/${genome}" class="dropdown-item context-menu-icon context-menu-icon-strain">
+<a href="/genome/${genome}" class="dropdown-item context-menu-icon context-menu-icon-organism">
 Open genome info</a>
 <a onclick="CopyToClipboard('${genome}')" class="dropdown-item context-menu-icon context-menu-icon-copy">
 Copy identifier</a>
@@ -433,7 +433,7 @@ Compare genes</a>
         let html = `
 <h6 class="dropdown-header context-menu-header" data-species="${species}" onclick="showGenomeClickMenu(event)">
 ${genome}</h6>
-<a href="/genome/${genome}" class="dropdown-item context-menu-icon context-menu-icon-strain">
+<a href="/genome/${genome}" class="dropdown-item context-menu-icon context-menu-icon-organism">
 Open genome info</a>
 <h6 class="dropdown-header context-menu-header">
 Annotations</h6>

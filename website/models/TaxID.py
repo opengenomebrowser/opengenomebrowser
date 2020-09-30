@@ -51,23 +51,23 @@ class TaxID(MPTTModel):
     def get_child_taxids(self) -> QuerySet:
         return TaxID.objects.get_queryset_descendants(TaxID.objects.filter(id=self.id), include_self=True)
 
-    def get_child_strains(self) -> QuerySet:
+    def get_child_organisms(self) -> QuerySet:
         taxid_qs = self.get_child_taxids()
-        from .Strain import Strain
-        return Strain.objects.filter(taxid__in=list(taxid_qs.values_list(flat=True)))
+        from .Organism import Organism
+        return Organism.objects.filter(taxid__in=list(taxid_qs.values_list(flat=True)))
 
     def get_child_genomes(self, representative=None, contaminated=None, restricted=None) -> QuerySet:
         from .Genome import Genome
-        strain_qs = self.get_child_strains()
+        organism_qs = self.get_child_organisms()
 
-        filter = dict(strain__in=strain_qs)
+        filter = dict(organism__in=organism_qs)
 
         if representative is not None:
             filter.update(dict(representative__isnull=not representative))
         if contaminated is not None:
             filter.update(dict(contaminated=contaminated))
         if restricted is not None:
-            filter.update(dict(strain__restricted=restricted))
+            filter.update(dict(organism__restricted=restricted))
 
         return Genome.objects.filter(**filter)
 

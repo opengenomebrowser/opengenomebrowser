@@ -35,9 +35,9 @@
             <li class="breadcrumb-item">
                 <a href="{% url 'website:taxid' slug=genome.taxid.id %}"> TAXID {{ genome.taxid.id }}</a>
             </li>
-            <!-- Strain -->
+            <!-- Organism -->
             <li class="breadcrumb-item">
-                <a href="{% url 'website:strain' slug=genome.strain %}"> STRAIN {{ genome.strain }}</a>
+                <a href="{% url 'website:organism' slug=genome.organism %}"> ORGANISM {{ genome.organism }}</a>
             </li>
             <!-- Genome -->
             <li class="breadcrumb-item active" aria-current="page">
@@ -55,9 +55,9 @@
             <span class="type-label">genome:</span>
             <span class="h1" onclick="showGenomeClickMenu(event, 'auto', '{{ genome.taxid }}')">{{ genome.identifier }}</span>
 
-            <!-- strain -->
-            <span class="type-label">strain:</span>
-            <span class="h2" onclick="showStrainClickMenu(event, 'auto', '{{ genome.taxid }}')">{{ genome.strain }}</span>
+            <!-- organism -->
+            <span class="type-label">organism:</span>
+            <span class="h2" onclick="showOrganismClickMenu(event, 'auto', '{{ genome.taxid }}')">{{ genome.organism }}</span>
 
             <!-- old identifier -->
             {% if genome.old_identifier %}
@@ -82,22 +82,22 @@
         <div class="container black-links">
             {% if genome.representative %}
                 <div class="alert alert-success" role="alert">
-                    This genome is a representative of <a href="{% url 'website:strain' slug=genome.strain %}"
-                                                          style="color:darkgreen">{{ genome.strain }}</a>.
+                    This genome is a representative of <a href="{% url 'website:organism' slug=genome.organism %}"
+                                                          style="color:darkgreen">{{ genome.organism }}</a>.
                 </div>
             {% else %}
                 <div class="alert alert-dark" role="alert">
-                    Warning: This genome is not a representative of <a href="{% url 'website:strain' slug=genome.strain %}">{{ genome.strain }}</a>.
+                    Warning: This genome is not a representative of <a href="{% url 'website:organism' slug=genome.organism %}">{{ genome.organism }}</a>.
                 </div>
             {% endif %}
         </div>
 
-        {% if genome.strain.restricted %}
+        {% if genome.organism.restricted %}
             <!-- restricted -->
             <div class="container black-links">
 
                 <div class="alert alert-warning" role="alert">
-                    Warning: This strain is restricted.
+                    Warning: This organism is restricted.
                 </div>
 
             </div>

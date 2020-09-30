@@ -15,7 +15,7 @@ class AnnotationDetailView(DetailView):
 
         context['title'] = a.name
 
-        genes = a.gene_set.all().order_by('identifier')[:2000].prefetch_related('genomecontent__genome__strain__taxid')
+        genes = a.gene_set.all().order_by('identifier')[:2000].prefetch_related('genomecontent__genome__organism__taxid')
 
         context['capped'] = len(genes) == 2000
 

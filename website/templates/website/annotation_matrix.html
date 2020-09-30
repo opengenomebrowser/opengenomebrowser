@@ -11,7 +11,7 @@
 
     {% for group_name, table in group_to_table.items %}
 
-        <h3 id="header_{{ group_name }}" style="padding-top: 4em; margin-top: -4em;">Number of genes per strain: Group {{ group_name }}</h3>
+        <h3 id="header_{{ group_name }}" style="padding-top: 4em; margin-top: -4em;">Number of genes per genome: Group {{ group_name }}</h3>
 
         <div class="group-table-container">
             {{ table|safe }}

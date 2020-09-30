@@ -7,8 +7,8 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
 class GenomeLooperInitOrthofinder(GenomeLooper):
-    def process(self, strain_dict, genome_dict):
-        path_to_genome = os.path.join(self.db_path, 'strains', strain_dict['name'], 'genomes',
+    def process(self, organism_dict, genome_dict):
+        path_to_genome = os.path.join(self.db_path, 'organism', organism_dict['name'], 'genomes',
                                       genome_dict['identifier'])
         faa_fn = genome_dict['cds_tool_faa_file']
         faa_path = os.path.join(path_to_genome, faa_fn)

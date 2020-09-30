@@ -45,7 +45,7 @@
         <a>Show contaminated?</a>
         <div id="external_filter_contaminated" class="sidebar-select"></div>
         <a>Show restricted?</a>
-        <div id="external_filter_strain_restricted" class="sidebar-select"></div>
+        <div id="external_filter_organism_restricted" class="sidebar-select"></div>
     </div>
 
     <div class="sidebar-subcontent">
@@ -165,7 +165,7 @@
             {#// destroy external selectors#}
             document.getElementById('external_filter_representative').innerHTML = ''
             document.getElementById('external_filter_contaminated').innerHTML = ''
-            document.getElementById('external_filter_strain_restricted').innerHTML = ''
+            document.getElementById('external_filter_organism_restricted').innerHTML = ''
 
             // load style of table
             genome_table.html(genome_table_skeleton)

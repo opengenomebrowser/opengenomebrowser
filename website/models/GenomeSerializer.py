@@ -2,7 +2,7 @@ import os
 import shutil
 import json
 from django.core import serializers
-from website.models import Strain, Genome, Tag, TaxID, GenomeContent
+from website.models import Organism, Genome, Tag, TaxID, GenomeContent
 from dictdiffer import diff
 
 
@@ -12,7 +12,7 @@ class GenomeSerializer:
         g = Genome.objects.filter(identifier=identifier)
         genome_dict = serializers.serialize("json", g, use_natural_foreign_keys=True, use_natural_primary_keys=True)
         genome_dict = json.loads(genome_dict)[0]['fields']
-        genome_dict.pop('strain')
+        genome_dict.pop('organism')
         genome_dict.pop('representative')
         genome_dict.pop('genomecontent')
         genome_dict.pop('assembly_longest_scf')
@@ -23,12 +23,12 @@ class GenomeSerializer:
         genome_dict['tags'] = set(genome_dict['tags'])
         return genome_dict
 
-    def import_genome(self, raw_genomes_dict: dict, parent_strain: Strain, is_representative: bool,
+    def import_genome(self, raw_genomes_dict: dict, parent_organism: Organism, is_representative: bool,
                       update_css=True) -> Genome:
         if 'tags' in raw_genomes_dict:
             raw_genomes_dict['tags'] = set(raw_genomes_dict['tags'])
 
-        genome_dict = self._convert_natural_keys_to_pks(raw_genomes_dict, parent_strain)
+        genome_dict = self._convert_natural_keys_to_pks(raw_genomes_dict, parent_organism)
 
         if Genome.objects.filter(identifier=genome_dict['identifier']).exists():
             g = Genome.objects.get(identifier=genome_dict['identifier'])
@@ -38,7 +38,7 @@ class GenomeSerializer:
                 print(": unchanged")
                 g.genomecontent.update()
                 if is_representative:
-                    parent_strain.set_representative(g)
+                    parent_organism.set_representative(g)
 
                 g.invariant()
                 return g
@@ -73,7 +73,7 @@ class GenomeSerializer:
 
         # Set representative
         if is_representative:
-            parent_strain.set_representative(genome)
+            parent_organism.set_representative(genome)
 
         if update_css:
             Tag.create_tag_color_css()
@@ -84,11 +84,11 @@ class GenomeSerializer:
         return genome
 
     @classmethod
-    def _convert_natural_keys_to_pks(self, d: dict, parent_strain: Strain):
+    def _convert_natural_keys_to_pks(self, d: dict, parent_organism: Organism):
         return_d = {}  # create deep copy
         return_d.update(d)
 
-        return_d['strain'] = parent_strain.pk
+        return_d['organism'] = parent_organism.pk
 
         return_d['representative'] = None  # assign representative after first save
 

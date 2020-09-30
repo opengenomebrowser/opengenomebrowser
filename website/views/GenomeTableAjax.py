@@ -19,8 +19,8 @@ class GenomeTableAjax(LoginRequiredMixin, BaseDatatableView):
         if column == 'genome_tags':
             html = [F'<span data-tag="{tag}">{tag}</span>' for tag in row.genome_tags if tag]
             return ' '.join(html)
-        if column == 'strain_tags':
-            html = [F'<span data-tag="{tag}">{tag}</span>' for tag in row.strain_tags if tag]
+        if column == 'organism_tags':
+            html = [F'<span data-tag="{tag}">{tag}</span>' for tag in row.organism_tags if tag]
             return ' '.join(html)
         if column == 'representative':
             return 'True' if row.representative else 'False'
@@ -36,7 +36,7 @@ class GenomeTableAjax(LoginRequiredMixin, BaseDatatableView):
             raise NotImplementedError("Need to provide a model or implement get_initial_queryset!")
         return self.model.objects.annotate(
             genome_tags=ArrayAgg('tags__tag', ordering='tags__pk'),
-            strain_tags=ArrayAgg('strain__tags__tag', ordering='tags__pk')
+            organism_tags=ArrayAgg('organism__tags__tag', ordering='tags__pk')
         ).all()
 
     def filter_queryset(self, qs):
@@ -56,7 +56,7 @@ class GenomeTableAjax(LoginRequiredMixin, BaseDatatableView):
                 # apply global search to all searchable columns
                 if search and col['searchable']:
                     # cannot search binary fields or tags
-                    if not columns[col_no] in ['representative', 'contaminated', 'strain.restricted']:
+                    if not columns[col_no] in ['representative', 'contaminated', 'organism.restricted']:
                         q |= Q(**{F"{columns[col_no].replace('.', '__')}__{filter_method}": search})
 
                 # column specific filter
@@ -71,8 +71,8 @@ class GenomeTableAjax(LoginRequiredMixin, BaseDatatableView):
                             qs = qs.filter(representative__isnull=True)
                     elif colname == "genome_tags":
                         qs = qs.filter(tags__tag__in=col['search.value'].split("|"))
-                    elif colname == "strain_tags":
-                        qs = qs.filter(strain__tags__tag__in=col['search.value'].split("|"))
+                    elif colname == "organism_tags":
+                        qs = qs.filter(organism__tags__tag__in=col['search.value'].split("|"))
                     elif colname.endswith("_date"):
                         if col['search.value'].startswith("-yadcf_delim"):
                             range = ["0001-01-01", col['search.value'][-10:]]

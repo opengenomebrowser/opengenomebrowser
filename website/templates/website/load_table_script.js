@@ -21,7 +21,7 @@ data_table = genome_table.DataTable({
             console.log(data[4], 'c');
             $(row).addClass('contaminated');
         }
-        if (data[{{ indexes.strain_restricted }}] == "True") {
+        if (data[{{ indexes.organism_restricted }}] == "True") {
             console.log(data[4], 'r');
             $(row).addClass('restricted');
         }

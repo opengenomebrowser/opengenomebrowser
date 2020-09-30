@@ -20,10 +20,10 @@ urlpatterns = [
     path('table-load-script/', LoadTableScript.render_script, name='genome-table-script'),
     path('table-ajax/', GenomeTableAjax.as_view(), name='genome-table-ajax'),
 
-    # ex: /strain/{identifier}
-    path('strain/<slug:slug>/', StrainDetailView.as_view(), name='strain'),
+    # ex: /organism/{identifier}
+    path('organism/<slug:slug>/', OrganismDetailView.as_view(), name='organism'),
 
-    # ex: /strain/{name}
+    # ex: /genome/{name}
     path('genome/<str:slug>/', GenomeDetailView.as_view(), name='genome'),
 
     # ex: /taxid/{taxid} and /taxname/{taxscientificname}
@@ -36,20 +36,20 @@ urlpatterns = [
     # ex: /annotation/{name}
     path('annotation/<str:slug>/', AnnotationDetailView.as_view(), name='annotation'),
 
-    # ex: /pathway/?map_slug={kegg-map-00400}&genomes={strain1}+{strain2}
+    # ex: /pathway/?map_slug={kegg-map-00400}&genomes={organism1}+{organism2}
     path('pathway/', PathwayView.pathway_view, name='pathway'),
 
-    # ex: /trees/?genomes={strain1}+{strain2}
+    # ex: /trees/?genomes={organism1}+{organism2}
     path('trees/', Trees.trees, name='trees'),
 
     # ex: /compare-genes/?genes={gene 1}+{gene 2}
     path('compare-genes/', CompareGenes.compare, name='compare-genes'),
 
-    # ex: /annotation-search/?annotations={K01626}+{EC:4.4.4.4}&genomes={strain1}+{strain2}
+    # ex: /annotation-search/?annotations={K01626}+{EC:4.4.4.4}&genomes={organism1}+{organism2}
     path('annotation-search/', AnnotationSearch.annotation_view, name='annotation-search'),
     path('annotation-matrix/', AnnotationSearch.annotation_matrix, name='annotation-matrix'),
 
-    # ex: /blast/?query={fasta}&genomes={strain1}+{strain2}
+    # ex: /blast/?query={fasta}&genomes={organism1}+{organism2}
     path('blast/', Blast.blast_view, name='blast'),
     path('blast/submit', Blast.blast_submit, name='blast-submit'),
     # path('api/autocomplete-genome/', Blast.GenomeAutocomplete.as_view(),

@@ -4,7 +4,7 @@ import os
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-# import django environment to manipulate the Strain and Genome classes
+# import django environment to manipulate the Organism and Genome classes
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "OpenGenomeBrowser.settings")
 from django.core.wsgi import get_wsgi_application
 

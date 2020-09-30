@@ -4,23 +4,23 @@
  * Remove metadata tags from shapes
  *
  * From each shape, remove:
- *   - data-strains
+ *   - data-organisms
  *   - data-manual-number
  *   - from each annotation in data-annotations:
- *      - 'strains'
+ *      - 'organisms'
  *      - 'manual-number
  */
 function resetMap() {
     $(".shape").each(function () {
         // make fill transparent
         this.firstElementChild.setAttribute('fill', 'transparent')
-        // empty strains from shape
-        $(this).removeData('strains')
+        // empty organisms from shape
+        $(this).removeData('organisms')
         $(this).removeData('manual-number')
-        // empty strains from annotations
+        // empty organisms from annotations
         let annotations = $(this).data('annotations')
         annotations.forEach(function (annotation, index) {
-            delete annotations[index]['strains']
+            delete annotations[index]['organisms']
             delete annotations[index]['manual-number']
         })
         $(this).data('annotations', annotations)
@@ -50,62 +50,64 @@ function highlightBinary(
 }
 
 /**
- * Colorize shapes by how many strains have their annotations
+ * Colorize shapes by how many organisms have their annotations
  *
  * @param  {Array}  colors Two colors: The first for shapes that are covered by one annotation,
  *   the second for shapes that are covered by all annotations
- * @param  {Object} strains A dictionary { strain => [ annotation ]}
- *   Example: { Strain1: [ "R09127", "R01788", … ], Strain2: [ … ], … }
+ * @param  {Object} organisms A dictionary { organism => [ annotation ]}
+ *   Example: { Organism1: [ "R09127", "R01788", … ], Organism2: [ … ], … }
  *
  * Adds...
- *   - 'data-strains' to shape, for example:
- *        { covering: [ "Strain1", … ], not-covering: [] }
- *   - 'strains' to annotations in 'data-annotations':
- *        { name: "K01223", …, strains: [ "Strain1", … ] }
+ *   - 'data-organisms' to shape, for example:
+ *        { covering: [ "Organism1", … ], not-covering: [] }
+ *   - 'organisms' to annotations in 'data-annotations':
+ *        { name: "K01223", …, organisms: [ "Organism1", … ] }
  * This data can be removed using resetMap()
  */
-function highlightStrains(
-    strains,
+function highlightOrganisms(
+    organisms,
     colors = ['yellow', 'red']
 ) {
     resetMap()
 
-    let strain_names = Object.keys(strains)
-    let color_array = chroma.scale(colors).mode('lch').colors(strain_names.length)
+    const organism_names = Object.keys(organisms)
+    const color_array = chroma.scale(colors).mode('lch').colors(organism_names.length)
 
     function gradientShape(shape) {
-        let annotations = $(shape).data('annotations')
-        let covering_strains = new Set()
-        let not_covering_strains = new Set()
+        const annotations = $(shape).data('annotations')
+        let covering_organisms = new Set()
+        let not_covering_organisms = new Set()
         annotations.forEach(function (annotation, index) {
-            annotations[index]['strains'] = new Set()
+            annotations[index]['organisms'] = new Set()
         })
 
-        // for each strain, see if it covers anything
-        $.each(strains, function (s_name, s_annotations) {
+        // for each organism, see if it covers anything
+        $.each(organisms, function (s_name, s_annotations) {
             let covering = false
             annotations.forEach(function (annotation, index) {
                 if (s_annotations.includes(annotation['name'])) {
-                    annotations[index]['strains'].add(s_name)
-                    covering_strains.add(s_name)
+                    annotations[index]['organisms'].add(s_name)
+                    covering_organisms.add(s_name)
                     covering = true
                 }
             })
             if (!covering) {
-                not_covering_strains.add(s_name)
+                not_covering_organisms.add(s_name)
             }
 
         })
 
         // write info back to shape
-        $(shape).data('strains', {"covering": covering_strains, "not-covering": not_covering_strains})
+        $(shape).data('organisms', {"covering": covering_organisms, "not-covering": not_covering_organisms})
         $(shape).data('annotations', annotations)
 
         // color shape
-        const n_covered = covering_strains.size
+        const n_covered = covering_organisms.size
         if (n_covered > 0) {
             shape.firstElementChild.setAttribute('fill', color_array[n_covered - 1])
         }
+
+        console.log(shape, $(shape).data('organisms'))
     }
 
     $(".shape").each(function (index) {
@@ -140,7 +142,7 @@ function highlightContinuous(
         let annotations = $(shape).data('annotations')
         let manualNumber
 
-        // for each strain, see if it covers anything
+        // for each organism, see if it covers anything
         annotations.forEach(function (annotation, index) {
             if (m_annotations.includes(annotation['name'])) {
                 manualNumber = annotation_to_number[annotation['name']]
@@ -168,12 +170,12 @@ function highlightContinuous(
 /**
  * Returns the annotations that are covered by the shape
  *
- * @param  {Array}  strain_annos Array of annotations, e.g. [ "C00033", "C00031", … ]
+ * @param  {Array}  organism_annos Array of annotations, e.g. [ "C00033", "C00031", … ]
  * @param  {Object} shape_annos Array of shape-annotation-objects [ { name="K03103" }, … ]
  * @return {Array}  Array of annotations that are covered by the shape
  */
-function getCoveredAnnotations(strain_annos, shape_annos) {
-    return shape_annos.filter(item => strain_annos.includes(item['name']))
+function getCoveredAnnotations(organism_annos, shape_annos) {
+    return shape_annos.filter(item => organism_annos.includes(item['name']))
 }
 
 /**

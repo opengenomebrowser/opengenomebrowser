@@ -7,16 +7,16 @@ from colorama import Fore
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-# import django environment to manipulate the Strain and Genome classes
+# import django environment to manipulate the Organism and Genome classes
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "OpenGenomeBrowser.settings")
 from django.core.wsgi import get_wsgi_application
 from django.conf import settings
 
 application = get_wsgi_application()
 
-from website.models import Strain, Genome, Tag, TaxID, GenomeContent, Gene, PathwayMap
+from website.models import Organism, Genome, Tag, TaxID, GenomeContent, Gene, PathwayMap
 from website.models.GenomeSerializer import GenomeSerializer
-from website.models.StrainSerializer import StrainSerializer
+from website.models.OrganismSerializer import OrganismSerializer
 
 from website.models.Annotation import Annotation
 
@@ -26,47 +26,47 @@ class Importer:
         self.db_path = settings.GENOMIC_DATABASE
 
     def import_database(self, delete_missing=True, auto_delete_missing=False, reload_orthologs=True):
-        strains_path = self.db_path + "/strains"
-        assert os.path.isdir(strains_path), strains_path
+        organisms_path = self.db_path + "/organisms"
+        assert os.path.isdir(organisms_path), organisms_path
 
-        # Remove Strain or a Genome if it has been removed from the database-folder
+        # Remove Organism or a Genome if it has been removed from the database-folder
         if delete_missing:
-            self.remove_missing_strains(strains_path, auto_delete_missing)
+            self.remove_missing_organisms(organisms_path, auto_delete_missing)
 
-        # Import new strains / update existing strains
+        # Import new organisms / update existing organisms
         genome_serializer = GenomeSerializer()
-        strain_serializer = StrainSerializer()
+        organism_serializer = OrganismSerializer()
 
-        strain_folders_len = len(list(os.scandir(strains_path)))
-        strain_folders = os.scandir(strains_path)
+        organism_folders_len = len(list(os.scandir(organisms_path)))
+        organism_folders = os.scandir(organisms_path)
 
-        print(F"Number of strains to import: {strain_folders_len}")
+        print(F"Number of organisms to import: {organism_folders_len}")
 
-        for strain_folder in progressbar(strain_folders, max_value=strain_folders_len, redirect_stdout=True):
-            current_strain = strain_folder.name
-            print(current_strain, end='')
+        for organism_folder in progressbar(organism_folders, max_value=organism_folders_len, redirect_stdout=True):
+            current_organism = organism_folder.name
+            print(current_organism, end='')
 
-            with open(strain_folder.path + "/strain.json") as file:
-                strain_dict = json.loads(file.read())
+            with open(organism_folder.path + "/organism.json") as file:
+                organism_dict = json.loads(file.read())
 
-            assert current_strain == strain_dict["name"], \
-                F"'name' in strain.json doesn't match folder name: {strain_folder.path}"
+            assert current_organism == organism_dict["name"], \
+                F"'name' in organism.json doesn't match folder name: {organism_folder.path}"
 
-            representative_identifier = strain_dict["representative"]
-            assert os.path.isdir(strain_folder.path + "/genomes/" + representative_identifier), \
-                F"Error: Representative doesn't exist! Strain: {strain_folder.name}, Representative: {representative_identifier}"
+            representative_identifier = organism_dict["representative"]
+            assert os.path.isdir(organism_folder.path + "/genomes/" + representative_identifier), \
+                F"Error: Representative doesn't exist! Organism: {organism_folder.name}, Representative: {representative_identifier}"
 
-            s = strain_serializer.import_strain(strain_dict, update_css=False)
+            s = organism_serializer.import_organism(organism_dict, update_css=False)
 
-            for genome_folder in os.scandir(strain_folder.path + "/genomes"):
+            for genome_folder in os.scandir(organism_folder.path + "/genomes"):
                 current_genome = genome_folder.name
                 print("   └── " + current_genome, end='')
 
                 with open(genome_folder.path + "/genome.json") as file:
                     genome_dict = json.loads(file.read())
 
-                assert current_genome.startswith(strain_folder.name), \
-                    F"genome name '{current_genome}' doesn't start with corresponding strain name '{current_strain}'."
+                assert current_genome.startswith(organism_folder.name), \
+                    F"genome name '{current_genome}' doesn't start with corresponding organism name '{current_organism}'."
                 assert current_genome == genome_dict["identifier"], \
                     F"'name' in genome.json doesn't match folder name: {genome_folder.path}"
 
@@ -86,13 +86,13 @@ class Importer:
         from website.models import PathwayMap
         PathwayMap.reload_maps()
 
-    def remove_missing_strains(self, strains_path, auto_delete_missing):
-        all_strains = []
+    def remove_missing_organisms(self, organisms_path, auto_delete_missing):
+        all_organisms = []
         all_genomes = []
 
-        for strain_folder in os.scandir(strains_path):
-            all_strains.append(strain_folder.name)
-            for genome_folder in os.scandir(strain_folder.path + "/genomes"):
+        for organism_folder in os.scandir(organisms_path):
+            all_organisms.append(organism_folder.name)
+            for genome_folder in os.scandir(organism_folder.path + "/genomes"):
                 all_genomes.append(genome_folder.name)
 
         for genome in Genome.objects.all():
@@ -103,13 +103,13 @@ class Importer:
                     Importer.confirm_delete(color=Fore.MAGENTA)
                 genome.delete()
 
-        for strain in Strain.objects.all():
-            if strain.name not in all_strains:
+        for organism in Organism.objects.all():
+            if organism.name not in all_organisms:
                 if not auto_delete_missing:
                     Importer.print_warning(
-                        F"Strain '{strain.name}' is missing from the database-folder. Remove it from the database?", color=Fore.MAGENTA)
+                        F"Organism '{organism.name}' is missing from the database-folder. Remove it from the database?", color=Fore.MAGENTA)
                     Importer.confirm_delete(color=Fore.MAGENTA)
-                strain.delete()
+                organism.delete()
 
     @staticmethod
     def confirm_delete(color):
@@ -148,7 +148,7 @@ class Importer:
             Importer.print_warning("DO YOU REALLY WANT TO RESET THE DATABASE?", color=Fore.MAGENTA)
             Importer.confirm_delete(color=Fore.MAGENTA)
 
-        for model in [Strain, Genome, Tag, TaxID, GenomeContent, Gene, PathwayMap, Annotation]:
+        for model in [Organism, Genome, Tag, TaxID, GenomeContent, Gene, PathwayMap, Annotation]:
             model.objects.all().delete()
 
     @staticmethod
@@ -156,9 +156,9 @@ class Importer:
         print()
         print("Performing sanity checks...")
         # TaxID and Tag check their own invariants upon saving.
-        strains = Strain.objects.all()
-        for strain in strains:
-            assert strain.invariant(), F"Class invariant failed for strain '{strain.name}'!"
+        organisms = Organism.objects.all()
+        for organism in organisms:
+            assert organism.invariant(), F"Class invariant failed for organism '{organism.name}'!"
 
         genomes = Genome.objects.all()
         for genome in genomes:
@@ -173,11 +173,11 @@ class Importer:
             assert taxid.invariant(), F"Class invariant failed for TaxID '{taxid.id} - {taxid.scientific_name}'!"
         assert Annotation.invariant()
 
-        print(F"Successfully imported: {len(strains)} strains and {len(genomes)} genomes, " +
-              F"belonging to {len(Strain.objects.values('taxid').distinct())} species.")
+        print(F"Successfully imported: {len(organisms)} organisms and {len(genomes)} genomes, " +
+              F"belonging to {len(Organism.objects.values('taxid').distinct())} species.")
 
     # def export_database(self):
-    #     for strain in Strain.objects.all()
+    #     for organism in Organism.objects.all()
 
 
 def main():

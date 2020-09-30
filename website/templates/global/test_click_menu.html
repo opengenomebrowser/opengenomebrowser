@@ -59,7 +59,7 @@
 
         <div class="container">
             <div class="test-div border border-primary">
-                {% for x in strains %}
+                {% for x in organisms %}
                     {{ x.html| safe }}
                 {% endfor %}
             </div>
@@ -98,8 +98,8 @@
                     this.setAttribute('onclick', `showGeneClickMenu(event)`)
                 } else if ($(this).hasClass('taxid')) {
                     this.setAttribute('onclick', `showTaxidClickMenu(event)`)
-                } else if ($(this).hasClass('strain')) {
-                    this.setAttribute('onclick', `showStrainClickMenu(event)`)
+                } else if ($(this).hasClass('organism')) {
+                    this.setAttribute('onclick', `showOrganismClickMenu(event)`)
                 }
             })
         });

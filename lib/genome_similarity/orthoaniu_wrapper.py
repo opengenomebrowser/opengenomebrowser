@@ -90,6 +90,6 @@ class OrthoANIu:
 if __name__ == '__main__':
     oa = OrthoANIu()
     print(os.getcwd())
-    res = oa.calculate_similarity('../../database/strains/FAM13496/genomes/FAM13496-i1-1.1/1_assembly/FAM13496-i1-1.fna',
-                                  '../../database/strains/FAM18815/genomes/FAM18815-i1-1.1/1_assembly/FAM18815-i1-1.fna')
+    res = oa.calculate_similarity('../../database/organism/FAM13496/genomes/FAM13496-i1-1.1/1_assembly/FAM13496-i1-1.fna',
+                                  '../../database/organism/FAM18815/genomes/FAM18815-i1-1.1/1_assembly/FAM18815-i1-1.fna')
     print(res)

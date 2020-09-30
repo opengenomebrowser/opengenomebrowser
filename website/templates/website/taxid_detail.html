@@ -65,18 +65,17 @@
 
         </div>
 
-        <!-- strains and genomes -->
+        <!-- organisms and genomes -->
         <div class="container black-links">
             <ul>
-                {% for strain in taxid.get_child_strains %}
-                    {#   todo: change this <a> to showStrainClickMenu()!    #}
-                    <li><span>strain: </span><span data-toggle="tooltip" data-species="{{ strain.taxid }}"
-                                                   onclick="showStrainClickMenu(event)">{{ strain }}</span></li>
+                {% for organism in taxid.get_child_organisms %}
+                    <li><span>organism: </span><span data-toggle="tooltip" data-species="{{ organism.taxid }}"
+                                                   onclick="showOrganismClickMenu(event)">{{ organism }}</span></li>
                     <ul>
-                        {% for genome in strain.genome_set.all %}
+                        {% for genome in organism.genome_set.all %}
 
                             <li><span>genome: </span><span class="{{ genome.html_warning_stripes }}"
-                                                           onclick="showGenomeClickMenu(event, 'auto', '{{ strain.taxid }}')">{{ genome }}</span></li>
+                                                           onclick="showGenomeClickMenu(event, 'auto', '{{ organism.taxid }}')">{{ genome }}</span></li>
 
                         {% endfor %}
                     </ul>

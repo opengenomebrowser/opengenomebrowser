@@ -35,7 +35,7 @@ class GenomeAdmin(admin.ModelAdmin):
     exclude = (
         'genomecontent',
         'representative',
-        'strain',
+        'organism',
         'cds_tool_faa_file',
         'cds_tool_gbk_file',
         'cds_tool_gff_file',

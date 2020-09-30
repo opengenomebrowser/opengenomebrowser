@@ -1,6 +1,6 @@
 import os
 from django.db import models
-from website.models import TaxID, GenomeSimilarity, Annotation, Genome, GenomeContent, Strain, CoreGenomeDendrogram
+from website.models import TaxID, GenomeSimilarity, Annotation, Genome, GenomeContent, Organism, CoreGenomeDendrogram
 import pandas as pd
 from skbio import DistanceMatrix
 from skbio.tree import nj
@@ -21,7 +21,7 @@ class TaxIdTree(AbstractTree):
     """
     Create a Newick tree based on taxonomy.
 
-    :param objs: QuerySet of class 'GenomeContent', 'Genome', 'Strain' or 'TaxID'
+    :param objs: QuerySet of class 'GenomeContent', 'Genome', 'Organism' or 'TaxID'
                     -> require property 'parent' that points to TaxID
     """
 

@@ -2,7 +2,7 @@ from django.shortcuts import render
 from website.models import Genome
 from .LoadTableScript import get_yadcf_columns
 
-default_columns = ["strain.name", "identifier", "strain.taxid.taxscientificname", "genome_tags", "strain_tags"]
+default_columns = ["organism.name", "identifier", "organism.taxid.taxscientificname", "genome_tags", "organism_tags"]
 std = Genome.get_selector_to_description_dict()
 default_columns = [(col, std[col]['description']) for col in default_columns]
 

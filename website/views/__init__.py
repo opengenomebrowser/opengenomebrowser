@@ -1,5 +1,5 @@
 from .Home import home_view
-from .StrainDetailView import StrainDetailView
+from .OrganismDetailView import OrganismDetailView
 from .GenomeTable import genome_list_view
 from .GenomeDetailView import GenomeDetailView
 from .GenomeTableAjax import GenomeTableAjax

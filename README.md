@@ -17,7 +17,7 @@ _OpenGenomeBrowser is a dynamic and scalable web platform for comparative genomi
     - Visualisation of gene loci
 -   OpenGenomeBrowser has few prerequisites:
     - Genome files must be stored in certain folder structure
-    - One metadata file for each genome and strain
+    - One metadata file for each genome and organism
 -   OpenGenomeBrowser is flexible:
     - Orthofinder is recommended, but not required
     - Computationally intensive processes can be outsourced to a cluster
@@ -28,9 +28,9 @@ _OpenGenomeBrowser is a dynamic and scalable web platform for comparative genomi
 
 ### Key concepts
 
--   _Strain_: biological entity
+-   _Organism_: biological entity
 -   _Genome_: sequencing variant
--   _Representative_: best genome of strain
+-   _Representative_: best genome of organism
 
 
 
@@ -46,11 +46,11 @@ If you want to chat, contact me via [Discord](https://discord.gg/mDm4fqf).
 ### Folder structure
 
 ```
-└── strains
-     ├── STRAIN1
+└── organisms
+     ├── ORGANISM1
      ├── ...
      └── EXAMPLE1234
-         ├── strain.json
+         ├── organism.json
          └── genomes
             ├── EXAMPLE1234-1-1.1
             └── EXAMPLE1234-2-1.1
@@ -65,10 +65,10 @@ If you want to chat, contact me via [Discord](https://discord.gg/mDm4fqf).
 
 ##### Notes:
 
--   genome names must start with the name of the corresponding strain
+-   genome names must start with the name of the corresponding organism
     -   we _suggest_ to use this suffix format:
-        `strain`-`isolate`-`assembly`-`annotation`
-    -   example: strain=`EXAMPLE1234` -> `EXAMPLE1234-2-1.1`
+        `organism`-`isolate`-`assembly`-`annotation`
+    -   example: organism=`EXAMPLE1234` -> `EXAMPLE1234-2-1.1`
 -   gene locus tags must start with the genome identifier, then an underline (`_`)
     -   example: `EXAMPLE1234-2-1.1_000001`
     
@@ -78,7 +78,7 @@ If you want to chat, contact me via [Discord](https://discord.gg/mDm4fqf).
 -    paths are relative to the genome folder, i.e. it's fine to have files in a subfolders of the genome folder
 -    date format: `"%Y-%m-%d"`, i.e. `2000-12-31`
 
-##### strain.json:
+##### organism.json:
 
 (all mandatory fields have dummy data, all non-mandatory fields have the expected null-input)
 
@@ -188,7 +188,7 @@ EXAMPLE1234-2-1.1_000008	K000001, K000002
         "taxid_cols": ["taxid"],
         "rows": [
             {
-                "description": "Fakebacillus bullshitingis strain 42 16S ribosomal RNA, partial sequence",
+                "description": "Fakebacillus bullshitingis organism 42 16S ribosomal RNA, partial sequence",
                 "taxid": 0,
                 "evalue": 0.0
             }
@@ -203,12 +203,12 @@ OrthoFinder can be found [here](https://github.com/davidemms/OrthoFinder).
 
 If you choose to add OrthoFinder, prepare as follows:
 ```
-├── strains
+├── organisms
     └── ...
 └── OrthoFinder
      └── fastas
-         ├── <genome-identifier>.faa -> ../../strains/.../genomes/<genome-identifier>/protein.faa
-         ├── <genome-identifier>.faa -> ../../strains/.../genomes/<genome-identifier>/protein.faa
+         ├── <genome-identifier>.faa -> ../../organisms/.../genomes/<genome-identifier>/protein.faa
+         ├── <genome-identifier>.faa -> ../../organisms/.../genomes/<genome-identifier>/protein.faa
          └── ...
 ```
 
@@ -224,7 +224,7 @@ information.
 
 When OrthoFinder is done, the folder structure should look like this:
 ```
-└── strains
+└── organisms
     └── ...
 └── OrthoFinder
      └── fastas

@@ -37,7 +37,7 @@ class TagManager(models.Manager):
 
 class Tag(models.Model):
     """
-    Tags for strains
+    Tags for organisms
     """
 
     objects = TagManager()

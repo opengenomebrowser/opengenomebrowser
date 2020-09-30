@@ -49,13 +49,13 @@ for selector in yadcf_columns:
     if selector == 'contaminated':
         yadcf_columns[selector]['ex_filter_column'] = "[{counter}, 'False']"
         yadcf_columns[selector]['init'] = yadcf_columns[selector]['init']
-    if selector == 'strain.restricted':
+    if selector == 'organism.restricted':
         yadcf_columns[selector]['ex_filter_column'] = "[{counter}, 'False']"
         yadcf_columns[selector]['init'] = yadcf_columns[selector]['init']
 
 
 def render_script(request):
-    columns = ["strain.name", "identifier", "strain.taxid.taxscientificname", "genome_tags", "strain_tags"]  # default
+    columns = ["organism.name", "identifier", "organism.taxid.taxscientificname", "genome_tags", "organism_tags"]  # default
 
     if 'columns' in request.GET:
         temp = json.loads(request.GET['columns'])
@@ -75,7 +75,7 @@ def render_script(request):
 
 
 def __generate_table_params(columns_to_show):
-    # ToDo: add classes to identifier and strain to trigger right-click-menus (https://datatables.net/reference/option/columns.className)
+    # ToDo: add classes to identifier and organism to trigger right-click-menus (https://datatables.net/reference/option/columns.className)
     yadcf_column_defs = []
     yadcf_ex_filter_column = []
     yadcf_init = []
@@ -83,7 +83,7 @@ def __generate_table_params(columns_to_show):
     index = {
         'representative': None,
         'contaminated': None,
-        'strain.restricted': None
+        'organism.restricted': None
     }  # required to add stripes to table
 
     tax_indexes = []
@@ -108,13 +108,13 @@ def __generate_table_params(columns_to_show):
         index['contaminated'] = c
         c = c + 1
 
-    if 'strain.restricted' not in columns_to_show:
+    if 'organism.restricted' not in columns_to_show:
         yadcf_column_defs.append(
-            yadcf_columns['strain.restricted']['column_defs'].format(counter=c)[:-1] + ", visible: false}")
-        yadcf_init.append(yadcf_columns['strain.restricted']['init'].format(counter=c)[
-                          :-1] + ", filter_container_id: 'external_filter_strain_restricted'}")
-        yadcf_ex_filter_column.append(yadcf_columns['strain.restricted']['ex_filter_column'].format(counter=c))
-        index['strain_restricted'] = c
+            yadcf_columns['organism.restricted']['column_defs'].format(counter=c)[:-1] + ", visible: false}")
+        yadcf_init.append(yadcf_columns['organism.restricted']['init'].format(counter=c)[
+                          :-1] + ", filter_container_id: 'external_filter_organism_restricted'}")
+        yadcf_ex_filter_column.append(yadcf_columns['organism.restricted']['ex_filter_column'].format(counter=c))
+        index['organism_restricted'] = c
         c = c + 1
 
     if 'identifier' not in columns_to_show:
@@ -123,10 +123,10 @@ def __generate_table_params(columns_to_show):
         index['identifier'] = c
         c = c + 1
 
-    if 'strain.name' not in columns_to_show:
+    if 'organism.name' not in columns_to_show:
         yadcf_column_defs.append(
-            yadcf_columns['strain.name']['column_defs'].format(counter=c)[:-1] + ", visible: false}")
-        index['strain.name'] = c
+            yadcf_columns['organism.name']['column_defs'].format(counter=c)[:-1] + ", visible: false}")
+        index['organism.name'] = c
         c = c + 1
 
     tax_index_offset = c
@@ -142,14 +142,14 @@ def __generate_table_params(columns_to_show):
             index['representative'] = c
         elif column == 'contaminated':
             index['contaminated'] = c
-        elif column == 'strain.restricted':
-            index['strain_restricted'] = c
+        elif column == 'organism.restricted':
+            index['organism_restricted'] = c
         elif column == 'identifier':
             index['identifier'] = c
-        elif column == 'strain.name':
-            index['strain_name'] = c
+        elif column == 'organism.name':
+            index['organism_name'] = c
 
-        elif column.startswith("strain.taxid.tax"):
+        elif column.startswith("organism.taxid.tax"):
             tax_indexes.append((c-tax_index_offset, c))
 
         c = c + 1
