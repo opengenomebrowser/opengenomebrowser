@@ -66,7 +66,7 @@ class Genome(models.Model):
     cds_tool_ffn_file = models.CharField(max_length=200, null=True, blank=True)
     cds_tool_sqn_file = models.CharField(max_length=200, null=True, blank=True)
 
-    BUSCO = JSONField(default=dict)  # {C:2,D:2,F:2,M:2,S:2,T:2]}  +  {busco_db: firmicutes_odb9}
+    BUSCO = JSONField(default=dict)  # {C:2,D:2,F:2,M:2,S:2,T:2]}  +  {dataset: firmicutes_odb9}  +  {dataset_creation_date: "2000-01-31"}
     BUSCO_percent_single = models.DecimalField(max_digits=3, decimal_places=1, null=True, blank=True)
     # format(self.BUSCO['S'] / self.BUSCO['T'], ".1%")
 

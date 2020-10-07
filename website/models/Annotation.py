@@ -1,3 +1,4 @@
+import os
 import re
 from django.db import models
 from django.utils.translation import gettext_lazy as _
@@ -8,12 +9,11 @@ from OpenGenomeBrowser import settings
 
 gene_ontology = GeneOntology()
 
-ORTHOGROUP_BESTNAMES_TSV = F'{settings.GENOMIC_DATABASE}/OrthoFinder/Orthogroup_BestNames.tsv'
 FILENAME_SETTINGS = {
     'ko.tsv': ('ko:', 'lib/custom_kegg/data/rest_data/ko.tsv'),
     'rn.tsv': ('rn:', 'lib/custom_kegg/data/rest_data/rn.tsv'),
     'compound.tsv': ('cpd:', 'lib/custom_kegg/data/rest_data/rn.tsv'),
-    'Orthogroup_BestNames.tsv': ('N0.', ORTHOGROUP_BESTNAMES_TSV)
+    'orthologs.tsv': settings.ORTHOLOG_ANNOTATIONS['ortholog_to_name'] if 'ortholog_to_name' in settings.ORTHOLOG_ANNOTATIONS else '/dev/null'
 }
 
 
@@ -71,7 +71,7 @@ class Annotation(models.Model):
         elif self.anno_type == self.AnnotationTypes.KEGGREACTION.value:
             self._descr = self._get_description_from_file(filename='rn.tsv', query=self.name)
         elif self.anno_type == self.AnnotationTypes.ORTHOLOG.value:
-            self._descr = self._get_description_from_file(filename='Orthogroup_BestNames.tsv', query=self.name)
+            self._descr = self._get_description_from_file(filename='orthologs.tsv', query=self.name)
         elif self.anno_type == self.AnnotationTypes.GENEONTOLOGY.value:
             self._descr = self._get_description_from_file(filename='go.obo', query=self.name)
         return self._descr
@@ -101,7 +101,7 @@ class Annotation(models.Model):
                 filename='go.obo', query=query.upper())
         if AnnotationRegex.ORTHOLOG.match_regex.match(query):
             return Annotation._get_description_from_file(
-                filename='Orthogroup_BestNames.tsv', query=query.upper())
+                filename='orthologs.tsv', query=query.upper())
         if AnnotationRegex.CUSTOM.match_regex.match(query):
             return '-'
         if AnnotationRegex.GENECODE.match_regex.match(query):
@@ -147,86 +147,56 @@ class Annotation(models.Model):
         raise Annotation.DoesNotExist(F"Annotation doesn't match any type! '{query}'!")
 
     @staticmethod
-    def reload_orthofinder():
+    def load_ortholog_annotations():
         import os
-        from pathlib import Path
-        from . import GenomeContent, Gene
-        from lib.orthofinder_tools.orthogroup_to_gene_name import OrthogroupToGeneName
+        from website.models import GenomeContent, Gene
 
-        assert hasattr(settings, 'ORTHOFINDER_BASE')
-        assert os.path.isdir(settings.ORTHOFINDER_BASE), settings.ORTHOFINDER_BASE
+        file = settings.ORTHOLOG_ANNOTATIONS['ortholog_to_gene_ids']
+        assert os.path.isfile(file), F'Could not load ortholog annotation: {file}'
 
-        PATH_TO_ORTHOFINDER_FASTAS = F'{settings.ORTHOFINDER_BASE}/fastas'
-        N0_TSV = F'{settings.ORTHOFINDER_LATEST_RUN}/Phylogenetic_Hierarchical_Orthogroups/N0.tsv'
-
-        print('Deleting all orthogroup-annotations.')
+        print(F'Step 1/5: Deleting all ortholog-annotations.', end=' ', flush=True)
         Annotation.objects.filter(anno_type='OL').delete()
 
-        print('Importing OrthoFinder/Orthogroups. Step 1/5: Read Orthogroups.txt.', end=' ', flush=True)
+        print(F'Step 2/5: Importing ortholog-annotations from {file}.', end=' ', flush=True)
 
-        all_genomecontents = set(GenomeContent.objects.all().values_list('identifier', flat=True))
+        all_genomecontent_ids = set(GenomeContent.objects.all().values_list('identifier', flat=True))
         all_genes = set(Gene.objects.all().values_list('identifier', flat=True))
         orthogroups = []
         genomecontent_to_ortholog_links = []
         gene_to_ortholog_links = []
 
-        with open(N0_TSV, 'r') as f:
-            header = f.readline().rstrip().split('\t')
-            assert header[:3] == ['HOG', 'OG', 'Gene Tree Parent Clade']
-            genome_identifiers = header[3:]
-
+        with open(file) as f:
             for line in f:
-                line = line[:-1].split('\t')
-                hog, og, gtpc, gene_identifier_list = line[0], line[1], line[2], line[3:]
+                orthogroup, gene_ids = line.rstrip().split('\t', maxsplit=1)
+                gene_ids = [gid.rsplit('|', maxsplit=1)[-1] for gid in gene_ids.split('\t')]
+                genome_ids = set(gid.rsplit('_')[-1] for gid in gene_ids)
 
-                assert hog.startswith('N0.')
-                hog = hog[3:]
+                orthogroup.append(Annotation(name=orthogroup, anno_type='OL'))
 
-                gene_identifier_list = [gids.split(',') if gids != '' else None for gids in gene_identifier_list]
-                assert len(genome_identifiers) == len(gene_identifier_list)
+                gene_to_ortholog_links.extend(
+                    [
+                        Gene.annotations.through(gene_id=gene_id, annotation_id=orthogroup)
+                        for gene_id in gene_ids
+                        if gene_id in all_genes
+                    ]
+                )
 
-                organisms = []
-                gene_identifiers = []
-                for genome_identifier, gene_list in zip(genome_identifiers, gene_identifier_list):
-                    if gene_list:
-                        organisms.append(genome_identifier)
-                        gene_identifiers.extend(gene_list)
-
-                gene_identifiers = [gid.rsplit('|', maxsplit=1)[1] for gid in gene_identifiers]
-
-                if len(gene_identifiers) > 0:
-                    orthogroups.append(hog)
-
-                    gene_to_ortholog_links.extend(
-                        [
-                            Gene.annotations.through(gene_id=gene_id, annotation_id=hog)
-                            for gene_id in gene_identifiers
-                            if gene_id in all_genes
-                        ]
-                    )
-
-                    genomecontent_to_ortholog_links.extend(
-                        [
-                            GenomeContent.annotations.through(genomecontent_id=organism, annotation_id=hog)
-                            for organism in set(organisms)
-                            if organism in all_genomecontents
-                        ]
-                    )
-                else:
-                    print(hog)
+                genomecontent_to_ortholog_links.extend(
+                    [
+                        GenomeContent.annotations.through(genomecontent_id=genome_id, annotation_id=orthogroup)
+                        for genome_id in genome_ids
+                        if genome_id in all_genomecontent_ids
+                    ]
+                )
 
         # Create Annotation-Objects
-        print(F'Step 2/5: Add {len(orthogroups)} orthogroup-annotations to database.', end=' ', flush=True)
-        Annotation.objects.bulk_create([Annotation(name=group, anno_type='OL') for group in orthogroups])
+        print(F'Step 3/5: Add {len(orthogroups)} orthogroup-annotations to database.', end=' ', flush=True)
+        Annotation.objects.bulk_create(orthogroups)
 
         # Create many-to-many relationships
-        print(F'Step 3/5: Link {len(genomecontent_to_ortholog_links)} orthogroup-annotations to genomes.', end=' ', flush=True)
+        print(F'Step 4/5: Link {len(genomecontent_to_ortholog_links)} orthogroup-annotations to genomes.', end=' ', flush=True)
         GenomeContent.annotations.through.objects.bulk_create(genomecontent_to_ortholog_links)
-        print(F'Step 4/5: Link {len(gene_to_ortholog_links)} orthogroup-annotations to genes.', end=' ', flush=True)
+        print(F'Step 5/5: Link {len(gene_to_ortholog_links)} orthogroup-annotations to genes.', end=' ', flush=True)
         Gene.annotations.through.objects.bulk_create(gene_to_ortholog_links)
-
-        print('Step 5/5: Create Orthogroup_BestNames.tsv.', end=' ', flush=True)
-        OrthogroupToGeneName(n0_tsv=N0_TSV, index_column='HOG') \
-            .run(fasta_dir=PATH_TO_ORTHOFINDER_FASTAS, file_endings=settings.ORTHOFINDER_FASTA_ENDINGS, out=ORTHOGROUP_BESTNAMES_TSV)
 
         print('Success.')

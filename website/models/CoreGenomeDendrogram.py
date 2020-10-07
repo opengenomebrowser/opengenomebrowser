@@ -1,6 +1,6 @@
 from django.db import models
 import hashlib
-from website.tasks import calculate_orthofinder
+from plugins import calculate_core_genome_dendrogram
 from .GenomeContent import GenomeContent
 
 
@@ -23,7 +23,7 @@ class DendrogramManager(models.Manager):
 
 
         print('calculate!')
-        calculate_orthofinder(genomes=genomes)
+        calculate_core_genome_dendrogram(genomes=genomes)
 
         return new_dendrogram, True
 

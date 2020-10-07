@@ -1,5 +1,5 @@
 from django.db import models
-from website.tasks import calculate_genome_similarity
+from plugins import calculate_genome_similarity
 
 
 def _sort(genome1, genome2):
