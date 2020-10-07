@@ -211,11 +211,19 @@ def check_invariants():
           F"belonging to {len(Organism.objects.values('taxid').distinct())} species.")
 
 
+def reload_orthologs():
+    """
+    Load annotations from settings.py > ORTHOLOG_ANNOTATIONS['ortholog_to_gene_ids']
+    """
+    Annotation.load_ortholog_annotations()
+
+
 # def export_database(self):
 #     for organism in Organism.objects.all()
 
+reload_orthologs()
 
 if __name__ == "__main__":
     from glacier import glacier
 
-    glacier([import_database, reset_database, remove_missing_organisms, reload_pathway_maps, check_invariants])
+    glacier([import_database, reset_database, remove_missing_organisms, reload_pathway_maps, check_invariants, reload_orthologs])

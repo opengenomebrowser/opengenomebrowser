@@ -169,9 +169,9 @@ class Annotation(models.Model):
             for line in f:
                 orthogroup, gene_ids = line.rstrip().split('\t', maxsplit=1)
                 gene_ids = [gid.rsplit('|', maxsplit=1)[-1] for gid in gene_ids.split('\t')]
-                genome_ids = set(gid.rsplit('_')[-1] for gid in gene_ids)
+                genome_ids = set(gid.rsplit('_')[0] for gid in gene_ids)
 
-                orthogroup.append(Annotation(name=orthogroup, anno_type='OL'))
+                orthogroups.append(Annotation(name=orthogroup, anno_type='OL'))
 
                 gene_to_ortholog_links.extend(
                     [
@@ -196,6 +196,7 @@ class Annotation(models.Model):
         # Create many-to-many relationships
         print(F'Step 4/5: Link {len(genomecontent_to_ortholog_links)} orthogroup-annotations to genomes.', end=' ', flush=True)
         GenomeContent.annotations.through.objects.bulk_create(genomecontent_to_ortholog_links)
+
         print(F'Step 5/5: Link {len(gene_to_ortholog_links)} orthogroup-annotations to genes.', end=' ', flush=True)
         Gene.annotations.through.objects.bulk_create(gene_to_ortholog_links)
 

@@ -22,7 +22,7 @@ if __name__ == "__main__":
     if not os.path.isdir(DB_PATH):
         raise NotADirectoryError(F'database dir not found: {DB_PATH}')
 
-    ORTHOFINDER_PATH = F'{DB_PATH}/OrthoFinderX'
+    ORTHOFINDER_PATH = F'{DB_PATH}/OrthoFinder'
     assert not os.path.isdir(ORTHOFINDER_PATH), F'This script is intended to initiate Orthofinder for the first time only! \
 To procceed, delete the folder.'
 
