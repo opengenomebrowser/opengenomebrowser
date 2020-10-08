@@ -17,7 +17,7 @@ assert SECRET_KEY != '', 'Change the security key in OpenGenomeBrowser/settings.
 CSRF_COOKIE_SECURE = True
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = []
 
@@ -151,9 +151,9 @@ HUEY = {
 
 ORTHOLOG_ANNOTATIONS = dict(
     # file that links ortholog identifiers with genes
-    ortholog_to_gene_ids=F'{BASE_DIR}/database/global_annotations/HOG_gene_ids.tsv',
+    ortholog_to_gene_ids='/path/to/file.tsv',
     # links ortholog identifiers with descriptions
-    ortholog_to_name=F'{BASE_DIR}/database/global_annotations/HOG_best_name.tsv'
+    ortholog_to_name=F'/path/to/file.tsv'
 )
 
 # GENOMIC_DATABASE must contain the folder 'organisms'
