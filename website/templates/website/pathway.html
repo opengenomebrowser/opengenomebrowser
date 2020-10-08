@@ -189,7 +189,8 @@ ${percentage} % (${covering.length} out of ${total})</p>`)
             const annotations = $(shape).data('annotations')
             cm.appendHeader('Annotations')
             $.each(annotations, function (index) {
-                const nCovered = ('organism' in this) ? this['organism'].size : 0
+                const nCovered = ('organisms' in this) ? this['organisms'].size : 0
+                console.log('ncovered', nCovered, this)
                 const annoType = type_dict[this['type']]
                 const description = ('description' in this) ? this['description'] : ''
                 const tag = (annoType === 'ignore') ? "<div class='annotation ogb-tag' data-annotype='fake'>" + this['name'] + "</div>" : `<div class="annotation ogb-tag" onclick="console.log('input', event, this);showAnnotationClickMenu(event, 'auto', '#map-context-menu', '#map-context-menu .positive' )" data-annotype="${annoType}" title="${description}">${this['name']}</div>`
@@ -207,7 +208,7 @@ ${percentage} % (${covering.length} out of ${total})</p>`)
                 if (nCovered > 0) {
                     el += `
         <h6 class="dropdown-header context-menu-header">Positive genomes</h6>
-        <div class="read-only-div"> ${create_read_only_genome_div(Array.from(this['organism']), genome_to_species, 'positive', '#map-context-menu').html()} </div>`
+        <div class="read-only-div"> ${create_read_only_genome_div(Array.from(this['organisms']), genome_to_species, 'positive', '#map-context-menu').html()} </div>`
                 }
 
                 el += `

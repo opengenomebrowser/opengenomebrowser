@@ -34,7 +34,6 @@ ALLOWED_HOSTS = []
 INSTALLED_APPS = [
     'dal',
     'dal_select2',
-    'crispy_forms',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -146,8 +145,6 @@ PATHWAY_MAPS = os.path.join(GENOMIC_DATABASE, PATHWAY_MAPS_RELATIVE)  # do not c
 assert os.path.isdir(PATHWAY_MAPS), F"The path in settings.py doesn't point to a folder: {PATHWAY_MAPS}"
 assert os.path.isdir(F'{PATHWAY_MAPS}/svg'), F"Error in settings.py: {PATHWAY_MAPS}/svg does not exist!"
 assert os.path.isfile(F'{PATHWAY_MAPS}/type_dictionary.json'), F"Error in settings.py: {PATHWAY_MAPS}/type_dictionary.json does not exist!"
-
-CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
 HUEY = {
     'huey_class': 'huey.SqliteHuey',  # Huey implementation to use.

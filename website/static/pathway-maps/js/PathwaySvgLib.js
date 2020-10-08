@@ -106,8 +106,6 @@ function highlightOrganisms(
         if (n_covered > 0) {
             shape.firstElementChild.setAttribute('fill', color_array[n_covered - 1])
         }
-
-        console.log(shape, $(shape).data('organisms'))
     }
 
     $(".shape").each(function (index) {

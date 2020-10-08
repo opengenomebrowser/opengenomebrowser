@@ -67,7 +67,7 @@ If you want to chat, contact me via [Discord](https://discord.gg/mDm4fqf).
 
 -   genome names must start with the name of the corresponding organism
     -   we _suggest_ to use this suffix format:
-        `organism`-`isolate`-`assembly`-`annotation`
+        `organism`-`isolate`-`assembly`.`annotation`
     -   example: organism=`EXAMPLE1234` -> `EXAMPLE1234-2-1.1`
 -   gene locus tags must start with the genome identifier, then an underline (`_`)
     -   example: `EXAMPLE1234-2-1.1_000001`
@@ -201,7 +201,7 @@ EXAMPLE1234-2-1.1_000008	K000001, K000002
 
 OrthoFinder can be found [here](https://github.com/davidemms/OrthoFinder).
 
-If you choose to add OrthoFinder, prepare as follows:
+If you choose to add OrthoFinder, prepare as follows (can be done automatically using `db_setup/init_orthofinder.py`):
 ```
 ├── organisms
     └── ...
@@ -221,6 +221,8 @@ example.
 -   The great thing about OrthoFinder is that one can add or remove species efficiently, by recycling previous 
 pairwise comparisons. See [OrthoFinder docs](https://github.com/davidemms/OrthoFinder#advanced-usage) for more 
 information.
+-   In `settings.py`, define the variables `settings.ORTHOFINDER_BASE`, `settings.ORTHOFINDER_LATEST_RUN` and 
+`settings.ORTHOFINDER_FASTA_ENDINGS`.
 
 When OrthoFinder is done, the folder structure should look like this:
 ```
@@ -232,6 +234,32 @@ When OrthoFinder is done, the folder structure should look like this:
          └── OrthoFinder
              └── ...
 ```
+
+### Ortholog annotations
+
+Ortholog annotations are handled differently than regular annotations. The reason is that it would be unnatural and 
+unnecessarily complicated to take the single ortholog annotation file, split it into one file per genome, distribute
+it into the folder structure, and adapt all metadata files.
+
+Instead, OpenGenomeBrowser expects one file that links ortholog identifiers with genes, like this:
+```
+N0.HOG0000000	genome_1_123, genome_2_234
+N0.HOG0000001	genome_2_345, genome_3_456, genome_4_567
+N0.HOG0000002	genome_6_789, genome_7_890
+```
+
+In addition, another file (optional) can be provided that links ortholog identifiers with descriptions, like this:
+```
+N0.HOG0000000	amino acid ABC transporter ATP-binding protein
+N0.HOG0000001	winged helix-turn-helix transcriptional regulator
+N0.HOG0000002	DNA topoisomerase (ATP-hydrolyzing) subunit B
+```
+
+Note: this file must be sorted! This can be done like this:
+`LC_ALL=C sort --key=1 --field-separator=$'\t' --output=file.txt.sorted file.txt`
+
+I wrote a [script](https://gitlab.bioinformatics.unibe.ch/troder/orthofinder_tools/-/blob/master/simplify_orthologs.py) 
+that turns Orthofinder output into this format.
 
 
 
@@ -314,7 +342,6 @@ Create and edit settings.py:
 cp OpenGenomeBrowser/settings_template.py OpenGenomeBrowser/settings.py
 vi OpenGenomeBrowser/settings.py
 ```
--   change `DEBUG` to `True` **only** for development!
 -   change `DEBUG` to `True` **only** for development!
 -   change `GENOMIC_DATABASE` to the path to your folder structure
 -   change `DATABASES[PASSWORD]` to the passwort you just set for Postgresql
@@ -403,10 +430,18 @@ server {
     location /media  {
         alias /path/to/opengenomebrowser/dist/media;  # your Django project's media files - amend as required
     }
-
+    
+    # static files
     location /static {
         alias /path/to/opengenomebrowser/static_root; # your Django project's static files - amend as required
     }
+    
+    # see https://wellfire.co/learn/nginx-django-x-accel-redirects
+    location /download/ {
+        internal;
+        alias   /path/to/database;
+    }
+
 
     # Finally, send all non-media requests to the Django server.
     location / {
