@@ -248,12 +248,14 @@ N0.HOG0000001	genome_2_345, genome_3_456, genome_4_567
 N0.HOG0000002	genome_6_789, genome_7_890
 ```
 
-In addition, another file (optional) can be provided that links ortholog identifiers with descriptions, like this:
+In addition, another file can be provided that links ortholog identifiers with descriptions, like this:
 ```
 N0.HOG0000000	amino acid ABC transporter ATP-binding protein
 N0.HOG0000001	winged helix-turn-helix transcriptional regulator
 N0.HOG0000002	DNA topoisomerase (ATP-hydrolyzing) subunit B
 ```
+
+If this information is not available, use an empty file.
 
 Note: this file must be sorted! This can be done like this:
 `LC_ALL=C sort --key=1 --field-separator=$'\t' --output=file.txt.sorted file.txt`
@@ -280,7 +282,7 @@ that turns Orthofinder output into this format.
 
 ```
 sudo dnf config-manager --set-enabled PowerTools
-sudo dnf install git
+sudo dnf install git gcc
 sudo dnf install python38 python38-devel python38-numpy python38-setuptools python38-wheel
 sudo dnf install postgresql postgresql-devel postgresql-server libpq-devel python3-psycopg2 pcre-devel
 # these packages may have other names in other operating systems!

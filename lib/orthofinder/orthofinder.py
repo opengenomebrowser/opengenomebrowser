@@ -35,7 +35,7 @@ class Orthofinder:
         identifiers = set(identifiers)
 
         # Note: only one instance of OrthoFinder can run at the same time!
-        orthofinder_fastas = F'{settings.ORTHOFINDER_BASE}/fastas'
+        orthofinder_fastas = settings.ORTHOFINDER_FASTAS
         assert os.path.isdir(orthofinder_fastas)
         precomputed_folder = F'{settings.ORTHOFINDER_LATEST_RUN}/WorkingDirectory'
         assert os.path.isdir(precomputed_folder)
