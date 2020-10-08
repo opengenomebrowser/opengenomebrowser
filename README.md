@@ -279,22 +279,30 @@ that turns Orthofinder output into this format.
 ##### 1. install dependencies
 
 ```
-sudo dnf install python3-devel python3-numpy postgresql postgresql-devel postgresql-server libpq-devel python3-psycopg2 pcre-devel
+sudo dnf config-manager --set-enabled PowerTools
+sudo dnf install git
+sudo dnf install python38 python38-devel python38-numpy python38-setuptools python38-wheel
+sudo dnf install postgresql postgresql-devel postgresql-server libpq-devel python3-psycopg2 pcre-devel
 # these packages may have other names in other operating systems!
+
+# NCBI BLAST
+sudo dnf install libnsl perl-List-MoreUtils perl-File-Temp perl-Archive-Tar
+BLAST_RPM='ncbi-blast-2.10.1+-1.x86_64.rpm'  # adapt path to current blast executable
+wget https://ftp.ncbi.nlm.nih.gov/blast/executables/LATEST/${BLAST_RPM}
+sudo rpm -i $BLAST_RPM
 ```
 
 ##### 2. create Python 3.6+ venv (in an appropriate location)
 
 ```
-python3 -m venv ogb_venv
-source ogb_venv/bin/activate
+python3.8 -m venv ogb-venv
+source ogb-venv/bin/activate
 pip install --upgrade pip
-pip install setuptools wheel
 ```
 
 ##### 3. create Postgresql 10+ database
 
-```
+```shell script
 sudo postgresql-setup initdb
 sudo systemctl enable postgresql
 sudo systemctl start postgresql
@@ -302,7 +310,7 @@ sudo passwd postgres  # set password for postgres user
 sudo su - postgres
 [as user postgres]$ initdb -D open_genome_browser
 [as user postgres]$ systemctl restart postgresql.service
-[as user postgres]$ createuser --encrypted --pwprompt ogb_admin  # example: kQPJQ3mWvK4jXp
+[as user postgres]$ createuser --encrypted --pwprompt ogb_admin  # set secure password!
 [as user postgres]$ createdb --owner=ogb_admin open_genome_browser_db
 [as user postgres]$ exit
 ```
@@ -314,7 +322,10 @@ sudo systemctl restart postgresql.service
 psql -d open_genome_browser_db -U ogb_admin
 $ open_genome_browser_db=> \quit
 ```
-If it does not work, try adjusting `/var/lib/pgsql/data/pg_hba.conf`
+If it does not work, try adjusting `/var/lib/pgsql/data/pg_hba.conf`: add this line:
+```text
+local   all             ogb_admin                               md5
+```
 (see [stackoverflow](https://stackoverflow.com/questions/18664074/getting-error-peer-authentication-failed-for-user-postgres-when-trying-to-ge)))
 
 Note: if you mess up and want to start fresh, this is how to drop and recreate the database:
@@ -441,7 +452,6 @@ server {
         internal;
         alias   /path/to/database;
     }
-
 
     # Finally, send all non-media requests to the Django server.
     location / {
