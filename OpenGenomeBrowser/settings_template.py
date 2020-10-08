@@ -11,7 +11,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/dev/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'ebql7ah6j)k$*l3uv9mzb%-+tj_1st0ef@g#iys^p$7i$p94b*'
+SECRET_KEY = ''
 assert SECRET_KEY != '', 'Change the security key in OpenGenomeBrowser/settings.py to a random string!'
 
 CSRF_COOKIE_SECURE = True
@@ -76,7 +76,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'open_genome_browser_db',
         'USER': 'ogb_admin',
-        'PASSWORD': 'd8kla3e7iad',
+        'PASSWORD': '?????????????????????',
         'HOST': 'localhost',
         'PORT': '',
     }
