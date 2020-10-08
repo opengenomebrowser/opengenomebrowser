@@ -27,8 +27,16 @@ def download_view(request):
         #   internal;
         #   alias   /path/to/database;
         # }
-        ##############################################
-        response = HttpResponse(status=200)
-        response["Content-Type"] = ''
-        response['X-Accel-Redirect'] = request.path
+        ##############################################$
+        filename = os.path.basename(request.path)
+        new_path = request.path.replace('/download/', '/protected/', 1)
+        
+        response = HttpResponse()
+        del response['Content-Type']
+        del response['Accept-Ranges']
+        del response['Set-Cookie']
+        del response['Cache-Control']
+        del response['Expires']
+        response['X-Accel-Redirect'] = new_path
+        response['Content-Disposition'] = F'attachment; filename="{filename}"'
         return response
