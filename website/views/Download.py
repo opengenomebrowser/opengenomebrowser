@@ -3,6 +3,7 @@ from django.http import HttpResponseNotFound
 import os
 from OpenGenomeBrowser import settings
 
+
 def download_view(request):
     assert '/../' not in request.path
     assert request.path.startswith('/download/')
@@ -27,14 +28,14 @@ def download_view(request):
     else:
         # in production mode, expect nginx redirect setup: https://wellfire.co/learn/nginx-django-x-accel-redirects/
         ##############################################
-	    # location ^~ /protected {
-	    #     internal;
-	    #     autoindex on;
-	    #     alias /home/troder/database;
-	    # }
-        ##############################################$
+        # location ^~ /protected {
+        #     internal;
+        #     autoindex on;
+        #     alias /path/to/database;
+        # }
+        ##############################################
         redirect_path = request.path.replace('/download/', '/protected/', 1)
-        
+
         response = HttpResponse(200)
         response['X-Accel-Redirect'] = redirect_path
 
