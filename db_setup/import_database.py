@@ -65,7 +65,7 @@ def import_database(delete_missing: bool = True, auto_delete_missing: bool = Fal
 
     # Remove Organism or a Genome if it has been removed from the database-folder
     if delete_missing:
-        remove_missing_organisms(ORGANISMS_PATH, auto_delete_missing)
+        remove_missing_organisms(auto_delete_missing)
 
     # Import new organisms / update existing organisms
     genome_serializer = GenomeSerializer()

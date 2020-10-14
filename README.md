@@ -377,8 +377,6 @@ python manage.py collectstatic
 
 Import data from folder structure into database:
 ```
-# create blast-dbs for every fasta.fna and protein.faa (only if this has not been done yet)
-python db_setup/make_blast_dbs.py --db_path=/path/to/folder_structure
 # start import (run this command again to load changes that have been made to the folder_structure into OpenGenomeBrowser)
 python db_setup/import_database.py
 ```
