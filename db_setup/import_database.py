@@ -81,7 +81,7 @@ def import_database(delete_missing: bool = True, auto_delete_missing: bool = Fal
         print(current_organism, end='')
 
         if os.path.isfile(F'{organism_folder.path}/.ignore'):
-            print('ignored')
+            print(': ignored')
             continue
 
         with open(F'{organism_folder.path}/organism.json') as file:
@@ -103,7 +103,7 @@ def import_database(delete_missing: bool = True, auto_delete_missing: bool = Fal
             print("   └── " + current_genome, end='')
 
             if os.path.isfile(F'{genome_folder.path}/.ignore'):
-                print('ignored')
+                print(': ignored')
                 continue
 
             with open(F'{genome_folder.path}/genome.json') as file:
