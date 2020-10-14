@@ -19,7 +19,7 @@ def download_view(request):
         elif os.path.isfile(abs_path):
             response = HttpResponse(content_type='text/plain')
             response.content = open(abs_path).read()
-            response["Content-Disposition"] = F"attachment; filename={filename}"
+            response['Content-Disposition'] = F'attachment; filename={filename}'
             response['Content-Type'] = 'text/plain; charset=utf-8'
             return response
 

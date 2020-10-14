@@ -221,8 +221,6 @@ def reload_orthologs():
 # def export_database(self):
 #     for organism in Organism.objects.all()
 
-reload_orthologs()
-
 if __name__ == "__main__":
     from glacier import glacier
 
