@@ -292,6 +292,10 @@ sudo dnf install libnsl perl-List-MoreUtils perl-File-Temp perl-Archive-Tar
 BLAST_RPM='ncbi-blast-2.10.1+-1.x86_64.rpm'  # adapt path to current blast executable
 wget https://ftp.ncbi.nlm.nih.gov/blast/executables/LATEST/${BLAST_RPM}
 sudo rpm -i $BLAST_RPM
+
+# Clustal Omega
+wget http://www.clustal.org/omega/clustalo-1.2.4-Ubuntu-x86_64 -O /usr/bin/clustalo
+chmod +x /usr/bin/clustalo
 ```
 
 ##### 2. create Python 3.6+ venv (in an appropriate location)

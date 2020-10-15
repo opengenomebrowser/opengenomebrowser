@@ -426,11 +426,12 @@ class Api:
         gs = Gene.objects.filter(identifier__in=gene_identifiers)
 
         loci_of_interest = [
-            (g.genomecontent.genome.cds_gbk(relative=False), g.identifier, g.identifier)
+            dict(gbk=g.genomecontent.genome.cds_gbk(relative=False), gene=g.identifier, title=g.identifier)
             for g in gs]
 
         graphic_records = GraphicRecordLocus.get_multiple(
             loci_of_interest,
+            locus_to_color_dict={},
             span=span
         )
 
