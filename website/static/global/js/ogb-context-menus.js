@@ -424,7 +424,7 @@ Compare genes</a>
         let species = data['species']
         let annotype_to_gene = data['annotype_to_gene']
 
-        if (annotype_to_gene['GP'][0]["name"] != undefined) {
+        if (annotype_to_gene['GP'] != undefined && annotype_to_gene['GP'][0]["name"] != undefined) {
             $('#gene-context-menu-gene-product-missing').text(annotype_to_gene['GP'][0]["name"]).removeAttr('hidden')
         }
 
