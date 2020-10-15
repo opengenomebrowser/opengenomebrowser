@@ -33,7 +33,7 @@ class OrthofinderError(Exception):
 
 class Orthofinder:
     def __init__(self):
-        self.orthofinder_bin = 'orthofinder'
+        self.orthofinder_bin = F'{settings.ORTHOFINDER_INSTALL_DIR}/orthofinder'
         assert is_installed(self.orthofinder_bin), F'OrthoFinder is not installed! Could not run "{self.orthofinder_bin}"'
 
     def version(self):

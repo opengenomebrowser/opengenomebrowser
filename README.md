@@ -296,6 +296,20 @@ sudo rpm -i $BLAST_RPM
 # Clustal Omega
 wget http://www.clustal.org/omega/clustalo-1.2.4-Ubuntu-x86_64 -O /usr/bin/clustalo
 chmod +x /usr/bin/clustalo
+
+# MAFFT
+wget https://mafft.cbrc.jp/alignment/software/mafft-7.471-gcc_fc6.x86_64.rpm
+sudo rpm -i mafft-7.471-gcc_fc6.x86_64.rpm
+
+# Muscle
+wget https://www.drive5.com/muscle/downloads3.8.31/muscle3.8.31_i86linux64.tar.gz
+tar -xvf muscle3.8.31_i86linux64.tar.gz
+sudo mv muscle3.8.31_i86linux64 /usr/bin/muscle
+
+# OrthoFinder
+wget https://github.com/davidemms/OrthoFinder/releases/download/2.3.12/OrthoFinder.tar.gz
+tar -xvf OrthoFinder.tar.gz
+sudo cp -r OrthoFinder /opt/    
 ```
 
 ##### 2. create Python 3.6+ venv (in an appropriate location)

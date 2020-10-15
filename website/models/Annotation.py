@@ -168,8 +168,8 @@ class Annotation(models.Model):
         with open(file) as f:
             for line in f:
                 orthogroup, gene_ids = line.rstrip().split('\t', maxsplit=1)
-                gene_ids = [gid.rsplit('|', maxsplit=1)[-1] for gid in gene_ids.split(', ')]
-                genome_ids = set(gid.rsplit('_')[0] for gid in gene_ids)
+                gene_ids = [gid.rsplit('|', maxsplit=1)[1] for gid in gene_ids.split(', ')]
+                genome_ids = set(gid.rsplit('_', maxsplit=1)[0] for gid in gene_ids)
 
                 orthogroups.append(Annotation(name=orthogroup, anno_type='OL'))
 
