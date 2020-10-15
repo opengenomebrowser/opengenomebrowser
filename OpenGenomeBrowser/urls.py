@@ -36,6 +36,7 @@ urlpatterns = [
                   path('accounts/login/', MyLoginView.as_view(), name="login"),
                   path('admin/', admin.site.urls),
                   path('accounts/', include('django.contrib.auth.urls')),
+                  path('invitations/', include('invitations.urls', namespace='invitations')),
                   path('', include('website.urls')),
               ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 if settings.DEBUG:
