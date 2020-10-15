@@ -35,15 +35,15 @@ class OrganismSerializer():
             current_organism_state = self.export_organism(organism_dict['name'])
 
             if current_organism_state == raw_organism_dict:
-                print(": unchanged")
+                print(" :: unchanged")
                 return o
 
-            print(": update existing")
+            print(" :: update existing")
             o = Organism.objects.get(name=organism_dict['name'])
             new_data = '[{"model": "' + Organism._meta.label_lower + '", "pk": ' + str(
                 o.pk) + ', "fields": ' + organism_json + '}]'
         else:
-            print(": create new")
+            print(" :: create new")
             new_data = '[{"model": "' + Organism._meta.label_lower + '", "fields": ' + organism_json + '}]'
 
         c = 0

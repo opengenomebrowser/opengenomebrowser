@@ -53,13 +53,12 @@ def confirm_delete(color):
         break
 
 
-def import_database(delete_missing: bool = True, auto_delete_missing: bool = False, reload_global_annotations: bool = True):
+def import_database(delete_missing: bool = True, auto_delete_missing: bool = False):
     """
     Load organisms and genomes from file database into PostgreSQL database
 
     :param delete_missing: if True (default), check if organisms/genomes have gone missing
     :param auto_delete_missing: if True, remove missing organisms/genomes without console prompt
-    :param reload_global_annotations: reload global annotations (see settings.py > ORTHOLOG_ANNOTATIONS)
     """
     assert os.path.isdir(ORGANISMS_PATH), ORGANISMS_PATH
 
@@ -81,7 +80,7 @@ def import_database(delete_missing: bool = True, auto_delete_missing: bool = Fal
         print(current_organism, end='')
 
         if os.path.isfile(F'{organism_folder.path}/.ignore'):
-            print(': ignored')
+            print(' :: ignored')
             continue
 
         with open(F'{organism_folder.path}/organism.json') as file:
@@ -103,7 +102,7 @@ def import_database(delete_missing: bool = True, auto_delete_missing: bool = Fal
             print("   └── " + current_genome, end='')
 
             if os.path.isfile(F'{genome_folder.path}/.ignore'):
-                print(': ignored')
+                print(' :: ignored')
                 continue
 
             with open(F'{genome_folder.path}/genome.json') as file:
@@ -117,9 +116,6 @@ def import_database(delete_missing: bool = True, auto_delete_missing: bool = Fal
             is_representative = current_genome == representative_identifier
 
             genome_serializer.import_genome(genome_dict, s, is_representative, update_css=False)
-
-    if reload_global_annotations:
-        Annotation.load_ortholog_annotations()
 
     Tag.create_tag_color_css()
     TaxID.create_taxid_color_css()
@@ -155,7 +151,9 @@ def remove_missing_organisms(auto_delete_missing: bool = False):
         if genome.identifier not in all_genomes:
             if not auto_delete_missing:
                 print_warning(
-                    F"Genome '{genome.identifier}' is missing from the database-folder. Remove it from the database?", color=Fore.MAGENTA)
+                    F"Genome '{genome.identifier}' is missing from the database-folder. Remove it from the database?",
+                    color=Fore.MAGENTA
+                )
                 confirm_delete(color=Fore.MAGENTA)
             genome.delete()
 
@@ -163,7 +161,9 @@ def remove_missing_organisms(auto_delete_missing: bool = False):
         if organism.name not in all_organisms:
             if not auto_delete_missing:
                 print_warning(
-                    F"Organism '{organism.name}' is missing from the database-folder. Remove it from the database?", color=Fore.MAGENTA)
+                    F"Organism '{organism.name}' is missing from the database-folder. Remove it from the database?",
+                    color=Fore.MAGENTA
+                )
                 confirm_delete(color=Fore.MAGENTA)
             organism.delete()
 
@@ -211,10 +211,17 @@ def check_invariants():
           F"belonging to {len(Organism.objects.values('taxid').distinct())} species.")
 
 
-def reload_orthologs():
+def reload_orthologs(auto_delete: bool = False):
     """
     Load annotations from settings.py > ORTHOLOG_ANNOTATIONS['ortholog_to_gene_ids']
     """
+    if not auto_delete:
+        print_warning(
+            F"Delete all ortholog annotations?",
+            color=Fore.MAGENTA
+        )
+        confirm_delete(color=Fore.MAGENTA)
+
     Annotation.load_ortholog_annotations()
 
 

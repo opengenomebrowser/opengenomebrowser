@@ -35,7 +35,7 @@ class GenomeSerializer:
             current_genome_state = self.export_genome(genome_dict['identifier'])
 
             if current_genome_state == raw_genomes_dict:
-                print(": unchanged")
+                print(" :: unchanged")
                 g.genomecontent.update()
                 if is_representative:
                     parent_organism.set_representative(g)
@@ -43,7 +43,7 @@ class GenomeSerializer:
                 g.invariant()
                 return g
 
-            print(": update existing")
+            print(" :: update existing")
 
             genomecontent = g.genomecontent
             genome_dict['genomecontent'] = genomecontent.pk
@@ -51,7 +51,7 @@ class GenomeSerializer:
             new_data = '[{"model": "' + Genome._meta.label_lower + '", "pk": ' + str(
                 g.pk) + ', "fields": ' + json.dumps(genome_dict, default=set_to_list) + '}]'
         else:
-            print(": create new")
+            print(" :: create new")
 
             genomecontent, created = GenomeContent.objects.get_or_create(identifier=genome_dict['identifier'])
             genome_dict['genomecontent'] = genomecontent.pk
