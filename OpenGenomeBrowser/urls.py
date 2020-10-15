@@ -33,7 +33,7 @@ class MyLoginView(LoginView):
 
 
 urlpatterns = [
-                  path('login/', MyLoginView.as_view(), name="login"),
+                  path('accounts/login/', MyLoginView.as_view(), name="login"),
                   path('admin/', admin.site.urls),
                   path('accounts/', include('django.contrib.auth.urls')),
                   path('', include('website.urls')),
