@@ -34,11 +34,13 @@ class MyLoginView(LoginView):
 
 urlpatterns = [
                   path('accounts/login/', MyLoginView.as_view(), name="login"),
+                  # path('accounts/signup/', MySignupView.as_view(), name='account_signup'),
+                  # path('invitations/', include('invitations.urls', namespace='invitations')),
                   path('admin/', admin.site.urls),
                   path('accounts/', include('django.contrib.auth.urls')),
-                  path('invitations/', include('invitations.urls', namespace='invitations')),
-                  path('', include('website.urls')),
+                  path('', include('website.urls'))
               ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+
 if settings.DEBUG:
     # Serving files uploaded by a user during development
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
