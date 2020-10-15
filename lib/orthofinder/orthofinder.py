@@ -4,6 +4,28 @@ from OpenGenomeBrowser import settings
 import shutil
 
 
+def is_installed(program):
+    """
+    Test if a program is installed.
+
+    :param program: path to executable or command
+    :return: if program executable: program; else None
+    """
+
+    def is_exe(fpath):
+        return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
+
+    fpath, fname = os.path.split(program)
+    if fpath:  # check if path to program is valid
+        return is_exe(program)
+    else:  # check if program is in PATH
+        for path in os.environ["PATH"].split(os.pathsep):
+            exe_file = os.path.join(path, program)
+            if is_exe(exe_file):
+                return exe_file
+        return False
+
+
 class OrthofinderError(Exception):
     def __init__(self, message):
         self.message = message
@@ -11,14 +33,8 @@ class OrthofinderError(Exception):
 
 class Orthofinder:
     def __init__(self):
-        path = os.path.dirname(os.path.abspath(__file__))
-        self.orthofinder_bin = F'{path}/OrthoFinder/orthofinder'
-
-        if not os.path.isfile(self.orthofinder_bin):
-            from install_orthofinder import install
-            install()
-
-        assert os.path.isfile(self.orthofinder_bin), F'Installation of OrthoFinder failed! File is missing: {self.orthofinder_bin}'
+        self.orthofinder_bin = 'orthofinder'
+        assert is_installed(self.orthofinder_bin), F'OrthoFinder is not installed! Could not run "{self.orthofinder_bin}"'
 
     def version(self):
         subprocess = self.__run(['-h'])
