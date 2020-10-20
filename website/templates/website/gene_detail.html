@@ -184,6 +184,13 @@
 
         $(document).ready(function () {
             load_dfvm()
+
+            $(".ogb-tag.annotation").each(function (index) {
+                $(this).on("click", function () {
+                    showAnnotationClickMenu(event)
+                })
+            })
+
         })
 
         let load_dfvm = function () {

@@ -6,7 +6,7 @@ from website.models.Annotation import Annotation
 
 from .GenomeDetailView import dataframe_to_bootstrap_html
 
-from .helpers.magic_string import MagicString
+from .helpers.magic_string import MagicQueryManager, MagicError
 
 
 def annotation_view(request):
@@ -19,12 +19,12 @@ def annotation_view(request):
         qs = set(request.GET['genomes'].split(' '))
 
         try:
-            genomes = MagicString.get_genomes(queries=qs)
-            genome_to_species = {genome.identifier: genome.taxscientificname for genome in genomes}
-            context['genomes'] = genomes
+            magic_query_manager = MagicQueryManager(queries=qs)
+            genome_to_species = magic_query_manager.genome_to_species()
+            context['magic_query_manager'] = magic_query_manager
             context['genome_to_species'] = genome_to_species
             genomes_valid = True
-        except ValueError as e:
+        except Exception as e:
             context['error_danger'] = str(e)
 
     if 'annotations' in request.GET:
@@ -37,7 +37,7 @@ def annotation_view(request):
             annotations_valid = True
 
     if genomes_valid and annotations_valid:
-        mm = MatrixMaker(genomes, annotations)
+        mm = MatrixMaker(magic_query_manager.all_genomes, annotations)
 
         group_to_table = mm.get_group_to_table()
 
@@ -60,12 +60,12 @@ def annotation_matrix(request):
     if not 'genomes[]' and 'annotations[]' in request.POST:
         return HttpResponse('Request failed! Please POST genomes[] and annotations[].')
 
-    identifiers = set(request.POST.getlist('genomes[]'))
+    qs = set(request.POST.getlist('genomes[]'))
 
     try:
-        genomes = MagicString.get_genomes(identifiers)
-    except ValueError as e:
-        return HttpResponse('Request failed: genomes[] incorrect. ' + str(e))
+        magic_query_manager = MagicQueryManager(qs)
+    except Exception as e:
+        return HttpResponse(F'Request failed: genomes[] incorrect. {e}')
 
     annotations = set(request.POST.getlist('annotations[]'))
     try:
@@ -73,7 +73,10 @@ def annotation_matrix(request):
     except Annotation.DoesNotExist:
         return HttpResponse('Request failed: annotations[] incorrect.')
 
-    mm = MatrixMaker(genomes, annotations)
+    ag = magic_query_manager.all_genomes
+
+    print(len(ag), ag)
+    mm = MatrixMaker(ag, annotations)
 
     group_to_table = mm.get_group_to_table()
 

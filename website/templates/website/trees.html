@@ -74,7 +74,12 @@
                 {% if can_calculate_trees %}
                     <hr class="featurette-divider">
 
-                    <form>
+                    <button type="button" class="btn btn-light" data-toggle="collapse" href="#real-div" aria-expanded="false" aria-controls="real-div"
+                    >Show query
+                    </button>
+
+
+                    <form id="real-div" class="collapse">
                         <div class="form-group">
                             <label for="real-genomes">Genomes:</label>
                             <div class="read-only-div" id="real-genomes">
@@ -106,6 +111,8 @@
 
 
         <div class="container" id="taxid-tree-container" {% if not can_calculate_trees %} hidden {% endif %}>
+            <hr class="featurette-divider">
+
             <h2>Taxid-based tree</h2>
             <label for="layout-selector-taxid">Layout</label>
             <select class="form-control" id="layout-selector-taxid"

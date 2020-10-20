@@ -51,16 +51,21 @@
 
                 <div class="form-group">
                     <label for="get-genomes">Genomes:</label>
-                    <input type="text" class="form-control" id="get-genomes" value="{{ genomes|join:", " }}">
+                    <input type="text" class="form-control" id="get-genomes"
+                           value="{{ magic_query_manager.regular_genomes|join:", " }},{{ magic_query_manager.magic_objects|join:", " }}">
                 </div>
 
                 <button type="button" class="btn btn-primary" onclick="submit_function()">Submit</button>
             </form>
 
-            {% if map and genomes %}
+            {% if map %}
                 <hr class="featurette-divider">
 
-                <form>
+                <button type="button" class="btn btn-light" data-toggle="collapse" href="#real-div" aria-expanded="false" aria-controls="real-div"
+                >Show query
+                </button>
+
+                <form id="real-div" class="form-group collapse">
                     <div class="form-group row">
                         <label for="real-map" class="col-sm-2 col-form-label" style="white-space: nowrap">Pathway Map:</label>
                         <div class="col-sm-10">
@@ -68,10 +73,11 @@
                         </div>
                     </div>
 
-                    <div class="form-group">
-                        <label for="real-genomes">Genomes:</label>
+
+                    <div>
+                        <label for="real-genomes">Genomes ({{ magic_query_manager.all_genomes|length }})</label>
                         <div class="read-only-div" id="real-genomes">
-                            {% for genome in genomes %}{{ genome.html|safe }}{% endfor %}
+                            {% for genome in magic_query_manager.all_genomes %}{{ genome.html|safe }}{% endfor %}
                         </div>
                     </div>
                 </form>
@@ -81,7 +87,7 @@
 
     </section>
 
-    <section style="text-align: center">
+    <section style="text-align: center; padding-top: 1rem">
 
         <div class="overflow-auto" id="pathway-map-container">
             <!-- pathway map svg -->
@@ -93,7 +99,8 @@
 {% block end %}
     <script>
         "use strict"
-        let genome_to_species = {{ genome_to_species|safe }};
+        const local_genome_to_species = {{ genome_to_species|safe }};
+        let genome_to_species = Object.assign({}, local_genome_to_species)  // deep copy
 
         const type_dict = {{ type_dict|safe }};
 
@@ -208,7 +215,7 @@ ${percentage} % (${covering.length} out of ${total})</p>`)
                 if (nCovered > 0) {
                     el += `
         <h6 class="dropdown-header context-menu-header">Positive genomes</h6>
-        <div class="read-only-div"> ${create_read_only_genome_div(Array.from(this['organisms']), genome_to_species, 'positive', '#map-context-menu').html()} </div>`
+        <div class="read-only-div"> ${create_read_only_genome_div(Array.from(this['organisms']), local_genome_to_species, 'positive', '#map-context-menu').html()} </div>`
                 }
 
                 el += `
@@ -223,7 +230,7 @@ ${percentage} % (${covering.length} out of ${total})</p>`)
             if (covering.length > 0) {
                 cm.appendHeader('Positive genomes')
                 cm.appendElement(
-                    create_read_only_genome_div(covering, genome_to_species, 'positive', '#map-context-menu')
+                    create_read_only_genome_div(covering, local_genome_to_species, 'positive', '#map-context-menu')
                 )
             }
 
@@ -231,7 +238,7 @@ ${percentage} % (${covering.length} out of ${total})</p>`)
             if (not_covering.length > 0 && not_covering.length !== total) {
                 cm.appendHeader('Negative genomes')
                 cm.appendElement(
-                    create_read_only_genome_div(not_covering, genome_to_species, 'negative')
+                    create_read_only_genome_div(not_covering, local_genome_to_species, 'negative')
                 )
             }
 

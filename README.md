@@ -109,10 +109,12 @@ If you want to chat, contact me via [Discord](https://discord.gg/mDm4fqf).
     "growth_condition": null,
     "geographical_coordinates": null,
     "geographical_name": null,
+    "library_preparation": null,
     "sequencing_tech": null,
     "sequencing_tech_version": null,
     "sequencing_date": null,
     "sequencing_coverage": null,
+    "read_length": null,
     "assembly_tool": null,
     "assembly_version": null,
     "assembly_date": null,
@@ -309,7 +311,7 @@ sudo mv muscle3.8.31_i86linux64 /usr/bin/muscle
 # OrthoFinder
 wget https://github.com/davidemms/OrthoFinder/releases/download/2.3.12/OrthoFinder.tar.gz
 tar -xvf OrthoFinder.tar.gz
-sudo cp -r OrthoFinder /opt/    
+sudo cp -r OrthoFinder /opt/
 ```
 
 ##### 2. create Python 3.6+ venv (in an appropriate location)

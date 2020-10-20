@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from website.views.helpers.magic_string import MagicString
+from website.views.helpers.magic_string import MagicQueryManager
 
 
 def trees(request):
@@ -12,10 +12,10 @@ def trees(request):
         qs = set(request.GET['genomes'].split(' '))
 
         try:
-            found_genomes = MagicString.get_genomes(queries=qs)
-            context['genomes'] = found_genomes
-            context['genome_to_species'] = {genome.identifier: genome.taxscientificname for genome in found_genomes}
-        except ValueError as e:
+            magic_query_manager = MagicQueryManager(queries=qs)
+            context['genomes'] = magic_query_manager.all_genomes
+            context['genome_to_species'] = magic_query_manager.genome_to_species()
+        except Exception as e:
             context['error_danger'] = str(e)
 
     context['can_calculate_trees'] = len(context['genomes']) >= 3

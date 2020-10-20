@@ -36,9 +36,11 @@ class Genome(models.Model):
     geographical_name = models.CharField('Geographical name', max_length=50, null=True, blank=True)
 
     # information about sequencing
+    library_preparation = models.CharField('Library Preparation', max_length=40, null=True, blank=True)
     sequencing_tech = models.CharField('Sequencing technology', max_length=40, null=True, blank=True)
     sequencing_tech_version = models.CharField('Sequencing technology version', max_length=20, null=True, blank=True)
     sequencing_date = models.DateField('Sequencing date', null=True, blank=True)
+    read_length = models.CharField('Read length', max_length=8, null=True, blank=True)
     sequencing_coverage = models.CharField('Sequencing coverage', max_length=8, null=True, blank=True)
 
     # information about assembly
@@ -314,9 +316,11 @@ class Genome(models.Model):
             'growth_condition': {'filter_type': 'no-filter', 'description': 'Growth Condition'},
             'geographical_coordinates': {'filter_type': 'no-filter', 'description': 'Isolation Coordinates'},
             'geographical_name': {'filter_type': 'no-filter', 'description': 'Geographical Name'},
+            'library_preparation': {'filter_type': 'multi_select', 'description': 'Library Preparation'},
             'sequencing_tech': {'filter_type': 'multi_select', 'description': 'Sequencing Technology'},
             'sequencing_tech_version': {'filter_type': 'no-filter', 'description': 'Sequencing Technology Version'},
             'sequencing_date': {'filter_type': 'no-filter', 'description': 'Sequencing Date'},
+            'read_length': {'filter_type': 'no-filter', 'description': 'Read Length'},
             'sequencing_coverage': {'filter_type': 'no-filter', 'description': 'Sequencing Coverage'},
             'assembly_tool': {'filter_type': 'no-filter', 'description': 'Assembly Tool'},
             'assembly_version': {'filter_type': 'no-filter', 'description': 'Assembly Tool Version'},

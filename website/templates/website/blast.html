@@ -54,11 +54,16 @@
 
                 <hr class="featurette-divider">
 
+                <button type="button" class="btn btn-light" data-toggle="collapse" href="#real-div" aria-expanded="false" aria-controls="real-div"
+                >Show query
+                </button>
+
+
                 <form id="blast-form" method="POST" action="{% url 'website:blast-submit' %}">
                     {% csrf_token %}
 
-                    <div class="form-group">
-                        <label for="real-genomes">Genes:</label>
+                    <div id="real-div" class="form-group collapse">
+                        <label for="real-genomes">Genomes:</label>
                         <div name="abc" class="read-only-div" id="real-genomes">
                             {% for genome in genomes %}{{ genome.html|safe }}{% endfor %}
                         </div>

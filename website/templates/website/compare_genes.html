@@ -104,8 +104,13 @@
             <div class="container">
                 <hr class="featurette-divider">
 
+                <button type="button" class="btn btn-light" data-toggle="collapse" href="#real-div" aria-expanded="false" aria-controls="real-div"
+                >Show query
+                </button>
+
+
                 <form>
-                    <div class="form-group">
+                    <div id="real-div" class="form-group collapse">
                         <label for="real-genes">Genes:</label>
                         <div class="read-only-div" id="real-genes">
                             {% for gene in genes %}{{ gene.html|safe }}{% endfor %}

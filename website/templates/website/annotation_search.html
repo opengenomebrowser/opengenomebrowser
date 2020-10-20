@@ -40,45 +40,45 @@
 
                 <div class="form-group">
                     <label for="get-genomes">Genome:</label>
-                    <input type="text" class="form-control" id="get-genomes" value="{{ genomes|join:", " }}">
+                    <input type="text" class="form-control" id="get-genomes"
+                           value="{{ magic_query_manager.regular_genomes|join:", " }},{{ magic_query_manager.magic_objects|join:", " }}">
                 </div>
 
                 <button type="button" class="btn btn-primary" onclick="submit_function()">Submit</button>
             </form>
 
-            <hr class="featurette-divider">
+            {% if magic_query_manager and annotations %}
+                <hr class="featurette-divider">
+
+                <button type="button" class="btn btn-light" data-toggle="collapse" href="#real-div" aria-expanded="false" aria-controls="real-div"
+                >Show query
+                </button>
+
+                <form id="real-div" class="collapse">
+                    <div class="form-group">
+                        <label for="real-annotations">Annotations:</label>
+                        <div class="form-control read-only-div"
+                             style="height: unset; padding: unset; background-color: #e9ecef; border: 1px solid #ced4da"
+                             id="real-annotations">
+                            {% for annotation in annotations %}{{ annotation.html|safe }}{% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="real-genomes">Genomes:</label>
+                        <div class="read-only-div" id="real-genomes">
+                            {% for genome in magic_query_manager.all_genomes %}{{ genome.html|safe }}{% endfor %}
+                        </div>
+                    </div>
+                </form>
+
+                </div>
+            {% endif %}
         </div>
 
-
-        {% if genomes and annotations %}
-            <hr class="featurette-divider">
-
-            <form>
-                <div class="form-group">
-                    <label for="real-annotations">Annotations:</label>
-                    <div class="form-control"
-                         style="height: unset; padding: unset; background-color: #e9ecef; border: 1px solid #ced4da"
-                         id="real-annotations">
-                        {% for annotation in annotations %}{{ annotation.html|safe }}{% endfor %}
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="real-genomes">Genomes:</label>
-                    <div class="read-only-div" id="real-genomes">
-                        {% for genome in genomes %}{{ genome.html|safe }}{% endfor %}
-                    </div>
-                </div>
-            </form>
-
-            </div>
-        {% endif %}
-
     </section>
 
-    <section id="annotation-matrix-container">
-
-    </section>
+    <section id="annotation-matrix-container" style="padding-top: 1rem"></section>
 
 
 {% endblock %}
@@ -89,7 +89,7 @@
         "use strict"
 
         let annotations = [{% if annotations %} '{{ annotations|join:"', '" }}' {% else %}{% endif %}]
-        let genomes = [{% if genomes %} '{{ genomes|join:"', '" }}' {% else %}{% endif %}]
+        let genomes = [{% if magic_query_manager %} '{{ magic_query_manager.all_genomes|join:"', '" }}' {% else %}{% endif %}]
 
         let genome_to_species
 

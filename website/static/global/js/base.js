@@ -173,13 +173,16 @@ function create_read_only_genome_div(genome_array, genome_to_species, additional
         onclick: `CopyToClipboard('${genome_array.join(', ')}')`
     })
 
-    for (let idx in genome_array) {
+    for (const genome of genome_array) {
+        if (!(genome in genome_to_species)) {
+            console.log(genome, 'not in genome_to_species!')
+        }
         read_only_genome_div.append($('<div>', {
-            text: genome_array[idx],
+            text: genome,
             class: 'genome ogb-tag',
             onclick: `showGenomeClickMenu(event, 'auto', 'auto', 'auto', '${click_menu_annotation}')`,
-            'data-species': genome_to_species[genome_array[idx]]['sciname'],
-            'title': genome_to_species[genome_array[idx]]['sciname'],
+            'data-species': genome_to_species[genome]['sciname'],
+            'title': genome_to_species[genome]['sciname'],
             'data-toggle': 'tooltip'
         }).tooltip())
     }

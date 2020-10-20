@@ -20,7 +20,8 @@ class GenomeLooper:
             current_organism = organism_folder.name
             print(current_organism)
 
-            with open(organism_folder.path + "/organism.json") as file:
+            organism_dict_path = organism_folder.path + "/organism.json"
+            with open(organism_dict_path) as file:
                 organism_dict = json.loads(file.read())
 
             assert current_organism == organism_dict["name"], \
@@ -37,7 +38,8 @@ class GenomeLooper:
                 current_genome = genome_folder.name
                 print("   └── " + current_genome)
 
-                with open(genome_folder.path + "/genome.json") as file:
+                genome_dict_path = genome_folder.path + "/genome.json"
+                with open(genome_dict_path) as file:
                     genome_dict = json.loads(file.read())
 
                 assert current_genome.startswith(organism_folder.name), \
@@ -45,7 +47,7 @@ class GenomeLooper:
                 assert current_genome == genome_dict["identifier"], \
                     F"'name' in genome.json doesn't match folder name: {genome_folder.path}"
 
-                self.process(organism_dict, genome_dict)
+                self.process(organism_dict, genome_dict, organism_dict_path, genome_dict_path)
 
-    def process(self, organism_dict, genome_dict):
+    def process(self, organism_dict, genome_dict, organism_dict_path, genome_dict_path):
         pass

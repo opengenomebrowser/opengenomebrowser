@@ -15,7 +15,7 @@ from lib.gene_loci_comparison.gene_loci_comparison import GraphicRecordLocus
 from bokeh.embed import components
 
 from lib.multiplesequencealignment.multiple_sequence_alignment import ClustalOmega, MAFFT, Muscle
-from .helpers.magic_string import MagicString
+from .helpers.magic_string import MagicQueryManager, MagicObject
 
 
 def err(error_message):
@@ -127,7 +127,7 @@ class Api:
         results = []
 
         if q.startswith('@'):
-            results.extend(MagicString.autocomplete(magic_string=q))
+            results.extend(MagicObject.autocomplete(magic_string=q))
         else:
             genomes = GenomeContent.objects.filter(identifier__icontains=q)[:20]
             genomes.prefetch_related('organism__taxid')
@@ -177,8 +177,8 @@ class Api:
         qs = set(request.GET.getlist('genomes[]'))
 
         try:
-            MagicString.validate(queries=qs)
-        except ValueError as e:
+            MagicQueryManager(queries=qs)
+        except Exception as e:
             return JsonResponse(dict(success=False, message=str(e)))
 
         return JsonResponse(dict(success=True))
@@ -214,8 +214,10 @@ class Api:
 
         qs = set(request.GET.getlist('genomes[]'))
 
-        genome_to_species = MagicString.to_species(queries=qs)
-
+        try:
+            genome_to_species = MagicQueryManager(qs).genome_to_species()
+        except Exception as e:
+            return err(F'magic query is bad: {e}')
         return JsonResponse(genome_to_species)
 
     @staticmethod

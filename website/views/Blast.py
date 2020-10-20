@@ -1,5 +1,5 @@
 from django.shortcuts import render, HttpResponse
-from website.views.helpers.magic_string import MagicString
+from website.views.helpers.magic_string import MagicQueryManager
 from django.http import HttpResponseBadRequest
 from lib.ncbiblast.ncbi_blast.blast_wrapper import Blast
 
@@ -36,7 +36,8 @@ def blast_view(request):
         qs = set(request.GET['genomes'].split(' '))
 
         try:
-            found_genomes = MagicString.get_genomes(queries=qs)
+            magic_query_manager = MagicQueryManager(queries=qs)
+            found_genomes = magic_query_manager.all_genomes
             context['genomes'] = found_genomes
             context['genome_to_species'] = {genome.identifier: genome.taxscientificname for genome in found_genomes}
         except ValueError as e:
@@ -54,7 +55,8 @@ def blast_submit(request):
             return HttpResponse('Request failed: does not include. ' + i)
 
     try:
-        genomes = MagicString.get_genomes(request.POST['genomes[]'].split(' '))
+        magic_query_manager = MagicQueryManager(queries=request.POST['genomes[]'].split(' '))
+        genomes = magic_query_manager.all_genomes
     except ValueError as e:
         return HttpResponse('Request failed: genomes[] incorrect. ' + str(e))
 
