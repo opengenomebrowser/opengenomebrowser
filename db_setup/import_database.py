@@ -4,8 +4,11 @@ import os
 import json
 from progressbar import progressbar  # pip install progressbar2
 from colorama import Fore
+import bokeh
+import requests
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+OGB_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(OGB_DIR)
 
 # import django environment to manipulate the Organism and Genome classes
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "OpenGenomeBrowser.settings")
@@ -225,10 +228,48 @@ def reload_orthologs(auto_delete: bool = False):
     Annotation.load_ortholog_annotations()
 
 
-# def export_database(self):
-#     for organism in Organism.objects.all()
+def update_bokeh(auto_delete: bool = False):
+    """
+    """
+    import bokeh
+    import requests
+
+    bokeh_version = bokeh.__version__
+    url_fill = F'-{bokeh_version}'
+
+    if not auto_delete:
+        print_warning(
+            F'Overwrite bokeh js files? (New version: {bokeh_version})',
+            color=Fore.MAGENTA
+        )
+        confirm_delete(color=Fore.MAGENTA)
+        print()
+
+    cdn = 'https://cdn.bokeh.org/bokeh/release'
+    js_dir = F'{OGB_DIR}/website/static/global/js'
+    files = ['bokeh{}.min.js', 'bokeh-widgets{}.min.js', 'bokeh-tables{}.min.js', 'bokeh-api{}.min.js']
+
+    for file in files:
+        url = F'{cdn}/{file.format(url_fill)}'
+        target_path = F'{js_dir}/{file.format("")}'
+        print(F'{url}  -->>  {target_path}')
+        r = requests.get(url, allow_redirects=True)
+
+        with open(target_path, 'wb') as f:
+            f.write(r.content)
+
+    print('\nRemember to run "python manage.py collectstatic"!')
+
 
 if __name__ == "__main__":
     from glacier import glacier
 
-    glacier([import_database, reset_database, remove_missing_organisms, reload_pathway_maps, check_invariants, reload_orthologs])
+    glacier([
+        import_database,
+        reset_database,
+        remove_missing_organisms,
+        reload_pathway_maps,
+        check_invariants,
+        reload_orthologs,
+        update_bokeh
+    ])
