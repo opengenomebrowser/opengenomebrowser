@@ -151,7 +151,8 @@ convert hex (e.g. #2980b9) to filter: https://codepen.io/sosuke/pen/Pjoqqp
     border-radius: .25rem !important;
     transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out !important;
     /* limit height, enable scroll */
-    max-height: 8rem;
+    height: 8rem;
+    resize: vertical;
     overflow-y: scroll !important;
 }
 
