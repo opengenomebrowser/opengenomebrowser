@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import Genome, Tag, TagDescriptions
+from .models import Organism, Genome, Tag, TagDescriptions
+from website.models.OrganismSerializer import OrganismSerializer
 from website.models.GenomeSerializer import GenomeSerializer
 from django.db.models import JSONField
 from django.contrib import messages
@@ -29,6 +30,53 @@ class TagAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Tag, TagAdmin)
+
+
+class OrganismAdmin(admin.ModelAdmin):
+    exclude = (
+        'representative',
+    )
+
+    formfield_overrides = {
+        JSONField: {'widget': PrettyJSONWidget}
+    }
+
+    def save_model(self, request, obj: Organism, form, change):
+        os = OrganismSerializer()
+        new_dict = form.cleaned_data.copy()
+        for i in self.exclude:
+            if i in new_dict:
+                new_dict.pop(i)
+
+        old_dict = json.load(open(obj.metadata_json))
+        for i in self.exclude:
+            if i in old_dict:
+                old_dict.pop(i)
+
+        new_dict['taxid'] = new_dict['taxid'].id
+
+        # turn tags into set for comparison
+        new_dict['tags'] = set(t.tag for t in form.cleaned_data['tags'])
+        old_dict['tags'] = set(old_dict['tags'])
+
+        difference = list(diff(old_dict, new_dict))
+
+        if len(difference) == 0:
+            messages.add_message(request, messages.INFO, 'No difference!')
+        else:
+            messages.add_message(request, messages.INFO, F'saving the following change: {difference}')
+            super().save_model(request, obj, form, change)
+
+            os.update_metadata_json(organism=obj, who_did_it=request.user.username)
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
+admin.site.register(Organism, OrganismAdmin)
 
 
 class GenomeAdmin(admin.ModelAdmin):
@@ -65,7 +113,6 @@ class GenomeAdmin(admin.ModelAdmin):
         for i in self.exclude:
             if i in old_dict:
                 old_dict.pop(i)
-
 
         # turn tags into set for comparison
         new_dict['tags'] = set(t.tag for t in form.cleaned_data['tags'])

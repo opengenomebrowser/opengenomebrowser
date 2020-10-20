@@ -1,10 +1,13 @@
 from website.models import Organism, Tag, TaxID
+import os
+import shutil
 import json
 from django.core import serializers
 
 
 class OrganismSerializer():
-    def export_organism(self, name: str) -> dict:
+    @staticmethod
+    def export_organism(name: str) -> dict:
         o_qs = Organism.objects.filter(name=name)
         o = o_qs.first()
         organism_dict = serializers.serialize("json", o_qs, use_natural_foreign_keys=True, use_natural_primary_keys=True)
@@ -67,6 +70,24 @@ class OrganismSerializer():
         return_d['tags'] = set(Tag.objects.get_or_create(tag=tag_string).tag for tag_string in return_d['tags'])
         return_d['taxid'] = TaxID.get_or_create(return_d['taxid']).pk
         return return_d
+
+    @classmethod
+    def update_metadata_json(cls, organism: Organism, who_did_it='anonymous'):
+        from datetime import datetime
+        date = datetime.now().strftime("%Y_%b_%d_%H_%M_%S")
+
+        new_data = cls.export_organism(organism.name)
+
+        # create backup
+        bkp_dir = F'{os.path.dirname(organism.metadata_json)}/.bkp'
+        os.makedirs(bkp_dir, exist_ok=True)
+        bkp_file = F'{bkp_dir}/{date}_{who_did_it}_organism.json'
+        shutil.move(src=organism.metadata_json, dst=bkp_file)
+
+        # write new file
+        assert not os.path.isfile(organism.metadata_json)
+        with open(organism.metadata_json, 'w') as f:
+            json.dump(new_data, f, sort_keys=True, indent=4, default=set_to_list)
 
 
 def set_to_list(obj):

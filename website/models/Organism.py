@@ -20,7 +20,7 @@ class Organism(models.Model):
     taxid = models.ForeignKey(TaxID, on_delete=models.CASCADE)  # if unknown: 32644; mixture: 1427524
     restricted = models.BooleanField(default=False)
 
-    tags = models.ManyToManyField(Tag)
+    tags = models.ManyToManyField(Tag, blank=True)
 
     @property
     def parent(self):
