@@ -64,7 +64,7 @@ class OrganismSerializer():
         return_d = {}  # create deep copy
         return_d.update(d)
 
-        return_d['tags'] = set(Tag.objects.get_or_create(tag=tag_string).id for tag_string in return_d['tags'])
+        return_d['tags'] = set(Tag.objects.get_or_create(tag=tag_string).tag for tag_string in return_d['tags'])
         return_d['taxid'] = TaxID.get_or_create(return_d['taxid']).pk
         return return_d
 
