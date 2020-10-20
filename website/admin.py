@@ -10,6 +10,8 @@ from dictdiffer import diff
 
 
 class TagAdmin(admin.ModelAdmin):
+    search_fields = ('tag',)
+
     exclude = (
         'color',
         'text_color_white'
@@ -33,9 +35,9 @@ admin.site.register(Tag, TagAdmin)
 
 
 class OrganismAdmin(admin.ModelAdmin):
-    exclude = (
-        'representative',
-    )
+    search_fields = ('name',)
+
+    exclude = ('representative',)
 
     formfield_overrides = {
         JSONField: {'widget': PrettyJSONWidget}
@@ -80,6 +82,8 @@ admin.site.register(Organism, OrganismAdmin)
 
 
 class GenomeAdmin(admin.ModelAdmin):
+    search_fields = ('identifier',)
+
     exclude = (
         'genomecontent',
         'representative',
