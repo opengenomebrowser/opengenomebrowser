@@ -28,7 +28,7 @@ class AnnotationRegex(Enum):
     KEGGGENE = ('KG', re.compile('^K[0-9]{5}$'), re.compile('^[Kk][0-9]{1,5}$'))
     KEGGREACTION = ('KR', re.compile('^R[0-9]{5}$'), re.compile('^[Rr][0-9]{1,5}$'))
     GENEONTOLOGY = ('GO', re.compile('^GO:[0-9]{7}$'), re.compile('^[Gg][Oo]:[0-9]{1,7}$'))
-    ORTHOLOG = ('OL', re.compile('^HOG[0-9]{7}$'), re.compile('^[Oo][Gg][0-9]{1,7}$'))
+    ORTHOLOG = ('OL', re.compile('^H?OG[0-9]{7}$'), re.compile('^[Oo][Gg][0-9]{1,7}$'))
     GENECODE = ('GC', re.compile('^[0-9a-zA-Z\_\/\-\ \']{3,11}$'), re.compile('^[0-9a-zA-Z\_\/\-\ \']{2,11}$'))
     PRODUCT = ('GP', re.compile('^.*$'), re.compile('^.*$'))
     # Note: COMPOUND is not a type that is allowed in the database!
