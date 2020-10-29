@@ -12,7 +12,7 @@ from .AnnotationDetailView import AnnotationDetailView
 from .Trees import trees
 from .Blast import blast_view
 from .Api import Api
-from .Download import download_view
+from .Files import files_html, files_json
 from .ClickMenu import click_view
 from .CompareGenes import CompareGenes
 

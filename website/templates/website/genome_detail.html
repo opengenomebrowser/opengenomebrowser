@@ -379,16 +379,16 @@
             <hr class="featurette-divider">
             <h3>Download files</h3>
             <ul>
-                <li><a href="/download/{{ genome.assembly_fasta }}">Assembly</a></li>
+                <li><a href="/files_html/{{ genome.assembly_fasta }}">Assembly</a></li>
                 <li>Coding sequences (CDS)
                     <ul>
-                        <li><a href="/download/{{ genome.cds_faa }}">Protein fasta (faa)</a></li>
-                        <li><a href="/download/{{ genome.cds_gbk }}">GenBank (gbk)</a></li>
-                        <li><a href="/download/{{ genome.cds_gff }}">General feature format (gff)</a></li>
+                        <li><a href="/files_html/{{ genome.cds_faa }}">Protein fasta (faa)</a></li>
+                        <li><a href="/files_html/{{ genome.cds_gbk }}">GenBank (gbk)</a></li>
+                        <li><a href="/files_html/{{ genome.cds_gff }}">General feature format (gff)</a></li>
                         {% if genome.cds_ffn %}
-                            <li><a href="/download/{{ genome.cds_ffn }}">Nucleotide fasta (ffn)</a></li> {% endif %}
+                            <li><a href="/files_html/{{ genome.cds_ffn }}">Nucleotide fasta (ffn)</a></li> {% endif %}
                         {% if genome.cds_sqn %}
-                            <li><a href="/download/{{ genome.cds_sqn }}">Submission-ready annotated sequence (sqn)</a>
+                            <li><a href="/files_html/{{ genome.cds_sqn }}">Submission-ready annotated sequence (sqn)</a>
                             </li> {% endif %}
                     </ul>
                 </li>
@@ -396,7 +396,7 @@
                     <li>Custom annotations
                         <ul>
                             {% for custom_annotation in genome.custom_annotations %}
-                                <li><a href="/download/{{ genome.rel_base_path }}/{{ custom_annotation.file }}">{{ custom_annotation.type }}
+                                <li><a href="/files_html/{{ genome.rel_base_path }}/{{ custom_annotation.file }}">{{ custom_annotation.type }}
                                     (from {{ custom_annotation.date }})</a></li>
                             {% endfor %}
                         </ul>

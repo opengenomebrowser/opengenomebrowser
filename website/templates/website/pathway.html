@@ -122,7 +122,7 @@
             })
 
             {% if organism_to_annotations %}
-                $('#pathway-map-container').load(`/download/{{ PATHWAY_MAPS_RELATIVE }}/{{ map.filename }}`.replace(/\s/g, '%20'), function () {
+                $('#pathway-map-container').load(`/files_html/{{ PATHWAY_MAPS_RELATIVE }}/{{ map.filename }}`.replace(/\s/g, '%20'), function () {
                     $('.shape').tooltip()
 
                     $('.shape').click(function (event) {

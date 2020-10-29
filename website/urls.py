@@ -12,8 +12,9 @@ urlpatterns = [
     # favicon.ico
     path('favicon.ico', RedirectView.as_view(url='/static/global/customicons/ogb-circle.svg')),
 
-    # ex: /download
-    re_path(r'download/.*$', Download.download_view, name='download'),
+    # ex: /files_html and /files_json
+    re_path(r'files_html/.*$', Files.files_html, name='files-html'),
+    re_path(r'files_json/.*$', Files.files_json, name='files-json'),
 
     # ex: /genomes
     path('genomes', GenomeTable.genome_list_view, name='genomes'),
