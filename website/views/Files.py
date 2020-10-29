@@ -1,5 +1,5 @@
 from django.shortcuts import HttpResponse
-from django.http import HttpResponseNotFound
+from django.http import HttpResponseNotFound, JsonResponse
 import os
 from OpenGenomeBrowser import settings
 
@@ -47,13 +47,24 @@ def files_json(request):
 
 
 def return_content_debug(request, url_prefix: str):
+    from datetime import datetime
+
     rel_path = request.path.replace(url_prefix, '', 1)
     abs_path = os.path.join(settings.GENOMIC_DATABASE, rel_path)
     filename = os.path.basename(request.path)
 
     # in debug mode, simply return the folder/file
     if os.path.isdir(abs_path):
-        return HttpResponse('<br>'.join(os.listdir(abs_path)))
+        def jsonify_files(bn):
+            path = F'{abs_path}/{bn}'
+            stat = os.stat(path)
+            if os.path.isfile(path):
+                return dict(name=bn, type='file', mtime=datetime.fromtimestamp(stat.st_mtime).strftime('%Y-%m-%d-%H:%M'), size=stat.st_size)
+            else:
+                return dict(name=bn, type='directory', mtime=datetime.fromtimestamp(stat.st_mtime).strftime('%Y-%m-%d-%H:%M'))
+
+        files = [jsonify_files(f) for f in os.listdir(abs_path) if not f.startswith('.')]
+        return JsonResponse(files, safe=False)
 
     elif os.path.isfile(abs_path):
         response = HttpResponse(content_type='text/plain')
