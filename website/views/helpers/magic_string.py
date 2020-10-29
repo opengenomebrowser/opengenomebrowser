@@ -40,7 +40,7 @@ class MagicObject:
         self.safe_string = magic_string.replace(' ', '!!!')
         self.magic_string = magic_string.replace('!!!', ' ')
 
-        magic_word, query = magic_string[1:].split(':', maxsplit=1)
+        magic_word, query = self.magic_string[1:].split(':', maxsplit=1)
 
         if query is None:
             query = ''
@@ -60,7 +60,7 @@ class MagicObject:
             raise MagicError(F'Could not find magic_string object: {magic_string}.')
 
     def __str__(self):
-        return self.safe_string
+        return self.magic_string
 
     @property
     def html(self):
