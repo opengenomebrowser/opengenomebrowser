@@ -18,8 +18,8 @@ from django.conf import settings
 application = get_wsgi_application()
 
 from website.models import Organism, Genome, Tag, TaxID, GenomeContent, Gene, PathwayMap
-from website.models.GenomeSerializer import GenomeSerializer
-from website.models.OrganismSerializer import OrganismSerializer
+from website.serializers import GenomeSerializer
+from website.serializers import OrganismSerializer
 
 from website.models.Annotation import Annotation
 
@@ -70,9 +70,6 @@ def import_database(delete_missing: bool = True, auto_delete_missing: bool = Fal
         remove_missing_organisms(auto_delete_missing)
 
     # Import new organisms / update existing organisms
-    genome_serializer = GenomeSerializer()
-    organism_serializer = OrganismSerializer()
-
     organism_folders_len = len(list(os.scandir(ORGANISMS_PATH)))
     organism_folders = os.scandir(ORGANISMS_PATH)
 
@@ -94,11 +91,29 @@ def import_database(delete_missing: bool = True, auto_delete_missing: bool = Fal
 
         representative_identifier = organism_dict["representative"]
         assert os.path.isdir(F'{organism_folder.path}/genomes/{representative_identifier}'), \
-            F"Error: Representative doesn't exist! Organism: {organism_folder.name}, Representative: {representative_identifier}"
+            F"Error: Representative doesn't exist! Organism: {current_organism}, Representative: {representative_identifier}"
         assert not os.path.isfile(F'{organism_folder.path}/genomes/{representative_identifier}/.ignore'), \
-            F"Error: Representative is ignored! Organism: {organism_folder.name}, Representative: {representative_identifier}"
+            F"Error: Representative is ignored! Organism: {current_organism}, Representative: {representative_identifier}"
 
-        s = organism_serializer.import_organism(organism_dict, update_css=False)
+        organism_serializer = OrganismSerializer(data=organism_dict)
+
+        organism_serializer.is_valid(raise_exception=True)
+        # s = organism_serializer.import_organism(organism_dict, update_css=False)
+        try:
+            o = Organism.objects.get(name=current_organism)
+            match, difference = OrganismSerializer.json_matches_organism(o, organism_dict)
+            if match:
+                print(' :: unchanged')
+
+            else:
+                print(F' :: update: {difference}')
+                o = organism_serializer.update(instance=o, validated_data=organism_serializer.validated_data, representative_isnull=True)
+
+        except Organism.DoesNotExist:
+            print(' :: new')
+            o = organism_serializer.create(organism_serializer.validated_data)
+
+        genomes = []
 
         for genome_folder in os.scandir(F'{organism_folder.path}/genomes'):
             current_genome = genome_folder.name
@@ -111,14 +126,36 @@ def import_database(delete_missing: bool = True, auto_delete_missing: bool = Fal
             with open(F'{genome_folder.path}/genome.json') as file:
                 genome_dict = json.loads(file.read())
 
-            assert current_genome.startswith(organism_folder.name), \
+            assert current_genome.startswith(current_organism), \
                 F"genome name '{current_genome}' doesn't start with corresponding organism name '{current_organism}'."
             assert current_genome == genome_dict["identifier"], \
                 F"'name' in genome.json doesn't match folder name: {genome_folder.path}"
 
-            is_representative = current_genome == representative_identifier
+            genome_serializer = GenomeSerializer(data=genome_dict)
+            genome_serializer.is_valid(raise_exception=True)
 
-            genome_serializer.import_genome(genome_dict, s, is_representative, update_css=False)
+            try:
+                g = Genome.objects.get(identifier=current_genome)
+                match, difference = GenomeSerializer.json_matches_genome(g, genome_dict, organism_name=o.name)
+                if match:
+                    print(' :: unchanged')
+
+                else:
+                    print(F' :: update: {difference}')
+                    g = genome_serializer.update(instance=g, validated_data=genome_serializer.validated_data, organism=o)
+
+            except Genome.DoesNotExist:
+                print(' :: new')
+                g = genome_serializer.create(genome_serializer.validated_data, organism=o)
+
+            genomes.append(g)
+
+
+        o.representative = Genome.objects.get(identifier=representative_identifier)
+        o.save()
+
+        for g in genomes:
+            GenomeSerializer.update_genomecontent(g)
 
     Tag.create_tag_color_css()
     TaxID.create_taxid_color_css()

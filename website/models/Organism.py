@@ -20,6 +20,9 @@ class Organism(models.Model):
     taxid = models.ForeignKey(TaxID, on_delete=models.CASCADE)  # if unknown: 32644; mixture: 1427524
     restricted = models.BooleanField(default=False)
 
+    representative = models.OneToOneField('website.Genome', related_name="representative",
+                                          on_delete=models.RESTRICT, blank=True, null=True)
+
     tags = models.ManyToManyField(Tag, blank=True)
 
     @property
@@ -46,17 +49,15 @@ class Organism(models.Model):
         return self.taxid.get_taxonomy(rank)
 
     def set_representative(self, genome):
-        from .Genome import Genome
-        assert genome == None or isinstance(genome, Genome)
+        self.representative = genome
+        self.save()
 
-        if hasattr(self, 'representative'):
-            current_representative = self.representative
-            current_representative.representative = None
-            current_representative.save()
-
-        if genome:
-            genome.representative = self
-            genome.save()
+    def base_path(self, relative=True) -> str:
+        rel = F"organisms/{self.name}"
+        if relative:
+            return rel
+        else:
+            return F"{settings.GENOMIC_DATABASE}/{rel}"
 
     @property
     def metadata_json(self):
@@ -70,14 +71,11 @@ class Organism(models.Model):
         assert self.genome_set.count() > 0, "Error in organism {}: Has no genome!".format(self.name)
         assert hasattr(self, 'representative'), "Error in organism {}: Has no representative!".format(self.name)
 
-        # ensure metadata matches genome
+        # ensure metadata matches organism
         import json
-        from website.models.OrganismSerializer import OrganismSerializer
-        from dictdiffer import diff
-        ss = OrganismSerializer()
+        from website.serializers import OrganismSerializer
         im_dict = json.loads(open(F'{settings.GENOMIC_DATABASE}/organisms/{self.name}/organism.json').read())
-        im_dict = ss._convert_natural_keys_to_pks(im_dict)
-        exp_dict = ss.export_organism(self.name)
-        assert im_dict == exp_dict, F'\n{im_dict}\n{exp_dict}\n{list(diff(im_dict, exp_dict))}'
+        matches, differences = OrganismSerializer.json_matches_organism(organism=self, json_dict=im_dict)
+        assert matches, F'json and database do not match. organism: {self.name} differences: {differences}'
 
         return True

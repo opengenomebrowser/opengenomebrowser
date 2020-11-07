@@ -1,0 +1,169 @@
+{% extends 'global/base.html' %}
+{% load static %}
+
+{% block styles %}
+    <!-- Site-specific css/js -->
+    <link rel="stylesheet" type="text/css" href="{% static 'global/css/taxid_color.css' %}" id="taxid-color-stylesheet"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'global/css/tag_color.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'website/css/detail.css' %}"/>
+    <link href="{% static 'website/css/jquery-ui.css' %}" rel="stylesheet"/>
+
+    <style>
+        #representative div.ogb-tag {
+            float: right;
+        }
+    </style>
+{% endblock %}
+
+{% block sidebar %}
+
+    <div class="sidebar-subcontent form-check form-check-inline">
+        <label class="form-check-label" for="colorize-tax-checkbox"><a>Colorize taxonomy?</a></label>
+        <input class="form-check-input" type="checkbox" id="colorize-tax-checkbox" onclick="toggle_colorize_tax()">
+    </div>
+{% endblock %}
+
+{% block body %}
+    <!-- Breadcrumb -->
+    <div class="breadcrumb-push"></div>
+    <nav aria-label="breadcrumb" class="breadcrumb-fixed">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"></li>
+            <!-- Taxid -->
+            <li class="breadcrumb-item">
+                <a href="{% url 'website:taxid' slug=organism.taxid.id %}"> TAXID {{ organism.taxid.id }}</a>
+            </li>
+            <!-- Organism -->
+            <li class="breadcrumb-item active">
+                <span> ORGANISM {{ organism }}</span>
+            </li>
+        </ol>
+    </nav>
+
+    <div class="body-push"></div>
+
+    <section>
+        <!-- title -->
+        <div class="container black-links">
+            <!-- organism -->
+            <span class="type-label">organism:</span>
+            <span class="h2" onclick="showOrganismClickMenu(event, 'auto', '{{ organism.taxid }}')">{{ organism }}</span>
+
+            <!-- taxid -->
+            {% if organism.taxid %}<br>
+                <span class="type-label">species:</span>
+                <span class="h3" onclick="showTaxidClickMenu(event, '{{ organism.taxid }}')">
+                    {{ organism.taxid }}</span>
+                <span class="type-label">taxid:</span>
+                <span class="h3" style="{{ organism.taxid.html_style }}"
+                      onclick="showTaxidClickMenu(event, '{{ organism.taxid }}')">{{ organism.taxid.id }}</span>
+            {% endif %}
+
+            {% if organism.restricted %}
+                <hr class="featurette-divider">
+
+                <!-- restricted -->
+                <div class="container black-links">
+
+                    <div class="alert alert-warning" role="alert">
+                        Warning: This organism is restricted.
+                    </div>
+
+                </div>
+            {% endif %}
+
+
+        </div>
+
+        <!-- tags -->
+        <div class="container">
+
+            <hr class="featurette-divider">
+
+            <h3>Tags</h3>
+
+            {% if organism.tags.all.count == 0 %}
+                <p>No tags</p>
+            {% else %}
+                <div class="container flex-container">
+                    {% for tag in organism.tags.all %}
+                        <div class="card" style="width: 18rem; background-color:rgb({{ tag.color }})">
+                            <div class="card-body">
+                                <h5 class="card-title"
+                                    style="color: {% if tag.text_color_white %}white{% else %}black{% endif %}">{{ tag.tag }}</h5>
+                                <div class="card-textbox rounded">
+                                    <p class="card-text">{{ tag.description|default:"no description" }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- genomes -->
+        <div class="container black-links">
+
+            <hr class="featurette-divider">
+
+            <h3 id="representative">Representative:
+                {{ organism.representative.html|safe }}
+            </h3>
+
+            {% if organism.genome_set.all.count > 1 %}
+                <hr class="featurette-divider">
+                <h3>Genomes:</h3>
+
+                <div class="read-only-div" id="real-genomes">
+                    {% for genome in organism.genome_set.all %}{{ genome.html|safe }}{% endfor %}
+                </div>
+
+            {% endif %}
+        </div>
+
+        <!-- browse files -->
+        <div class="container black-links">
+
+            <hr class="featurette-divider">
+
+            <div class="container black-links">
+                <h3>Browse files</h3>
+                <ul>
+                    <li><a href="/files_html/{{ organism.base_path }}">Organism folder</a></li>
+                </ul>
+            </div>
+
+        </div>
+
+    </section>
+{% endblock %}
+
+{% block end %}
+    <script>
+
+        $(document).ready(function () {
+            $('[data-toggle="tooltip"]').tooltip({
+                title: function () {
+                    return $(this).attr('data-species')
+                }
+            })
+
+
+            $(".ogb-tag.taxid").each(function (index) {
+                $(this).on("click", function () {
+                    showTaxidClickMenu(event)
+                })
+            })
+
+
+            $(".ogb-tag.genome").each(function (index) {
+                $(this).on("click", function () {
+                    showGenomeClickMenu(event)
+                })
+            })
+
+        })
+
+    </script>
+
+{% endblock %}

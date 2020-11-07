@@ -42,7 +42,7 @@ class Tag(models.Model):
 
     objects = TagManager()
 
-    tag = models.CharField(max_length=150, unique=True)
+    tag = models.CharField(max_length=150, primary_key=True)
     description = models.TextField(blank=True)
 
     color = models.CharField(max_length=11)

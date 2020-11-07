@@ -17,10 +17,8 @@ class Genome(models.Model):
 
     # MANDATORY general information about the isolate
     identifier = models.CharField('Unique identifier', max_length=50, unique=True)
-    organism = models.ForeignKey(Organism, on_delete=models.CASCADE)
-    representative = models.OneToOneField(Organism, related_name="representative",
-                                          on_delete=models.CASCADE, blank=True, null=True)
-    genomecontent = models.OneToOneField(GenomeContent, on_delete=models.CASCADE)
+    organism = models.ForeignKey(Organism, on_delete=models.CASCADE, null=True, blank=True)
+    genomecontent = models.OneToOneField(GenomeContent, on_delete=models.CASCADE, null=True, blank=True)
 
     tags = models.ManyToManyField(Tag, blank=True)
     contaminated = models.BooleanField('Contaminated?', default=False)
@@ -137,10 +135,6 @@ class Genome(models.Model):
         else:
             return F"{settings.GENOMIC_DATABASE}/{rel}"
 
-    @property
-    def rel_base_path(self):
-        return self.base_path(relative=True)
-
     def assembly_fasta(self, relative=True) -> str:  # mandatory
         return F"{self.base_path(relative)}/{self.assembly_fasta_file}"
 
@@ -228,16 +222,10 @@ class Genome(models.Model):
 
         # ensure metadata matches genome
         import json
-        from website.models.GenomeSerializer import GenomeSerializer
-        from dictdiffer import diff
-        gs = GenomeSerializer()
+        from website.serializers import GenomeSerializer
         im_dict = json.loads(open(F'{settings.GENOMIC_DATABASE}/organisms/{self.organism.name}/genomes/{self.identifier}/genome.json').read())
-        if 'tags' in im_dict:
-            im_dict['tags'] = set(im_dict['tags'])
-        # im_dict = gs._convert_natural_keys_to_pks(im_dict, self.organism)
-        exp_dict = gs.export_genome(self.identifier)
-        difference = list(diff(im_dict, exp_dict))
-        assert len(difference) == 0, F'{msg}\nim:  {im_dict}\nexp: {exp_dict}\ndiff: {difference}'
+        matches, differences = GenomeSerializer.json_matches_genome(genome=self, json_dict=im_dict, organism_name=self.organism.name)
+        assert matches, F'json and database do not match. organism: {self.identifier} differences: {differences}'
 
         return True
 
@@ -271,6 +259,11 @@ class Genome(models.Model):
             return True  # is valid PMID, DOI
         print("Invalid reference in {}: '{}'. Is neither URL, PMID or DOI!".format(reference))
         return False
+
+    def save(self, *args, **kwargs):
+        genomecontent, created = GenomeContent.objects.get_or_create(identifier=self.identifier)
+        self.genomecontent = genomecontent
+        super().save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
         self.genomecontent.wipe_data()

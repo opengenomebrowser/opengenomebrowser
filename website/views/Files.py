@@ -56,6 +56,7 @@ def return_content_debug(request, url_prefix: str):
     # in debug mode, simply return the folder/file
     if os.path.isdir(abs_path):
         def jsonify_files(bn):
+            """creates a dict of the content of every folder, mimicking nginx json output"""
             path = F'{abs_path}/{bn}'
             stat = os.stat(path)
             if os.path.isfile(path):

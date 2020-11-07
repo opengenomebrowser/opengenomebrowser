@@ -35,8 +35,8 @@ class GenomeTableAjax(LoginRequiredMixin, BaseDatatableView):
         if not self.model:
             raise NotImplementedError("Need to provide a model or implement get_initial_queryset!")
         return self.model.objects.annotate(
-            genome_tags=ArrayAgg('tags__tag', ordering='tags__pk'),
-            organism_tags=ArrayAgg('organism__tags__tag', ordering='tags__pk')
+            genome_tags=ArrayAgg('tags__tag', distinct=True),
+            organism_tags=ArrayAgg('organism__tags__tag', distinct=True)
         ).all()
 
     def filter_queryset(self, qs):

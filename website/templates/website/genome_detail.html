@@ -87,7 +87,8 @@
                 </div>
             {% else %}
                 <div class="alert alert-dark" role="alert">
-                    Warning: This genome is not a representative of <a href="{% url 'website:organism' slug=genome.organism %}">{{ genome.organism }}</a>.
+                    Warning: This genome is not a representative of <a
+                        href="{% url 'website:organism' slug=genome.organism %}">{{ genome.organism }}</a>.
                 </div>
             {% endif %}
         </div>
@@ -373,6 +374,14 @@
             </div>
         {% endfor %}{% endif %}
 
+        <!-- browse files -->
+        <div class="container black-links">
+            <hr class="featurette-divider">
+            <h3>Browse files</h3>
+            <ul>
+                <li><a href="/files_html/{{ genome.base_path }}">Genome folder</a></li>
+            </ul>
+        </div>
 
         <!-- download files -->
         <div class="container black-links">
@@ -396,7 +405,7 @@
                     <li>Custom annotations
                         <ul>
                             {% for custom_annotation in genome.custom_annotations %}
-                                <li><a href="/files_html/{{ genome.rel_base_path }}/{{ custom_annotation.file }}">{{ custom_annotation.type }}
+                                <li><a href="/files_html/{{ genome.base_path }}/{{ custom_annotation.file }}">{{ custom_annotation.type }}
                                     (from {{ custom_annotation.date }})</a></li>
                             {% endfor %}
                         </ul>

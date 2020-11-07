@@ -271,9 +271,7 @@ class GenomeContent(models.Model):
         elif file_dict['type'] == 'custom':
             anno_type = AnnotationRegex.CUSTOM
         else:
-            print("Custom file is poorly formatted: ", file_dict)
-            print("Only the following types are allowed: KEGG, GO, EC, custom")
-            raise NotImplementedError
+            raise NotImplementedError(F'Custom file is poorly formatted: {file_dict}\nOnly the following types are allowed: KEGG, GO, EC, custom.')
 
         all_annotations = set()
         annotations_relationships = set()  # [('gene1', 'anno1), ('gene1', 'anno2), ...]
