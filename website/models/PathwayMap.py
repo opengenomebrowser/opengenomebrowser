@@ -29,7 +29,6 @@ class PathwayMap(models.Model):
 
     @staticmethod
     def _get_type_dict():
-        print('getting type dict')
         if settings.PATHWAY_MAPS_TYPE_DICT:
             return json.load(open(settings.PATHWAY_MAPS_TYPE_DICT))
         else:

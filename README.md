@@ -352,7 +352,7 @@ local   all             ogb_admin                               md5
 
 Note: if you mess up and want to start fresh, this is how to drop and recreate the database:
 
-```
+```shell script
 # NOTE: this deletes ALL data in open_genome_browser_db!
 sudo su - postgres
 [as user postgres]$ dropdb open_genome_browser_db
@@ -360,6 +360,15 @@ sudo su - postgres
 [as user postgres]$ exit
 # note: now re-run "python manage.py makemigrations && python manage.py migrate" to recreate the database schemes
 ```
+
+Note: you can use this command to export the user accounts and import them again later:
+```shell script
+python manage.py dumpdata auth > auth.json
+# drop database
+# python manage.py makemigrations && python manage.py migrate
+python manage.py loaddata auth.json --exclude auth.permission
+```
+
 
 ##### 4. clone this repository (into an appropriate location), adapt settings
 

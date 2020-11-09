@@ -4,8 +4,6 @@ import os
 import json
 from progressbar import progressbar  # pip install progressbar2
 from colorama import Fore
-import bokeh
-import requests
 
 OGB_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(OGB_DIR)
@@ -17,11 +15,8 @@ from django.conf import settings
 
 application = get_wsgi_application()
 
-from website.models import Organism, Genome, Tag, TaxID, GenomeContent, Gene, PathwayMap
-from website.serializers import GenomeSerializer
-from website.serializers import OrganismSerializer
-
-from website.models.Annotation import Annotation
+from website.serializers import GenomeSerializer, OrganismSerializer
+from website.models import Organism, Genome, Tag, TaxID, GenomeContent, Gene, PathwayMap, Annotation
 
 ORGANISMS_PATH = settings.GENOMIC_DATABASE + "/organisms"
 
