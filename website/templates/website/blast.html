@@ -139,6 +139,10 @@
 
         $(document).ready(function () {
             genome_to_species = init_autocomplete_genomes("#get-genomes")
+
+            $('#real-genomes .genome').click(function (event) {
+                showGenomeClickMenu(event)
+            })
         })
 
 

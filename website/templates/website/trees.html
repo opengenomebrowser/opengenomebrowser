@@ -231,6 +231,10 @@
                 load_taxid_tree(genomes)
             }
 
+            $('#real-genomes .genome').click(function (event) {
+                showGenomeClickMenu(event)
+            })
+
         })
 
         function submit_function() {
