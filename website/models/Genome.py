@@ -6,7 +6,7 @@ from .Tag import Tag
 from .GenomeContent import GenomeContent
 import os
 from OpenGenomeBrowser import settings
-
+from functools import cached_property
 
 class Genome(models.Model):
     """
@@ -80,6 +80,8 @@ class Genome(models.Model):
 
     # literature references
     literature_references = JSONField(default=list, blank=True, null=True)  # ["ref1", "ref2",]
+
+
 
     def natural_key(self):
         return self.identifier
@@ -157,7 +159,7 @@ class Genome(models.Model):
             return None
         return F"{self.base_path(relative)}/{self.cds_tool_sqn_file}"
 
-    @property
+    @cached_property
     def all_tags(self):
         return (self.tags.all() | self.organism.tags.all()).distinct()
 
@@ -229,7 +231,7 @@ class Genome(models.Model):
 
         return True
 
-    @property
+    @cached_property
     def get_tag_html(self) -> str:
         tags = (self.tags.all() | self.organism.tags.all()).distinct()
         html = [tag.get_html_badge() for tag in tags.order_by('tag')]
