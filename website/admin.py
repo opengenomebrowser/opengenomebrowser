@@ -55,6 +55,7 @@ class OrganismAdmin(admin.ModelAdmin):
     def save_model(self, request, obj: Organism, form, change):
         # turn form into organism.json
         json_data = form.cleaned_data.copy()
+        json_data['name'] = obj.name
         json_data['tags'] = set(t.tag for t in json_data['tags'])
         json_data['taxid'] = json_data['taxid'].id
         json_data['representative'] = json_data['representative'].identifier
