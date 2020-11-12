@@ -23,7 +23,7 @@ class GenomeTableAjax(LoginRequiredMixin, BaseDatatableView):
             html = [F'<span data-tag="{tag}">{tag}</span>' for tag in row.organism_tags if tag]
             return ' '.join(html)
         if column == 'representative':
-            return 'True' if row.representative else 'False'
+            return 'True' if row.is_representative else 'False'
         if column == 'literature_references':
             return " ".join(row.literature_references)
         elif column.startswith("env_"):
