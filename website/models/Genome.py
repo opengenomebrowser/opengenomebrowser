@@ -120,7 +120,7 @@ class Genome(models.Model):
 
     @property
     def is_representative(self) -> bool:
-        return self.representative is not None
+        return hasattr(self, 'representative') and self.representative is not None
 
     @property
     def restricted(self) -> bool:

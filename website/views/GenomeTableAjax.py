@@ -34,10 +34,14 @@ class GenomeTableAjax(LoginRequiredMixin, BaseDatatableView):
     def get_initial_queryset(self):
         if not self.model:
             raise NotImplementedError("Need to provide a model or implement get_initial_queryset!")
-        return self.model.objects.annotate(
+        qs = self.model.objects.annotate(
             genome_tags=ArrayAgg('tags__tag', distinct=True),
             organism_tags=ArrayAgg('organism__tags__tag', distinct=True)
-        ).all()
+        )\
+            .all()\
+            .prefetch_related('organism')\
+            .prefetch_related('organism__taxid')
+        return qs
 
     def filter_queryset(self, qs):
         """ If search['value'] is provided then filter all searchable columns using filter_method (istartswith
