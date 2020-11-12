@@ -1,6 +1,12 @@
 import json
 from website.models import Tag, Genome
 from django.shortcuts import render
+from OpenGenomeBrowser.settings import DEFAULT_GENOMES_PAGE_LENGTH
+
+# ensure DEFAULT_GENOMES_PAGE_SIZE is in expected range
+assert DEFAULT_GENOMES_PAGE_LENGTH in ["All", 10, 25, 50, 100, 200, 400, 800, 1600]
+if DEFAULT_GENOMES_PAGE_LENGTH == 'All':
+    DEFAULT_GENOMES_PAGE_LENGTH = -1
 
 # prepare yadcf settings
 selector_to_description_dict = Genome.get_selector_to_description_dict()
@@ -65,6 +71,7 @@ def render_script(request):
     yadcf_init, yadcf_column_defs, yadcf_ex_filter_column, indexes, tax_indexes = __generate_table_params(columns)
 
     context = {
+        'default_page_length': DEFAULT_GENOMES_PAGE_LENGTH,
         'yadcf_init': yadcf_init,
         'yadcf_column_defs': yadcf_column_defs,
         'yadcf_ex_filter_column': yadcf_ex_filter_column,

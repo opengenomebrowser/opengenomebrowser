@@ -171,6 +171,10 @@ ORTHOFINDER_FASTA_ENDINGS = 'faa'
 # Name of the most recent 'Results'-folder, i.e. 'Results_Aug14'
 ORTHOFINDER_LATEST_RUN = 'Results_Xxx00'
 
+# genomes table: default columns
+DEFAULT_GENOMES_COLUMNS = ["organism.name", "identifier", "organism.taxid.taxscientificname", "sequencing_tech"]
+DEFAULT_GENOMES_PAGE_LENGTH = 'All'
+
 #
 #
 # sanity checks, do not edit what is below here.
@@ -190,3 +194,5 @@ for file in ['ortholog_to_gene_ids', 'ortholog_to_name']:
 
 for file in [PATHWAY_MAPS_TYPE_DICT]:
     assert os.path.isfile(file), F"The path in settings.py doesn't point to a file: {file}"
+
+assert DEFAULT_GENOMES_PAGE_LENGTH in ["All", 10, 25, 50, 100, 200, 400, 800, 1600]

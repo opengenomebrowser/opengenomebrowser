@@ -1,10 +1,10 @@
 from django.shortcuts import render
 from website.models import Genome
 from .LoadTableScript import get_yadcf_columns
+from OpenGenomeBrowser.settings import DEFAULT_GENOMES_COLUMNS
 
-default_columns = ["organism.name", "identifier", "organism.taxid.taxscientificname", "genome_tags", "organism_tags"]
 std = Genome.get_selector_to_description_dict()
-default_columns = [(col, std[col]['description']) for col in default_columns]
+default_columns = [(col, std[col]['description']) for col in DEFAULT_GENOMES_COLUMNS]
 
 
 def genome_list_view(request):
