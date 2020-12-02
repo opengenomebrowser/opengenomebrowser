@@ -25,13 +25,13 @@ folder_looper = FolderLooper(settings.GENOMIC_DATABASE)
 def print_warning(message, color):
     if bool(True):
         print(color + message)
-        print(Fore.BLACK + '', end='')
+        print(Fore.WHITE + '', end='')  # set color back to white
 
 
 def color_print(message: str, color, *args, **kwargs):
     print(color + '', end='')
     print(message, *args, **kwargs)
-    print(Fore.BLACK, end='')
+    print(Fore.WHITE, end='')  # set color back to white
 
 
 def confirm_delete(color):
