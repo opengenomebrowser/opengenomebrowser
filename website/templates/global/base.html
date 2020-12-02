@@ -41,12 +41,15 @@
 </head>
 
 <body id="ogb-body" class="ogb-body">
+
+
 <!--Sidebar-->
-<div id="mySidenav" class="sidenav">
+<div id="ogbSidenav" class="sidenav">
     <div id="sidebar-content">
         {% block sidebar %}{% endblock %}
     </div>
 </div>
+
 
 <!--Navbar-->
 <nav class="navbar navbar-dark bg-dark fixed-top">
@@ -57,7 +60,7 @@
         <span id="ogb-logo-text">open genome browser</span>
     </a>
 
-    <div class="navbar-nav ml-auto">
+    <div class="navbar-nav ml-auto navbar-padding">
         <a class="nav-link text-nowrap {% if request.resolver_match.url_name == 'genomes' %}active{% endif %}" href="{% url 'website:genomes' %}"
         >Genomes</a>
     </div>
@@ -90,15 +93,54 @@
         </ul>
     </div>
     <!-- collapsible menu button (only shown when collapsed) -->
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+    <button class="navbar-toggler navbar-padding" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent"
             aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
     </button>
 
+    <!-- account -->
+    <div class="btn-group navbar-padding">
+        <div data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <img src="{% static 'global/ionicons/md-person.svg' %}" id="account" alt="account"
+                 class="d-inline-block svg-invert navbar-image">
+        </div>
+        <div class="dropdown-menu dropdown-menu-right">
+            {% if user.is_authenticated %}
+                <h6 class="dropdown-header">Welcome, {{ user.get_username }}!</h6>
+                <div class="dropdown-item">
+                    <a class="btn btn-warning btn-account" href="{% url 'logout' %}">
+                        Log out
+                    </a>
+                </div>
+
+                <div class="dropdown-divider"></div>
+
+                <div class="dropdown-item">
+                    <a class="btn btn-info btn-account" href="{% url 'password_change' %}">
+                        Change password
+                    </a>
+                </div>
+                <div class="dropdown-item">
+                    <a class="btn btn-info btn-account" href="{% url 'password_reset' %}">
+                        Reset password
+                    </a>
+                </div>
+            {% else %}
+                <h6 class="dropdown-header">Welcome to OpenGenomeBrowser!</h6>
+                <div class="dropdown-item">
+                    <a class="btn btn-primary btn-account" href="{% url 'login' %}">
+                        Log in
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
     <!-- toggle sidebar -->
     <div class="nav-item">
-        <img src="{% static 'global/ionicons/md-settings.svg' %}" class="d-inline-block svg-invert" width="30" height="30"
-             onclick="toggleNav(event)" loading="lazy">
+        <img src="{% static 'global/ionicons/md-settings.svg' %}" id="settings-wheel" alt="settings wheel"
+             class="d-inline-block svg-invert navbar-padding navbar-image" onclick="toggleNav(event)">
     </div>
 
 </nav>

@@ -2,8 +2,16 @@
     white-space: nowrap;
 }
 
-.navbar .navbar-nav a {
-    padding: .5rem .5rem
+.navbar-padding {
+    padding: 0 .5rem;
+}
+
+.navbar-image {
+    height: 30px;
+}
+
+.btn-account {
+    width: 100%
 }
 
 @font-face {
