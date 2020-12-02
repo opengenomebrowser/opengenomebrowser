@@ -27,7 +27,7 @@ class BaseEntity:
 
     @property
     def is_ignored(self):
-        return os.path.isfile(f'{self.path}/.ignore')
+        return os.path.isfile(f'{self.path}/ignore')
 
     @property
     def has_json(self):
