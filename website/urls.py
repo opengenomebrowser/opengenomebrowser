@@ -1,4 +1,3 @@
-from django.conf.urls import url
 from django.views.generic import RedirectView
 from django.urls import path, re_path
 from website.views import *

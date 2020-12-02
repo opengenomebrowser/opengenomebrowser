@@ -18,24 +18,7 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 
-from django.contrib.auth.views import LoginView
-
-
-class MyLoginView(LoginView):
-    template_name = 'registration/login.html'
-
-    def get_context_data(self, **kwargs):
-        from OpenGenomeBrowser import settings
-        context = super().get_context_data(**kwargs)
-        if hasattr(settings, 'LOGIN_MESSAGE'):
-            context['login_message'] = settings.LOGIN_MESSAGE
-        return context
-
-
 urlpatterns = [
-                  path('accounts/login/', MyLoginView.as_view(), name="login"),
-                  # path('accounts/signup/', MySignupView.as_view(), name='account_signup'),
-                  # path('invitations/', include('invitations.urls', namespace='invitations')),
                   path('admin/', admin.site.urls),
                   path('accounts/', include('django.contrib.auth.urls')),
                   path('', include('website.urls'))
