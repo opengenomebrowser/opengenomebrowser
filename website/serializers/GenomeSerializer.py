@@ -43,6 +43,11 @@ class GenomeSerializer(serializers.ModelSerializer):
         genome.organism = organism
         return genome
 
+    def is_valid(self, raise_exception=False):
+
+        return super().is_valid(raise_exception)
+
+
     @staticmethod
     def update_genomecontent(genome: Genome):
         # update genomecontent

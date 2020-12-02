@@ -9,11 +9,14 @@ from OpenGenomeBrowser import settings
 
 gene_ontology = GeneOntology()
 
-FILENAME_SETTINGS = {
-    'ko.tsv': ('ko:', 'lib/custom_kegg/data/rest_data/ko.tsv'),
-    'rn.tsv': ('rn:', 'lib/custom_kegg/data/rest_data/rn.tsv'),
-    'compound.tsv': ('cpd:', 'lib/custom_kegg/data/rest_data/rn.tsv'),
-    'orthologs.tsv': settings.ORTHOLOG_ANNOTATIONS['ortholog_to_name'] if 'ortholog_to_name' in settings.ORTHOLOG_ANNOTATIONS else '/dev/null'
+DESCRIPTION_SETTINGS = {
+    # anno_type -> (prefix, file path)
+    'KG': ('ko:', f'{settings.ANNOTATION_DATA}/ko.tsv'),
+    'KR': ('rn:', f'{settings.ANNOTATION_DATA}/rn.tsv'),
+    'CP': ('cpd:', f'{settings.ANNOTATION_DATA}/rn.tsv'),
+    'EC': ('', f'{settings.ANNOTATION_DATA}/enzyme_sorted.tsv'),
+    'OL': ('',
+                      settings.ORTHOLOG_ANNOTATIONS['ortholog_to_name'] if 'ortholog_to_name' in settings.ORTHOLOG_ANNOTATIONS else '/dev/null')
 }
 
 
@@ -28,7 +31,7 @@ class AnnotationRegex(Enum):
     KEGGGENE = ('KG', re.compile('^K[0-9]{5}$'), re.compile('^[Kk][0-9]{1,5}$'))
     KEGGREACTION = ('KR', re.compile('^R[0-9]{5}$'), re.compile('^[Rr][0-9]{1,5}$'))
     GENEONTOLOGY = ('GO', re.compile('^GO:[0-9]{7}$'), re.compile('^[Gg][Oo]:[0-9]{1,7}$'))
-    ORTHOLOG = ('OL', re.compile('^H?OG[0-9]{7}$'), re.compile('^[Oo][Gg][0-9]{1,7}$'))
+    ORTHOLOG = ('OL', re.compile('^((N[0-9]+\.)?H)?OG[0-9]{7}$'), re.compile('^[Oo][Gg][0-9]{1,7}$'))
     GENECODE = ('GC', re.compile('^[0-9a-zA-Z\_\/\-\ \']{3,11}$'), re.compile('^[0-9a-zA-Z\_\/\-\ \']{2,11}$'))
     PRODUCT = ('GP', re.compile('^.*$'), re.compile('^.*$'))
     # Note: COMPOUND is not a type that is allowed in the database!
@@ -66,14 +69,7 @@ class Annotation(models.Model):
             return self._descr
         else:
             self._descr = '-'
-        if self.anno_type == self.AnnotationTypes.KEGGGENE.value:
-            self._descr = self._get_description_from_file(filename='ko.tsv', query=self.name)
-        elif self.anno_type == self.AnnotationTypes.KEGGREACTION.value:
-            self._descr = self._get_description_from_file(filename='rn.tsv', query=self.name)
-        elif self.anno_type == self.AnnotationTypes.ORTHOLOG.value:
-            self._descr = self._get_description_from_file(filename='orthologs.tsv', query=self.name)
-        elif self.anno_type == self.AnnotationTypes.GENEONTOLOGY.value:
-            self._descr = self._get_description_from_file(filename='go.obo', query=self.name)
+        self._descr = self._get_description_from_file(anno_type=self.anno_type, query=self.name)
         return self._descr
 
     def __str__(self):
@@ -85,28 +81,17 @@ class Annotation(models.Model):
 
     @staticmethod
     def get_auto_description(query: str):
-        if AnnotationRegex.COMPOUND.match_regex.match(query):
-            return Annotation._get_description_from_file(
-                filename='compound.tsv', query=query.upper())
-        if AnnotationRegex.ENZYMECOMMISSION.match_regex.match(query):
-            return '-'
-        if AnnotationRegex.KEGGGENE.match_regex.match(query):
-            return Annotation._get_description_from_file(
-                filename='ko.tsv', query=query.upper())
-        if AnnotationRegex.KEGGREACTION.match_regex.match(query):
-            return Annotation._get_description_from_file(
-                filename='rn.tsv', query=query.upper())
-        if AnnotationRegex.GENEONTOLOGY.match_regex.match(query):
-            return Annotation._get_description_from_file(
-                filename='go.obo', query=query.upper())
-        if AnnotationRegex.ORTHOLOG.match_regex.match(query):
-            return Annotation._get_description_from_file(
-                filename='orthologs.tsv', query=query.upper())
-        if AnnotationRegex.CUSTOM.match_regex.match(query):
-            return '-'
-        if AnnotationRegex.GENECODE.match_regex.match(query):
-            return '-'
-
+        for regex in [
+            AnnotationRegex.COMPOUND,
+            AnnotationRegex.ENZYMECOMMISSION,
+            AnnotationRegex.KEGGGENE,
+            AnnotationRegex.KEGGREACTION,
+            AnnotationRegex.GENEONTOLOGY,
+            AnnotationRegex.ORTHOLOG
+        ]:
+            if regex.match_regex.match(query):
+                return Annotation._get_description_from_file(
+                        anno_type=regex.value, query=query.upper())
         return '--'
 
     @staticmethod
@@ -115,17 +100,23 @@ class Annotation(models.Model):
                len(Annotation.objects.filter(name__contains=';')) == 0
 
     @staticmethod
-    def _get_description_from_file(filename: str, query: str):
-        if filename == 'go.obo':
+    def _get_description_from_file(anno_type: str, query: str):
+        if anno_type == 'GO':
             try:
                 return gene_ontology.search(query=query)
             except KeyError:
                 return '-'
 
-        assert filename in FILENAME_SETTINGS.keys(), F'Supported filenames: {FILENAME_SETTINGS.keys()}. You provided: {filename}'
+        if anno_type in ['GP', 'GC']:
+            return '-'
 
-        prefix = FILENAME_SETTINGS[filename][0]
-        file_path = FILENAME_SETTINGS[filename][1]
+        assert anno_type in DESCRIPTION_SETTINGS.keys(), F'Supported anno_types: {DESCRIPTION_SETTINGS.keys()}. You provided: {anno_type}'
+
+        if anno_type == 'EC':
+            query = query.lower()
+
+        prefix = DESCRIPTION_SETTINGS[anno_type][0]
+        file_path = DESCRIPTION_SETTINGS[anno_type][1]
 
         try:
             with BinaryFileSearch(file=file_path, sep="\t", string_mode=True) as bfs:

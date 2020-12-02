@@ -78,6 +78,10 @@
                    href="{% url 'website:annotation-search' %}">Annotation search</a>
             </li>
             <li class="nav-item">
+                <a class="nav-link text-nowrap {% if request.resolver_match.url_name == 'pwas' %}active{% endif %}"
+                   href="{% url 'website:pwas' %}">PWAS</a>
+            </li>
+            <li class="nav-item">
                 <a class="nav-link text-nowrap {% if request.resolver_match.url_name == 'blast' %}active{% endif %}" href="{% url 'website:blast' %}">Blast</a>
             </li>
             <li class="nav-item">

@@ -149,12 +149,23 @@ HUEY = {
     },
 }
 
+# Email settings
+EMAIL_HOST = 'smtp.unibe.ch'
+EMAIL_HOST_USER = 'noreply@bioinformatics.unibe.ch'
+DEFAULT_FROM_EMAIL = 'noreply@bioinformatics.unibe.ch'
+EMAIL_PORT = '25'
+
+LOGIN_MESSAGE = 'Welcome to the OpenGenomeBrowser!'
+
 ORTHOLOG_ANNOTATIONS = dict(
     # file that links ortholog identifiers with genes
     ortholog_to_gene_ids='/path/to/file.tsv',
     # links ortholog identifiers with descriptions
     ortholog_to_name=F'/path/to/file.tsv'
 )
+
+# where KEGG data should be loaded to (using import_database.py --download-kegg-data)
+ANNOTATION_DATA = F'/path/to/database/annotations-data'
 
 # GENOMIC_DATABASE must contain the folder 'organisms'
 GENOMIC_DATABASE = F'/path/to/database'

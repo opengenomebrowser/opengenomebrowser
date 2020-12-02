@@ -8,6 +8,7 @@ import os
 from OpenGenomeBrowser import settings
 from functools import cached_property
 
+
 class Genome(models.Model):
     """
     Represents a measurement of a organism.
@@ -80,8 +81,6 @@ class Genome(models.Model):
 
     # literature references
     literature_references = JSONField(default=list, blank=True, null=True)  # ["ref1", "ref2",]
-
-
 
     def natural_key(self):
         return self.identifier
@@ -171,62 +170,21 @@ class Genome(models.Model):
         return self.identifier
 
     def invariant(self):
-        msg = F"Error in Genome {self.identifier}!"
-
-        assert self.identifier.startswith(self.organism.name), msg
-
-        # Check if mandatory files exist:
-        for file in [self.cds_faa, self.cds_gbk, self.cds_gff, self.assembly_fasta]:
-            assert os.path.isfile(file(relative=False)), F"{msg} File does not exist: {file}"
-
-        # Check if non-mandatory files exist:
-        for file in [self.cds_sqn, self.cds_ffn]:
-            if file(relative=False):
-                assert os.path.isfile(file(relative=False)), F"{msg} File does not exist: {file}"
-
-        # check all JSONFields:
-        if self.custom_tables:
-            for table_name, table in self.custom_tables.items():
-                assert 'rows' in table
-                assert 'index_col' in table
-
-        if self.BUSCO:
-            for char in ['C', 'D', 'F', 'M', 'S', 'T']:
-                assert isinstance(self.BUSCO[char], int), F"{msg} {self.BUSCO[char]}"
-
-        if self.custom_annotations:
-            for tool in self.custom_annotations:
-                assert Genome.is_valid_date(tool['date']), F"{msg} {tool['date']}"
-                assert os.path.exists(F"{self.base_path(relative=False)}/{tool['file']}"), F"{msg} {tool['file']}"
-                assert isinstance(tool['type'], str), F"{msg} {tool['type']}"
-
-        for envs in [self.env_broad_scale, self.env_medium, self.env_local_scale]:
-            if envs:
-                assert self.is_valid_env(envs), F"{msg} {envs}"
-
-        # test sequencing info
-        if self.sequencing_date:
-            for date in self.sequencing_date.split("//"): assert self.is_valid_date(date)
-
-        # test assembly tool
-        if self.assembly_date:
-            for date in self.assembly_date.split("//"): assert self.is_valid_date(date)
-
-        # Test certain string fields
-        if self.literature_references:
-            for reference in self.literature_references:
-                assert Genome.is_valid_reference(reference), F"{msg} {reference}"
-
-        if self.geographical_coordinates:
-            import re
-            assert re.match("^([0-9]{1,2})(\.[0-9]{1,4})? (N|S) ([0-9]{1,2})(\.[0-9]{1,4})? (W|E)$",
-                            self.geographical_coordinates), F"{msg} {self.geographical_coordinates}"
-
-        # ensure metadata matches genome
-        import json
         from website.serializers import GenomeSerializer
-        im_dict = json.loads(open(F'{settings.GENOMIC_DATABASE}/organisms/{self.organism.name}/genomes/{self.identifier}/genome.json').read())
-        matches, differences = GenomeSerializer.json_matches_genome(genome=self, json_dict=im_dict, organism_name=self.organism.name)
+        from db_setup.check_metadata import genome_metadata_is_valid
+        from db_setup.FolderLooper import MockGenome, MockOrganism
+
+        assert self.identifier.startswith(self.organism.name)
+
+        # ensure metadata is valid
+        g_s_g = GenomeSerializer(self)
+        genome_state = g_s_g.data
+        assert genome_metadata_is_valid(genome_state, path_to_genome=self.base_path(relative=False), raise_exception=True)
+
+        # ensure metadata json matches genome
+        m_o = MockOrganism(path=self.organism.base_path(relative=False))
+        m_g = MockGenome(path=self.base_path(relative=False), organism=m_o)
+        matches, differences = GenomeSerializer.json_matches_genome(genome=self, json_dict=m_g.json, organism_name=self.organism.name)
         assert matches, F'json and database do not match. organism: {self.identifier} differences: {differences}'
 
         return True

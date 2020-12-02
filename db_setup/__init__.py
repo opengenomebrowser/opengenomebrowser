@@ -1,1 +1,1 @@
-from .GenomeLooper import GenomeLooper
+from .FolderLooper import FolderLooper

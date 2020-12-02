@@ -37,9 +37,9 @@ class GenomeTableAjax(LoginRequiredMixin, BaseDatatableView):
         qs = self.model.objects.annotate(
             genome_tags=ArrayAgg('tags__tag', distinct=True),
             organism_tags=ArrayAgg('organism__tags__tag', distinct=True)
-        )\
-            .all()\
-            .prefetch_related('organism')\
+        ) \
+            .all() \
+            .prefetch_related('organism') \
             .prefetch_related('organism__taxid')
         return qs
 
@@ -93,18 +93,3 @@ class GenomeTableAjax(LoginRequiredMixin, BaseDatatableView):
             qs = qs.filter(q)
 
         return qs
-
-    # def prepare_results(self, qs):
-    #     data = []
-    #     data_new = []
-    #     colnames = [dic['name'] for dic in self.columns_data]
-    #     c=0
-    #     for item in qs:
-    #         data.append([self.render_column(item, column) for column in self._columns])
-    #         item_dict = {value: data[0][id] for id, value in enumerate(colnames)}
-    #         item_dict["DT_RowId"] = c
-    #         data_new.append(item_dict)
-    #         c+=1
-    #
-    #     print(data_new)
-    #     return data_new

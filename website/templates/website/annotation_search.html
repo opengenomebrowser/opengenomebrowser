@@ -78,7 +78,9 @@
 
     </section>
 
-    <section id="annotation-matrix-container" style="padding-top: 1rem"></section>
+    <section style="padding-top: 1rem">
+        <div id="annotation-matrix-container"></div>
+    </section>
 
 
 {% endblock %}
@@ -160,7 +162,7 @@
                 return
             }
 
-            await $('#annotation-matrix-container').load('{% url "website:annotation-matrix" %}', {
+            await $('#annotation-matrix-container').load('{% url "website:annotation-search-matrix" %}', {
                     annotations: annotations,
                     genomes: genomes
                 }, function () {

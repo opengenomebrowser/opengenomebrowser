@@ -15,5 +15,6 @@ from .Api import Api
 from .Files import files_html, files_json
 from .ClickMenu import click_view
 from .CompareGenes import CompareGenes
+from .Pwas import pwas_view
 
 from .helpers.magic_string import MagicQueryManager

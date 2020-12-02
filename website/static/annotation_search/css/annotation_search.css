@@ -1,8 +1,8 @@
-#annotation-matrix-container {
+#safe-center {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
+    margin: auto;
+    overflow: auto;
+    justify-content: safe center;
 }
 
 .table {
@@ -14,11 +14,11 @@
 }
 
 .table td, .table th {
-	text-align: center;
-	vertical-align: middle;
+    text-align: center;
+    vertical-align: middle;
 }
 
-.group-table-container thead th .ogb-tag {
+#annotation-matrix-container thead th .ogb-tag {
     padding: 6px 0; /* opposite as usual */
     white-space: nowrap;
 
@@ -28,13 +28,11 @@
     -moz-transform: rotate(-180deg);
 }
 
-.group-table-container tbody p {
+#annotation-matrix-container tbody p {
     margin: 0 0;
 }
-
 
 .form-control p {
     margin-top: 0;
     margin-bottom: 0;
 }
-

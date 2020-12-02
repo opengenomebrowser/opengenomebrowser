@@ -88,7 +88,7 @@
                         </div>
                     </form>
 
-                    </div>
+                    <hr class="featurette-divider">
 
                     <form>
                         {% csrf_token %}
@@ -110,7 +110,7 @@
         </section>
 
 
-        <div class="container" id="taxid-tree-container" {% if not can_calculate_trees %} hidden {% endif %}>
+        <div class="container" id="taxid-tree-container" hidden>{#{% if not can_calculate_trees %} hidden {% endif %}#}
             <hr class="featurette-divider">
 
             <h2>Taxid-based tree</h2>
@@ -226,10 +226,10 @@
 
             genome_to_species = init_autocomplete_genomes("#get-genomes")
 
-            if (genomes.length >= 3) {
-                console.log('load tree!')
-                load_taxid_tree(genomes)
-            }
+            {#if (genomes.length >= 3) {#}
+            {#    console.log('load tree!')#}
+            {#    load_taxid_tree(genomes)#}
+            {# }#}
 
             $('#real-genomes .genome').click(function (event) {
                 showGenomeClickMenu(event)
@@ -257,6 +257,7 @@
 
 
         function load_taxid_tree(genomes) {
+            $('#taxid-tree-container').attr("hidden", false)
             taxid_tree = loadTree(
                 genomes, 'taxid', '#taxid-tree', '#taxid-newick',
                 $('#type-selector-taxid').val(),

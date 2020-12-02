@@ -262,36 +262,40 @@ Blast genome</a>
 
     if (annotations.length > 0) {
         html += `
-<h6 class="dropdown-header context-menu-header">
+<h6 class="dropdown-header context-menu-header many-annotations">
 ${genome} and ${annotations.length} selected annotations</h6>
-<a href="/annotation-search/?genomes=${genome}&annotations=${urlReplBlanks(annotations)}" class="dropdown-item context-menu-icon context-menu-icon-annotations">
+<a href="/annotation-search/?genomes=${genome}&annotations=${urlReplBlanks(annotations)}" class="dropdown-item context-menu-icon context-menu-icon-annotations many-annotations">
 Perform annotation search</a>
 </div>
 `
     }
 
     if (siblings.length > 1) {
-        let siblings_str = siblings.join('+')
+        const siblings_str = siblings.join('+')
+        const siblings_str_comma = siblings.join(', ')
+        console.log(siblings_str_comma)
         html += `
-<h6 class="dropdown-header context-menu-header">
+<h6 class="dropdown-header context-menu-header many-genomes">
 ${siblings.length} selected genomes</h6>
-<a href="/trees/?genomes=${siblings_str}" class="dropdown-item context-menu-icon context-menu-icon-tree">
+<a href="/trees/?genomes=${siblings_str}" class="dropdown-item many-genomes context-menu-icon context-menu-icon-tree">
 Show phylogenetic trees</a>
-<a onclick="CopyToClipboard('FAM21277-i1-1.1, FAM19036-p1-1.1, FAM19471-i1-1.1, FAM1079-i1-1.1, FAM22472-i1-1.1')" class="dropdown-item context-menu-icon context-menu-icon-copy">
+<a onclick="CopyToClipboard('${siblings_str_comma}')" class="dropdown-item many-genomes context-menu-icon context-menu-icon-copy">
 Copy selected genomes</a>
-<a href="/pathway/?genomes=${siblings_str}" class="dropdown-item context-menu-icon context-menu-icon-pathway">
+<a href="/pathway/?genomes=${siblings_str}" class="dropdown-item many-genomes context-menu-icon context-menu-icon-pathway">
 Open genomes on pathway map</a>
-<a href="/annotation-search/?genomes=${siblings_str}" class="dropdown-item context-menu-icon context-menu-icon-annotations">
+<a href="/annotation-search/?genomes=${siblings_str}" class="dropdown-item many-genomes context-menu-icon context-menu-icon-annotations">
 Search for annotations in genomes</a>
-<a href="/blast/?genomes=${siblings_str}" class="dropdown-item context-menu-icon context-menu-icon-blast">
+<a href="/pwas/?g1=${siblings_str}" class="dropdown-item many-genomes context-menu-icon context-menu-icon-pwas">
+Perform PWAS with these genomes as Group 1</a>
+<a href="/blast/?genomes=${siblings_str}" class="dropdown-item many-genomes context-menu-icon context-menu-icon-blast">
 Blast genomes</a>
 </div>
 `
         if (annotations.length > 0) {
             html += `
-<h6 class="dropdown-header context-menu-header">
+<h6 class="dropdown-header context-menu-header many-annotations">
 ${siblings.length} genomes and ${annotations.length} selected annotations</h6>
-<a href="/annotation-search/?genomes=${siblings_str}&annotations=${urlReplBlanks(annotations)}" class="dropdown-item context-menu-icon context-menu-icon-annotations">
+<a href="/annotation-search/?genomes=${siblings_str}&annotations=${urlReplBlanks(annotations)}" class="dropdown-item context-menu-icon context-menu-icon-annotations many-annotations">
 Perform annotation search</a>
 </div>
 `
@@ -330,9 +334,9 @@ Copy annotation</a>
 
     if (siblings.length > 1) {
         cm.appendElement(`
-<h6 class="dropdown-header context-menu-header">
+<h6 class="dropdown-header context-menu-header many-annotations">
 ${siblings.length} selected annotations</h6>
-<a href="/annotation-search/?annotations=${siblings_repl}" class="dropdown-item context-menu-icon context-menu-icon-annotations">
+<a href="/annotation-search/?annotations=${siblings_repl}" class="dropdown-item context-menu-icon context-menu-icon-annotations many-annotations">
 Search for annotations</a>
 </div>
 `)
@@ -340,9 +344,9 @@ Search for annotations</a>
 
     if (genomes.length > 0) {
         cm.appendElement(`
-<h6 class="dropdown-header context-menu-header">
+<h6 class="dropdown-header context-menu-header many-genes">
 ${genomes.length} selected genomes</h6>
-<a href="/compare-genes/?genomes=${genomes.join('+')}&annotations=${urlReplBlanks([annotation])}" class="dropdown-item context-menu-icon context-menu-icon-genes">
+<a href="/compare-genes/?genomes=${genomes.join('+')}&annotations=${urlReplBlanks([annotation])}" class="dropdown-item context-menu-icon context-menu-icon-genes many-genes">
 Compare the genes of this annotation</a>
 </div>
 `)
@@ -350,9 +354,9 @@ Compare the genes of this annotation</a>
 
     if (genomes.length > 1 && siblings.length > 1) {
         cm.appendElement(`
-<h6 class="dropdown-header context-menu-header">
+<h6 class="dropdown-header context-menu-header many-genes">
 ${genomes.length} genomes and ${siblings.length} annotations</h6>
-<a href="/compare-genes/?genomes=${genomes.join('+')}&annotations=${siblings_repl}" class="dropdown-item context-menu-icon context-menu-icon-genes">
+<a href="/compare-genes/?genomes=${genomes.join('+')}&annotations=${siblings_repl}" class="dropdown-item context-menu-icon context-menu-icon-genes many-genes">
 Compare the genes of these annotations</a>
 </div>
 `)

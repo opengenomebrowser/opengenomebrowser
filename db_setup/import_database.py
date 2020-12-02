@@ -1,4 +1,3 @@
-#! /usr/bin/python3
 import sys
 import os
 import json
@@ -15,16 +14,24 @@ from django.conf import settings
 
 application = get_wsgi_application()
 
+from db_setup.FolderLooper import FolderLooper, MockGenome, MockOrganism
+
 from website.serializers import GenomeSerializer, OrganismSerializer
 from website.models import Organism, Genome, Tag, TaxID, GenomeContent, Gene, PathwayMap, Annotation
 
-ORGANISMS_PATH = settings.GENOMIC_DATABASE + "/organisms"
+folder_looper = FolderLooper(settings.GENOMIC_DATABASE)
 
 
 def print_warning(message, color):
     if bool(True):
         print(color + message)
         print(Fore.BLACK + '', end='')
+
+
+def color_print(message: str, color, *args, **kwargs):
+    print(color + '', end='')
+    print(message, *args, **kwargs)
+    print(Fore.BLACK, end='')
 
 
 def confirm_delete(color):
@@ -38,17 +45,41 @@ def confirm_delete(color):
         else:
             return None
 
-    print(color + '', end='')
     while (True):
+        print(color + '', end='')
         inp = yes_or_no()
+        print(Fore.BLACK, end='')
         if inp is None:
             continue
         elif inp is True:
-            print(Fore.BLACK + 'removing...', end='')
+            print('removing...')
         elif inp is False:
-            print(Fore.BLACK + "quit program")
+            print("quit program")
             exit(0)
         break
+
+
+def sanity_check_folder_structure(verbose=True) -> (int, int):
+    """
+    Run sanity checks on folder structure, including metadata.
+    """
+    n_organisms = 0
+    n_genomes = 0
+    for organism in folder_looper.organisms(skip_ignored=True, sanity_check=False):
+        if verbose:
+            color_print(f'└── Checking {organism.name}', color=Fore.BLUE)
+        organism.sanity_check()
+        n_organisms += 1
+        for genome in organism.genomes(skip_ignored=True, sanity_check=False):
+            if verbose:
+                color_print(f'   └── Checking {genome.identifier}', color=Fore.GREEN)
+            n_genomes += 1
+            genome.sanity_check()
+
+    if verbose:
+        print(f'\nSanity checks for {n_organisms} organisms and {n_genomes} genomes completed successfully!\n')
+
+    return n_organisms, n_genomes
 
 
 def import_database(delete_missing: bool = True, auto_delete_missing: bool = False):
@@ -58,95 +89,66 @@ def import_database(delete_missing: bool = True, auto_delete_missing: bool = Fal
     :param delete_missing: if True (default), check if organisms/genomes have gone missing
     :param auto_delete_missing: if True, remove missing organisms/genomes without console prompt
     """
-    assert os.path.isdir(ORGANISMS_PATH), ORGANISMS_PATH
+
+    # perform sanity checks
+    print('Performing sanity checks...')
+    n_organisms, n_genomes = sanity_check_folder_structure(verbose=False)
 
     # Remove Organism or a Genome if it has been removed from the database-folder
     if delete_missing:
         remove_missing_organisms(auto_delete_missing)
 
-    # Import new organisms / update existing organisms
-    organism_folders_len = len(list(os.scandir(ORGANISMS_PATH)))
-    organism_folders = os.scandir(ORGANISMS_PATH)
+    print(F"Number of organisms to import: {n_organisms}")
+    print(F"Number of genomes to import: {n_genomes}")
 
-    print(F"Number of organisms to import: {organism_folders_len}")
+    organism_generator = folder_looper.organisms(skip_ignored=True, sanity_check=False)
+    for organism in progressbar(organism_generator, max_value=n_organisms, redirect_stdout=True):
+        organism: MockOrganism
+        color_print(f'└── {organism.name}', color=Fore.BLUE, end=' ')
 
-    for organism_folder in progressbar(organism_folders, max_value=organism_folders_len, redirect_stdout=True):
-        current_organism = organism_folder.name
-        print(current_organism, end='')
-
-        if os.path.isfile(F'{organism_folder.path}/.ignore'):
-            print(' :: ignored')
-            continue
-
-        with open(F'{organism_folder.path}/organism.json') as file:
-            organism_dict = json.loads(file.read())
-
-        assert current_organism == organism_dict["name"], \
-            F"'name' in organism.json doesn't match folder name: {organism_folder.path}"
-
-        representative_identifier = organism_dict["representative"]
-        assert os.path.isdir(F'{organism_folder.path}/genomes/{representative_identifier}'), \
-            F"Error: Representative doesn't exist! Organism: {current_organism}, Representative: {representative_identifier}"
-        assert not os.path.isfile(F'{organism_folder.path}/genomes/{representative_identifier}/.ignore'), \
-            F"Error: Representative is ignored! Organism: {current_organism}, Representative: {representative_identifier}"
-
-        organism_serializer = OrganismSerializer(data=organism_dict)
-
+        organism_serializer = OrganismSerializer(data=organism.json)
         organism_serializer.is_valid(raise_exception=True)
-        # s = organism_serializer.import_organism(organism_dict, update_css=False)
+
         try:
-            o = Organism.objects.get(name=current_organism)
-            match, difference = OrganismSerializer.json_matches_organism(o, organism_dict)
+            o = Organism.objects.get(name=organism.name)
+            match, difference = OrganismSerializer.json_matches_organism(organism=o, json_dict=organism.json)
             if match:
-                print(' :: unchanged')
+                print(':: unchanged')
 
             else:
-                print(F' :: update: {difference}')
+                print(f':: update: {difference}')
                 o = organism_serializer.update(instance=o, validated_data=organism_serializer.validated_data, representative_isnull=True)
 
         except Organism.DoesNotExist:
-            print(' :: new')
+            print(':: new')
             o = organism_serializer.create(organism_serializer.validated_data)
 
         genomes = []
 
-        for genome_folder in os.scandir(F'{organism_folder.path}/genomes'):
-            current_genome = genome_folder.name
-            print("   └── " + current_genome, end='')
+        for genome in organism.genomes(skip_ignored=True, sanity_check=False):
+            genome: MockGenome
+            color_print(f'   └── {genome.identifier}', color=Fore.GREEN, end=' ')
 
-            if os.path.isfile(F'{genome_folder.path}/.ignore'):
-                print(' :: ignored')
-                continue
-
-            with open(F'{genome_folder.path}/genome.json') as file:
-                genome_dict = json.loads(file.read())
-
-            assert current_genome.startswith(current_organism), \
-                F"genome name '{current_genome}' doesn't start with corresponding organism name '{current_organism}'."
-            assert current_genome == genome_dict["identifier"], \
-                F"'name' in genome.json doesn't match folder name: {genome_folder.path}"
-
-            genome_serializer = GenomeSerializer(data=genome_dict)
+            genome_serializer = GenomeSerializer(data=genome.json)
             genome_serializer.is_valid(raise_exception=True)
 
             try:
-                g = Genome.objects.get(identifier=current_genome)
-                match, difference = GenomeSerializer.json_matches_genome(g, genome_dict, organism_name=o.name)
+                g = Genome.objects.get(identifier=genome.identifier)
+                match, difference = GenomeSerializer.json_matches_genome(genome=g, json_dict=genome.json, organism_name=o.name)
                 if match:
-                    print(' :: unchanged')
+                    print(':: unchanged')
 
                 else:
-                    print(F' :: update: {difference}')
+                    print(f':: update: {difference}')
                     g = genome_serializer.update(instance=g, validated_data=genome_serializer.validated_data, organism=o)
 
             except Genome.DoesNotExist:
-                print(' :: new')
+                print(':: new')
                 g = genome_serializer.create(genome_serializer.validated_data, organism=o)
 
             genomes.append(g)
 
-
-        o.representative = Genome.objects.get(identifier=representative_identifier)
+        o.representative = Genome.objects.get(identifier=organism.representative(sanity_check=False).identifier)
         o.save()
 
         for g in genomes:
@@ -155,7 +157,7 @@ def import_database(delete_missing: bool = True, auto_delete_missing: bool = Fal
     Tag.create_tag_color_css()
     TaxID.create_taxid_color_css()
 
-    check_invariants()
+    sanity_check_postgres()
 
 
 def reload_pathway_maps():
@@ -172,15 +174,8 @@ def remove_missing_organisms(auto_delete_missing: bool = False):
 
     :param auto_delete_missing: if True, remove missing organisms/genomes without console prompt
     """
-    all_organisms = []
-    all_genomes = []
-
-    for organism_folder in os.scandir(ORGANISMS_PATH):
-        if not os.path.isfile(F'{organism_folder.path}/.ignore'):
-            all_organisms.append(organism_folder.name)
-        for genome_folder in os.scandir(organism_folder.path + "/genomes"):
-            if not os.path.isfile(F'{genome_folder.path}/.ignore'):
-                all_genomes.append(genome_folder.name)
+    all_organisms = [o.name for o in folder_looper.organisms(skip_ignored=True, sanity_check=False)]
+    all_genomes = [g.identifier for g in folder_looper.genomes(skip_ignored=True, sanity_check=False)]
 
     for genome in Genome.objects.all():
         if genome.identifier not in all_genomes:
@@ -218,7 +213,7 @@ def reset_database(auto_delete: bool = False):
         model.objects.all().delete()
 
 
-def check_invariants():
+def sanity_check_postgres():
     """
     Perform sanity checks on objects in the database
     """
@@ -267,24 +262,24 @@ def update_bokeh(auto_delete: bool = False):
     import requests
 
     bokeh_version = bokeh.__version__
-    url_fill = F'-{bokeh_version}'
+    url_fill = f'-{bokeh_version}'
 
     if not auto_delete:
         print_warning(
-            F'Overwrite bokeh js files? (New version: {bokeh_version})',
+            f'Overwrite bokeh js files? (New version: {bokeh_version})',
             color=Fore.MAGENTA
         )
         confirm_delete(color=Fore.MAGENTA)
         print()
 
     cdn = 'https://cdn.bokeh.org/bokeh/release'
-    js_dir = F'{OGB_DIR}/website/static/global/js'
+    js_dir = f'{OGB_DIR}/website/static/global/js'
     files = ['bokeh{}.min.js', 'bokeh-widgets{}.min.js', 'bokeh-tables{}.min.js', 'bokeh-api{}.min.js']
 
     for file in files:
-        url = F'{cdn}/{file.format(url_fill)}'
-        target_path = F'{js_dir}/{file.format("")}'
-        print(F'{url}  -->>  {target_path}')
+        url = f'{cdn}/{file.format(url_fill)}'
+        target_path = f'{js_dir}/{file.format("")}'
+        print(f'{url}  -->>  {target_path}')
         r = requests.get(url, allow_redirects=True)
 
         with open(target_path, 'wb') as f:
@@ -293,15 +288,99 @@ def update_bokeh(auto_delete: bool = False):
     print('\nRemember to run "python manage.py collectstatic"!')
 
 
+def send_mail(to: str):
+    from django.core.mail import send_mail
+
+    send_mail(
+        subject='Test Mail from OpenGenomeBrowser',
+        message='Test Mail Content.',
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=[to],
+        fail_silently=False,
+    )
+    print('Mail sent!')
+
+
+def download_kegg_data(n_parallel=4):
+    import requests
+    import asyncio
+    from concurrent.futures import ThreadPoolExecutor
+
+    print('Downloading KEGG data...')
+
+    os.makedirs(settings.ANNOTATION_DATA, exist_ok=True)
+
+    def fetch(session, url, save_path, raw=False):
+        with session.get(url) as response:
+            if raw:
+                data = response.content
+                mode = 'wb'
+            else:
+                data = response.text
+                mode = 'w'
+
+            if response.status_code != 200:
+                print("FAILURE::{0}".format(url))
+
+            print(F'downloaded {url}')
+
+            with open(save_path, mode) as out:
+                out.write(data)
+
+            print(F'wrote {save_path}')
+
+            return data
+
+    async def fetch_all(url_fn_raw_list: list, n_parallel: int):
+        with ThreadPoolExecutor(max_workers=n_parallel) as executor:
+            with requests.Session() as session:
+                loop = asyncio.get_event_loop()
+                tasks = [
+                    loop.run_in_executor(
+                        executor,
+                        fetch,
+                        *(session, url, filename, raw)
+                    )
+                    for url, filename, raw in url_fn_raw_list
+                ]
+                for response in await asyncio.gather(*tasks):
+                    pass
+
+    # files = ['path', 'rn', 'ko', 'compound', 'drug', 'glycan', 'dgroup', 'enzyme']
+    files = ['rn', 'ko', 'compound', 'enzyme']
+    url_fn_raw_list = [
+        (F'http://rest.kegg.jp/list/{file}', F'{settings.ANNOTATION_DATA}/{file}.tsv', False)
+        for file in files
+    ]
+
+    loop = asyncio.get_event_loop()
+    future = asyncio.ensure_future(fetch_all(url_fn_raw_list=url_fn_raw_list, n_parallel=n_parallel))
+    loop.run_until_complete(future)
+
+    if 'enzyme' in files:
+        print('Sorting enzyme.tsv')
+        # sort enzyme.tsv according to C-language logic
+        import subprocess
+        myenv = os.environ.copy()
+        myenv['LC_ALL'] = 'C'
+        subprocess.run(
+            F"sort --key=1 --field-separator=$'\t' "
+            F"--output={settings.ANNOTATION_DATA}/enzyme_sorted.tsv {settings.ANNOTATION_DATA}/enzyme.tsv",
+            shell=True, env=myenv)
+
+
 if __name__ == "__main__":
     from glacier import glacier
 
     glacier([
+        sanity_check_folder_structure,
         import_database,
         reset_database,
         remove_missing_organisms,
         reload_pathway_maps,
-        check_invariants,
+        sanity_check_postgres,
         reload_orthologs,
-        update_bokeh
+        update_bokeh,
+        send_mail,
+        download_kegg_data
     ])

@@ -37,30 +37,6 @@
 {% block sidebar %}
 
     <div class="sidebar-subcontent form-check form-check-inline">
-        <label class="form-check-label" for="form-control-range"><a>Set range around gene locus</a></label>
-        <input type="range" class="form-control-range" id="form-control-range" min="3000" max="300000" value="10000">
-
-        <span>update range to <b id="range-span">10000</b> bp</span>
-    </div>
-
-    <div class="sidebar-subcontent form-check form-check-inline">
-        <label for="colorization-anno-type"><a>Colorize genes based on...</a></label>
-        <select class="form-control" id="colorization-anno-type" data-selected="OL">
-            {% for anno_type in anno_types %}
-                <option value="{{ anno_type }}" {% if anno_type == 'OL' %} selected {% endif %}>{{ anno_type.label }} ({{ anno_type }})
-                </option>{% endfor %}
-            <option value="--">Highlight only selected gene</option>
-        </select>
-    </div>
-
-
-    <div class="sidebar-subcontent form-check form-check-inline">
-        <button type="button" class="btn btn-primary" onclick="load_dfvm()">Reload Gene Locus</button>
-    </div>
-
-    <hr>
-
-    <div class="sidebar-subcontent form-check form-check-inline">
         <label for="msa-method"><a>Alignment method</a></label>
         <select class="form-control" id="msa-method">
             <option value="clustalo">Clustal Omega</option>
@@ -79,6 +55,31 @@
 
     <div class="sidebar-subcontent form-check form-check-inline">
         <button type="button" class="btn btn-primary" onclick="load_aln()">Reload multiple sequence alignment</button>
+    </div>
+
+
+    <hr>
+
+
+    <div class="sidebar-subcontent form-check form-check-inline">
+        <label class="form-check-label" for="form-control-range"><a>Set range around gene locus</a></label>
+        <input type="range" class="form-control-range" id="form-control-range" min="3000" max="300000" value="10000">
+        <span>update range to <b id="range-span">10000</b> bp</span>
+    </div>
+
+    <div class="sidebar-subcontent form-check form-check-inline">
+        <label for="colorization-anno-type"><a>Colorize genes based on...</a></label>
+        <select class="form-control" id="colorization-anno-type" data-selected="OL">
+            {% for anno_type in anno_types %}
+                <option value="{{ anno_type }}" {% if anno_type == 'OL' %} selected {% endif %}>{{ anno_type.label }} ({{ anno_type }})
+                </option>{% endfor %}
+            <option value="--">Highlight only selected gene</option>
+        </select>
+    </div>
+
+
+    <div class="sidebar-subcontent form-check form-check-inline">
+        <button type="button" class="btn btn-primary" onclick="load_dfvm()">Reload Gene Locus</button>
     </div>
 
 {% endblock %}
