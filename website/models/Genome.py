@@ -48,6 +48,7 @@ class Genome(models.Model):
     assembly_date = models.DateField('Assembly date', null=True, blank=True)
 
     assembly_fasta_file = models.CharField(max_length=200)
+    assembly_gc = models.FloatField('GC content', null=True, blank=True)
     assembly_longest_scf = models.IntegerField('Longest scaffold', null=True, blank=True)
     assembly_size = models.IntegerField('Assembly size', null=True, blank=True)
     assembly_nr_scaffolds = models.IntegerField('Number of scaffolds', null=True, blank=True)
@@ -232,6 +233,16 @@ class Genome(models.Model):
 
     def update_assembly_info(self):
         if self.assembly_fasta:
+            # calculate GC-content
+            from Bio import SeqIO
+            from Bio.SeqUtils import GC
+            gc = {(GC(record.seq), len(record)) for record in SeqIO.parse(self.assembly_fasta(relative=False), "fasta")}
+            gc_times_len = sum([gc_content * length for gc_content, length in gc])
+            total_assembly_length = sum([length for gc_content, length in gc])
+            self.assembly_gc = round(gc_times_len / total_assembly_length, 1)
+            assert 0 <= self.assembly_gc <= 100, f'{self} :: assembly gc content is beyond reasonable bounds! {self.assembly_gc}'
+
+            # calculate assembly-stats
             from lib.assembly_stats.assembly_stats import AssemblyStats
             assembly_stats = AssemblyStats().get_assembly_stats(self.assembly_fasta(relative=False))
             self.assembly_longest_scf = assembly_stats['longest']
@@ -278,6 +289,7 @@ class Genome(models.Model):
             'assembly_tool': {'filter_type': 'no-filter', 'description': 'Assembly Tool'},
             'assembly_version': {'filter_type': 'no-filter', 'description': 'Assembly Tool Version'},
             'assembly_date': {'filter_type': 'no-filter', 'description': 'Assembly Date'},
+            'assembly_gc': {'filter_type': 'no-filter', 'description': 'Assembly GC content [%]'},
             'assembly_longest_scf': {'filter_type': 'no-filter', 'description': 'Assembly Longest Scf'},
             'assembly_size': {'filter_type': 'no-filter', 'description': 'Assembly Size'},
             'assembly_nr_scaffolds': {'filter_type': 'no-filter', 'description': 'Assembly #Scfs'},

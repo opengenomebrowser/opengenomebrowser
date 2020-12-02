@@ -26,7 +26,7 @@ class GenomeSerializer(serializers.ModelSerializer):
 
         exclude = [
             'id', 'genomecontent', 'organism',  # primary key, foreign keys
-            'assembly_longest_scf', 'assembly_size', 'assembly_nr_scaffolds', 'assembly_n50'  # calculated automatically
+            'assembly_gc', 'assembly_longest_scf', 'assembly_size', 'assembly_nr_scaffolds', 'assembly_n50'  # calculated automatically
         ]
 
         set_fields = ['tags']

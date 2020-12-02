@@ -33,7 +33,7 @@ class GenomeDetailView(DetailView):
         seq_parameters = ['sequencing_tech', 'sequencing_tech_version', 'sequencing_date', 'sequencing_coverage']
         context['seq_parameters'] = [[self.__verbose(attr), getattr(g, attr)] for attr in seq_parameters]
 
-        ass_parameters = ['assembly_tool', 'assembly_version', 'assembly_date', 'assembly_longest_scf', 'assembly_size',
+        ass_parameters = ['assembly_tool', 'assembly_version', 'assembly_date', 'assembly_gc', 'assembly_longest_scf', 'assembly_size',
                           'assembly_nr_scaffolds', 'assembly_n50', 'nr_replicons']
         context['ass_parameters'] = [[self.__verbose(attr), getattr(g, attr)] for attr in ass_parameters]
 
