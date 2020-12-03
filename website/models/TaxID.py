@@ -77,8 +77,10 @@ class TaxID(MPTTModel):
             return TaxID.objects.get(id=taxid)
 
         except TaxID.DoesNotExist:
-            from lib.get_tax_info.get_tax_info import TaxID as RawTaxID
             from lib.tax_id_to_color.glasbey_wrapper import GlasbeyWrapper
+            from lib.get_tax_info.get_tax_info import GetTaxInfo
+            from lib.get_tax_info.get_tax_info import TaxID as RawTaxID
+            RawTaxID.gti = GetTaxInfo()
 
             if taxid == 1:  # create root node without parent
                 t = RawTaxID(taxid=1)

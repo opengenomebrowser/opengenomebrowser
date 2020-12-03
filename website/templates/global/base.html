@@ -114,6 +114,16 @@
                     </a>
                 </div>
 
+                {% if user.is_superuser %}
+                    <div class="dropdown-divider"></div>
+
+                    <div class="dropdown-item">
+                        <a class="btn btn-success btn-account" href="{% url 'admin:index' %}">
+                            Administration
+                        </a>
+                    </div>
+                {% endif %}
+
                 <div class="dropdown-divider"></div>
 
                 <div class="dropdown-item">

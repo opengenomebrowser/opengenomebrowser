@@ -1,11 +1,13 @@
 from website.models import Genome
 from website.models.TaxID import TaxID
 from django.views.generic import DetailView
-from lib.get_tax_info.get_tax_info import TaxID as RawTaxID
 from math import sqrt
 import numpy as np
 import pandas as pd
 
+from lib.get_tax_info.get_tax_info import GetTaxInfo
+from lib.get_tax_info.get_tax_info import TaxID as RawTaxID
+RawTaxID.gti = GetTaxInfo()
 
 class GenomeDetailView(DetailView):
     model = Genome
