@@ -24,6 +24,7 @@ _OpenGenomeBrowser is a dynamic and scalable web platform for comparative genomi
 <img src="https://raw.githubusercontent.com/opengenomebrowser/opengenomebrowser/master/website/static/global/customicons/ogb-full.svg"  width="500px">
 </div>
 
+
 ### Key concepts
 
 -   _Organism_: biological entity
@@ -34,6 +35,11 @@ _OpenGenomeBrowser is a dynamic and scalable web platform for comparative genomi
 ## Tutorial
 
 Play around with the demo instance of [OpenGenomeBrowser](opengenomebrowser.bioinformatics.unibe.ch/) and read the [tutorial](/tutorial.md)!
+
+
+## Installation
+
+Click [here](/installation.md) to read the instructions.
 
 
 ## Get help
