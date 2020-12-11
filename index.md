@@ -1,8 +1,6 @@
 ## Welcome to OpenGenomeBrowser 
  
-**ALERT: This software is still under development! If you want to try it out, contact the developer first!**
-
-**Prototype:** [opengenomebrowser.bioinformatics.unibe.ch](https://opengenomebrowser.bioinformatics.unibe.ch/)
+**Demo instance:** [opengenomebrowser.bioinformatics.unibe.ch](https://opengenomebrowser.bioinformatics.unibe.ch/)
 
 To talk to the developer informally, join the OpenGenomeBrowser [Discord channel](https://discord.gg/mDm4fqf).
 <hr>
@@ -32,6 +30,10 @@ _OpenGenomeBrowser is a dynamic and scalable web platform for comparative genomi
 -   _Genome_: sequencing variant
 -   _Representative_: best genome of organism
 
+
+## Tutorial
+
+Play around with the demo instance of [OpenGenomeBrowser](opengenomebrowser.bioinformatics.unibe.ch/) and read the [tutorial](/tutorial.md)!
 
 
 ## Get help
