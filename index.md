@@ -23,7 +23,7 @@ _OpenGenomeBrowser is a dynamic and scalable web platform for comparative genomi
     - Computationally intensive processes can be outsourced to a cluster
 
 <div align="center">
-<img src="https://github.com/opengenomebrowser/opengenomebrowser/blob/master/website/static/global/customicons/ogb-full.svg"  width="500px">
+<img src="https://raw.githubusercontent.com/opengenomebrowser/opengenomebrowser/master/website/static/global/customicons/ogb-full.svg"  width="500px">
 </div>
 
 ### Key concepts
