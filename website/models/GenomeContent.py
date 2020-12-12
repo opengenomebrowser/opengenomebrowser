@@ -185,7 +185,7 @@ class GenomeContent(models.Model):
         ]
 
         from lib.ncbiblast.ncbi_blast.blast_wrapper import Blast
-        blast = Blast()
+        blast = Blast(system_blast=True)
 
         for src, dst, dbtype in blastable_files:
             if not os.path.isfile(dst):

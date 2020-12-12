@@ -57,30 +57,21 @@ docs/_build/
 *_lut.npz
 
 website/migrations/*
-website/static/pathway-maps/svg/*
-species_color_dict.json
-
-database/*
-lib/get_tax_info/data/*
-lib/ncbi_blast/ncbi-blast-2.10.0+/
-lib/ani/*.jar
-lib/genome_similarity/usearch
-lib/assembly_stats/assembly-stats/
 
 website/static/global/css/tag_color.css
 website/static/global/css/taxid_color.css
 website/static/global/css/taxid_color_label.css
 
-/lib/orthofinder/OrthoFinder/
 /db_setup/huey.db
-/static_root/
 /huey.db*
 /OpenGenomeBrowser/settings.py
-/website/static/pathway-maps/svg
-
-/lib/gene_ontology/go.obo
-/lib/gene_ontology/go.obo.converted
 
 /db_setup/.*
 
+.git
+.gitmodules
+
 development.env
+
+/database
+/static_root

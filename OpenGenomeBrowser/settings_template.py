@@ -11,33 +11,64 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/dev/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = ''
-assert SECRET_KEY != '', 'Change the security key in OpenGenomeBrowser/settings.py to a random string!'
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
 
-CSRF_COOKIE_SECURE = True
+ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS').split(',')
+
+PROTEIN_FASTA_ENDINGS = os.environ.get('PROTEIN_FASTA_ENDINGS')
+
+ORTHOFINDER_LATEST_RUN = os.environ.get('ORTHOFINDER_LATEST_RUN')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = os.environ.get('DEBUG').lower() == 'true'
+assert type(DEBUG) is bool
+CSRF_COOKIE_SECURE = not DEBUG
 
-ALLOWED_HOSTS = []
+# genomes table: default columns
+if 'DEFAULT_COLUMNS' in os.environ:
+    DEFAULT_GENOMES_COLUMNS = [os.environ.get('DEFAULT_COLUMNS').split(',')]
+else:
+    DEFAULT_GENOMES_COLUMNS = ["organism.name", "identifier", "organism.taxid.taxscientificname", "sequencing_tech"]
+
+DEFAULT_GENOMES_PAGE_LENGTH = os.environ.get('DEFAULT_GENOMES_PAGE_LENGTH', 'All')
+
+# Email settings
+if all([var in os.environ for var in ['EMAIL_HOST', 'EMAIL_HOST_USER', 'DEFAULT_FROM_EMAIL', 'EMAIL_PORT']]):
+    EMAIL_HOST = os.environ.get('EMAIL_HOST')
+    EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
+    DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL')
+    EMAIL_PORT = int(os.environ.get('EMAIL_PORT'))
+    # print(f'MAIL SETTINGS:\n'
+    #       f'{EMAIL_HOST=}\n{EMAIL_HOST_USER=}\n{DEFAULT_FROM_EMAIL=}\n{EMAIL_PORT=}')
+
+LOGIN_MESSAGE = os.environ.get('LOGIN_MESSAGE', 'Welcome to OpenGenomeBrowser!')
+
+HUEY_WORKERS = int(os.environ.get('HUEY_WORKERS', 4))
+
+# print(f'SETTINGS:\n'
+#       f'{SECRET_KEY=}\n{ALLOWED_HOSTS=}\n{PROTEIN_FASTA_ENDINGS=}\n{ORTHOFINDER_LATEST_RUN=}\n{DEBUG=}\n{CSRF_COOKIE_SECURE=}\n'
+#       f'{DEFAULT_GENOMES_COLUMNS=}\n{DEFAULT_GENOMES_PAGE_LENGTH=}\n{LOGIN_MESSAGE=}\n{HUEY_WORKERS=}')
 
 # Application definition
-
 INSTALLED_APPS = [
-    'dal',
-    'dal_select2',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'website.apps.WebsiteConfig',
+    # easy api
     'rest_framework',
+    # edit json in admin view
     'prettyjson',
+    # job scheduler
     'huey.contrib.djhuey',
-    'mptt'
+    # hierarchical data structures for database (used in TaxID)
+    'mptt',
+    'website.apps.WebsiteConfig'
 ]
+
+# SITE_ID = 1  # required because of 'invitations'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -73,12 +104,12 @@ WSGI_APPLICATION = 'OpenGenomeBrowser.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'open_genome_browser_db',
-        'USER': 'ogb_admin',
-        'PASSWORD': '?????????????????????',
-        'HOST': 'localhost',
-        'PORT': '',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'opengenomebrowser_db',
+        'USER': 'postgres',
+        'PASSWORD': 'postgres',
+        'HOST': 'db',
+        'PORT': '5432',
     }
 }
 
@@ -126,7 +157,7 @@ MEDIA_ROOT = 'dist/media'
 
 # Require login by default, see also OpenGenomeBrowser.login_required_middleware.LoginRequiredMiddleware
 # https://stackoverflow.com/questions/3214589/django-how-can-i-apply-the-login-required-decorator-to-my-entire-site-excludin/56579091#56579091
-AUTH_EXEMPT_ROUTES = ('login', 'index')
+AUTH_EXEMPT_ROUTES = ('login', 'index', 'logout', 'password_change', 'password_change_done', 'password_reset')
 AUTH_LOGIN_ROUTE = 'login'
 
 # Huey config
@@ -137,7 +168,7 @@ HUEY = {
     'immediate': False,  # If DEBUG=True, run synchronously.
     'utc': True,  # Use UTC for all times internally.
     'consumer': {
-        'workers': 4,
+        'workers': HUEY_WORKERS,
         'worker_type': 'thread',
         'initial_delay': 0.1,  # Smallest polling interval, same as -d.
         'backoff': 1.15,  # Exponential backoff using this rate, -b.
@@ -149,42 +180,29 @@ HUEY = {
     },
 }
 
-# Email settings
-EMAIL_HOST = 'smtp.unibe.ch'
-EMAIL_HOST_USER = 'noreply@bioinformatics.unibe.ch'
-DEFAULT_FROM_EMAIL = 'noreply@bioinformatics.unibe.ch'
-EMAIL_PORT = '25'
-
-LOGIN_MESSAGE = 'Welcome to the OpenGenomeBrowser!'
-
 ORTHOLOG_ANNOTATIONS = dict(
     # file that links ortholog identifiers with genes
-    ortholog_to_gene_ids='/path/to/file.tsv',
+    ortholog_to_gene_ids=F'/database/global_annotations/HOG_gene_ids.tsv',
+    # ortholog_to_gene_ids=F'{BASE_DIR}/database/global_annotations/mock_ids.tsv',
     # links ortholog identifiers with descriptions
-    ortholog_to_name=F'/path/to/file.tsv'
+    ortholog_to_name=F'/database/global_annotations/HOG_best_name.tsv'
 )
 
-# where KEGG data should be loaded to (using import_database.py --download-kegg-data)
-ANNOTATION_DATA = F'/path/to/database/annotations-data'
-
 # GENOMIC_DATABASE must contain the folder 'organisms'
-GENOMIC_DATABASE = F'/path/to/database'
+GENOMIC_DATABASE = F'/database'
+
+# where KEGG data should be loaded to (using import_database.py --download-kegg-data)
+ANNOTATION_DATA = F'/database/global_annotations'
 
 # path (relative to GENOMIC_DATABASE) to pathway_maps-svgs
-PATHWAY_MAPS_RELATIVE = 'pathway_maps/svgs'
+PATHWAY_MAPS_RELATIVE = 'pathway_maps/svg'
 # path (relative to GENOMIC_DATABASE) to type_dictionary.json
 PATHWAY_MAPS_TYPE_DICT_RELATIVE = 'pathway_maps/type_dictionary.json'
 
+# Path to the folder that contains the orthofinder binary
+ORTHOFINDER_INSTALL_DIR = '/opt/OrthoFinder'
 # absolute path to OrthoFinder fasta folder
-ORTHOFINDER_FASTAS = F'/path/to/OrthoFinder/fastas'
-# file endings of the files in ORTHOFINDER_FASTAS. usually 'fasta' or 'faa'
-ORTHOFINDER_FASTA_ENDINGS = 'faa'
-# Name of the most recent 'Results'-folder, i.e. 'Results_Aug14'
-ORTHOFINDER_LATEST_RUN = 'Results_Xxx00'
-
-# genomes table: default columns
-DEFAULT_GENOMES_COLUMNS = ["organism.name", "identifier", "organism.taxid.taxscientificname", "sequencing_tech"]
-DEFAULT_GENOMES_PAGE_LENGTH = 'All'
+ORTHOFINDER_FASTAS = F'/database/OrthoFinder/fastas'
 
 #
 #

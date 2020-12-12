@@ -94,12 +94,12 @@ def home_view(request):
                 did=['Orthologs', 'Core Genome Alignments']
             ),
             dict(
-                name='ChunLab\'s OAT',
-                img='/static/index/images/OAT.svg',
+                name='GenDisCal / PaSit',
+                img='/static/index/images/PaSiT.png',
                 img_cls='square',
-                role='CDCgov',
-                href='https://www.ezbiocloud.net/tools/orthoani/',
-                did=['Calculation of average nucleotide identity between assemblies']
+                role='Laboratory of Microbiology, Uni Gent',
+                href='https://github.com/LM-UGent/GenDisCal/',
+                did=['Calculation of pairwise assembly similarity']
             ),
             dict(
                 name='National Center for Biotechnology Information',

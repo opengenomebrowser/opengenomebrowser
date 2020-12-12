@@ -45,7 +45,7 @@ def confirm_delete(color):
         else:
             return None
 
-    while (True):
+    while True:
         print(color + '', end='')
         inp = yes_or_no()
         print(Fore.BLACK, end='')

@@ -407,7 +407,8 @@ python manage.py collectstatic
 Import data from folder structure into database:
 ```
 # start import (run this command again to load changes that have been made to the folder_structure into OpenGenomeBrowser)
-python db_setup/import_database.py
+
+
 ```
 
 
