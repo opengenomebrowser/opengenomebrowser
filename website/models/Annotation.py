@@ -146,7 +146,7 @@ class Annotation(models.Model):
                 try:
                     adf = AnnotationDescriptionFile(anno_type=anno_enum.value, create_cdb=False)
                     return adf.get_description(query)
-                except FileNotFoundError:
+                except (FileNotFoundError, AttributeError):
                     pass
         # return '-' if nothing worked
         return '-'

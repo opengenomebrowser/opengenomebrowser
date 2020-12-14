@@ -61,6 +61,22 @@ If you want to chat, contact me via [Discord](https://discord.gg/mDm4fqf).
               ├── generalfeatureformat.gff
               ├── annotations.ko
               └── annotations.eggnog
+└── annotation-descriptions  # optional
+     ├── OL.tsv
+     └── ...
+└── OrthoFinder  # optional
+     └── fastas
+         ├── fasta1.faa
+         ├── ...
+         └── OrthoFinder
+            └── ...
+└── orthologs  # optional
+     └── orthologs.tsv
+└── pathway_maps  # optional
+     ├── type_dictionary.json
+     └── svg
+         ├── map1.svg
+         └── ...
 ```
 
 ##### Notes:
@@ -271,222 +287,8 @@ that turns Orthofinder output into this format.
 
 ### Basic steps
 
-1.   install dependencies
-1.   create Python 3.6+ venv
-1.   create Postgresql 10+ database
-1.   clone this repository, adapt settings
-1.   populate Postgresql database
-1.   configure nginx and uwsgi (for deployment only)
+1.   prerequisites: docker and docker-compose
+1.   todo
 
-### Example commands (Note: these commands were used on CentOS 8
+### Example: get OpenGenomeBrowser with test-database running:
 
-##### 1. install dependencies
-
-```
-sudo dnf config-manager --set-enabled PowerTools
-sudo dnf install git gcc
-sudo dnf install python38 python38-devel python38-numpy python38-setuptools python38-wheel
-sudo dnf install postgresql postgresql-devel postgresql-server libpq-devel python3-psycopg2 pcre-devel
-# these packages may have other names in other operating systems!
-
-# NCBI BLAST
-sudo dnf install libnsl perl-List-MoreUtils perl-File-Temp perl-Archive-Tar
-BLAST_RPM='ncbi-blast-2.10.1+-1.x86_64.rpm'  # adapt path to current blast executable
-wget https://ftp.ncbi.nlm.nih.gov/blast/executables/LATEST/${BLAST_RPM}
-sudo rpm -i $BLAST_RPM
-
-# Clustal Omega
-wget http://www.clustal.org/omega/clustalo-1.2.4-Ubuntu-x86_64 -O /usr/bin/clustalo
-chmod +x /usr/bin/clustalo
-
-# MAFFT
-wget https://mafft.cbrc.jp/alignment/software/mafft-7.471-gcc_fc6.x86_64.rpm
-sudo rpm -i mafft-7.471-gcc_fc6.x86_64.rpm
-
-# Muscle
-wget https://www.drive5.com/muscle/downloads3.8.31/muscle3.8.31_i86linux64.tar.gz
-tar -xvf muscle3.8.31_i86linux64.tar.gz
-sudo mv muscle3.8.31_i86linux64 /usr/bin/muscle
-
-# OrthoFinder
-wget https://github.com/davidemms/OrthoFinder/releases/download/2.3.12/OrthoFinder.tar.gz
-tar -xvf OrthoFinder.tar.gz
-sudo cp -r OrthoFinder /opt/
-```
-
-##### 2. create Python 3.6+ venv (in an appropriate location)
-
-```
-python3.8 -m venv ogb-venv
-source ogb-venv/bin/activate
-pip install --upgrade pip
-```
-
-##### 3. create Postgresql 10+ database
-
-```shell script
-sudo postgresql-setup initdb
-sudo systemctl enable postgresql
-sudo systemctl start postgresql
-sudo passwd postgres  # set password for postgres user
-sudo su - postgres
-[as user postgres]$ initdb -D open_genome_browser
-[as user postgres]$ systemctl restart postgresql.service
-[as user postgres]$ createuser --encrypted --pwprompt ogb_admin  # set secure password!
-[as user postgres]$ createdb --owner=ogb_admin open_genome_browser_db
-[as user postgres]$ exit
-```
-
-Test if you can connect to the database:
-
-```
-sudo systemctl restart postgresql.service
-psql -d open_genome_browser_db -U ogb_admin
-$ open_genome_browser_db=> \quit
-```
-If it does not work, try adjusting `/var/lib/pgsql/data/pg_hba.conf`: add this line:
-```text
-local   all             ogb_admin                               md5
-```
-(see [stackoverflow](https://stackoverflow.com/questions/18664074/getting-error-peer-authentication-failed-for-user-postgres-when-trying-to-ge)))
-
-Note: if you mess up and want to start fresh, this is how to drop and recreate the database:
-
-```shell script
-# NOTE: this deletes ALL data in open_genome_browser_db!
-sudo su - postgres
-[as user postgres]$ dropdb open_genome_browser_db
-[as user postgres]$ createdb open_genome_browser_db --owner ogb_admin
-[as user postgres]$ exit
-# note: now re-run "python manage.py makemigrations && python manage.py migrate" to recreate the database schemes
-```
-
-Note: you can use this command to export the user accounts and import them again later:
-```shell script
-python manage.py dumpdata auth > auth.json
-# drop database
-# python manage.py makemigrations && python manage.py migrate
-python manage.py loaddata auth.json --exclude auth.permission
-```
-
-
-##### 4. clone this repository (into an appropriate location), adapt settings
-
-```
-git clone https://gitlab.bioinformatics.unibe.ch/troder/opengenomebrowser.git
-cd opengenomebrowser
-git submodule update --init --recursive
-pip install -r requirements.txt  # ensure you are in the previously created venv!
-```
-
-Create and edit settings.py:
-```
-cp OpenGenomeBrowser/settings_template.py OpenGenomeBrowser/settings.py
-vi OpenGenomeBrowser/settings.py
-```
--   change `DEBUG` to `True` **only** for development!
--   change `GENOMIC_DATABASE` to the path to your folder structure
--   change `DATABASES[PASSWORD]` to the passwort you just set for Postgresql
--   change `ALLOWED_HOSTS` to the URL/IP you are planning to serve OpenGenomeBrowser as (example: `['opengenomebrowser.yourdomain.com']`)
--   change `SECRET_KEY` to a randomly created string; such strings can be created like this:
-```python
-# in a python console of a venv with django installed
-from django.core.management.utils import get_random_secret_key
-get_random_secret_key()
-```
-
-##### 5. populate Postgresql database
-Create schemes and tables in the database
-```
-python manage.py makemigrations
-python manage.py migrate
-python manage.py collectstatic
-# python manage.py createsuperuser: superusername:supersafepassword
-```
-
-Import data from folder structure into database:
-```
-# start import (run this command again to load changes that have been made to the folder_structure into OpenGenomeBrowser)
-
-
-```
-
-
-##### 6. configure nginx and uwsgi (for deployment only)
-If you are developing, you can run the website using `python manage.py runserver` and open [http://127.0.0.1:8000/](http://127.0.0.1:8000/)
-I recommend PyCharm Pro (free for students) as IDE as it supports Django.
-
-Even if you want to deploy, use `python manage.py runserver` to test if that works.
-
-Follow this tutorial: [uwsgi-docs](https://uwsgi-docs.readthedocs.io/en/latest/tutorials/Django_and_nginx.html)
-
-Example uwsgi config:
-```
-[uwsgi]
-chmod-socket = 664
-chdir=/path/to/opengenomebrowser
-home=/path/to/python/venv
-module=OpenGenomeBrowser.wsgi
-processes=10
-threads=2
-env=OpenGenomeBrowser.settings
-master=True
-pidfile=/tmp/opengenomebrowser-master.pid
-vacuum=True
-max-requests=5000
-buffer-size=30000
-# daemonize=/home/username/uwsgi.log
-socket=/path/to/ogb.sock
-```
-
-run using `uwsgi uwsgi.ini`
-
-Example uwsgi config:
-```
-upstream django {
-    server unix:///path/to/ogb.sock;
-}
-
-server {
-    listen       443 ssl http2 default_server;
-    server_name  opengenomebrowser.yourdomain.com;
-    ssl_certificate /path/to/fullchain.pem;
-    ssl_certificate_key /path/to/privkey.pem;
-    ssl_session_cache shared:SSL:1m;
-    ssl_session_timeout  10m;
-    ssl_ciphers TLS_AES_128_GCM_SHA256:TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256:ECDHE+AESGCM;
-    ssl_protocols       TLSv1.2 TLSv1.3;
-    ssl_prefer_server_ciphers on;
-    add_header X-Frame-Options 'SAMEORIGIN' always;
-
-    add_header X-Content-Type-Options nosniff;
-    add_header X-XSS-Protection "1; mode=block";
-    add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; img-src 'self' 'unsafe-inline' w3.org data:; style-src 'self' 'unsafe-inline'; font-src 'self'; frame-src 'self'; object-src 'self'";
-
-    charset     utf-8;
-    # max upload size
-    client_max_body_size 10M;   # adjust to taste
-
-    # Django media
-    location /media  {
-        alias /path/to/opengenomebrowser/dist/media;  # your Django project's media files - amend as required
-    }
-    
-    # static files
-    location /static {
-        alias /path/to/opengenomebrowser/static_root; # your Django project's static files - amend as required
-    }
-    
-    # see https://wellfire.co/learn/nginx-django-x-accel-redirects
-    location /download/ {
-        internal;
-        alias   /path/to/database;
-    }
-
-    # Finally, send all non-media requests to the Django server.
-    location / {
-        uwsgi_pass  django;
-        include     /etc/nginx/uwsgi_params;
-    }
-}
-```

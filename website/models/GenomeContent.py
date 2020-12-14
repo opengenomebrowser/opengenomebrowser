@@ -307,7 +307,7 @@ class GenomeContent(models.Model):
         if len(db_lacks) > 0:
             try:
                 adf = AnnotationDescriptionFile(anno_type=anno_type, create_cdb=False)
-                Annotation.objects.bulk_create([Annotation(name=name, anno_type=anno_type, description=adf.get_description(name))
+                Annotation.objects.bulk_create([Annotation(name=name, anno_type=anno_type, description=adf.get_description_or_alternative(name))
                                                 for name in db_lacks])
             except FileNotFoundError:
                 Annotation.objects.bulk_create([Annotation(name=name, anno_type=anno_type)

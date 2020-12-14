@@ -186,7 +186,7 @@ HUEY = {
 
 ORTHOLOG_ANNOTATIONS = f'{GENOMIC_DATABASE}/orthologs/orthologs.tsv'
 
-# where KEGG data should be loaded to (using import_database.py --download-kegg-data)
+# where KEGG data should be loaded to (using manage_ogb.py --download-kegg-data)
 ANNOTATION_DESCRIPTIONS = f'{GENOMIC_DATABASE}/annotation-descriptions'
 
 # path (relative to GENOMIC_DATABASE) to pathway_maps-svgs

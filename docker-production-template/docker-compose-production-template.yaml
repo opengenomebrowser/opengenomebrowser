@@ -27,13 +27,12 @@ services:
 
 
   web:
-    image: opengenomebrowser
+    image: opengenomebrowser/opengenomebrowser:latest
     container_name: ogb_web
     env_file:
       - production-template.env
     command: /opengenomebrowser/start.sh
     volumes:
-      - ./../OpenGenomeBrowser/settings_docker.py:/opengenomebrowser/settings.py
       - ./../database:/database
       - ./ogb_container/socket:/socket
       - ./ogb_container/static_root:/opengenomebrowser/static_root

@@ -15,7 +15,12 @@ if [ "$DEBUG" == "true" ]; then
 
 else
 
-  echo "PRODUCTION MODE"
+  re='^[0-9]+$'
+  if ! [[ $UWSGI_WORKERS =~ $re ]] ; then
+     echo "Error: Environment variable UWSGI_WORKERS is not defined!" >&2; exit 1
+  fi
+
+  echo "PRODUCTION MODE with $UWSGI_WORKERS"
 
   uwsgi \
     --chmod-socket=666 \

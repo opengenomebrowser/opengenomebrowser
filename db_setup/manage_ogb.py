@@ -165,7 +165,7 @@ def reload_color_css():
     TaxID.create_taxid_color_css()
 
 
-def reload_pathway_maps():
+def import_pathway_maps():
     """
     (Re)load pathway maps into PostgreSQL database
     """
@@ -246,7 +246,7 @@ def sanity_check_postgres():
           F"belonging to {len(Organism.objects.values('taxid').distinct())} species.")
 
 
-def reload_orthologs(auto_delete: bool = False):
+def import_orthologs(auto_delete: bool = False):
     """
     Load annotations from settings.py > ORTHOLOG_ANNOTATIONS['ortholog_to_gene_ids']
     """
@@ -382,9 +382,9 @@ if __name__ == "__main__":
         import_database,
         reset_database,
         remove_missing_organisms,
-        reload_pathway_maps,
+        import_pathway_maps,
         sanity_check_postgres,
-        reload_orthologs,
+        import_orthologs,
         update_bokeh,
         send_mail,
         download_kegg_data,
