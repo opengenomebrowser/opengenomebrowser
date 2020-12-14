@@ -39,7 +39,7 @@ class BaseEntity:
         except EnvironmentError:
             return False
 
-    @cached_property
+    @property
     def json(self):
         with open(self.json_path) as file:
             return json.loads(file.read())

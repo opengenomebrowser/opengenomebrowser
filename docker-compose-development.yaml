@@ -3,26 +3,27 @@ version: "3.9"
 services:
   db:
     image: postgres
+    container_name: ogb_postgres_dev
     environment:
       - POSTGRES_DB=opengenomebrowser_db
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
       - PGDATA=/pg_data
     volumes:
-      - /home/thomas/pg_data:/pg_data
+      - ./docker-production-template/ogb_container/pg_data:/pg_data
 
 
   web:
     #    build: .
     image: opengenomebrowser
+    container_name: ogb_web_dev
     env_file:
       - development.env
     command: /opengenomebrowser/start.sh
     volumes:
-      - /home/thomas/PycharmProjects/opengenomebrowser/OpenGenomeBrowser/settings_docker.py:/opengenomebrowser/settings.py
-      - /home/thomas/PycharmProjects/opengenomebrowser/database:/database
+      - ./:/opengenomebrowser/
+      - ./database:/database
     ports:
       - "8000:8000"
     depends_on:
       - db
-

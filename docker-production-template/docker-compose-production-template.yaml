@@ -1,0 +1,42 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres
+    container_name: ogb_postgres
+    environment:
+      - POSTGRES_DB=opengenomebrowser_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - PGDATA=/pg_data
+    volumes:
+      - ./ogb_container/pg_data:/pg_data
+
+
+  nginx:
+    build: ./nginx
+    container_name: ogb_nginx
+    ports:
+      - "443:443"
+      - "80:80"
+    volumes:
+      - ./nginx/certs:/certs
+      - ./../database:/database
+      - ./ogb_container/socket:/socket
+      - ./ogb_container/static_root:/opengenomebrowser/static_root
+
+
+  web:
+    image: opengenomebrowser
+    container_name: ogb_web
+    env_file:
+      - production-template.env
+    command: /opengenomebrowser/start.sh
+    volumes:
+      - ./../OpenGenomeBrowser/settings_docker.py:/opengenomebrowser/settings.py
+      - ./../database:/database
+      - ./ogb_container/socket:/socket
+      - ./ogb_container/static_root:/opengenomebrowser/static_root
+    depends_on:
+      - db
+      - nginx

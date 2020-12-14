@@ -51,7 +51,6 @@ class PathwayMap(models.Model):
 
         print('Reloading svg maps using ', end='')
 
-        PathwayMap.__ensure_link()
         # remove all maps
         PathwayMap.wipe_maps()
 
@@ -106,22 +105,3 @@ class PathwayMap(models.Model):
     @staticmethod
     def wipe_maps():
         PathwayMap.objects.all().delete()
-        PathwayMap.__ensure_link()
-
-    @staticmethod
-    def __ensure_link():
-        """
-        Link static/pathway-maps/svg to settings.PATHWAY_MAPS
-
-        :return: path to settings.PATHWAY_MAPS
-        """
-        real_dir = settings.PATHWAY_MAPS
-        link_dir = F'{settings.BASE_DIR}/website/static/pathway-maps/svg'
-        # ensure real_dir exists
-        os.makedirs(real_dir, exist_ok=True)
-        # ensure link to real_dir exists
-        if not os.path.islink(link_dir):
-            # ensure parent exists
-            os.makedirs(os.path.dirname(link_dir), exist_ok=True)
-            os.symlink(real_dir, link_dir)
-        return real_dir

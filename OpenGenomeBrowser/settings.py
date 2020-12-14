@@ -10,19 +10,29 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/dev/howto/deployment/checklist/
 
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = os.environ.get('DEBUG').lower() == 'true'
+CSRF_COOKIE_SECURE = not DEBUG
+
+DB_HOST = os.environ.get('DB_HOST', 'db')
+
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
+if 'DJANGO_SECRET_KEY' in os.environ:
+    SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
+else:
+    print('GENERATING RANDOM SECRET KEY')
+    from django.core.management.utils import get_random_secret_key
+
+    SECRET_KEY = get_random_secret_key()
 
 ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS').split(',')
 
+# GENOMIC_DATABASE must contain the folder 'organisms'
+GENOMIC_DATABASE = os.environ.get('GENOMIC_DATABASE', '/database')
+
+ORTHOFINDER_ENABLED = os.environ.get('ORTHOFINDER_ENABLED', 'false').lower() == 'true'
+
 PROTEIN_FASTA_ENDINGS = os.environ.get('PROTEIN_FASTA_ENDINGS')
-
-ORTHOFINDER_LATEST_RUN = os.environ.get('ORTHOFINDER_LATEST_RUN')
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG').lower() == 'true'
-assert type(DEBUG) is bool
-CSRF_COOKIE_SECURE = not DEBUG
 
 # genomes table: default columns
 if 'DEFAULT_COLUMNS' in os.environ:
@@ -38,16 +48,10 @@ if all([var in os.environ for var in ['EMAIL_HOST', 'EMAIL_HOST_USER', 'DEFAULT_
     EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
     DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL')
     EMAIL_PORT = int(os.environ.get('EMAIL_PORT'))
-    # print(f'MAIL SETTINGS:\n'
-    #       f'{EMAIL_HOST=}\n{EMAIL_HOST_USER=}\n{DEFAULT_FROM_EMAIL=}\n{EMAIL_PORT=}')
 
 LOGIN_MESSAGE = os.environ.get('LOGIN_MESSAGE', 'Welcome to OpenGenomeBrowser!')
 
 HUEY_WORKERS = int(os.environ.get('HUEY_WORKERS', 4))
-
-# print(f'SETTINGS:\n'
-#       f'{SECRET_KEY=}\n{ALLOWED_HOSTS=}\n{PROTEIN_FASTA_ENDINGS=}\n{ORTHOFINDER_LATEST_RUN=}\n{DEBUG=}\n{CSRF_COOKIE_SECURE=}\n'
-#       f'{DEFAULT_GENOMES_COLUMNS=}\n{DEFAULT_GENOMES_PAGE_LENGTH=}\n{LOGIN_MESSAGE=}\n{HUEY_WORKERS=}')
 
 # Application definition
 INSTALLED_APPS = [
@@ -108,7 +112,7 @@ DATABASES = {
         'NAME': 'opengenomebrowser_db',
         'USER': 'postgres',
         'PASSWORD': 'postgres',
-        'HOST': 'db',
+        'HOST': DB_HOST,
         'PORT': '5432',
     }
 }
@@ -180,19 +184,10 @@ HUEY = {
     },
 }
 
-ORTHOLOG_ANNOTATIONS = dict(
-    # file that links ortholog identifiers with genes
-    ortholog_to_gene_ids=F'/database/global_annotations/HOG_gene_ids.tsv',
-    # ortholog_to_gene_ids=F'{BASE_DIR}/database/global_annotations/mock_ids.tsv',
-    # links ortholog identifiers with descriptions
-    ortholog_to_name=F'/database/global_annotations/HOG_best_name.tsv'
-)
-
-# GENOMIC_DATABASE must contain the folder 'organisms'
-GENOMIC_DATABASE = F'/database'
+ORTHOLOG_ANNOTATIONS = f'{GENOMIC_DATABASE}/orthologs/orthologs.tsv'
 
 # where KEGG data should be loaded to (using import_database.py --download-kegg-data)
-ANNOTATION_DATA = F'/database/global_annotations'
+ANNOTATION_DESCRIPTIONS = f'{GENOMIC_DATABASE}/annotation-descriptions'
 
 # path (relative to GENOMIC_DATABASE) to pathway_maps-svgs
 PATHWAY_MAPS_RELATIVE = 'pathway_maps/svg'
@@ -200,26 +195,37 @@ PATHWAY_MAPS_RELATIVE = 'pathway_maps/svg'
 PATHWAY_MAPS_TYPE_DICT_RELATIVE = 'pathway_maps/type_dictionary.json'
 
 # Path to the folder that contains the orthofinder binary
-ORTHOFINDER_INSTALL_DIR = '/opt/OrthoFinder'
+ORTHOFINDER_INSTALL_DIR = '/opt/OrthoFinder_source'
 # absolute path to OrthoFinder fasta folder
-ORTHOFINDER_FASTAS = F'/database/OrthoFinder/fastas'
+ORTHOFINDER_FASTAS = f'{GENOMIC_DATABASE}/OrthoFinder/fastas'
 
 #
 #
 # sanity checks, do not edit what is below here.
 #
 #
-PATHWAY_MAPS_TYPE_DICT = F'{GENOMIC_DATABASE}/{PATHWAY_MAPS_TYPE_DICT_RELATIVE}'
-PATHWAY_MAPS = os.path.join(GENOMIC_DATABASE, PATHWAY_MAPS_RELATIVE)  # do not change this line!
+PATHWAY_MAPS_TYPE_DICT = f'{GENOMIC_DATABASE}/{PATHWAY_MAPS_TYPE_DICT_RELATIVE}'
+PATHWAY_MAPS = f'{GENOMIC_DATABASE}/{PATHWAY_MAPS_RELATIVE}'
 
-ORTHOFINDER_LATEST_RUN = F'{ORTHOFINDER_FASTAS}/OrthoFinder/{ORTHOFINDER_LATEST_RUN}'
+# Name of the most recent 'Results'-folder, i.e. 'Results_Aug14'
+if ORTHOFINDER_ENABLED:
+    ORTHOFINDER_LATEST_RUN = max(
+        [os.path.join(f'{ORTHOFINDER_FASTAS}/OrthoFinder', d) for d in os.listdir(f'{ORTHOFINDER_FASTAS}/OrthoFinder')],
+        key=os.path.getmtime
+    )
 
-for folder in [ORTHOFINDER_FASTAS, ORTHOFINDER_LATEST_RUN, PATHWAY_MAPS, GENOMIC_DATABASE]:
+    for folder in [ORTHOFINDER_FASTAS, ORTHOFINDER_LATEST_RUN]:
+        assert os.path.isdir(folder), F"The path in settings.py doesn't point to a folder: {folder}"
+
+    for file in [ORTHOLOG_ANNOTATIONS]:
+        assert os.path.isfile(file), F"The path in settings.py doesn't point to a file: {file}"
+
+
+else:
+    ORTHOFINDER_LATEST_RUN = None
+
+for folder in [PATHWAY_MAPS, GENOMIC_DATABASE]:
     assert os.path.isdir(folder), F"The path in settings.py doesn't point to a folder: {folder}"
-
-for file in ['ortholog_to_gene_ids', 'ortholog_to_name']:
-    assert file in ORTHOLOG_ANNOTATIONS, F"ORTHOLOG_ANNOTATIONS does not contain {file}"
-    assert os.path.isfile(ORTHOLOG_ANNOTATIONS[file]), F"The path in settings.py doesn't point to a file: {file}"
 
 for file in [PATHWAY_MAPS_TYPE_DICT]:
     assert os.path.isfile(file), F"The path in settings.py doesn't point to a file: {file}"

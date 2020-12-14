@@ -1,5 +1,7 @@
 from django.db import models
 import hashlib
+
+from OpenGenomeBrowser.settings import ORTHOFINDER_ENABLED
 from plugins import calculate_core_genome_dendrogram
 from .GenomeContent import GenomeContent
 
@@ -7,6 +9,8 @@ from .GenomeContent import GenomeContent
 
 class DendrogramManager(models.Manager):
     def get_or_create(self, genomes, **kwargs):
+        assert ORTHOFINDER_ENABLED, 'OrthoFinder is disabled!'
+
         hash = CoreGenomeDendrogram.hash_genomes(genomes)
 
         # return if exists

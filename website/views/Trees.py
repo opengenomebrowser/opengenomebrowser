@@ -1,10 +1,11 @@
 from django.shortcuts import render
 from website.views.helpers.magic_string import MagicQueryManager
+from OpenGenomeBrowser.settings import ORTHOFINDER_ENABLED
 
 
 def trees(request):
     context = dict(title='Trees')
-
+    context['ORTHOFINDER_ENABLED'] = ORTHOFINDER_ENABLED
     context['genomes'] = []
     context['genome_to_species'] = dict()
 

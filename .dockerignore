@@ -64,7 +64,6 @@ website/static/global/css/taxid_color_label.css
 
 /db_setup/huey.db
 /huey.db*
-/OpenGenomeBrowser/settings.py
 
 /db_setup/.*
 
@@ -73,5 +72,10 @@ website/static/global/css/taxid_color_label.css
 
 development.env
 
+Dockerfile
+
+/docker-production-template
+
 /database
 /static_root
+/ogb_container

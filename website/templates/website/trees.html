@@ -99,7 +99,10 @@
                             <button type="button" class="btn btn-success" onclick="load_genome_similarity_tree(genomes)">
                                 Calculate Genome-similarity-based tree
                             </button>
-                            <button type="button" class="btn btn-info" onclick="load_orthofinder_tree(genomes)">
+                            <button type="button" class="btn btn-info"
+                                    {% if ORTHOFINDER_ENABLED %} onclick="load_orthofinder_tree(genomes)"
+                                    {% else %} aria-disabled="true" disabled
+                                    {% endif %}>
                                 Calculate Orthofinder-based tree
                             </button>
                         </div>

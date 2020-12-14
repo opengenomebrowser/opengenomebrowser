@@ -1,7 +1,7 @@
 import os
 from django.db import models
 from django.db.models import JSONField
-from website.models.Annotation import Annotation, AnnotationRegex
+from website.models.Annotation import Annotation, AnnotationRegex, AnnotationDescriptionFile
 from .TaxID import TaxID
 from .GenomeSimilarity import GenomeSimilarity
 from OpenGenomeBrowser import settings
@@ -298,14 +298,20 @@ class GenomeContent(models.Model):
 
     @staticmethod
     def add_many_annotations(model, anno_type: str, annos_to_add: set):
-        # static method because it's also used in KeggMap
+        # static method because it's also used elsewhere
         assert anno_type in Annotation.AnnotationTypes.values
 
         # create missing annotation objects
         db_has = set(Annotation.objects.all().values_list('name', flat=True))
         db_lacks = annos_to_add - db_has
         if len(db_lacks) > 0:
-            Annotation.objects.bulk_create([Annotation(name=name, anno_type=anno_type) for name in db_lacks])
+            try:
+                adf = AnnotationDescriptionFile(anno_type=anno_type, create_cdb=False)
+                Annotation.objects.bulk_create([Annotation(name=name, anno_type=anno_type, description=adf.get_description(name))
+                                                for name in db_lacks])
+            except FileNotFoundError:
+                Annotation.objects.bulk_create([Annotation(name=name, anno_type=anno_type)
+                                                for name in db_lacks])
 
         # add new annotations to existing annotations
         map_has = set(model.annotations.all().values_list('name', flat=True))

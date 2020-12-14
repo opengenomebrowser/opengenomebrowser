@@ -33,7 +33,7 @@ class OrthofinderError(Exception):
 
 class Orthofinder:
     def __init__(self):
-        self.orthofinder_bin = F'{settings.ORTHOFINDER_INSTALL_DIR}/orthofinder'
+        self.orthofinder_bin = F'{settings.ORTHOFINDER_INSTALL_DIR}/orthofinder.py'
         assert is_installed(self.orthofinder_bin), F'OrthoFinder is not installed! Could not run "{self.orthofinder_bin}"'
 
     def version(self):
@@ -52,11 +52,11 @@ class Orthofinder:
 
         # Note: only one instance of OrthoFinder can run at the same time!
         orthofinder_fastas = settings.ORTHOFINDER_FASTAS
-        assert os.path.isdir(orthofinder_fastas)
+        assert os.path.isdir(orthofinder_fastas), orthofinder_fastas
         precomputed_folder = F'{settings.ORTHOFINDER_LATEST_RUN}/WorkingDirectory'
-        assert os.path.isdir(precomputed_folder)
+        assert os.path.isdir(precomputed_folder), precomputed_folder
         species_ids_path = F'{precomputed_folder}/SpeciesIDs.txt'
-        assert os.path.isfile(species_ids_path)
+        assert os.path.isfile(species_ids_path), species_ids_path
 
         # backup SpeciesIDs.txt
         species_ids_backup = F'{orthofinder_fastas}/SpeciesIDs.txt.backup'

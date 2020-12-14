@@ -75,7 +75,6 @@ website/static/global/css/taxid_color_label.css
 /db_setup/huey.db
 /static_root/
 /huey.db*
-/OpenGenomeBrowser/settings.py
 /website/static/pathway-maps/svg
 
 /lib/gene_ontology/go.obo
@@ -83,4 +82,4 @@ website/static/global/css/taxid_color_label.css
 
 /db_setup/.*
 
-development.env
+ogb_container

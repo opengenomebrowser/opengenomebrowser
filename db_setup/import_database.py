@@ -48,7 +48,7 @@ def confirm_delete(color):
     while True:
         print(color + '', end='')
         inp = yes_or_no()
-        print(Fore.BLACK, end='')
+        print(Fore.WHITE, end='')
         if inp is None:
             continue
         elif inp is True:
@@ -158,6 +158,11 @@ def import_database(delete_missing: bool = True, auto_delete_missing: bool = Fal
     TaxID.create_taxid_color_css()
 
     sanity_check_postgres()
+
+
+def reload_color_css():
+    Tag.create_tag_color_css()
+    TaxID.create_taxid_color_css()
 
 
 def reload_pathway_maps():
@@ -382,5 +387,6 @@ if __name__ == "__main__":
         reload_orthologs,
         update_bokeh,
         send_mail,
-        download_kegg_data
+        download_kegg_data,
+        reload_color_css
     ])

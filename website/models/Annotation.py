@@ -2,22 +2,12 @@ import os
 import re
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-from binary_file_search.BinaryFileSearch import BinaryFileSearch
 from lib.gene_ontology.gene_ontology import GeneOntology
 from enum import Enum
+import cdblib
 from OpenGenomeBrowser import settings
 
 gene_ontology = GeneOntology()
-
-DESCRIPTION_SETTINGS = {
-    # anno_type -> (prefix, file path)
-    'KG': ('ko:', f'{settings.ANNOTATION_DATA}/ko.tsv'),
-    'KR': ('rn:', f'{settings.ANNOTATION_DATA}/rn.tsv'),
-    'CP': ('cpd:', f'{settings.ANNOTATION_DATA}/rn.tsv'),
-    'EC': ('', f'{settings.ANNOTATION_DATA}/enzyme_sorted.tsv'),
-    'OL': ('',
-                      settings.ORTHOLOG_ANNOTATIONS['ortholog_to_name'] if 'ortholog_to_name' in settings.ORTHOLOG_ANNOTATIONS else '/dev/null')
-}
 
 
 class AnnotationRegex(Enum):
@@ -38,8 +28,71 @@ class AnnotationRegex(Enum):
     COMPOUND = ('CP', re.compile('^C[0-9]{5}$'), re.compile('^[Cc][0-9]{1,5}$'))
 
 
+class AnnotationDescriptionFile:
+    def __init__(self, anno_type: str, create_cdb: bool = True):
+        self.anno_type = anno_type
+        self.file = f'{settings.ANNOTATION_DESCRIPTIONS}/{anno_type}.tsv'
+        self.cdb = f'{self.file}.cdb'
+        if not os.path.isdir(self.cdb) or create_cdb:
+            self.mk_cdb(self.file, self.cdb)
+        self.cdb_reader = self.get_cdb(self.cdb)
+
+    def get_description_or_alternative(self, query: str, alternative='-') -> str:
+        try:
+            return self.cdb_reader.get(query.encode('utf-8')).decode('utf-8')
+        except Exception as e:
+            return alternative
+
+    def get_description(self, query: str) -> str:
+        return self.cdb_reader.get(query.encode('utf-8')).decode('utf-8')
+
+    def update_descriptions(self, chunk_size=1000) -> None:
+        for chunk in self.chunked_queryset(Annotation.objects.filter(anno_type=self.anno_type), chunk_size=chunk_size):
+            for anno in chunk:
+                anno.description = self.get_description_or_alternative(anno.name)
+            Annotation.objects.bulk_update(objs=chunk, fields=['description'])
+
+    @staticmethod
+    def chunked_queryset(queryset, chunk_size=1000):
+        """ Slice a queryset into chunks. """
+
+        start_pk = 0
+        queryset = queryset.order_by('pk')
+
+        while True:
+            # No entry left
+            if not queryset.filter(pk__gt=start_pk).exists():
+                break
+
+            try:
+                # Fetch chunk_size entries if possible
+                end_pk = queryset.filter(pk__gt=start_pk).values_list(
+                    'pk', flat=True)[chunk_size - 1]
+
+                # Fetch rest entries if less than chunk_size left
+            except IndexError:
+                end_pk = queryset.values_list('pk', flat=True).last()
+
+            yield queryset.filter(pk__gt=start_pk).filter(pk__lte=end_pk)
+
+            start_pk = end_pk
+
+    @staticmethod
+    def mk_cdb(file: str, cdb: str) -> None:
+        with open(file) as in_f, open(cdb, 'wb') as out_f, cdblib.Writer(out_f) as writer:
+            for line in in_f.readlines():
+                k, v = line.strip().split('\t')
+                writer.put(k.encode('utf-8'), v.encode('utf-8'))
+
+    @staticmethod
+    def get_cdb(cdb: str) -> cdblib.Reader:
+        reader = cdblib.Reader.from_file_path(cdb)
+        return reader
+
+
 class Annotation(models.Model):
     name = models.CharField(max_length=200, unique=True, primary_key=True)
+    description = models.TextField(default='-')
 
     class AnnotationTypes(models.TextChoices):
         PRODUCT = 'GP', _('Gene Product')
@@ -63,15 +116,6 @@ class Annotation(models.Model):
     # ensure these things are only calculated once
     _descr = None
 
-    @property
-    def description(self) -> str:
-        if self._descr:
-            return self._descr
-        else:
-            self._descr = '-'
-        self._descr = self._get_description_from_file(anno_type=self.anno_type, query=self.name)
-        return self._descr
-
     def __str__(self):
         return self.name
 
@@ -81,18 +125,31 @@ class Annotation(models.Model):
 
     @staticmethod
     def get_auto_description(query: str):
-        for regex in [
+        # try db
+        try:
+            return Annotation.objects.get(name=query).description
+        except Annotation.DoesNotExist:
+            pass
+        # try annotation-description files
+        for anno_enum in [  # this order matters because of regex overlap
             AnnotationRegex.COMPOUND,
             AnnotationRegex.ENZYMECOMMISSION,
             AnnotationRegex.KEGGGENE,
             AnnotationRegex.KEGGREACTION,
             AnnotationRegex.GENEONTOLOGY,
-            AnnotationRegex.ORTHOLOG
+            AnnotationRegex.ORTHOLOG,
+            AnnotationRegex.CUSTOM,
+            AnnotationRegex.GENECODE,
+            AnnotationRegex.PRODUCT
         ]:
-            if regex.match_regex.match(query):
-                return Annotation._get_description_from_file(
-                        anno_type=regex.value, query=query.upper())
-        return '--'
+            if anno_enum.match_regex.match(query):
+                try:
+                    adf = AnnotationDescriptionFile(anno_type=anno_enum.value, create_cdb=False)
+                    return adf.get_description(query)
+                except FileNotFoundError:
+                    pass
+        # return '-' if nothing worked
+        return '-'
 
     @staticmethod
     def invariant():
@@ -100,34 +157,19 @@ class Annotation(models.Model):
                len(Annotation.objects.filter(name__contains=';')) == 0
 
     @staticmethod
-    def _get_description_from_file(anno_type: str, query: str):
-        if anno_type == 'GO':
+    def load_descriptions(anno_types: list = None):
+        if anno_types is None:
+            anno_types = list(Annotation.objects.distinct('anno_type').values_list('anno_type', flat=True))  # ['EC', 'GC', 'GO', 'GP', 'KG', 'KR']
+
+        print('Loading annotation descriptions...')
+
+        for anno_type in anno_types:
             try:
-                return gene_ontology.search(query=query)
-            except KeyError:
-                return '-'
-
-        if anno_type in ['GP', 'GC']:
-            return '-'
-
-        assert anno_type in DESCRIPTION_SETTINGS.keys(), F'Supported anno_types: {DESCRIPTION_SETTINGS.keys()}. You provided: {anno_type}'
-
-        if anno_type == 'EC':
-            query = query.lower()
-
-        prefix = DESCRIPTION_SETTINGS[anno_type][0]
-        file_path = DESCRIPTION_SETTINGS[anno_type][1]
-
-        try:
-            with BinaryFileSearch(file=file_path, sep="\t", string_mode=True) as bfs:
-                return_value = bfs.search(query=F"{prefix}{query}")[0][1]
-        except (FileNotFoundError, KeyError):
-            # When file does not exist.
-            return '-'
-        except Annotation.DoesNotExist:
-            return '-'
-
-        return return_value
+                adf = AnnotationDescriptionFile(anno_type=anno_type, create_cdb=True)
+                print(f'Loading {adf.file}...')
+                adf.update_descriptions()
+            except FileNotFoundError:
+                print(f'Annotation-description file does not exist: {adf.file}')
 
     @staticmethod
     def get_annotation_type(query: str):
@@ -139,16 +181,14 @@ class Annotation(models.Model):
 
     @staticmethod
     def load_ortholog_annotations():
-        import os
         from website.models import GenomeContent, Gene
 
-        file = settings.ORTHOLOG_ANNOTATIONS['ortholog_to_gene_ids']
-        assert os.path.isfile(file), F'Could not load ortholog annotation: {file}'
+        assert os.path.isfile(settings.ORTHOLOG_ANNOTATIONS), F'File does not exist: {settings.ORTHOLOG_ANNOTATIONS}'
 
         print(F'Step 1/5: Deleting all ortholog-annotations.', end=' ', flush=True)
         Annotation.objects.filter(anno_type='OL').delete()
 
-        print(F'Step 2/5: Importing ortholog-annotations from {file}.', end=' ', flush=True)
+        print(F'Step 2/5: Importing ortholog-annotations from {settings.ORTHOLOG_ANNOTATIONS}.', end=' ', flush=True)
 
         all_genomecontent_ids = set(GenomeContent.objects.all().values_list('identifier', flat=True))
         all_genes = set(Gene.objects.all().values_list('identifier', flat=True))
@@ -156,13 +196,22 @@ class Annotation(models.Model):
         genomecontent_to_ortholog_links = []
         gene_to_ortholog_links = []
 
-        with open(file) as f:
+        try:
+            adf = AnnotationDescriptionFile('OL', create_cdb=True)
+
+            def get_descr(query):
+                return adf.get_description_or_alternative(query, alternative='-')
+        except FileNotFoundError:
+            def get_descr(query):
+                return '-'
+
+        with open(settings.ORTHOLOG_ANNOTATIONS) as f:
             for line in f:
                 orthogroup, gene_ids = line.rstrip().split('\t', maxsplit=1)
                 gene_ids = [gid.rsplit('|', maxsplit=1)[1] for gid in gene_ids.split(', ')]
                 genome_ids = set(gid.rsplit('_', maxsplit=1)[0] for gid in gene_ids)
 
-                orthogroups.append(Annotation(name=orthogroup, anno_type='OL'))
+                orthogroups.append(Annotation(name=orthogroup, anno_type='OL', description=get_descr(orthogroup)))
 
                 gene_to_ortholog_links.extend(
                     [
