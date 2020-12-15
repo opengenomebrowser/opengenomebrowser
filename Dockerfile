@@ -18,6 +18,8 @@ WORKDIR ${WORKDIR}
 
 COPY requirements.txt ${WORKDIR}/
 
+RUN wget -P lib/get_tax_info/data/ --quiet ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz
+
 RUN pip install --upgrade pip && \
 pip install numpy && \
 pip install -r requirements.txt && \

@@ -2,6 +2,7 @@ from django.utils.deprecation import MiddlewareMixin
 from django.urls import resolve, reverse
 from django.http import HttpResponseRedirect
 from OpenGenomeBrowser import settings
+from urllib.parse import quote
 
 
 class LoginRequiredMiddleware(MiddlewareMixin):
@@ -23,4 +24,7 @@ class LoginRequiredMiddleware(MiddlewareMixin):
             current_route_name = resolve(request.path_info).url_name
 
             if not current_route_name in settings.AUTH_EXEMPT_ROUTES:
-                return HttpResponseRedirect(reverse(settings.AUTH_LOGIN_ROUTE))
+                login_url = reverse(settings.AUTH_LOGIN_ROUTE)
+                next = request.get_full_path()
+                next = quote(next)  # replace special characters using %xx escape
+                return HttpResponseRedirect(f'{login_url}?next={next}')

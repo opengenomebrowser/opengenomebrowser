@@ -67,11 +67,11 @@ def home_view(request):
 
         Contact=[
             dict(
-                name='GitLab',
-                img='/static/index/images/GitLab.svg',
+                name='GitHub',
+                img='/static/index/images/GitHub.svg',
                 img_cls='square',
                 role='Code repository',
-                href='https://gitlab.bioinformatics.unibe.ch/troder/opengenomebrowser',
+                href='https://opengenomebrowser.github.io/opengenomebrowser/',
                 did=[]
             ),
             dict(

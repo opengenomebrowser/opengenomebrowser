@@ -17,9 +17,26 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.contrib.auth.views import LoginView
+
+
+class OgbLoginView(LoginView):
+    template_name = 'registration/login.html'
+
+    def __init__(self):
+        super().__init__()
+
+    def get_context_data(self, **kwargs):
+        from OpenGenomeBrowser import settings
+        context = super().get_context_data(**kwargs)
+        if hasattr(settings, 'LOGIN_MESSAGE'):
+            context['login_message'] = settings.LOGIN_MESSAGE
+        return context
+
 
 urlpatterns = [
                   path('admin/', admin.site.urls),
+                  path('accounts/login/', OgbLoginView.as_view(), name='login'),
                   path('accounts/', include('django.contrib.auth.urls')),
                   path('', include('website.urls'))
               ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
