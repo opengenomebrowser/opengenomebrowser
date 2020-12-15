@@ -32,8 +32,10 @@ class AnnotationDescriptionFile:
     def __init__(self, anno_type: str, create_cdb: bool = True):
         self.anno_type = anno_type
         self.file = f'{settings.ANNOTATION_DESCRIPTIONS}/{anno_type}.tsv'
+        if not os.path.isfile(self.file):
+            raise FileNotFoundError(f'AnnotationDescriptionFile does not exist: {self.file}')
         self.cdb = f'{self.file}.cdb'
-        if not os.path.isdir(self.cdb) or create_cdb:
+        if not os.path.isfile(self.cdb) or create_cdb:
             self.mk_cdb(self.file, self.cdb)
         self.cdb_reader = self.get_cdb(self.cdb)
 
@@ -46,8 +48,13 @@ class AnnotationDescriptionFile:
     def get_description(self, query: str) -> str:
         return self.cdb_reader.get(query.encode('utf-8')).decode('utf-8')
 
-    def update_descriptions(self, chunk_size=1000) -> None:
-        for chunk in self.chunked_queryset(Annotation.objects.filter(anno_type=self.anno_type), chunk_size=chunk_size):
+    def update_descriptions(self, chunk_size=1000, reload=True) -> None:
+        if reload:
+            queryset = Annotation.objects.filter(anno_type=self.anno_type)
+        else:
+            queryset = Annotation.objects.filter(anno_type=self.anno_type, description=None)
+
+        for chunk in self.chunked_queryset(queryset, chunk_size=chunk_size):
             for anno in chunk:
                 anno.description = self.get_description_or_alternative(anno.name)
             Annotation.objects.bulk_update(objs=chunk, fields=['description'])
@@ -92,7 +99,7 @@ class AnnotationDescriptionFile:
 
 class Annotation(models.Model):
     name = models.CharField(max_length=200, unique=True, primary_key=True)
-    description = models.TextField(default='-')
+    description = models.TextField(blank=True)
 
     class AnnotationTypes(models.TextChoices):
         PRODUCT = 'GP', _('Gene Product')
@@ -157,17 +164,20 @@ class Annotation(models.Model):
                len(Annotation.objects.filter(name__contains=';')) == 0
 
     @staticmethod
-    def load_descriptions(anno_types: list = None):
+    def load_descriptions(anno_types: list = None, reload=True):
         if anno_types is None:
             anno_types = list(Annotation.objects.distinct('anno_type').values_list('anno_type', flat=True))  # ['EC', 'GC', 'GO', 'GP', 'KG', 'KR']
 
-        print('Loading annotation descriptions...')
+        if reload:
+            print('Reloading annotation descriptions...')
+        else:
+            print('Loading missing descriptions...')
 
         for anno_type in anno_types:
             try:
-                adf = AnnotationDescriptionFile(anno_type=anno_type, create_cdb=True)
+                adf = AnnotationDescriptionFile(anno_type=anno_type, create_cdb=reload)
                 print(f'Loading {adf.file}...')
-                adf.update_descriptions()
+                adf.update_descriptions(reload=reload)
             except FileNotFoundError:
                 print(f'Annotation-description file does not exist: {adf.file}')
 

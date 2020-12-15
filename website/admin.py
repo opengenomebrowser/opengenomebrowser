@@ -124,8 +124,9 @@ class GenomeAdmin(admin.ModelAdmin):
             assert field not in json_data
             json_data[field] = getattr(obj, field)
 
+        old_dict = json.load(open(obj.metadata_json))
         # did something change?
-        match, difference = GenomeSerializer.json_matches_genome(genome=obj, json_dict=json_data, organism_name=obj.organism.name)
+        match, difference = GenomeSerializer.json_matches_genome(genome=obj, json_dict=old_dict, organism_name=obj.organism.name)
 
         if match:
             messages.add_message(request, messages.INFO, 'No difference!')

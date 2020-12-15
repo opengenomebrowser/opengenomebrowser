@@ -27,11 +27,11 @@ services:
 
 
   web:
-    image: opengenomebrowser/opengenomebrowser:latest
+    image: opengenomebrowser
     container_name: ogb_web
     env_file:
       - production-template.env
-    command: /opengenomebrowser/start.sh
+    command: /opengenomebrowser/init.sh
     volumes:
       - ./../database:/database
       - ./ogb_container/socket:/socket

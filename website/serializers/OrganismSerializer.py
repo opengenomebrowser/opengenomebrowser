@@ -97,6 +97,12 @@ class OrganismSerializer(serializers.ModelSerializer):
 
     @classmethod
     def update_metadata_json(cls, organism: Organism, new_data=None, who_did_it='anonymous'):
+        # ensure data is serializable
+        try:
+            json.dumps(new_data, default=set_to_list)
+        except json.JSONDecodeError as e:
+            raise AssertionError(f'Could not save dictionary as json: {e}')
+
         from datetime import datetime
         date = datetime.now().strftime("%Y_%b_%d_%H_%M_%S")
 
@@ -118,4 +124,4 @@ class OrganismSerializer(serializers.ModelSerializer):
 def set_to_list(obj):
     if isinstance(obj, set):
         return list(obj)
-    raise TypeError
+    raise TypeError(f'Could not serialize {obj}')

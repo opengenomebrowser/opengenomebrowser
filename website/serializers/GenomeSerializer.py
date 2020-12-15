@@ -1,10 +1,9 @@
 import os
 import shutil
 import json
-from django.core import serializers
 from website.models import Organism, Genome, Tag, TaxID, GenomeContent
-from dictdiffer import diff
 from rest_framework import serializers
+from datetime import datetime, date
 
 
 class TagField(serializers.StringRelatedField):
@@ -47,7 +46,6 @@ class GenomeSerializer(serializers.ModelSerializer):
 
         return super().is_valid(raise_exception)
 
-
     @staticmethod
     def update_genomecontent(genome: Genome):
         # update genomecontent
@@ -59,7 +57,7 @@ class GenomeSerializer(serializers.ModelSerializer):
     @staticmethod
     def json_matches_genome(genome, json_dict: dict, organism_name: str) -> (bool, dict):
         """
-        Test whether Genome object and Grganism json-metadata match.
+        Test whether Genome object and Organism json-metadata match.
 
         :returns: True, difference if they match, False, difference if they do not
         :raises: ValidationError if the json-metadata is not valid.
@@ -97,11 +95,16 @@ class GenomeSerializer(serializers.ModelSerializer):
 
     @classmethod
     def update_metadata_json(cls, genome: Genome, new_data=None, who_did_it='anonymous'):
-        from datetime import datetime
         date = datetime.now().strftime("%Y_%b_%d_%H_%M_%S")
 
         if not new_data:
             new_data = cls.export_genome(genome.identifier)
+
+        # ensure data is serializable
+        try:
+            json.dumps(new_data, default=serialize_fields)
+        except json.JSONDecodeError as e:
+            raise AssertionError(f'Could not save dictionary as json: {e}')
 
         # create backup
         bkp_dir = F'{os.path.dirname(genome.metadata_json)}/.bkp'
@@ -111,11 +114,15 @@ class GenomeSerializer(serializers.ModelSerializer):
 
         # write new file
         assert not os.path.isfile(genome.metadata_json)
+
         with open(genome.metadata_json, 'w') as f:
-            json.dump(new_data, f, sort_keys=True, indent=4, default=set_to_list)
+            json.dump(new_data, f, sort_keys=True, indent=4, default=serialize_fields)
 
 
-def set_to_list(obj):
+def serialize_fields(obj):
     if isinstance(obj, set):
         return list(obj)
-    raise TypeError
+    elif isinstance(obj, date):
+        return str(obj)
+    else:
+        raise TypeError(f'Could not serialize {obj}')

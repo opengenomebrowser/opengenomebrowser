@@ -14,12 +14,11 @@ services:
 
 
   web:
-    #    build: .
-    image: opengenomebrowser
+    image: opengenomebrowser/opengenomebrowser:latest
     container_name: ogb_web_dev
     env_file:
       - development.env
-    command: /opengenomebrowser/start.sh
+    command: /opengenomebrowser/init.sh
     volumes:
       - ./:/opengenomebrowser/
       - ./database:/database

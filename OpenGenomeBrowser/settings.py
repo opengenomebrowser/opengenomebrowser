@@ -16,16 +16,16 @@ CSRF_COOKIE_SECURE = not DEBUG
 
 DB_HOST = os.environ.get('DB_HOST', 'db')
 
-# SECURITY WARNING: keep the secret key used in production secret!
-if 'DJANGO_SECRET_KEY' in os.environ:
-    SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
-else:
-    print('GENERATING RANDOM SECRET KEY')
-    from django.core.management.utils import get_random_secret_key
-
-    SECRET_KEY = get_random_secret_key()
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
 
 ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS').split(',')
+
+# if 'UID_GID' in os.environ:
+#     # the docker container user is root. to make newly created files accessible by regular users, define the desired uid and gid here
+#     uid, gid = os.environ.get('UID_GID').split(',')
+#     UID_GID = (int(uid), int(gid))
+# else:
+#     UID_GID = None
 
 # GENOMIC_DATABASE must contain the folder 'organisms'
 GENOMIC_DATABASE = os.environ.get('GENOMIC_DATABASE', '/database')

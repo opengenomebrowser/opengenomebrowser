@@ -7,7 +7,7 @@ ENV PYTHONUNBUFFERED 1
 RUN apt-get update -y
 
 WORKDIR /tmp
-RUN apt-get install -y ncbi-blast+ clustalo mafft muscle netcat&& \
+RUN apt-get install -y sudo ncbi-blast+ clustalo mafft muscle netcat&& \
 wget --quiet https://github.com/davidemms/OrthoFinder/releases/download/2.5.1/OrthoFinder_source.tar.gz && \
 tar -xvf OrthoFinder_source.tar.gz && \
 mv OrthoFinder_source /opt/ && \

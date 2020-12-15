@@ -14,7 +14,7 @@ from db_setup.check_metadata import genome_metadata_is_valid
 def set_to_list(obj):
     if isinstance(obj, set):
         return list(obj)
-    raise TypeError
+    raise TypeError(f'Could not serialize {obj}')
 
 
 class BaseEntity:
@@ -52,6 +52,12 @@ class BaseEntity:
 
     def replace_json(self, data):
         assert type(data) is dict
+        # ensure data is serializable
+        try:
+            json.dumps(data, default=set_to_list)
+        except json.JSONDecodeError as e:
+            raise AssertionError(f'Could not save dictionary as json: {e}')
+
 
         import shutil
         from datetime import datetime

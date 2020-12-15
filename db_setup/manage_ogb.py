@@ -3,6 +3,7 @@ import os
 import json
 from progressbar import progressbar  # pip install progressbar2
 from colorama import Fore
+from django.db import transaction
 
 OGB_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(OGB_DIR)
@@ -103,56 +104,57 @@ def import_database(delete_missing: bool = True, auto_delete_missing: bool = Fal
 
     organism_generator = folder_looper.organisms(skip_ignored=True, sanity_check=False)
     for organism in progressbar(organism_generator, max_value=n_organisms, redirect_stdout=True):
-        organism: MockOrganism
-        color_print(f'└── {organism.name}', color=Fore.BLUE, end=' ')
+        with transaction.atomic():
+            organism: MockOrganism
+            color_print(f'└── {organism.name}', color=Fore.BLUE, end=' ')
 
-        organism_serializer = OrganismSerializer(data=organism.json)
-        organism_serializer.is_valid(raise_exception=True)
-
-        try:
-            o = Organism.objects.get(name=organism.name)
-            match, difference = OrganismSerializer.json_matches_organism(organism=o, json_dict=organism.json)
-            if match:
-                print(':: unchanged')
-
-            else:
-                print(f':: update: {difference}')
-                o = organism_serializer.update(instance=o, validated_data=organism_serializer.validated_data, representative_isnull=True)
-
-        except Organism.DoesNotExist:
-            print(':: new')
-            o = organism_serializer.create(organism_serializer.validated_data)
-
-        genomes = []
-
-        for genome in organism.genomes(skip_ignored=True, sanity_check=False):
-            genome: MockGenome
-            color_print(f'   └── {genome.identifier}', color=Fore.GREEN, end=' ')
-
-            genome_serializer = GenomeSerializer(data=genome.json)
-            genome_serializer.is_valid(raise_exception=True)
+            organism_serializer = OrganismSerializer(data=organism.json)
+            organism_serializer.is_valid(raise_exception=True)
 
             try:
-                g = Genome.objects.get(identifier=genome.identifier)
-                match, difference = GenomeSerializer.json_matches_genome(genome=g, json_dict=genome.json, organism_name=o.name)
+                o = Organism.objects.get(name=organism.name)
+                match, difference = OrganismSerializer.json_matches_organism(organism=o, json_dict=organism.json)
                 if match:
                     print(':: unchanged')
 
                 else:
                     print(f':: update: {difference}')
-                    g = genome_serializer.update(instance=g, validated_data=genome_serializer.validated_data, organism=o)
+                    o = organism_serializer.update(instance=o, validated_data=organism_serializer.validated_data, representative_isnull=True)
 
-            except Genome.DoesNotExist:
+            except Organism.DoesNotExist:
                 print(':: new')
-                g = genome_serializer.create(genome_serializer.validated_data, organism=o)
+                o = organism_serializer.create(organism_serializer.validated_data)
 
-            genomes.append(g)
+            genomes = []
 
-        o.representative = Genome.objects.get(identifier=organism.representative(sanity_check=False).identifier)
-        o.save()
+            for genome in organism.genomes(skip_ignored=True, sanity_check=False):
+                genome: MockGenome
+                color_print(f'   └── {genome.identifier}', color=Fore.GREEN, end=' ')
 
-        for g in genomes:
-            GenomeSerializer.update_genomecontent(g)
+                genome_serializer = GenomeSerializer(data=genome.json)
+                genome_serializer.is_valid(raise_exception=True)
+
+                try:
+                    g = Genome.objects.get(identifier=genome.identifier)
+                    match, difference = GenomeSerializer.json_matches_genome(genome=g, json_dict=genome.json, organism_name=o.name)
+                    if match:
+                        print(':: unchanged')
+
+                    else:
+                        print(f':: update: {difference}')
+                        g = genome_serializer.update(instance=g, validated_data=genome_serializer.validated_data, organism=o)
+
+                except Genome.DoesNotExist:
+                    print(':: new')
+                    g = genome_serializer.create(genome_serializer.validated_data, organism=o)
+
+                genomes.append(g)
+
+            o.representative = Genome.objects.get(identifier=organism.representative(sanity_check=False).identifier)
+            o.save()
+
+            for g in genomes:
+                GenomeSerializer.update_genomecontent(g)
 
     Tag.create_tag_color_css()
     TaxID.create_taxid_color_css()

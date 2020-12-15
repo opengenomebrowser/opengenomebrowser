@@ -301,19 +301,19 @@ class GenomeContent(models.Model):
         # static method because it's also used elsewhere
         assert anno_type in Annotation.AnnotationTypes.values
 
-        # create missing annotation objects
-        db_has = set(Annotation.objects.all().values_list('name', flat=True))
-        db_lacks = annos_to_add - db_has
-        if len(db_lacks) > 0:
-            try:
-                adf = AnnotationDescriptionFile(anno_type=anno_type, create_cdb=False)
-                Annotation.objects.bulk_create([Annotation(name=name, anno_type=anno_type, description=adf.get_description_or_alternative(name))
-                                                for name in db_lacks])
-            except FileNotFoundError:
-                Annotation.objects.bulk_create([Annotation(name=name, anno_type=anno_type)
-                                                for name in db_lacks])
+        # create missing annotation objects (without description)
+        Annotation.objects.bulk_create([
+            Annotation(name=name, anno_type=anno_type)
+            for name in annos_to_add], ignore_conflicts=True)
 
         # add new annotations to existing annotations
         map_has = set(model.annotations.all().values_list('name', flat=True))
         map_should_have = map_has.union(annos_to_add)
         model.annotations.set(Annotation.objects.filter(name__in=map_should_have))
+
+        # update descriptions where missing
+        try:
+            adf = AnnotationDescriptionFile(anno_type=anno_type, create_cdb=False)
+            adf.update_descriptions(reload=False)
+        except FileNotFoundError:
+            pass
