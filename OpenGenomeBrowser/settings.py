@@ -16,7 +16,14 @@ CSRF_COOKIE_SECURE = not DEBUG
 
 DB_HOST = os.environ.get('DB_HOST', 'db')
 
-SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
+# SECURITY WARNING: keep the secret key used in production secret!
+if 'DJANGO_SECRET_KEY' in os.environ:
+    SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
+else:
+    print('GENERATING RANDOM SECRET KEY')
+    from django.core.management.utils import get_random_secret_key
+
+    SECRET_KEY = get_random_secret_key()
 
 ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS').split(',')
 

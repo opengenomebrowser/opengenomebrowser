@@ -10,11 +10,11 @@ services:
       - POSTGRES_PASSWORD=postgres
       - PGDATA=/pg_data
     volumes:
-      - ./docker-production-template/ogb_container/pg_data:/pg_data
+      - ./ogb_container/pg_data:/pg_data
 
 
   web:
-    image: opengenomebrowser/opengenomebrowser:latest
+    build: .
     container_name: ogb_web_dev
     env_file:
       - development.env

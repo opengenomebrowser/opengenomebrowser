@@ -74,8 +74,6 @@ development.env
 
 Dockerfile
 
-/docker-production-template
-
 /database
 /static_root
 /ogb_container

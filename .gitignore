@@ -81,5 +81,4 @@ website/static/global/css/taxid_color_label.css
 /lib/gene_ontology/go.obo.converted
 
 /db_setup/.*
-
-ogb_container
+/ogb_container
