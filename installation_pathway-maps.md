@@ -16,14 +16,24 @@ OpenGenomeBrowser is able to dynamically color pathway maps.
 
 ### Required SVG format
 
-Each enzyme in the SVG needs to belong to the class `shape` and have the `data-annotations`-attribute.
+The svg should have a title attribute. Example:
 
-Example:
+```xml
+<svg
+    title='Phenylalanine, tyrosine and tryptophan biosynthesis'
+    version='1.1' baseProfile='full' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'
+    <!-- other attributes -->
+>
+```
+
+
+Each enzyme in the SVG needs to belong to the class `shape` and have the `data-annotations`-attribute. Example:
 
 ```xml
 <circle cx='978' cy='930' r='4' fill='transparent'  <!-- Must not be circle, can be any other SVG element -->
-class='shape compound'  <!-- only class 'shape' is required -->
-data-annotations='[{"description": "L-Ectoine", "name": "C06231", "type": "KEGG Compound"}]'>  <!-- see below -->
+    title='C00296 (Quinate)'  <!-- will tooltip -->
+    class='shape compound'  <!-- only class 'shape' is required -->
+    data-annotations='[{"description": "L-Ectoine", "name": "C06231", "type": "KEGG Compound"}]'>  <!-- see below -->
 />
 ```
 
@@ -80,4 +90,10 @@ OpenGenomeBrowser types:
 * `GO`: (Gene ontology, format: `GO:0000000`)
 * `EC`: (Enzyme commission, format: `EC:0.0`, `EC:0.0.0` or `EC:0.0.0.0`)
 * `CU`: (Custom)
+
+
+### Import pathway svgs
+
+1.  [Open a terminal in the container](https://github.com/opengenomebrowser/opengenomebrowser-docker-template#open-a-terminal-in-the-container)
+1.  run `python db_setup/manage_ogb.py import-pathway-maps`
 
