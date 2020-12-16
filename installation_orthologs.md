@@ -1,4 +1,4 @@
-## Ortholog annotations (optional)
+## Orthologs (optional)
 
 Ortholog annotations are handled differently than regular annotations. The reason is that it would be unnatural and 
 unnecessarily complicated to take the single ortholog annotation file, split it into one file per genome, distribute
