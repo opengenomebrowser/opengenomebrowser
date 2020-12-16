@@ -7,7 +7,7 @@
 To talk to the developer informally, join the OpenGenomeBrowser [Discord channel](https://discord.gg/mDm4fqf).
 <hr>
 
-_OpenGenomeBrowser is a dynamic and scalable web platform for comparative genomics._
+_OpenGenomeBrowser is a portable and scalable web platform for comparative genomics._
 
 -   OpenGenomeBrowser automates simple bioinformatics steps:
     - Dendrograms (Taxid-based, ANI-based and OrthoFinder-based)
