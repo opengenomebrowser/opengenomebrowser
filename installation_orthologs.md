@@ -19,6 +19,14 @@ N0.HOG0000002\tDNA topoisomerase (ATP-hydrolyzing) subunit B
 ```
 
 
+
+### Import orthologs
+
+1.  [Open a terminal in the container](https://github.com/opengenomebrowser/opengenomebrowser-docker-template#open-a-terminal-in-the-container)
+1.  run `python db_setup/manage_ogb.py import-orthologs`
+
+
+
 ## OrthoFinder (recommended, but optional)
 
 If you want to use [OrthoFinder](https://github.com/davidemms/OrthoFinder), set the `ORTHOFINDER_ENABLED` environment variable to `true` (see [`template.env`](https://github.com/opengenomebrowser/opengenomebrowser-docker-template/blob/main/production-template.env)).
