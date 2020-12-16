@@ -18,9 +18,13 @@ N0.HOG0000001\twinged helix-turn-helix transcriptional regulator
 N0.HOG0000002\tDNA topoisomerase (ATP-hydrolyzing) subunit B
 ```
 
-Note: I wrote a [script](https://gitlab.bioinformatics.unibe.ch/troder/orthofinder_tools/-/blob/master/simplify_orthologs.py) 
-that turns Orthofinder output into this format.
 
+### Import orthologs
+
+If these files exist during the import of the genomes, no further action is necessary.
+
+1.  [Open a terminal in the container](https://github.com/opengenomebrowser/opengenomebrowser-docker-template#open-a-terminal-in-the-container)
+1.  run `python db_setup/manage_ogb.py update-annotation-descriptions`
 
 
 
@@ -62,4 +66,3 @@ When OrthoFinder is done, the folder structure should look like this:
          └── OrthoFinder
              └── ...
 ```
-
