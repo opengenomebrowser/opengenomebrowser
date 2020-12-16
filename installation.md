@@ -184,6 +184,6 @@ EXAMPLE1234-2-1.1_000008	K000001, K000002
 
 - [Annotation descriptions](/installation_annotation-descriptions.md)
 - [Orthologs and Orthofinder](/installation_orthologs.md)
-
+- [Pathway maps](/installation_pathway-maps.md)
 
 
