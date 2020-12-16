@@ -21,9 +21,9 @@ Each enzyme in the SVG needs to belong to the class `shape` and have the `data-a
 Example:
 
 ```xml
-<circle cx='978' cy='930' r='4' fill='transparent'  // Must not be circle, can be any other SVG element
-class='shape compound'  // only class 'shape' is required
-data-annotations='[{"description": "L-Ectoine", "name": "C06231", "type": "KEGG Compound"}]'>
+<circle cx='978' cy='930' r='4' fill='transparent'  <!-- Must not be circle, can be any other SVG element -->
+class='shape compound'  <!-- only class 'shape' is required -->
+data-annotations='[{"description": "L-Ectoine", "name": "C06231", "type": "KEGG Compound"}]'>  <!-- see below -->
 />
 ```
 
