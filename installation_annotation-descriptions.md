@@ -31,3 +31,10 @@ EC:4.2.1.19\timidazoleglycerol-phosphate dehydratase
 EC:4.2.1.20\tL-tryptophan synthetase
 ```
 
+
+### Import annotation descriptions
+
+This step is only required if these files were added after the genomes were imported.
+
+1.  [Open a terminal in the container](https://github.com/opengenomebrowser/opengenomebrowser-docker-template#open-a-terminal-in-the-container)
+1.  run `python db_setup/manage_ogb.py import-annotation-descriptions`
