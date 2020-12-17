@@ -33,17 +33,6 @@ htmlcov/
 nosetests.xml
 coverage.xml
 
-# Translations
-*.mo
-
-# Mr Developer
-.mr.developer.cfg
-.project
-.pydevproject
-
-# Rope
-.ropeproject
-
 # Django stuff:
 *.log
 *.pot
@@ -56,8 +45,6 @@ docs/_build/
 # Generated Glasbey color lookup table
 *_lut.npz
 
-website/migrations/*
-website/static/pathway-maps/svg/*
 species_color_dict.json
 
 database/*

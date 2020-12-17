@@ -205,6 +205,7 @@ function saveUriAs(uri, filename) {
  * @param  {string} element_id ID of an SVG container
  */
 function saveDivAsPng(element_id) {
+    $(window).scrollTop(0)  // otherwise, png will be cropped.
     html2canvas(document.querySelector("#" + element_id)).then(function (canvas) {
         saveUriAs(canvas.toDataURL(), 'pathway.png')
     })

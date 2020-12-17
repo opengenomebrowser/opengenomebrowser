@@ -14,8 +14,6 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DEBUG = os.environ.get('DEBUG').lower() == 'true'
 CSRF_COOKIE_SECURE = not DEBUG
 
-DB_HOST = os.environ.get('DB_HOST', 'db')
-
 # SECURITY WARNING: keep the secret key used in production secret!
 if 'DJANGO_SECRET_KEY' in os.environ:
     SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
@@ -27,12 +25,12 @@ else:
 
 ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS').split(',')
 
-# if 'UID_GID' in os.environ:
-#     # the docker container user is root. to make newly created files accessible by regular users, define the desired uid and gid here
-#     uid, gid = os.environ.get('UID_GID').split(',')
-#     UID_GID = (int(uid), int(gid))
-# else:
-#     UID_GID = None
+# database
+DB_HOST = os.environ.get('DB_HOST', 'db')
+DB_PORT = os.environ.get('DB_HOST', '5432')
+DB_NAME = os.environ.get('DB_NAME', 'opengenomebrowser_db')
+DB_USER = os.environ.get('DB_NAME', 'postgres')
+DB_PASSWORD = os.environ.get('PASSWORD', 'postgres')
 
 # GENOMIC_DATABASE must contain the folder 'organisms'
 GENOMIC_DATABASE = os.environ.get('GENOMIC_DATABASE', '/database')
@@ -116,11 +114,11 @@ WSGI_APPLICATION = 'OpenGenomeBrowser.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'opengenomebrowser_db',
-        'USER': 'postgres',
-        'PASSWORD': 'postgres',
+        'NAME': DB_NAME,
+        'USER': DB_USER,
+        'PASSWORD': DB_PASSWORD,
         'HOST': DB_HOST,
-        'PORT': '5432',
+        'PORT': DB_PORT,
     }
 }
 

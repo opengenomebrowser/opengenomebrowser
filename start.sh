@@ -2,10 +2,8 @@
 
 echo "RUNNING AS $(whoami) $(id -u) $(id -g) IN $PWD"
 
-python manage.py makemigrations
-python manage.py makemigrations website
-python manage.py collectstatic --no-input
 python manage.py migrate
+python manage.py collectstatic --no-input
 
 python manage.py run_huey &
 
