@@ -25,12 +25,18 @@ The settings sidebar can be opened by clicking on the settings wheel. It provide
   - Genomes that are marked `restricted` or `contaminated` are hidden by default. This can be changed in the settings sidebar.
   - Additional metadata columns may be added by moving a field from "available columns" to "visible columns". To submit the changes, click on "Update table".
 
+![pathways demo](media/genomes.apng)
+
 ## Single genome view
 
 In the [genomes table](https://opengenomebrowser.bioinformatics.unibe.ch/genomes), right click on a row and select "[Open genome info](https://opengenomebrowser.bioinformatics.unibe.ch/genome/FAM18356-i1-1.1/)".
   - This page contains all metadata that was fed into OpenGenomeBrowser.
-  - It has links to download the associated files.
-  
+  - Links to download the associated files are at the bottom of the page.
+
+## 
+
+![pathways demo](media/pathways.apng)
+
 ## Phylogenetic Trees
 
 In the [genomes table](https://opengenomebrowser.bioinformatics.unibe.ch/genomes), select multiple genomes (using `Shift` and `Ctrl`) and 
@@ -41,8 +47,21 @@ It has the following options:
   - TaxId-based tree: Fastest, based on taxid-annotations only.
   - Genome-similarity-based tree: Still fast, based on pairwise assembly similarity (default: GenDisCal - PaSiT6 ([Goussarov et al., Bioinformatics, 2020](https://pubmed.ncbi.nlm.nih.gov/31899493/))
   - Single-copy-ortholog-based tree: Slow, high quality tree, based on [OrthoFinder](https://github.com/davidemms/OrthoFinder) consensus tree of all single-copy ortholog alignments ([Emms et al., Molecular Biology and Evolution, 2017]())
-  
-## etc
 
+![pathways demo](media/trees.apng )
 
+## Blast
 
+![pathways demo](media/blast.apng)
+
+## Annotation search
+
+![pathways demo](media/annotation-search.apng)
+
+## Gene trait matching
+
+![pathways demo](media/gene-trait-matching.apng)
+
+## Magic strings
+
+![pathways demo](media/magic-strings.apng)
