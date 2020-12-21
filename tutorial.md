@@ -25,7 +25,7 @@ The settings sidebar can be opened by clicking on the settings wheel. It provide
   - Genomes that are marked `restricted` or `contaminated` are hidden by default. This can be changed in the settings sidebar.
   - Additional metadata columns may be added by moving a field from "available columns" to "visible columns". To submit the changes, click on "Update table".
 
-![pathways demo](media/genomes.apng)
+![genomes table demo](media/genomes.apng)
 
 ## Single genome view
 
@@ -33,7 +33,19 @@ In the [genomes table](https://opengenomebrowser.bioinformatics.unibe.ch/genomes
   - This page contains all metadata that was fed into OpenGenomeBrowser.
   - Links to download the associated files are at the bottom of the page.
 
-## 
+![genome detail demo](media/genome-detail.apng)
+
+## Pathways
+
+The [pathways page](https://opengenomebrowser.bioinformatics.unibe.ch/pathway/) can be accessed from the genomes table or the 'expand'-button on the top of the page.
+
+Select a pathway map by entering a search query, for example `citrate cycle`, and selecting a map of interest. On the demo server, all available KEGG-ko-maps are loaded into the website. Next, select one or more genomes. Click on submit.
+
+The resulting colored pathway map can be downloaded by clicking on the settings wheel, and then on `Save as PNG` or `Save as SVG`.
+
+Click on a shape to learn which genomes cover the contained annotations.
+
+Click on a covered annotation, then on ` Compare the genes of this annotation` to see sequence alignments or compare the gene loci.
 
 ![pathways demo](media/pathways.apng)
 
@@ -48,20 +60,25 @@ It has the following options:
   - Genome-similarity-based tree: Still fast, based on pairwise assembly similarity (default: GenDisCal - PaSiT6 ([Goussarov et al., Bioinformatics, 2020](https://pubmed.ncbi.nlm.nih.gov/31899493/))
   - Single-copy-ortholog-based tree: Slow, high quality tree, based on [OrthoFinder](https://github.com/davidemms/OrthoFinder) consensus tree of all single-copy ortholog alignments ([Emms et al., Molecular Biology and Evolution, 2017]())
 
-![pathways demo](media/trees.apng )
+![trees demo](media/trees.apng )
 
 ## Blast
 
-![pathways demo](media/blast.apng)
+![blast demo](media/blast.apng)
 
 ## Annotation search
 
-![pathways demo](media/annotation-search.apng)
+![annnotation search demo](media/annotation-search.apng)
 
 ## Gene trait matching
 
-![pathways demo](media/gene-trait-matching.apng)
+![gene trait matching demo](media/gene-trait-matching.apng)
 
 ## Magic strings
 
-![pathways demo](media/magic-strings.apng)
+![magic strings demo](media/magic-strings.apng)
+
+## Admin panel
+
+![admin demo](media/admin.apng)
+
