@@ -13,7 +13,7 @@
 function resetMap() {
     $(".shape").each(function () {
         // make fill transparent
-        this.firstElementChild.setAttribute('fill', 'transparent')
+        this.setAttribute('fill', 'transparent')
         // empty organisms from shape
         $(this).removeData('organisms')
         $(this).removeData('manual-number')
@@ -42,9 +42,9 @@ function highlightBinary(
     $(".shape").each(function (index) {
         let annotations = $(this).data('annotations')
         if (getCoveredAnnotations(annotations_to_highlight, annotations).length) {
-            this.firstElementChild.setAttribute('fill', color)
+            this.setAttribute('fill', color)
         } else {
-            this.firstElementChild.setAttribute('fill', 'transparent')
+            this.setAttribute('fill', 'transparent')
         }
     })
 }
@@ -104,7 +104,7 @@ function highlightOrganisms(
         // color shape
         const n_covered = covering_organisms.size
         if (n_covered > 0) {
-            shape.firstElementChild.setAttribute('fill', color_array[n_covered - 1])
+            shape.setAttribute('fill', color_array[n_covered - 1])
         }
     }
 
@@ -157,7 +157,7 @@ function highlightContinuous(
         $(shape).data('annotations', annotations)
 
         // color shape
-        shape.firstElementChild.setAttribute('fill', chroma.mix(colors[0], colors[1], manualNumber))
+        shape.setAttribute('fill', chroma.mix(colors[0], colors[1], manualNumber))
     }
 
     $(".shape").each(function (index) {

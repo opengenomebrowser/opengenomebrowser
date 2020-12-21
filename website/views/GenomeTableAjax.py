@@ -4,10 +4,7 @@ from django.contrib.postgres.aggregates.general import ArrayAgg
 
 from website.models import Genome
 
-from django.contrib.auth.mixins import LoginRequiredMixin
-
-
-class GenomeTableAjax(LoginRequiredMixin, BaseDatatableView):
+class GenomeTableAjax(BaseDatatableView):
     # The model we're going to show
     model = Genome
 

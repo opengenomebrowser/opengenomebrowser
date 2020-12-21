@@ -1,9 +1,8 @@
 from website.models import Organism
 from django.views.generic import DetailView
-from django.contrib.auth.mixins import LoginRequiredMixin
 
 
-class OrganismDetailView(LoginRequiredMixin, DetailView):
+class OrganismDetailView(DetailView):
     model = Organism
     slug_field = 'name'
     template_name = 'website/organism_detail.html'

@@ -75,7 +75,13 @@ class PathwayMap(models.Model):
 
         annotations = []
         for shape in soup.select('[data-annotations]'):
-            annotations.extend(json.loads(shape['data-annotations']))
+            try:
+                shape_annotations = json.loads(shape['data-annotations'])
+            except Exception as e:
+                print(f'Error in map: {filename} - shape: {shape}.')
+                raise e
+            assert type(shape_annotations) is list, F'Map {filename} contains a shape with an invalid shape: {shape}'
+            annotations.extend(shape_annotations)
 
         anno_objects = {anno_type: set() for anno_type in type_dict.values() if anno_type != 'ignore'}
 

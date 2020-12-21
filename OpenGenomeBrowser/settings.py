@@ -27,9 +27,9 @@ ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS').split(',')
 
 # database
 DB_HOST = os.environ.get('DB_HOST', 'db')
-DB_PORT = os.environ.get('DB_HOST', '5432')
+DB_PORT = os.environ.get('DB_PORT', '5432')
 DB_NAME = os.environ.get('DB_NAME', 'opengenomebrowser_db')
-DB_USER = os.environ.get('DB_NAME', 'postgres')
+DB_USER = os.environ.get('DB_USER', 'postgres')
 DB_PASSWORD = os.environ.get('PASSWORD', 'postgres')
 
 # GENOMIC_DATABASE must contain the folder 'organisms'
@@ -86,9 +86,13 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'OpenGenomeBrowser.login_required_middleware.LoginRequiredMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware'
 ]
+if os.environ.get('LOGIN_REQUIRED', 'true') == 'true':
+    # require login unless LOGIN_REQUIRED is set to 'false'
+    MIDDLEWARE.append('OpenGenomeBrowser.login_required_middleware.LoginRequiredMiddleware')
+else:
+    print('NO LOGIN REQUIRED TO ACCESS THIS INSTANCE OF OPENGENOMEBROWSER!')
 
 ROOT_URLCONF = 'OpenGenomeBrowser.urls'
 

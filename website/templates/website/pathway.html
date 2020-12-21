@@ -189,7 +189,7 @@
 
             // coverage percentagep
             if (percentage > 0) {
-                const color = shape.firstElementChild.getAttribute('fill')
+                const color = shape.getAttribute('fill')
                 cm.appendHeader('Coverage')
                 cm.appendElement(`
 <p class="dropdown-item" style="background-color: ${color}">
