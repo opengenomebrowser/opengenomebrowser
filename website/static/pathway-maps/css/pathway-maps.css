@@ -7,3 +7,17 @@
     display: flex;
     align-items: center;
 }
+
+#center-content {
+    /* outer */
+    width: 100%;
+    overflow:auto
+}
+
+#pathway-map-container {
+    /* inner */
+    width: min-content;
+    display: table;
+    margin: 0 auto;
+    border: 1px solid black;
+}

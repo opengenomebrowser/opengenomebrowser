@@ -28,3 +28,6 @@ pip cache purge
 COPY . .
 
 RUN PYTHONPATH=$PYTHONPATH:/opengenomebrowser
+
+# download ncbi taxonomy
+RUN python lib/get_tax_info/get_tax_info.py get_taxid_values_by_name root
