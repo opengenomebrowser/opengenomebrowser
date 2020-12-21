@@ -8,7 +8,7 @@ To talk to the developer informally, join the OpenGenomeBrowser [Discord channel
 
 _OpenGenomeBrowser is a dynamic and scalable web platform for comparative genomics._
 
--   OpenGenomeBrowser automates simple bioinformatics steps:
+*   OpenGenomeBrowser automates simple bioinformatics steps:
     - Filter and search using metadata
     - Dendrograms (Taxid-based, ANI-based and OrthoFinder-based)
     - Searching for annotations in genomes
@@ -16,10 +16,10 @@ _OpenGenomeBrowser is a dynamic and scalable web platform for comparative genomi
     - Visualisation of gene loci
     - BLAST
     - Access raw data
--   OpenGenomeBrowser has few prerequisites:
+*   OpenGenomeBrowser has few prerequisites:
     - Genome files must be stored in certain folder structure
     - One metadata file for each genome and organism
--   OpenGenomeBrowser is flexible:
+*   OpenGenomeBrowser is flexible:
     - [OrthoFinder](https://github.com/davidemms/OrthoFinder) is recommended, but not required (allows core genome dendrogram calculations)
     - Computationally intensive processes can be outsourced to a cluster
 
@@ -30,9 +30,9 @@ _OpenGenomeBrowser is a dynamic and scalable web platform for comparative genomi
 
 ### Key concepts
 
--   _Organism_: biological entity
--   _Genome_: sequencing variant, belongs to an organism
--   _Representative_: best genome of organism
+*   _Organism_: biological entity
+*   _Genome_: sequencing variant, belongs to an organism
+*   _Representative_: best genome of organism
 
 
 ## Tutorial

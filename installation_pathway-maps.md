@@ -85,11 +85,11 @@ Example:
 ```
 
 OpenGenomeBrowser types:
-* `KG`: (KEGG gene, format: `K000000`)
-* `KR`: (KEGG reaction, format: `R00000`)
-* `GO`: (Gene ontology, format: `GO:0000000`)
-* `EC`: (Enzyme commission, format: `EC:0.0`, `EC:0.0.0` or `EC:0.0.0.0`)
-* `CU`: (Custom)
+*   `KG`: (KEGG gene, format: `K000000`)
+*   `KR`: (KEGG reaction, format: `R00000`)
+*   `GO`: (Gene ontology, format: `GO:0000000`)
+*   `EC`: (Enzyme commission, format: `EC:0.0`, `EC:0.0.0` or `EC:0.0.0.0`)
+*   `CU`: (Custom)
 
 
 ### Import pathway svgs

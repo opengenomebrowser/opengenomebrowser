@@ -43,8 +43,8 @@ In order to run OpenGenomeBrowser with your own data, you will have to prepare y
 
 #### Notes:
 
--    paths are relative to the genome folder, i.e. it's fine to have files in a subfolders of the genome folder
--    date format: `"%Y-%m-%d"`, i.e. `2000-12-31`
+*   paths are relative to the genome folder, i.e. it's fine to have files in a subfolders of the genome folder
+*   date format: `"%Y-%m-%d"`, i.e. `2000-12-31`
 
 ##### organism.json:
 

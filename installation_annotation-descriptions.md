@@ -5,11 +5,11 @@ create a file for each annotation type that maps the identifier to a short descr
 
 
 Available types:
-* `KG`: (KEGG gene)
-* `KR`: (KEGG reaction)
-* `GO`: (Gene ontology)
-* `EC`: (Enzyme commission)
-* `CU`: (Custom)
+*   `KG`: (KEGG gene)
+*   `KR`: (KEGG reaction)
+*   `GO`: (Gene ontology)
+*   `EC`: (Enzyme commission)
+*   `CU`: (Custom)
 
 
 ```
