@@ -178,8 +178,10 @@
                             this.setAttribute('onclick', `showAnnotationClickMenu(event, 'auto', $(this).parent().parent().parent(), $(this).parent().parent().parent().parent() )`)
                         }
                     })
-                    $('.group-table-container tbody [data-genes]').each(function () {
-                        this.setAttribute('onclick', `showGenesClickMenu(event, $(event.target).data('genes').split(' '), $($(event.target).closest('table').find('th')[$(event.target).parent().index()].firstChild).data('species'))`)
+                    $('#coverage-matrix tbody [data-genes]').each(function () {
+                        if ($(this).text() !== '0') {
+                            this.setAttribute('onclick', `showGenesClickMenu(event, $(this).data('genes'), $($(event.target).closest('table').find('th')[$(event.target).parent().index()].firstChild).data('species'))`)
+                        }
                     })
                 }
             )

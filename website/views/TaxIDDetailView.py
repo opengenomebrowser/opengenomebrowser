@@ -11,6 +11,7 @@ class TaxIDDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context['no_help'] = True
 
         t: TaxID = self.object
 
@@ -20,7 +21,6 @@ class TaxIDDetailView(DetailView):
 
     @staticmethod
     def redirect_taxname(request, slug):
-
         t = TaxID.objects.get(taxscientificname=slug)
 
         return redirect(F'/taxid/{t.id}')

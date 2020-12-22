@@ -50,8 +50,8 @@ urlpatterns = [
     path('annotation-search-matrix/', AnnotationSearch.matrix, name='annotation-search-matrix'),
 
     # ex: /annotation-search/?annotations={K01626}+{EC:4.4.4.4}&genomes={organism1}+{organism2}
-    path('pwas/', Pwas.pwas_view, name='pwas'),
-    path('pwas-table/', Pwas.pwas_table, name='pwas-table'),
+    path('gene-trait-matching/', GeneTraitMatching.gtm_view, name='gene-trait-matching'),
+    path('gene-trait-matching-table/', GeneTraitMatching.gtm_table, name='gene-trait-matching-table'),
 
     # ex: /blast/?query={fasta}&genomes={organism1}+{organism2}
     path('blast/', Blast.blast_view, name='blast'),

@@ -55,49 +55,55 @@
 <nav class="navbar navbar-dark bg-dark fixed-top">
     <!-- logo and text -->
     <a class="navbar-brand" href="/" style="font-family: 'ogbFont'">
-        <img src="{% static 'global/customicons/ogb-circle.svg' %}" id="ogb-logo-circle" width="30" height="30" class="d-inline-block align-top"
-             loading="lazy">
+        <img src="{% static 'global/customicons/ogb-circle.svg' %}" id="ogb-logo-circle" width="30" height="30" class="d-inline-block align-top">
         <span id="ogb-logo-text">open genome browser</span>
     </a>
+
 
     <div class="navbar-nav ml-auto navbar-padding">
         <a class="nav-link text-nowrap {% if request.resolver_match.url_name == 'genomes' %}active{% endif %}" href="{% url 'website:genomes' %}"
         >Genomes</a>
     </div>
 
-    <!-- collapsible menu -->
-    <div class="navbar-collapse collapse" id="navbarSupportedContent">
-        <ul class="navbar-nav ml-auto">
-            <li class="nav-item">
-                <a class="nav-link text-nowrap {% if request.resolver_match.url_name == 'genomes' %}active{% endif %}"
-                   href="{% url 'website:genomes' %}">Genomes</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link text-nowrap {% if request.resolver_match.url_name == 'pathway' %}active{% endif %}"
-                   href="{% url 'website:pathway' %}">Pathways</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link text-nowrap {% if request.resolver_match.url_name == 'annotation-search' %}active{% endif %}"
-                   href="{% url 'website:annotation-search' %}">Annotation search</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link text-nowrap {% if request.resolver_match.url_name == 'pwas' %}active{% endif %}"
-                   href="{% url 'website:pwas' %}">PWAS</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link text-nowrap {% if request.resolver_match.url_name == 'blast' %}active{% endif %}" href="{% url 'website:blast' %}">Blast</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link text-nowrap {% if request.resolver_match.url_name == 'trees' %}active{% endif %}" href="{% url 'website:trees' %}">Trees</a>
-            </li>
-        </ul>
+
+    <!-- tools -->
+    <div class="nav-item dropdown">
+        <button class="btn btn-outline-light my-2 my-sm-0 dropdown-toggle" id="navbarDropdown" data-toggle="dropdown" aria-haspopup="true">
+            Tools
+        </button>
+        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
+            <a class="dropdown-item context-menu-icon context-menu-icon-pathway {% if request.resolver_match.url_name == 'pathway' %}active{% endif %}"
+               href="{% url 'website:pathway' %}">
+                Pathways
+            </a>
+            <a class="dropdown-item context-menu-icon context-menu-icon-annotations {% if request.resolver_match.url_name == 'annotation-search' %}active{% endif %}"
+               href="{% url 'website:annotation-search' %}">
+                Annotation search
+            </a>
+            <a class="dropdown-item context-menu-icon context-menu-icon-gene-comparison {% if request.resolver_match.url_name == 'compare-genes' %}active{% endif %}"
+               href="{% url 'website:compare-genes' %}">
+                Compare genes
+            </a>
+            <a class="dropdown-item context-menu-icon context-menu-icon-gene-trait-matching {% if request.resolver_match.url_name == 'gene-trait-matching' %}active{% endif %}"
+               href="{% url 'website:gene-trait-matching' %}">
+                Gene trait matching
+            </a>
+            <a class="dropdown-item context-menu-icon context-menu-icon-blast {% if request.resolver_match.url_name == 'blast' %}active{% endif %}"
+               href="{% url 'website:blast' %}">
+                Blast
+            </a>
+            <a class="dropdown-item context-menu-icon context-menu-icon-tree {% if request.resolver_match.url_name == 'trees' %}active{% endif %}"
+               href="{% url 'website:trees' %}">
+                Trees
+            </a>
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item context-menu-icon context-menu-icon-help {% if no_help %}disabled{% endif %}"
+               href="https://opengenomebrowser.github.io/opengenomebrowser/tutorials/{{ request.resolver_match.url_name }}.html">
+                Get help with this page
+            </a>
+        </div>
     </div>
-    <!-- collapsible menu button (only shown when collapsed) -->
-    <button class="navbar-toggler navbar-padding" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
-            aria-controls="navbarSupportedContent"
-            aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-    </button>
+
 
     <!-- account -->
     <div class="btn-group navbar-padding">

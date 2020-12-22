@@ -162,6 +162,7 @@ def home_view(request):
 
     context = dict(
         title='Home',
+        no_help=True,
         credit=credit
     )
 

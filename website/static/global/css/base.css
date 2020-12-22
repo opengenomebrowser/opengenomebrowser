@@ -113,7 +113,7 @@ convert hex (e.g. #2980b9) to filter: https://codepen.io/sosuke/pen/Pjoqqp
     filter: invert(39%) sepia(80%) saturate(459%) hue-rotate(160deg) brightness(96%) contrast(93%); /* #2980b9 */
 }
 
-.context-menu-icon-pwas::before {
+.context-menu-icon-gene-trait-matching::before {
     content: url("/static/global/ionicons/ios-star-half.svg");
     filter: invert(39%) sepia(80%) saturate(459%) hue-rotate(160deg) brightness(96%) contrast(93%); /* #2980b9 */
 }
@@ -138,6 +138,16 @@ convert hex (e.g. #2980b9) to filter: https://codepen.io/sosuke/pen/Pjoqqp
     filter: invert(39%) sepia(80%) saturate(459%) hue-rotate(160deg) brightness(96%) contrast(93%); /* #2980b9 */
 }
 
+.context-menu-icon-gene-comparison::before {
+    content: url("/static/global/customicons/gene-comparison.svg");
+    filter: invert(39%) sepia(80%) saturate(459%) hue-rotate(160deg) brightness(96%) contrast(93%); /* #2980b9 */
+}
+
+.context-menu-icon-help::before {
+    content: url("/static/global/ionicons/md-help.svg");
+    filter: invert(39%) sepia(80%) saturate(459%) hue-rotate(160deg) brightness(96%) contrast(93%); /* #2980b9 */
+}
+
 .context-menu-icon::before {
     position: absolute;
     left: 0.5em;
@@ -147,6 +157,10 @@ convert hex (e.g. #2980b9) to filter: https://codepen.io/sosuke/pen/Pjoqqp
 
 .dropdown-item.context-menu-icon {
     padding-left: 2.2em !important;
+}
+
+.dropdown-item.active, .dropdown-item:active {
+	background-color: #86b4e6 !important;
 }
 
 .ogb-click-menu .dropdown-header {

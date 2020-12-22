@@ -10,6 +10,7 @@ class AnnotationDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super(AnnotationDetailView, self).get_context_data(**kwargs)
+        context['no_help'] = True
 
         a: Annotation = self.object
 

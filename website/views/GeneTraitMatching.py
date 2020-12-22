@@ -27,16 +27,16 @@ multiple_testing_methods = {
 }
 
 
-def pwas_view(request):
+def gtm_view(request):
     """
-    This function loads the page /pwas/
+    This function loads the page /gene-trait-matching/
 
     :param request: may contain: ['g1[]', 'g2[]', 'alpha', 'anno_type', 'multiple_testing_method']
-    :return: rendered pwas.html
+    :return: rendered gene_trait_matching.html
     """
 
     context = dict(
-        title='PWAS',
+        title='Gene trait matching',
         anno_types=Annotation.AnnotationTypes,
         multiple_testing_methods=multiple_testing_methods,
         # defaults:
@@ -100,15 +100,15 @@ def pwas_view(request):
             success='error_warning' not in context
         ))
 
-    return render(request, 'website/pwas.html', context)
+    return render(request, 'website/gene_trait_matching.html', context)
 
 
-def pwas_table(request):
+def gtm_table(request):
     """
-    This function is activated in pwas.html. The getJSON-request must contain the parameters for the pwas-function below.
+    This function is activated in gene_trait_matching.html. The getJSON-request must contain the parameters for the gtm-function below.
 
     :param request: must contain: ['g1[]', 'g2[]', 'alpha', 'anno_type', 'multiple_testing_method']
-    :return: pwas-table in json format, as required by DataTables.
+    :return: gene-trait-matching-table in json format, as required by DataTables.
     """
     context = {}
 
@@ -133,17 +133,17 @@ def pwas_table(request):
     alpha = float(request.GET.get('alpha'))
     multiple_testing_method = request.GET.get('multiple_testing_method')
 
-    pwas_df = pwas(g1=magic_query_manager_g1.all_genomes, g2=magic_query_manager_g2.all_genomes,
-                   anno_type=anno_type, alpha=alpha, multiple_testing_method=multiple_testing_method)
+    gtm_df = gtm(g1=magic_query_manager_g1.all_genomes, g2=magic_query_manager_g2.all_genomes,
+                  anno_type=anno_type, alpha=alpha, multiple_testing_method=multiple_testing_method)
 
-    json_response = to_json(pwas_df=pwas_df, anno_type=anno_type)
+    json_response = to_json(gtm_df=gtm_df, anno_type=anno_type)
 
     return JsonResponse(json_response)
 
 
-def pwas(g1: [Genome], g2: [Genome], anno_type='OL', alpha=0.25, multiple_testing_method='fdr_bh') -> pd.DataFrame:
+def gtm(g1: [Genome], g2: [Genome], anno_type='OL', alpha=0.25, multiple_testing_method='fdr_bh') -> pd.DataFrame:
     """
-    Calculate protein-wide association study. Find proteins hat are significantly over- or underrepresented in one group of genomes.
+    Calculate gene-trait-matching analysis. Find proteins hat are significantly over- or underrepresented in one group of genomes.
 
     :param g1: First group of genomes
     :param g2: Second group of genomes
@@ -210,25 +210,25 @@ def pwas(g1: [Genome], g2: [Genome], anno_type='OL', alpha=0.25, multiple_testin
     return annos
 
 
-def prettify(pwas_df: pd.DataFrame, anno_type: str) -> pd.DataFrame:
-    assert list(pwas_df.columns) == ['annotation', 'g1', 'g2', 'p_fisher_exact', 'p_corrected', 'reject']
-    pwas_df.columns = ['Annotation', 'Group 1', 'Group 2', 'pvalue (Fisher\'s test)', 'pvalue (corrected)', 'reject H0']
-    pwas_df['Annotation'] = [F'<div class="annotation ogb-tag" data-annotype="{anno_type}" title="not-loaded">{a}</div>'
-                             for a in pwas_df['Annotation']]
-    return pwas_df
+def prettify(gtm_df: pd.DataFrame, anno_type: str) -> pd.DataFrame:
+    assert list(gtm_df.columns) == ['annotation', 'g1', 'g2', 'p_fisher_exact', 'p_corrected', 'reject']
+    gtm_df.columns = ['Annotation', 'Group 1', 'Group 2', 'pvalue (Fisher\'s test)', 'pvalue (corrected)', 'reject H0']
+    gtm_df['Annotation'] = [F'<div class="annotation ogb-tag" data-annotype="{anno_type}" title="not-loaded">{a}</div>'
+                            for a in gtm_df['Annotation']]
+    return gtm_df
 
 
-def to_html(pwas_df: pd.DataFrame, anno_type: str) -> str:
-    pwas_df = prettify(pwas_df, anno_type)
-    return dataframe_to_bootstrap_html(pwas_df, index=False, table_id='pwas-table')
+def to_html(gtm_df: pd.DataFrame, anno_type: str) -> str:
+    gtm_df = prettify(gtm_df, anno_type)
+    return dataframe_to_bootstrap_html(gtm_df, index=False, table_id='gene-trait-matching-table')
 
 
-def to_json(pwas_df: pd.DataFrame, anno_type: str) -> dict:
-    pwas_df = prettify(pwas_df, anno_type)
+def to_json(gtm_df: pd.DataFrame, anno_type: str) -> dict:
+    gtm_df = prettify(gtm_df, anno_type)
 
     json_response = dict(
-        dataset=pwas_df.values.tolist(),
-        columns=[dict(title=c) for c in pwas_df.columns]
+        dataset=gtm_df.values.tolist(),
+        columns=[dict(title=c) for c in gtm_df.columns]
     )
 
     return json_response

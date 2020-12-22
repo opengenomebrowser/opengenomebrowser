@@ -91,29 +91,31 @@
 
             <h3>Annotations</h3>
             <!-- Annotations: Table -->
-            <table class="table no-bottom-padding">
-                <thead class="thead-dark">
-                <tr>
-                    <th scope="col">Type</th>
-                    <th scope="col">Name</th>
-                    <th scope="col">Description</th>
-                </tr>
-                </thead>
-                <tbody>
-                {% for anno_type, annos in annotations.items %}
-                    {% for anno in annos %}
-                        <tr>
-                            <th scope="row">
-                                <div class="annotation"
-                                     data-annotype="{{ anno.anno_type }}">{{ anno.anno_type_verbose }}</div>
-                            </th>
-                            <td>{{ anno.html|safe }}</td>
-                            <td>{{ anno.description }}</td>
-                        </tr>
+            <div style="max-height: 30rem;overflow-y: auto">
+                <table class="table no-bottom-padding">
+                    <thead class="thead-dark">
+                    <tr>
+                        <th scope="col">Type</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Description</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for anno_type, annos in annotations.items %}
+                        {% for anno in annos %}
+                            <tr>
+                                <th scope="row">
+                                    <div class="annotation"
+                                         data-annotype="{{ anno.anno_type }}">{{ anno.anno_type_verbose }}</div>
+                                </th>
+                                <td>{{ anno.html|safe }}</td>
+                                <td>{{ anno.description }}</td>
+                            </tr>
+                        {% endfor %}
                     {% endfor %}
-                {% endfor %}
-                </tbody>
-            </table>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         <!-- Sequences -->

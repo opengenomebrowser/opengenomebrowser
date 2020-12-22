@@ -26,15 +26,15 @@
             width: min-content;
         }
 
-        #pwas-table_length > label, #pwas-table_filter > label {
+        #gene-trait-matching-table_length > label, #gene-trait-matching-table_filter > label {
             display: inline-flex
         }
 
-        #pwas-table_filter > label:nth-child(1) {
+        #gene-trait-matching-table_filter > label:nth-child(1) {
             width: 264px
         }
 
-        #pwas-table_length .custom-select, #pwas-table_filter .form-control {
+        #gene-trait-matching-table_length .custom-select, #gene-trait-matching-table_filter .form-control {
             margin: 0 7px 0 7px;
         }
 
@@ -61,8 +61,8 @@
 
 
     <div class="sidebar-subcontent form-check form-check-inline">
-        <label for="pwas-anno-type"><a>Which category of annotations to use?</a></label>
-        <select class="form-control" id="pwas-anno-type" data-selected="{{ default_anno_type }}">
+        <label for="gene-trait-matching-anno-type"><a>Which category of annotations to use?</a></label>
+        <select class="form-control" id="gene-trait-matching-anno-type" data-selected="{{ default_anno_type }}">
             {% for at in anno_types %}
                 <option value="{{ at }}" {% if at == default_anno_type %} selected {% endif %}>{{ at.label }} ({{ at }})
                 </option>{% endfor %}
@@ -70,10 +70,10 @@
     </div>
 
     <div class="sidebar-subcontent form-check form-check-inline">
-        <label for="pwas-multiple-testing-method"><a>Multiple testing correction </a><a style="font-size:small"
+        <label for="gene-trait-matching-multiple-testing-method"><a>Multiple testing correction </a><a style="font-size:small"
                                                                                         href="https://www.statsmodels.org/dev/generated/statsmodels.stats.multitest.multipletests.html">(click
             here for more information)</a></label>
-        <select class="form-control" id="pwas-multiple-testing-method" data-selected="{{ anno_type }}">
+        <select class="form-control" id="gene-trait-matching-multiple-testing-method" data-selected="{{ anno_type }}">
             {% for mtm_val, mtm_descr in multiple_testing_methods.items %}
                 <option value="{{ mtm_val }}" {% if mtm_val == default_multiple_testing_method %} selected {% endif %}>{{ mtm_descr }}</option>
             {% endfor %}
@@ -89,7 +89,7 @@
     <hr>
 
     <div class="sidebar-subcontent form-check form-check-inline">
-        <button type="button" class="btn btn-primary" onclick="$('#pwas-submit-button').click()">Submit</button>
+        <button type="button" class="btn btn-primary" onclick="$('#gene-trait-matching-submit-button').click()">Submit</button>
     </div>
 
 
@@ -114,7 +114,7 @@
                            value="{{ magic_query_manager_g2.regular_genomes|join:", " }},{{ magic_query_manager_g2.magic_objects|join:", " }}">
                 </div>
 
-                <button id="pwas-submit-button" type="button" class="btn btn-primary" onclick="submit_function()">Submit</button>
+                <button id="gene-trait-matching-submit-button" type="button" class="btn btn-primary" onclick="submit_function()">Submit</button>
             </form>
 
             {% if magic_query_manager_g1 and magic_query_manager_g2 %}
@@ -157,9 +157,9 @@
 
     </section>
 
-    <section id="pwas-container" style="padding-top: 1rem">
+    <section id="gene-trait-matching-container" style="padding-top: 1rem">
         <div class="container">
-            <table id="pwas-table" class="table table-striped table-bordered" style="width:100%"></table>
+            <table id="gene-trait-matching-table" class="table table-striped table-bordered" style="width:100%"></table>
         </div>
     </section>
 
@@ -199,8 +199,8 @@
             const genomes_g2 = $('#get-genomes-g2').val().split(',')
 
             const alpha = parseFloat($('#range-span').text())
-            const anno_type = $('#pwas-anno-type').val()
-            const multiple_testing_method = $('#pwas-multiple-testing-method').val()
+            const anno_type = $('#gene-trait-matching-anno-type').val()
+            const multiple_testing_method = $('#gene-trait-matching-multiple-testing-method').val()
 
             console.log('genomes-g1:', genomes_g1)
             console.log('genomes-g2:', genomes_g2)
@@ -254,7 +254,7 @@
                 return
             }
 
-            $.getJSON('{% url "website:pwas-table" %}', {
+            $.getJSON('{% url "website:gene-trait-matching-table" %}', {
                 'g1[]': genomes_g1,
                 'g2[]': genomes_g2,
                 'alpha': alpha,
@@ -263,7 +263,7 @@
             }, function (data) {
                 console.log('data', data)
 
-                let table = $('#pwas-table').DataTable({
+                let table = $('#gene-trait-matching-table').DataTable({
                     data: data['dataset'],
                     columns: data['columns'],
                     lengthMenu: [[-1, 10, 25, 50, 100], ["All", 10, 25, 50, 100]],
