@@ -1,4 +1,4 @@
-from website.models import Genome, TaxID
+from website.models import Genome, TaxID, Tag
 from django.http import JsonResponse
 from django.db.models import ObjectDoesNotExist, QuerySet, Model
 
@@ -31,7 +31,9 @@ class MagicObject:
         'taxfamily',
         'taxgenus',
         'taxspecies',
-        'taxsubspecies'
+        'taxsubspecies',
+
+        'tag'
     ]
 
     def __init__(self, magic_string: str):
@@ -46,36 +48,40 @@ class MagicObject:
             query = ''
 
         if magic_word not in self.MAGIC_WORDS:
-            raise MagicError(F'Magic word is invalid: {magic_word} - {query}.')
+            raise MagicError(f'Magic word is invalid: {magic_word} - {query}.')
 
         try:
             if magic_word == 'tax':
                 self.obj = TaxID.objects.get(taxscientificname=query)
             elif magic_word.startswith('tax'):
                 self.obj = TaxID.objects.get(taxscientificname=query, **{'rank': magic_word[3:]})
+            elif magic_word == 'tag':
+                self.obj = Tag.objects.get(tag=query)
             else:
-                raise MagicError(F'Failed to process magic word! {magic_word}')
+                raise MagicError(f'Failed to process magic word! {magic_word}')
 
-        except ObjectDoesNotExist as e:
-            raise MagicError(F'Could not find magic_string object: {magic_string}.')
+        except ObjectDoesNotExist:
+            raise MagicError(f'Could not find magic_string object: {magic_string}.')
 
     def __str__(self):
         return self.magic_string
 
     @property
     def html(self):
-        return F'<div class="genome ogb-tag" data-species="{self.scientific_name}" data-toggle="tooltip" title="">{self.magic_string}</div>'
-
-    @property
-    def scientific_name(self):
-        return self.obj.taxscientificname
-
-    @property
-    def taxid(self):
-        return self.obj.id
+        if type(self.obj) is TaxID:
+            return f'<div class="genome ogb-tag" data-species="{self.obj.taxscientificname}" title="">{self.magic_string}</div>'
+        elif type(self.obj) is Tag:
+            return self.obj.html
+        else:
+            raise MagicError(f'MagicWord obj is of unknown type: {type(self.obj)}')
 
     def genomes(self, representative=True, contaminated=False, restricted=False):
-        return self.obj.get_child_genomes(representative=representative, contaminated=contaminated, restricted=restricted)
+        if type(self.obj) is TaxID:
+            return self.obj.get_child_genomes(representative=representative, contaminated=contaminated, restricted=restricted)
+        elif type(self.obj) is Tag:
+            return self.obj.genome_set.all()
+        else:
+            raise MagicError(f'MagicWord obj is of unknown type: {type(self.obj)}')
 
     @staticmethod
     def autocomplete(magic_string: str) -> [dict]:
@@ -93,25 +99,34 @@ class MagicObject:
             magic_word, query = magic_string[1:].split(':', maxsplit=1)
 
             if magic_word not in MagicObject.MAGIC_WORDS:
-                raise MagicError(F'Magic word does not exist: {magic_word}.')
+                raise MagicError(f'Magic word does not exist: {magic_word}.')
 
-            # process taxids
             if magic_word.startswith('tax'):
+                # process taxids
                 if magic_word == 'tax':
                     attr = 'taxscientificname'
-                    taxids = TaxID.objects.filter(taxscientificname__icontains=query)
+                    taxids = TaxID.objects.filter(taxscientificname__icontains=query)[:20]
                 else:
                     attr = magic_word
-                    taxids = TaxID.objects.filter(taxscientificname__icontains=query, **{'rank': magic_word[3:]})
+                    taxids = TaxID.objects.filter(taxscientificname__icontains=query, **{'rank': magic_word[3:]})[:20]
 
-                taxids = taxids[:20]
                 for taxid in taxids:
                     results.append({
                         'label': F"@{magic_word}:{getattr(taxid, attr)}",
                         'value': F"@{magic_word}:{getattr(taxid, attr)}"
                     })
+            elif magic_word == 'tag':
+                # process tags
+                tags = Tag.objects.filter(tag__icontains=query)[:20]
+
+                for tag in tags:
+                    results.append({
+                        'label': F"@{magic_word}:{tag.tag}",
+                        'value': F"@{magic_word}:{tag.tag}"
+                    })
+
             else:
-                raise MagicError(F'Failed to process magic word! {magic_word}')
+                raise MagicError(f'Failed to process magic word! {magic_word}')
 
         return results
 
@@ -172,17 +187,29 @@ class MagicQueryManager:
 
     @staticmethod
     def __magic_object_to_species(magic_objects: [MagicObject]):
-        return {
-            magic_object.magic_string: dict(
-                taxid=magic_object.taxid,
-                sciname=magic_object.scientific_name
-            ) for magic_object in magic_objects
-        }
+        result = {}
+        for magic_object in magic_objects:
+            if type(magic_object.obj) is TaxID:
+                result[magic_object.magic_string] = dict(
+                    type='taxid',
+                    taxid=magic_object.obj.id,
+                    sciname=magic_object.obj.taxscientificname
+                )
+            elif type(magic_object.obj) is Tag:
+                result[magic_object.magic_string] = dict(
+                    type='tag',
+                    tag=magic_object.obj.tag,
+                    description=magic_object.obj.description
+                )
+            else:
+                raise MagicError(f'Magic Object obj is of unknown type: {type(magic_object.obj)}')
+        return result
 
     @staticmethod
     def __genomes_to_species(genomes: QuerySet):
         return {
             genome['identifier']: dict(
+                type='genome',
                 taxid=genome['organism__taxid'],
                 sciname=genome['organism__taxid__taxscientificname']
             )

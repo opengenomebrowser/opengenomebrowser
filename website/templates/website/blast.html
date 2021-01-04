@@ -4,8 +4,8 @@
 {% block styles %}
     <!-- Site-specific css/js -->
     <link rel="stylesheet" type="text/css" href="{% static 'global/css/annotype_color.css' %}">
-    <link rel="stylesheet" type="text/css" href="{% static 'global/css/taxid_color.css' %}"
-          id="taxid-color-stylesheet"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'global/css/taxid_color.css' %}" id="taxid-color-stylesheet"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'global/css/tag_color.css' %}"/>
 
     <!-- autocomplete -->
     <link href="{% static 'website/css/jquery-ui.css' %}" rel="stylesheet"/>
@@ -42,14 +42,15 @@
                 {% csrf_token %}
                 <div class="form-group">
                     <label for="get-genomes">Genomes:</label>
-                    <input type="text" class="form-control" id="get-genomes" value="{{ genomes|join:", " }}">
+                    <input type="text" class="form-control" id="get-genomes"
+                           value="{{ magic_query_manager.regular_genomes|join:", " }},{{ magic_query_manager.magic_objects|join:", " }}">
                 </div>
 
                 <button type="button" class="btn btn-primary" onclick="submit_function()">Submit</button>
             </form>
         </div>
 
-        {% if genomes %}
+        {% if magic_query_manager %}
             <div class="container">
 
                 <hr class="featurette-divider">
@@ -65,7 +66,7 @@
                     <div id="real-div" class="form-group collapse">
                         <label for="real-genomes">Genomes:</label>
                         <div class="read-only-div" id="real-genomes">
-                            {% for genome in genomes %}{{ genome.html|safe }}{% endfor %}
+                            {% for genome in magic_query_manager.all_genomes %}{{ genome.html|safe }}{% endfor %}
                         </div>
                     </div>
 
@@ -132,10 +133,9 @@
 
         "use strict"
 
-        let current_annotations = []
-        let current_genomes = []
+        let genome_to_species = {{ genome_to_species|safe }};
 
-        let genome_to_species
+        const genomes = [{% if magic_query_manager %} '{{ magic_query_manager.all_genomes|join:"', '" }}' {% else %}{% endif %}]
 
         $(document).ready(function () {
             genome_to_species = init_autocomplete_genomes("#get-genomes")
@@ -181,10 +181,6 @@
             $("#blast-single-alignment").empty()
 
             let frm = $('#blast-form')
-
-            const genomes = $.map($('#real-genomes .genome'), function (x) {
-                return x.innerText
-            })
 
             const serialized_query = frm.serialize() + '&genomes[]=' + urlReplBlanks(genomes)
 

@@ -37,9 +37,8 @@ def blast_view(request):
 
         try:
             magic_query_manager = MagicQueryManager(queries=qs)
-            found_genomes = magic_query_manager.all_genomes
-            context['genomes'] = found_genomes
-            context['genome_to_species'] = {genome.identifier: genome.taxscientificname for genome in found_genomes}
+            context['magic_query_manager'] = magic_query_manager
+            context['genome_to_species'] = magic_query_manager.genome_to_species()
         except ValueError as e:
             context['error_danger'] = str(e)
 

@@ -51,8 +51,12 @@ class Tag(models.Model):
     def natural_key(self):
         return self.tag
 
+    @property
+    def html(self):
+        return f'<div class="tag ogb-tag" data-tag="{self.obj.tag}" title="{self.description}">@tag:{self.tag}</div>'
+
     def get_html_badge(self):
-        return '<span class="ogb-tag" data-tag="{tag}">{tag}</span>'.format(tag=self.tag)
+        return f'<span class="ogb-tag" data-tag="{self.tag}">{self.tag}</span>'
 
     @staticmethod
     def getTagList() -> [str]:
@@ -77,11 +81,11 @@ class Tag(models.Model):
         all_tags = Tag.objects.all()
         css_content = ''
         for tag in all_tags:
-            css = '[data-tag="' + tag.tag + '"] {background-color: rgb(' + tag.color + '); color: '
+            css = '[data-tag="' + tag.tag + '"] {background-color: rgb(' + tag.color + ') !important; color: '
             if tag.text_color_white:
-                css += 'white}\n'
+                css += 'white !important}\n'
             else:
-                css += 'black}\n'
+                css += 'black !important}\n'
             css_content += css
 
         for file in Tag.get_tag_css_paths():

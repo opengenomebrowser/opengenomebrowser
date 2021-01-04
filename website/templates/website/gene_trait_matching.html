@@ -4,8 +4,8 @@
 {% block styles %}
     <!-- Site-specific css/js -->
     <link rel="stylesheet" type="text/css" href="{% static 'global/css/annotype_color.css' %}">
-    <link rel="stylesheet" type="text/css" href="{% static 'global/css/taxid_color.css' %}"
-          id="taxid-color-stylesheet"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'global/css/taxid_color.css' %}" id="taxid-color-stylesheet"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'global/css/tag_color.css' %}"/>
 
     <!-- autocomplete -->
     <link href="{% static 'website/css/jquery-ui.css' %}" rel="stylesheet"/>
@@ -71,7 +71,7 @@
 
     <div class="sidebar-subcontent form-check form-check-inline">
         <label for="gene-trait-matching-multiple-testing-method"><a>Multiple testing correction </a><a style="font-size:small"
-                                                                                        href="https://www.statsmodels.org/dev/generated/statsmodels.stats.multitest.multipletests.html">(click
+                                                                                                       href="https://www.statsmodels.org/dev/generated/statsmodels.stats.multitest.multipletests.html">(click
             here for more information)</a></label>
         <select class="form-control" id="gene-trait-matching-multiple-testing-method" data-selected="{{ anno_type }}">
             {% for mtm_val, mtm_descr in multiple_testing_methods.items %}

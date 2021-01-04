@@ -9,6 +9,7 @@
 
     <link rel="stylesheet" type="text/css" href="{% static 'global/css/taxid_color.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'global/css/taxid_color_label.css' %}" id="taxid-color-stylesheet">
+    <link rel="stylesheet" type="text/css" href="{% static 'global/css/tag_color.css' %}"/>
 
     <!-- autocomplete -->
     <link href="{% static 'website/css/jquery-ui.css' %}" rel="stylesheet"/>
@@ -65,28 +66,31 @@
                     {% csrf_token %}
                     <div class="form-group">
                         <label for="get-genomes">Genomes:</label>
-                        <input type="text" class="form-control" id="get-genomes" value="{{ genomes|join:", " }}">
+                        <input type="text" class="form-control" id="get-genomes"
+                               value="{{ magic_query_manager.regular_genomes|join:", " }},{{ magic_query_manager.magic_objects|join:", " }}">
                     </div>
 
                     <button type="button" class="btn btn-primary" onclick="submit_function()">Submit</button>
                 </form>
 
-                {% if can_calculate_trees %}
-                    <hr class="featurette-divider">
 
-                    <button type="button" class="btn btn-light" data-toggle="collapse" href="#real-div" aria-expanded="false" aria-controls="real-div"
-                    >Show query
-                    </button>
+                <hr class="featurette-divider">
+
+                <button type="button" class="btn btn-light" data-toggle="collapse" href="#real-div" aria-expanded="false" aria-controls="real-div"
+                >Show query
+                </button>
 
 
-                    <form id="real-div" class="collapse">
-                        <div class="form-group">
-                            <label for="real-genomes">Genomes:</label>
-                            <div class="read-only-div" id="real-genomes">
-                                {% for genome in genomes %}{{ genome.html|safe }}{% endfor %}
-                            </div>
+                <form id="real-div" class="collapse">
+                    <div class="form-group">
+                        <label for="real-genomes">Genomes:</label>
+                        <div class="read-only-div" id="real-genomes">
+                            {% for genome in magic_query_manager.all_genomes %}{{ genome.html|safe }}{% endfor %}
                         </div>
-                    </form>
+                    </div>
+                </form>
+
+                {% if can_calculate_trees %}
 
                     <hr class="featurette-divider">
 
@@ -94,7 +98,7 @@
                         {% csrf_token %}
                         <div style="display: flex; justify-content: space-evenly;">
                             <button type="button" class="btn btn-primary" onclick="load_taxid_tree(genomes)">
-                                Reload Taxid-based tree
+                                Calculate Taxid-based tree
                             </button>
                             <button type="button" class="btn btn-success" onclick="load_genome_similarity_tree(genomes)">
                                 Calculate Genome-similarity-based tree
@@ -217,7 +221,7 @@
 
         let genome_to_species = {{ genome_to_species|safe }};
 
-        const genomes = [{% if genomes %} '{{ genomes|join:"', '" }}' {% else %}{% endif %}]
+        const genomes = [{% if magic_query_manager %} '{{ magic_query_manager.all_genomes|join:"', '" }}' {% else %}{% endif %}]
 
         let taxid_tree
         let genome_similarity_tree

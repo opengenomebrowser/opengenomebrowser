@@ -24,9 +24,8 @@ def annotation_view(request):
 
         try:
             magic_query_manager = MagicQueryManager(queries=qs)
-            genome_to_species = magic_query_manager.genome_to_species()
             context['magic_query_manager'] = magic_query_manager
-            context['genome_to_species'] = genome_to_species
+            context['genome_to_species'] = magic_query_manager.genome_to_species()
             genomes_valid = True
         except Exception as e:
             context['error_danger'] = str(e)

@@ -217,7 +217,7 @@ function init_autocomplete_annotations(div_name) {
     $(div_name).tagEditor({
         autocomplete: {
             source: '/api/autocomplete-annotations',
-            minLength: 2
+            minLength: 0
         },
         forceLowercase: false,
         onChange: on_annotations_change
@@ -261,7 +261,7 @@ function init_autocomplete_genomes(div_name) {
     $(div_name).tagEditor({
         autocomplete: {
             source: '/api/autocomplete-genomes/',
-            minLength: 2
+            minLength: 0
         },
         forceLowercase: false,
         onChange: on_genomes_change
@@ -287,15 +287,28 @@ function on_genomes_change(field, editor, tags) {
         entries.each(function () {
             let li = $(this)
             let genome = li[0].innerText.substring(3)
+            let genome_data = data[genome]
+
+            console.log('XXXXXXXXXXXXXXXXXXXXXXXXx', genome, genome_data)
 
             let child_1 = li.children()[1]
-            child_1.setAttribute('data-species', data[genome]['sciname'])
-            child_1.setAttribute('data-toggle', 'tooltip')
-            child_1.setAttribute('title', data[genome]['sciname'])
-            $(child_1).tooltip()
-
             let child_2 = li.children()[2]
-            child_2.setAttribute('data-species', data[genome]['sciname'])
+
+            if (genome_data['type'] === 'taxid' || genome_data['type'] === 'genome') {
+                child_1.setAttribute('data-species', genome_data['sciname'])
+                child_1.setAttribute('data-toggle', 'tooltip')
+                child_1.setAttribute('title', genome_data['sciname'])
+                child_2.setAttribute('data-species', genome_data['sciname'])
+            } else if (genome_data['type'] === 'tag') {
+                child_1.setAttribute('data-tag', genome_data['tag'])
+                child_1.setAttribute('data-toggle', 'tooltip')
+                child_1.setAttribute('title', genome_data['description'])
+                child_2.setAttribute('data-tag', genome_data['tag'])
+            } else {
+                console.log('ERROR in on_genomes_change!', genome, genome_data, li)
+            }
+
+            $(child_1).tooltip()
         })
         return genome_to_species
     })
@@ -306,7 +319,7 @@ function init_autocomplete_genes(div_name) {
     $(div_name).tagEditor({
         autocomplete: {
             source: '/api/autocomplete-genes/',
-            minLength: 2
+            minLength: 0
         },
         forceLowercase: false,
         onChange: on_genes_change
@@ -347,6 +360,7 @@ function on_genes_change(field, editor, tags) {
             let child_2 = li.children()[2]
             child_2.setAttribute('data-species', data[genome]['sciname'])
         })
+
         return genome_to_species
     })
 }
