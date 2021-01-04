@@ -1,3 +1,5 @@
+<link rel="shortcut icon" type="image/svg+xml" href="favicon.svg">
+
 # Select genomes using "magic strings"
 
 Whenever you are faced with an input box for genomes, you can use _magic strings_ to quickly select groups of genomes.

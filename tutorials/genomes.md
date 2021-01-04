@@ -1,3 +1,5 @@
+<link rel="shortcut icon" type="image/svg+xml" href="favicon.svg">
+
 # Genomes table
 
 First, let's explore the genomes table. Click on [`Genomes`](https://opengenomebrowser.bioinformatics.unibe.ch/genomes).

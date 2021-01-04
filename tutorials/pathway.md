@@ -1,3 +1,5 @@
+<link rel="shortcut icon" type="image/svg+xml" href="favicon.svg">
+
 # Pathways
 
 The [pathways page](https://opengenomebrowser.bioinformatics.unibe.ch/pathway/) can be accessed from the genomes table or the 'expand'-button on the top of the page.

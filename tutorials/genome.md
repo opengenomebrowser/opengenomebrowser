@@ -1,3 +1,5 @@
+<link rel="shortcut icon" type="image/svg+xml" href="favicon.svg">
+
 # Single genome view
 
 In the [genomes table](https://opengenomebrowser.bioinformatics.unibe.ch/genomes), right click on a row and

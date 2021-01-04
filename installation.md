@@ -1,3 +1,5 @@
+<link rel="shortcut icon" type="image/svg+xml" href="favicon.svg">
+
 # Set-up
 
 OpenGenomeBrowser is very easy to install as a docker container. Follow [this tutorial](https://github.com/opengenomebrowser/opengenomebrowser-docker-template/) to get it running with the demo database!

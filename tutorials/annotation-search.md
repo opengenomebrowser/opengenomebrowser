@@ -1,3 +1,5 @@
+<link rel="shortcut icon" type="image/svg+xml" href="favicon.svg">
+
 # Annotation search
 
 To find the genomes that cover certain annotations, open the 
