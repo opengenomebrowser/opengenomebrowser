@@ -10,21 +10,21 @@ Normally, instances of OpenGenomeBrowser require a login to view any data. On th
 
 ## Tutorials
 
-*   [Genomes table](tutorials/genomes.md)
-*   [Single genome view](tutorials/genome.md)
-*   [Select genomes using "magic strings"](tutorials/magic-strings.md)
-*   [Pathways](tutorials/pathway.md)
-*   [Phylogenetic trees](tutorials/trees.md)
-*   [Annotation search](tutorials/annotation-search.md)
-*   [Gene trait matching](tutorials/gene-trait-matching.md)
-*   [BLAST](tutorials/blast.md)
+  - [Genomes table](tutorials/genomes.md)
+  - [Single genome view](tutorials/genome.md)
+  - [Select genomes using "magic strings"](tutorials/magic-strings.md)
+  - [Pathways](tutorials/pathway.md)
+  - [Phylogenetic trees](tutorials/trees.md)
+  - [Annotation search](tutorials/annotation-search.md)
+  - [Gene trait matching](tutorials/gene-trait-matching.md)
+  - [BLAST](tutorials/blast.md)
 
 ## Tutorials for staff/administrators
 
 (not available on demo instance)
 
-*   [Admin panel](tutorials/admin.md)
+  - [Admin panel](tutorials/admin.md)
 
 ## Tutorials for system administrators
 
-*   [Installation of OpenGenomeBrowser](/installation.md)
+  - [Installation of OpenGenomeBrowser](/installation.md)

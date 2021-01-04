@@ -7,8 +7,8 @@ for an example.
 
 You will be able to see:
 
-*   its annotations
-*   its nucleotide sequence
-*   its protein sequence (unless the gene does not have a protein sequence, e.g. tRNAs)
-*   information from the GenBank file
-*   an interactive gene locus view
+  - its annotations
+  - its nucleotide sequence
+  - its protein sequence (unless the gene does not have a protein sequence, e.g. tRNAs)
+  - information from the GenBank file
+  - an interactive gene locus view

@@ -45,8 +45,8 @@ In order to run OpenGenomeBrowser with your own data, you will have to prepare y
 
 #### Notes:
 
-*   paths are relative to the genome folder, i.e. it's fine to have files in a subfolders of the genome folder
-*   date format: `"%Y-%m-%d"`, i.e. `2000-12-31`
+  - paths are relative to the genome folder, i.e. it's fine to have files in a subfolders of the genome folder
+  - date format: `"%Y-%m-%d"`, i.e. `2000-12-31`
 
 ##### organism.json:
 
@@ -138,11 +138,11 @@ The file `annotations.eggnog` must be an eggNOG-mapper v2 output file. (Usual fi
 ##### Custom annotations format - type tsv:
 
 Allowed types:
-* `KG`: (KEGG gene, format: `K000000`)
-* `KR`: (KEGG reaction, format: `R00000`)
-* `GO`: (Gene ontology, format: `GO:0000000`)
-* `EC`: (Enzyme commission, format: `EC:0.0`, `EC:0.0.0` or `EC:0.0.0.0`)
-* `CU`: (Custom)
+  - `KG`: (KEGG gene, format: `K000000`)
+  - `KR`: (KEGG reaction, format: `R00000`)
+  - `GO`: (Gene ontology, format: `GO:0000000`)
+  - `EC`: (Enzyme commission, format: `EC:0.0`, `EC:0.0.0` or `EC:0.0.0.0`)
+  - `CU`: (Custom)
 
 ```
 "custom_annotations": [
@@ -184,8 +184,8 @@ EXAMPLE1234-2-1.1_000008	K000001, K000002
 
 ## Additional options
 
-- [Annotation descriptions](/installation/annotation-descriptions.md)
-- [Orthologs and Orthofinder](/installation/orthologs.md)
-- [Pathway maps](/installation/pathway-maps.md)
+  - [Annotation descriptions](/installation/annotation-descriptions.md)
+  - [Orthologs and Orthofinder](/installation/orthologs.md)
+  - [Pathway maps](/installation/pathway-maps.md)
 
 

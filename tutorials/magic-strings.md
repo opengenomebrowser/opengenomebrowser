@@ -17,9 +17,9 @@ To select all<sup>*</sup> genomes in the database, enter `@tax:root`, as all NCB
 
 _Magic strings_ only return...
 
-* ... one genome per organism (the _representative_ genome)
-* ... non-contaminated genomes
-* ... non-restricted genomes
+  - ... one genome per organism (the _representative_ genome)
+  - ... non-contaminated genomes
+  - ... non-restricted genomes
 
 Click on `Show query` to see which genomes were selected.
 

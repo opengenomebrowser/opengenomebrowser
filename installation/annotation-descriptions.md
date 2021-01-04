@@ -5,11 +5,11 @@ maps the identifier to a short description.
 
 Available types:
 
-* `KG`: (KEGG gene)
-* `KR`: (KEGG reaction)
-* `GO`: (Gene ontology)
-* `EC`: (Enzyme commission)
-* `CU`: (Custom)
+  - `KG`: (KEGG gene)
+  - `KR`: (KEGG reaction)
+  - `GO`: (Gene ontology)
+  - `EC`: (Enzyme commission)
+  - `CU`: (Custom)
 
 ```
 ├── organisms
