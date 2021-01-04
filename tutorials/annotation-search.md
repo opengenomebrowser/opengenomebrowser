@@ -1,4 +1,4 @@
-<link rel="shortcut icon" type="image/svg+xml" href="favicon.svg">
+<link rel="shortcut icon" type="image/svg+xml" href="/opengenomebrowser/favicon.svg">
 
 # Annotation search
 
