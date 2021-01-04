@@ -45,7 +45,7 @@ def home_view(request):
                 img_cls='square',
                 role='University of Bern',
                 href='https://www.bioinformatics.unibe.ch/',
-                did=['Infrastructure']
+                did=['Infrastructure', 'Funding']
             ),
             dict(
                 name='Agroscope',

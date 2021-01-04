@@ -52,6 +52,7 @@ progressbar2==3.53.1
 prompt-toolkit==3.0.8
 psutil==5.7.3
 psycopg2==2.8.6
+psycopg2-binary==2.8.6
 ptyprocess==0.6.0
 pure-cdb==3.1.1
 Pygments==2.7.3
