@@ -32,6 +32,9 @@ class GeneDetailView(DetailView):
 
         context['annotations'] = annotations
 
+        # get scaffold id
+        context['scaffold_id'] = g.get_gbk_seqrecord().scf_id
+
         # Find previous and next gene
         match = re.search('\d+$', g.identifier)
         if match:

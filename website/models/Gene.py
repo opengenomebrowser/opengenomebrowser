@@ -84,7 +84,9 @@ class Gene(models.Model):
             for feature in scf.features:
                 locus_tag = feature.qualifiers.get('locus_tag', [0])[0]  # returns [0] so it can be unpacked
                 if locus_tag == identifier:
-                    return feature.extract(scf)
+                    seqrecord = feature.extract(scf)
+                    seqrecord.scf_id = scf.id
+                    return seqrecord
         raise KeyError(F'Could not find locus_tag {identifier} in {file}')
 
     @staticmethod

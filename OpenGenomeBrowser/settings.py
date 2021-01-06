@@ -30,7 +30,7 @@ DB_HOST = os.environ.get('DB_HOST', 'db')
 DB_PORT = os.environ.get('DB_PORT', '5432')
 DB_NAME = os.environ.get('DB_NAME', 'opengenomebrowser_db')
 DB_USER = os.environ.get('DB_USER', 'postgres')
-DB_PASSWORD = os.environ.get('PASSWORD', 'postgres')
+DB_PASSWORD = os.environ.get('DB_PASSWORD', 'postgres')
 
 # GENOMIC_DATABASE must contain the folder 'organisms'
 GENOMIC_DATABASE = os.environ.get('GENOMIC_DATABASE', '/database')
@@ -239,4 +239,6 @@ for folder in [PATHWAY_MAPS, GENOMIC_DATABASE]:
 for file in [PATHWAY_MAPS_TYPE_DICT]:
     assert os.path.isfile(file), F"The path in settings.py doesn't point to a file: {file}"
 
+if DEFAULT_GENOMES_PAGE_LENGTH.isnumeric():
+    DEFAULT_GENOMES_PAGE_LENGTH = int(DEFAULT_GENOMES_PAGE_LENGTH)
 assert DEFAULT_GENOMES_PAGE_LENGTH in ["All", 10, 25, 50, 100, 200, 400, 800, 1600]
