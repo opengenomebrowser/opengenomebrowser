@@ -179,7 +179,7 @@ class Annotation(models.Model):
                 print(f'Loading {adf.file}...')
                 adf.update_descriptions(reload=reload)
             except FileNotFoundError:
-                print(f'Annotation-description file does not exist: {adf.file}')
+                print(f'Annotation-description file does not exist: {settings.ANNOTATION_DESCRIPTIONS}/{anno_type}.tsv')
 
     @staticmethod
     def get_annotation_type(query: str):

@@ -162,12 +162,17 @@ def import_database(delete_missing: bool = True, auto_delete_missing: bool = Fal
     sanity_check_postgres()
 
 
-def reload_color_css():
+def reload_color_css() -> None:
+    """
+    Recreate Tag and TaxID css files:
+        /static/global/css/tag_color.css
+        /static/global/css/taxid_color.css
+    """
     Tag.create_tag_color_css()
     TaxID.create_taxid_color_css()
 
 
-def import_pathway_maps():
+def import_pathway_maps() -> None:
     """
     (Re)load pathway maps into PostgreSQL database
     """
@@ -175,7 +180,7 @@ def import_pathway_maps():
     PathwayMap.reload_maps()
 
 
-def remove_missing_organisms(auto_delete_missing: bool = False):
+def remove_missing_organisms(auto_delete_missing: bool = False) -> None:
     """
     Remove organisms/genomes from the PostgreSQL database if they disappeared from the folder structure
 
@@ -205,7 +210,7 @@ def remove_missing_organisms(auto_delete_missing: bool = False):
             organism.delete()
 
 
-def reset_database(auto_delete: bool = False):
+def reset_database(auto_delete: bool = False) -> None:
     """
     Removes all objects fromt he PostgreSQL database (Organism, Genome, Tag, TaxID, GenomeContent, Gene, PathwayMap, Annotation)
 
@@ -220,7 +225,7 @@ def reset_database(auto_delete: bool = False):
         model.objects.all().delete()
 
 
-def sanity_check_postgres():
+def sanity_check_postgres() -> None:
     """
     Perform sanity checks on objects in the database
     """
@@ -248,7 +253,7 @@ def sanity_check_postgres():
           F"belonging to {len(Organism.objects.values('taxid').distinct())} species.")
 
 
-def import_orthologs(auto_delete: bool = False):
+def import_orthologs(auto_delete: bool = False) -> None:
     """
     Load annotations from settings.py > ORTHOLOG_ANNOTATIONS['ortholog_to_gene_ids']
     """
@@ -262,9 +267,7 @@ def import_orthologs(auto_delete: bool = False):
     Annotation.load_ortholog_annotations()
 
 
-def update_bokeh(auto_delete: bool = False):
-    """
-    """
+def update_bokeh(auto_delete: bool = False) -> None:
     import bokeh
     import requests
 
@@ -295,7 +298,12 @@ def update_bokeh(auto_delete: bool = False):
     print('\nRemember to run "python manage.py collectstatic"!')
 
 
-def send_mail(to: str):
+def send_mail(to: str) -> None:
+    """
+    Send test mail via DJANGO
+
+    :param to: email address of recipient
+    """
     from django.core.mail import send_mail
 
     send_mail(
@@ -308,7 +316,7 @@ def send_mail(to: str):
     print('Mail sent!')
 
 
-def download_kegg_data(n_parallel=4):
+def download_kegg_data(n_parallel=4) -> None:
     import requests
     import asyncio
     from concurrent.futures import ThreadPoolExecutor
@@ -376,6 +384,21 @@ def download_kegg_data(n_parallel=4):
             shell=True, env=myenv)
 
 
+def load_annotation_descriptions(anno_type: str = None, reload: bool = True) -> None:
+    """
+    Reload annotation-description files.
+
+    :param anno_type: e.g. 'EC', 'GC', 'GO', 'GP', 'KG', 'KR' or 'OL'
+    :param reload: if True: reload all description, else: only load where no description exists yet
+    """
+    if anno_type is None:
+        anno_types = None
+    else:
+        anno_types = [anno_type]
+
+    Annotation.load_descriptions(anno_types=anno_types, reload=reload)
+
+
 if __name__ == "__main__":
     from glacier import glacier
 
@@ -387,8 +410,7 @@ if __name__ == "__main__":
         import_pathway_maps,
         sanity_check_postgres,
         import_orthologs,
-        update_bokeh,
         send_mail,
-        download_kegg_data,
-        reload_color_css
+        reload_color_css,
+        load_annotation_descriptions
     ])
