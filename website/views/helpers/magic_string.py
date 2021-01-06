@@ -76,12 +76,7 @@ class MagicObject:
             raise MagicError(f'MagicWord obj is of unknown type: {type(self.obj)}')
 
     def genomes(self, representative=True, contaminated=False, restricted=False):
-        if type(self.obj) is TaxID:
-            return self.obj.get_child_genomes(representative=representative, contaminated=contaminated, restricted=restricted)
-        elif type(self.obj) is Tag:
-            return self.obj.genome_set.all()
-        else:
-            raise MagicError(f'MagicWord obj is of unknown type: {type(self.obj)}')
+        return self.obj.get_child_genomes(representative=representative, contaminated=contaminated, restricted=restricted)
 
     @staticmethod
     def autocomplete(magic_string: str) -> [dict]:

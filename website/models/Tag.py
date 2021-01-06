@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Q
 from django.db.utils import ProgrammingError
 from OpenGenomeBrowser import settings
 import json
@@ -65,6 +66,19 @@ class Tag(models.Model):
         except ProgrammingError:
             print("this should only happen during database setup! see website/models/Tag.getTagList()")
             return ""
+
+    def get_child_genomes(self, representative=None, contaminated=None, restricted=None):
+        from .Genome import Genome
+        qs = Genome.objects.filter(Q(tags=self.tag) | Q(organism__tags=self.tag))
+
+        if representative is not None:
+            qs = qs.filter(representative__isnull=not representative)
+        if contaminated is not None:
+            qs = qs.filter(contaminated=contaminated)
+        if restricted is not None:
+            qs = qs.filter(organism__restricted=restricted)
+
+        return qs.distinct()
 
     @staticmethod
     def get_tag_css_paths():
