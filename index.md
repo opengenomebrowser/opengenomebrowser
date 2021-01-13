@@ -15,10 +15,10 @@ _OpenGenomeBrowser is a dynamic and scalable web platform for comparative genomi
     - Visualize genomes on pathway maps
     - Visualize gene loci
     - Perform BLAST searches (nucleotide or protein level)
-    - Access raw data 
-  - OpenGenomeBrowser has few prerequisites:
-    - Genome files must be stored in certain folder structure
-    - One metadata file for each genome and organism
+    - download raw data through a webbrowser 
+  - OpenGenomeBrowser has only few prerequisites:
+    - Files such as assembly or annotation files must be stored in a defined folder structure
+    - At least one metadata file for each genome and organism is required
   - OpenGenomeBrowser is flexible:
     - [OrthoFinder](https://github.com/davidemms/OrthoFinder) is recommended, but not required (allows core genome dendrogram calculations)
     - Computationally intensive processes can be outsourced to a cluster
