@@ -1,6 +1,6 @@
 <link rel="shortcut icon" type="image/svg+xml" href="/opengenomebrowser/favicon.svg">
 
-# Log in
+# Demo instance
 
 A demo instance of OpenGenomeBrowser is hosted here: [opengenomebrowser.bioinformatics.unibe.ch](https://opengenomebrowser.bioinformatics.unibe.ch/). It can be accessed without login.
 
