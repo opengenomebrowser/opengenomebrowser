@@ -2,11 +2,9 @@
 
 # Log in
 
-A demo instance of OpenGenomeBrowser is hosted here: [opengenomebrowser.bioinformatics.unibe.ch](https://opengenomebrowser.bioinformatics.unibe.ch/).
+A demo instance of OpenGenomeBrowser is hosted here: [opengenomebrowser.bioinformatics.unibe.ch](https://opengenomebrowser.bioinformatics.unibe.ch/). It can be accessed without login.
 
 It contains 24 genomes published in the paper [Roder et al., Microorganisms, 2020](https://www.mdpi.com/2076-2607/8/7/966).
-
-Normally, instances of OpenGenomeBrowser require a login to view any data. On the demo instance, this has been disabled.
 
 ## Tutorials
 
