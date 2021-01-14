@@ -2,9 +2,9 @@
 
 # Set-up
 
-OpenGenomeBrowser is very easy to install as a docker container. Follow [this tutorial](https://github.com/opengenomebrowser/opengenomebrowser-docker-template/) to get it running with the demo database!
+OpenGenomeBrowser can be obtained as docker container and is very easy to install. Follow [this tutorial](https://github.com/opengenomebrowser/opengenomebrowser-docker-template/) to get it running with the demo database.
 
-In order to run OpenGenomeBrowser with your own data, you will have to prepare your files as described below.
+In order to run OpenGenomeBrowser with your own data you will have to prepare your files as described below.
 
 
 
@@ -35,7 +35,7 @@ In order to run OpenGenomeBrowser with your own data, you will have to prepare y
     -   we _suggest_ to use this suffix format:
         `organism`-`isolate`-`assembly`.`annotation`
     -   example: organism=`EXAMPLE1234` -> `EXAMPLE1234-2-1.1`
--   gene locus tags must start with the genome identifier, then an underline (`_`)
+-   gene locus tags must start with the genome identifier, followed by an underline (`_`)
     -   example: `EXAMPLE1234-2-1.1_000001`
 
 
@@ -50,7 +50,7 @@ In order to run OpenGenomeBrowser with your own data, you will have to prepare y
 
 ##### organism.json:
 
-(all mandatory fields have dummy data, all non-mandatory fields have null-input)
+(all mandatory fields must contain dummy data, all non-mandatory fields have null-input)
 
 ```json
 {
@@ -65,7 +65,7 @@ In order to run OpenGenomeBrowser with your own data, you will have to prepare y
 
 ##### genome.json:
 
-(all mandatory fields have dummy data, all non-mandatory fields have null-placeholder-input)
+(all mandatory fields must contain dummy data, all non-mandatory fields have null-placeholder-input)
 
 ```json
 {
