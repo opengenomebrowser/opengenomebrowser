@@ -2,7 +2,7 @@
 
 # Select genomes using "magic strings"
 
-Whenever you encounter an input box for genomes, e.g. for a BLAST search or pathay analysis, you can use _magic strings_ to quickly select groups of genomes.
+Whenever you encounter an input box for genomes, e.g. for a BLAST search or pathay analysis, you can use _magic strings_ to facilitate the selection of groups of genomes.
 
 All _magic strings_ start with an asterisk.
 
