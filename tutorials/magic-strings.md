@@ -21,6 +21,6 @@ _Magic strings_ only return...
   - non-contaminated genomes
   - non-restricted genomes
 
-Click on `Show query` to see which genomes were selected.
+Click on `Show query` to see the current selection of genomes.
 
 ![magic strings demo](../media/magic-strings.apng)
