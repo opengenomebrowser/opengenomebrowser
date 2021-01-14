@@ -41,7 +41,7 @@ In order to run OpenGenomeBrowser with your own data you will have to prepare yo
 
 
 
-## Metadata (NOTE: these specifications are not final!)
+## Metadata
 
 #### Notes:
 
