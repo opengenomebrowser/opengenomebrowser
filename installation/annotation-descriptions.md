@@ -1,9 +1,8 @@
 ## Annotation descriptions (optional)
 
-To tell OpenGenomeBrowser and its users what thinks like `K01695`, `EC:4.2.1.20` and `GO:0005829` mean, create a file for each annotation type that
-maps the identifier to a short description.
+OpenGenomeBrowser allows its users to extend annotation identifiers such as e.g. `K01695`, `EC:4.2.1.20` and `GO:0005829` with a short description to in order to facilitate interpretation. To use this feature a file for each annotation type is required which maps the identifiers to their description.
 
-Available types:
+Available types of annotation description files:
 
   - `KG`: (KEGG gene)
   - `KR`: (KEGG reaction)
