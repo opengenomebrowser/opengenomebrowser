@@ -9,6 +9,6 @@ The following analysis options are available:
 
   - TaxId-based tree: Short calculation time but based on taxid-annotations only (NOT on sequence similarity).
   - Genome-similarity-based tree: Short calculation time, based on sequence similarity of pairwise comparisons of assemblies (default: GenDisCal - PaSiT6 ([Goussarov et al., Bioinformatics, 2020](https://pubmed.ncbi.nlm.nih.gov/31899493/))
-  - Single-copy-ortholog-based tree: Long calculation time but the result is of higher quality (i.e. more reliable) than the former options. The methodology is based on [OrthoFinder](https://github.com/davidemms/OrthoFinder) consensus tree of all single-copy ortholog alignments ([Emms et al., Molecular Biology and Evolution, 2017]())
+  - Single-copy-ortholog-based tree: Long calculation time but the resulting tree has the best resolution. The methodology is based on [OrthoFinder](https://github.com/davidemms/OrthoFinder) consensus tree of all single-copy ortholog alignments ([Emms et al., Molecular Biology and Evolution, 2017]())
 
 ![trees demo](../media/trees.apng )
