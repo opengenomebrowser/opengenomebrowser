@@ -3,7 +3,7 @@
 # Annotation search
 
 To find the genomes that cover certain annotations, open the 
-[`Annotation search`](https://opengenomebrowser.bioinformatics.unibe.ch/annotation-search/) page.
+[`Annotation search`](https://opengenomebrowser.bioinformatics.unibe.ch/annotation-search/) page from the 'Tools' dropdown menu on the genomes table page.
 
 Enter the annotations to be queried into the top box and the genomes to search through into the lower one, then `submit`.
 (Note: consider using [_magic strings_](/tutorials/magic-strings.md)!)
