@@ -2,7 +2,7 @@
 
 # Select genomes using "magic strings"
 
-Whenever you are faced with an input box for genomes, you can use _magic strings_ to quickly select groups of genomes.
+Whenever you encounter an input box for genomes, e.g. for a BLAST search or pathay analysis, you can use _magic strings_ to facilitate the selection of groups of genomes.
 
 All _magic strings_ start with an asterisk.
 
@@ -17,10 +17,10 @@ To select all<sup>*</sup> genomes in the database, enter `@tax:root`, as all NCB
 
 _Magic strings_ only return...
 
-  - ... one genome per organism (the _representative_ genome)
-  - ... non-contaminated genomes
-  - ... non-restricted genomes
+  - one genome per organism (the _representative_ genome)
+  - non-contaminated genomes
+  - non-restricted genomes
 
-Click on `Show query` to see which genomes were selected.
+Click on `Show query` to see the current selection of genomes.
 
 ![magic strings demo](../media/magic-strings.apng)
