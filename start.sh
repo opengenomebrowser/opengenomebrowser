@@ -31,7 +31,7 @@ else
     --master --pidfile=/tmp/opengenomebrowser-master.pid \
     --socket=/socket/ogb.sock \
     --processes=5 \
-    --harakiri=20 \
+    --harakiri=60 \
     --max-requests=5000 \
     --buffer-size=30000 \
     --vacuum

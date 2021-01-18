@@ -56,7 +56,7 @@ def blast_submit(request):
     try:
         magic_query_manager = MagicQueryManager(queries=request.POST['genomes[]'].split(' '))
         genomes = magic_query_manager.all_genomes
-    except ValueError as e:
+    except Exception as e:
         return HttpResponse('Request failed: genomes[] incorrect. ' + str(e))
 
     query = request.POST['blast_input']
@@ -69,6 +69,9 @@ def blast_submit(request):
 
     fasta_files = [getattr(genome.genomecontent, file_type)(relative=False) for genome in genomes]
 
-    blast_output = blast.blast(fasta_string=query, db=fasta_files, mode=blast_algorithm)
+    try:
+        blast_output = blast.blast(fasta_string=query, db=fasta_files, mode=blast_algorithm)
+    except Exception as e:
+        return HttpResponse('Blast failed. Reason:' + str(e))
 
     return HttpResponse(blast_output, content_type="text/plain")

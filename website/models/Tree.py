@@ -4,6 +4,7 @@ from website.models import TaxID, GenomeSimilarity, Annotation, Genome, GenomeCo
 import pandas as pd
 from skbio import DistanceMatrix
 from skbio.tree import nj
+from biotite.sequence.phylo import upgma
 
 
 class TreeNotDoneError(Exception):
@@ -104,16 +105,16 @@ class AniTree(AbstractTree):
             raise TreeNotDoneError('ANI are still being calculated. ' +
                                    F'Finished: {n_done}, running: {n_running}, failed: {n_failed}')
 
-        ani_matrix = pd.DataFrame(
+        similarity_matrix = pd.DataFrame(
             {g1.identifier: [GenomeSimilarity.objects.get(g1, g2).similarity for g2 in self.__genomes]
              for g1 in self.__genomes})
-        ani_matrix.rename({n: id for n, id in enumerate(self.__genomes.values_list('identifier', flat=True))},
-                          inplace=True)
+        similarity_matrix.rename({n: id for n, id in enumerate(self.__genomes.values_list('identifier', flat=True))},
+                                 inplace=True)
 
-        ani_matrix = 1 - ani_matrix
+        self.distance_matrix = 1 - similarity_matrix
 
-        distance_matrix = DistanceMatrix(data=ani_matrix, ids=ani_matrix.index)
-        return nj(distance_matrix, result_constructor=str)
+        self._tree = upgma(self.distance_matrix.values)
+        return self._tree.to_newick(labels=self.distance_matrix.index)
 
 
 class OrthofinderTree(AbstractTree):

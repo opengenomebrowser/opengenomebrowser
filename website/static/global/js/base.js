@@ -142,6 +142,28 @@ let CopyToClipboard = function (text, fallback) {
     }
 }
 
+/**
+ * Opens save-as dialog
+ *
+ * @param  {string} uri Content to download
+ * @param  {string} filename Desired filename
+ */
+function saveUriAs(uri, filename) {
+    var link = document.createElement('a')
+    if (typeof link.download === 'string') {
+        link.href = uri
+        link.download = filename
+        //Firefox requires the link to be in the body
+        document.body.appendChild(link)
+        //simulate click
+        link.click()
+        //remove the link when done
+        document.body.removeChild(link)
+    } else {
+        window.open(uri)
+    }
+}
+
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms))
 }

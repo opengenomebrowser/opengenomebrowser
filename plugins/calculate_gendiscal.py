@@ -3,7 +3,7 @@ from lib.genome_similarity.gendiscal_wrapper import GenDisCal
 
 
 @task()
-def calculate_gendiscal(g1, g2) -> float:
+def calculate_gendiscal(g1, g2):
     from website.models.GenomeSimilarity import GenomeSimilarity
     from website.models.GenomeContent import GenomeContent
     g1: GenomeContent

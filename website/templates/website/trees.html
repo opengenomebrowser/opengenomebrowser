@@ -113,7 +113,7 @@
                     </form>
 
                 {% endif %}
-
+            </div>
         </section>
 
 
@@ -170,6 +170,19 @@
             <label for="genome-similarity-newick">Newick string</label>
             <input class="form-control" type="text" id="genome-similarity-newick" placeholder="Loading..."
                    onclick="CopyToClipboard(this.value)" readonly>
+
+            <div id="genome-distance-matrix" style="display: flex; justify-content: space-between">
+                Export distance matrix:
+                <button id="genome-distance-matrix" type="button" class="btn btn-secondary btn-sm" style="margin-top: 0.1rem; margin-bottom: 0.1rem"
+                        onclick="saveUriAs(uri='data:application/csv;charset=utf-8'+encodeURI($('#genome-distance-matrix').data('distance-matrix')), filename='distance-matrix.csv')"
+                >Download as CSV
+                </button>
+
+                <button id="genome-distance-matrix" type="button" class="btn btn-secondary btn-sm" style="margin-top: 0.1rem; margin-bottom: 0.1rem"
+                        onclick="CopyToClipboard(text=$('#genome-distance-matrix').data('distance-matrix'))"
+                >Copy to Clipboard
+                </button>
+            </div>
 
             <label for="genome-similarity-tree">Dendrogram</label>
             <div id="genome-similarity-tree" class="tree-div">

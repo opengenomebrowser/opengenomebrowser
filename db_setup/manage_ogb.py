@@ -399,6 +399,54 @@ def load_annotation_descriptions(anno_type: str = None, reload: bool = True) -> 
     Annotation.load_descriptions(anno_types=anno_types, reload=reload)
 
 
+def reload_blast_dbs() -> None:
+    """
+    Create all blast_dbs anew. This may be useful when NCBI changes their blast db version, for example.
+    """
+    gcs = GenomeContent.objects.all()
+    n_gcs = len(gcs)
+    for i, gc in enumerate(gcs):
+        print(f'Creating blast-db {i + 1}/{n_gcs}: {gc.identifier}')
+        gc.create_blast_dbs(reload=True)
+
+
+@transaction.atomic
+def update_taxids(download_taxdump: bool = False) -> None:
+    """
+    Update OpenGenomeBrowser TaxIDs to NCBI taxdump.
+
+    :param update_taxdb: if true, download newest taxdump
+    """
+
+    if download_taxdump:
+        from lib.get_tax_info.get_tax_info import GetTaxInfo
+        GetTaxInfo().update_ncbi_taxonomy_from_web()
+
+    organisms = Organism.objects.all()
+
+    print('sanity check: metadata taxid must be same as db taxid')
+    for o in organisms:
+        metadata_taxid = json.load(open(o.metadata_json))['taxid']
+        db_taxid = o.taxid.id
+        assert metadata_taxid == db_taxid, f'{o} has inconsistent taxid metadata: in db: {db_taxid}, in json: {metadata_taxid}'
+
+    print('set taxid to taxid 1 (root)')
+    root_taxid = TaxID.objects.get(id=1)
+    organisms.update(taxid=root_taxid)
+
+    print('remove all other taxids')
+    TaxID.objects.exclude(id=1)
+
+    print('recreate taxids')
+    for o in organisms:
+        metadata_taxid = json.load(open(o.metadata_json))['taxid']
+        o.taxid = TaxID.get_or_create(taxid=metadata_taxid)
+
+    print('update organisms')
+    Organism.objects.bulk_update(organisms, ['taxid'])
+    print('done')
+
+
 if __name__ == "__main__":
     from glacier import glacier
 
@@ -412,5 +460,7 @@ if __name__ == "__main__":
         import_orthologs,
         send_mail,
         reload_color_css,
-        load_annotation_descriptions
+        reload_blast_dbs,
+        load_annotation_descriptions,
+        update_taxids
     ])

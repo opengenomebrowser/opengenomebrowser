@@ -62,6 +62,10 @@ let loadTree = async function (genomes, method, target, newick_target, type, lay
 
         $(newick_target).val(ajax.responseJSON.newick)
 
+        if ('distance-matrix' in ajax.responseJSON) {
+            $('#genome-distance-matrix').data('distance-matrix', ajax.responseJSON['distance-matrix'])
+        }
+
         $(target).height(600)
         $(target).empty()
         go_on = false

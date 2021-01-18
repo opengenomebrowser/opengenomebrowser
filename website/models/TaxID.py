@@ -85,7 +85,6 @@ class TaxID(MPTTModel):
                 color, text_color_white = GlasbeyWrapper.get_color_from_taxid(t.taxid, t.scientific_name)
                 root_node = TaxID(id=1,
                                   taxscientificname=t.scientific_name,
-
                                   rank=t.rank,
                                   color=color,
                                   text_color_white=text_color_white

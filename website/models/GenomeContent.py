@@ -175,8 +175,12 @@ class GenomeContent(models.Model):
 
     def create_blast_dbs(self, reload=False):
         # do nothing if the .blast_dbs-folder exists
-        if os.path.isdir(self.blast_dbs_path(relative=False)) and not reload:
-            return
+        if os.path.isdir(self.blast_dbs_path(relative=False)):
+            if reload:
+                import shutil
+                shutil.rmtree(self.blast_dbs_path(relative=False))
+            else:
+                return
 
         blastable_files = [
             (self.genome.assembly_fasta(relative=False), self.blast_db_fna(relative=False), 'nucl'),
@@ -187,11 +191,11 @@ class GenomeContent(models.Model):
         from lib.ncbiblast.ncbi_blast.blast_wrapper import Blast
         blast = Blast(system_blast=True)
 
-        for src, dst, dbtype in blastable_files:
-            if not os.path.isfile(dst):
-                os.makedirs(os.path.dirname(dst))
-                os.link(src=src, dst=dst)
-            blast.mkblastdb(file=dst, dbtype=dbtype, overwrite=True)
+        for fasta, blast_db_location, dbtype in blastable_files:
+            if not os.path.isdir(blast_db_location):
+                os.makedirs(os.path.dirname(blast_db_location))
+                os.link(src=fasta, dst=blast_db_location)
+            blast.mkblastdb(file=blast_db_location, dbtype=dbtype, overwrite=True)
 
     def load_custom_file(self, file_dict):
         print("       add new file:", file_dict)

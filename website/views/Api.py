@@ -583,7 +583,7 @@ class Api:
 
         objs = MODEL.objects.filter(identifier__in=identifiers)
         try:
-            newick = METHOD(objs).newick
+            tree = METHOD(objs)
         except TreeNotDoneError as e:
             return JsonResponse(dict(status='still_running', message=e.message), status=409)  # 409 = conflict
 
@@ -595,4 +595,9 @@ class Api:
         # create dictionary: organism -> color based on taxid
         species_dict = {o.identifier: o.taxid.taxscientificname for o in objs}
 
-        return JsonResponse(dict(method=method, newick=newick, color_dict=species_dict))
+        result = dict(method=method, newick=tree.newick, color_dict=species_dict)
+
+        if hasattr(tree, 'distance_matrix'):
+            result['distance-matrix'] = tree.distance_matrix.to_csv()
+
+        return JsonResponse(result)
