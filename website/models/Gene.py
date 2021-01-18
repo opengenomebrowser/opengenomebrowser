@@ -31,7 +31,7 @@ class Gene(models.Model):
     @property
     def html(self):
         tsi = self.genomecontent.genome.taxscientificname
-        return F'<div class="gene ogb-tag" data-species="{tsi}" data-toggle="tooltip">{self.identifier}</div>'
+        return F'<div class="gene ogb-tag" data-species="{tsi}">{self.identifier}</div>'
 
     def gc_content(self) -> float:
         return GC(self.nucleotide_sequence())

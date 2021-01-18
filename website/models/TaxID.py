@@ -46,7 +46,7 @@ class TaxID(MPTTModel):
 
     @property
     def html(self):
-        return F'<div class="taxid ogb-tag" data-species="{self.taxscientificname}" data-toggle="tooltip">{self.taxscientificname}</div>'
+        return F'<div class="taxid ogb-tag" data-species="{self.taxscientificname}">{self.taxscientificname}</div>'
 
     def get_child_taxids(self) -> QuerySet:
         return TaxID.objects.get_queryset_descendants(TaxID.objects.filter(id=self.id), include_self=True)

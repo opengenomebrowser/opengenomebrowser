@@ -90,7 +90,7 @@ class Api:
         results = []
         for annotation in annotations:
             results.append({
-                'label': F"{annotation.name} ({Annotation.get_auto_description(annotation.name)})",
+                'label': F"{annotation.name} ({Annotation.description})",
                 'value': annotation.name
             })
         data = json.dumps(results)
@@ -274,10 +274,9 @@ class Api:
 
         annotations = set(request.GET.getlist('annotations[]'))
 
-        try:
-            anno_to_description = {anno: Annotation.get_auto_description(anno) for anno in annotations}
-        except Annotation.DoesNotExist:
-            return err('One or more anntations could not be found.')
+        found_annotations = Annotation.objects.filter(name__in=annotations)
+
+        anno_to_description = {anno.name: anno.description for anno in found_annotations}
 
         return JsonResponse(anno_to_description)
 

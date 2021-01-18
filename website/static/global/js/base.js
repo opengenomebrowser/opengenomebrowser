@@ -204,8 +204,7 @@ function create_read_only_genome_div(genome_array, genome_to_species, additional
             class: 'genome ogb-tag',
             onclick: `showGenomeClickMenu(event, 'auto', 'auto', 'auto', '${click_menu_annotation}')`,
             'data-species': genome_to_species[genome]['sciname'],
-            'title': genome_to_species[genome]['sciname'],
-            'data-toggle': 'tooltip'
+            'title': genome_to_species[genome]['sciname']
         }).tooltip())
     }
 
@@ -226,8 +225,7 @@ function create_read_only_annotations_div(annotations_array, annotation_to_type)
             class: 'annotation ogb-tag',
             onclick: `showAnnotationClickMenu(event, 'auto', 'auto', $(this).parent().parent().parent().parent() )`,
             'data-annotype': annotation_to_type[annotations_array[idx]]['anno_type'],
-            'title': annotation_to_type[annotations_array[idx]]['description'],
-            'data-toggle': 'tooltip'
+            'title': annotation_to_type[annotations_array[idx]]['description']
         }).tooltip())
     }
 
@@ -268,7 +266,6 @@ function on_annotations_change(field, editor, tags) {
 
             let child_1 = li.children()[1]
             child_1.setAttribute('data-annotype', data[anno]['anno_type'])
-            child_1.setAttribute('data-toggle', 'tooltip')
             child_1.setAttribute('title', data[anno]['description'])
             $(child_1).tooltip()
 
@@ -318,12 +315,10 @@ function on_genomes_change(field, editor, tags) {
 
             if (genome_data['type'] === 'taxid' || genome_data['type'] === 'genome') {
                 child_1.setAttribute('data-species', genome_data['sciname'])
-                child_1.setAttribute('data-toggle', 'tooltip')
                 child_1.setAttribute('title', genome_data['sciname'])
                 child_2.setAttribute('data-species', genome_data['sciname'])
             } else if (genome_data['type'] === 'tag') {
                 child_1.setAttribute('data-tag', genome_data['tag'])
-                child_1.setAttribute('data-toggle', 'tooltip')
                 child_1.setAttribute('title', genome_data['description'])
                 child_2.setAttribute('data-tag', genome_data['tag'])
             } else {
@@ -375,7 +370,6 @@ function on_genes_change(field, editor, tags) {
 
             let child_1 = li.children()[1]
             child_1.setAttribute('data-species', data[genome]['sciname'])
-            child_1.setAttribute('data-toggle', 'tooltip')
             child_1.setAttribute('title', data[genome]['sciname'])
             $(child_1).tooltip()
 

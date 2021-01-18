@@ -380,7 +380,7 @@ ${genes.length} genes</h6>
 
     genes.forEach(gene => {
         console.log(gene)
-        html += `<div class="gene ogb-tag" data-species="${species}" data-toggle="tooltip" onclick="showGeneClickMenu(event)">${gene}</div>`
+        html += `<div class="gene ogb-tag" data-species="${species}" onclick="showGeneClickMenu(event)">${gene}</div>`
     })
 
     html += `</div>`

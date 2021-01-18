@@ -441,7 +441,9 @@
     <script>
 
         $(document).ready(function () {
-            $('[data-toggle="tooltip"]').tooltip({
+            $('#busco-table [data-toggle="tooltip"]').tooltip() // BUSCO tooltips
+
+            $('[data-species]').tooltip({
                 title: function () {
                     return $(this).attr('data-species')
                 }

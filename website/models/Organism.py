@@ -38,7 +38,7 @@ class Organism(models.Model):
 
     @property
     def html(self):
-        return F'<div class="organism ogb-tag" data-species="{self.taxid.taxscientificname}" data-toggle="tooltip">{self.name}</div>'
+        return F'<div class="organism ogb-tag" data-species="{self.taxid.taxscientificname}">{self.name}</div>'
 
     @property
     def get_tag_html(self) -> str:

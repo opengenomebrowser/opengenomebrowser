@@ -128,35 +128,7 @@ class Annotation(models.Model):
 
     @property
     def html(self):
-        return F'<div class="annotation ogb-tag" data-annotype="{self.anno_type}" data-toggle="tooltip" title="{self.description}">{self.name}</div>'
-
-    @staticmethod
-    def get_auto_description(query: str):
-        # try db
-        try:
-            return Annotation.objects.get(name=query).description
-        except Annotation.DoesNotExist:
-            pass
-        # try annotation-description files
-        for anno_enum in [  # this order matters because of regex overlap
-            AnnotationRegex.COMPOUND,
-            AnnotationRegex.ENZYMECOMMISSION,
-            AnnotationRegex.KEGGGENE,
-            AnnotationRegex.KEGGREACTION,
-            AnnotationRegex.GENEONTOLOGY,
-            AnnotationRegex.ORTHOLOG,
-            AnnotationRegex.CUSTOM,
-            AnnotationRegex.GENECODE,
-            AnnotationRegex.PRODUCT
-        ]:
-            if anno_enum.match_regex.match(query):
-                try:
-                    adf = AnnotationDescriptionFile(anno_type=anno_enum.value, create_cdb=False)
-                    return adf.get_description(query)
-                except (FileNotFoundError, AttributeError):
-                    pass
-        # return '-' if nothing worked
-        return '-'
+        return F'<div class="annotation ogb-tag" data-annotype="{self.anno_type}" title="{self.description}">{self.name}</div>'
 
     @staticmethod
     def invariant():
@@ -180,14 +152,6 @@ class Annotation(models.Model):
                 adf.update_descriptions(reload=reload)
             except FileNotFoundError:
                 print(f'Annotation-description file does not exist: {settings.ANNOTATION_DESCRIPTIONS}/{anno_type}.tsv')
-
-    @staticmethod
-    def get_annotation_type(query: str):
-        for anno_regex in AnnotationRegex:
-            if anno_regex.start_regex.match(query):
-                return anno_regex.value
-
-        raise Annotation.DoesNotExist(F"Annotation doesn't match any type! '{query}'!")
 
     @staticmethod
     def load_ortholog_annotations():

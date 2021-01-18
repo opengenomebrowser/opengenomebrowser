@@ -57,7 +57,7 @@ class GenomeContent(models.Model):
 
     @property
     def html(self):
-        return F'<div class="genome ogb-tag" data-species="{self.genome.taxid.taxscientificname}" data-toggle="tooltip">{self.identifier}</div>'
+        return F'<div class="genome ogb-tag" data-species="{self.genome.taxid.taxscientificname}">{self.identifier}</div>'
 
     @property
     def organism(self):
