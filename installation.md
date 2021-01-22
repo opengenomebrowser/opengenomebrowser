@@ -50,7 +50,7 @@ In order to run OpenGenomeBrowser with your own data you will have to prepare yo
 
 ##### organism.json:
 
-(all mandatory fields must contain dummy data, all non-mandatory fields have null-input)
+(in the example below, all mandatory fields contain dummy data and all non-mandatory fields have null-input)
 
 ```json
 {
@@ -65,7 +65,7 @@ In order to run OpenGenomeBrowser with your own data you will have to prepare yo
 
 ##### genome.json:
 
-(all mandatory fields must contain dummy data, all non-mandatory fields have null-placeholder-input)
+(in the example below, all mandatory fields contain dummy data and all non-mandatory fields have null-input)
 
 ```json
 {

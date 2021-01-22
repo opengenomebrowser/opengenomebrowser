@@ -13,12 +13,12 @@ _OpenGenomeBrowser is a dynamic and scalable web platform for comparative genomi
     - Searching for gene annotations in genomes
     - Visualization of gene loci for comparative genomic analyses
     - Generation of dendrograms (Taxid-based, ANI-based and OrthoFinder-based)
-    - Pathway analyses incl. visualization of gene content of genomes on pathway maps
+    - Pathway analyses (visualization of gene content of genomes on pathway maps)
     - BLAST searches (nucleotide or protein level)
     - Download raw data through a webbrowser 
   - OpenGenomeBrowser has only few prerequisites:
     - Assembly and genome annotation files must be stored in a pre-defined folder structure
-    - At least one metadata file for each genome and organism is required
+    - One metadata file per genome and per organism is required
   - OpenGenomeBrowser is flexible:
     - [OrthoFinder](https://github.com/davidemms/OrthoFinder) is recommended, but not required (allows core genome dendrogram calculations)
     - Computationally intensive processes can be outsourced to a cluster
@@ -31,7 +31,8 @@ _OpenGenomeBrowser is a dynamic and scalable web platform for comparative genomi
 ### Key concepts
 
   - _Organism_: biological entity, e.g. a microbial strain 
-  - _Genome_: one sample of a particular organism. An organism can comprise more than one genome, e.g. if a particular strain has been sequenced multiple times   
+  - _Genome_: one sample of a particular organism. Multiple genomes can be associated with one organism,
+    e.g. if a particular strain has been sequenced multiple times   
   - _Representative_: the 'gold standard' genome of an organism
 
 

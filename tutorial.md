@@ -10,10 +10,12 @@ It contains 24 genomes published in the paper [Roder et al., Microorganisms, 202
 
   - [Genomes table](tutorials/genomes.md)
   - [Single genome view](tutorials/genome.md)
+  - [Single gene view](tutorials/gene.md)
   - [Select genomes using "magic strings"](tutorials/magic-strings.md)
   - [Pathways](tutorials/pathway.md)
   - [Phylogenetic trees](tutorials/trees.md)
   - [Annotation search](tutorials/annotation-search.md)
+  - [Compare genes](tutorials/compare-genes.md)
   - [Gene trait matching](tutorials/gene-trait-matching.md)
   - [BLAST](tutorials/blast.md)
 
