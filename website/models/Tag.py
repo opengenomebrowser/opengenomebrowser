@@ -80,11 +80,16 @@ class Tag(models.Model):
 
         return qs.distinct()
 
+    @property
+    def css(self):
+        return f'[data-tag="{self.tag}"] {{background-color: rgb({self.color}) !important; color: {"white" if self.text_color_white else "black"} !important}}'
+
     @staticmethod
     def get_tag_css_paths():
-        f1 = os.path.abspath(F'{settings.BASE_DIR}/website/static/global/css/tag_color.css')
-        f2 = os.path.abspath(F'{settings.BASE_DIR}/static_root/global/css/tag_color.css')
-        files = [f1, f2]
+        files = [
+            os.path.abspath(F'{settings.BASE_DIR}/website/static/global/css/tag_color.css'),
+            os.path.abspath(F'{settings.BASE_DIR}/static_root/global/css/tag_color.css')
+        ]
         for file in files:
             # ensure parent folder exists
             os.makedirs(os.path.dirname(file), exist_ok=True)
@@ -92,18 +97,10 @@ class Tag(models.Model):
 
     @staticmethod
     def create_tag_color_css():
-        all_tags = Tag.objects.all()
-        css_content = ''
-        for tag in all_tags:
-            css = '[data-tag="' + tag.tag + '"] {background-color: rgb(' + tag.color + ') !important; color: '
-            if tag.text_color_white:
-                css += 'white !important}\n'
-            else:
-                css += 'black !important}\n'
-            css_content += css
-
+        css = '\n'.join(tag.css for tag in Tag.objects.all())
         for file in Tag.get_tag_css_paths():
-            open(file, 'w').write(css_content)
+            with open(file, 'w') as f:
+                f.write(css)
 
     def __str__(self):
         return self.tag

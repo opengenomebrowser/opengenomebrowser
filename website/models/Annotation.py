@@ -1,31 +1,9 @@
 import os
 import re
+import json
 from django.db import models
-from django.utils.translation import gettext_lazy as _
-from lib.gene_ontology.gene_ontology import GeneOntology
-from enum import Enum
 import cdblib
 from OpenGenomeBrowser import settings
-
-gene_ontology = GeneOntology()
-
-
-class AnnotationRegex(Enum):
-    def __init__(self, value, match_regex, start_regex):
-        self._value_ = value
-        self.match_regex = match_regex
-        self.start_regex = start_regex
-
-    CUSTOM = ('CU', re.compile('^C\:[0-9a-zA-Z\-\_\:\.]{1,48}$'), re.compile('^C\:[0-9a-zA-Z\-\_\:\.]{1,48}$'))
-    ENZYMECOMMISSION = ('EC', re.compile('^EC:[0-9\.-]{1,12}$'), re.compile('^[Ee][Cc]:[0-9\.-]{1,12}$'))
-    KEGGGENE = ('KG', re.compile('^K[0-9]{5}$'), re.compile('^[Kk][0-9]{1,5}$'))
-    KEGGREACTION = ('KR', re.compile('^R[0-9]{5}$'), re.compile('^[Rr][0-9]{1,5}$'))
-    GENEONTOLOGY = ('GO', re.compile('^GO:[0-9]{7}$'), re.compile('^[Gg][Oo]:[0-9]{1,7}$'))
-    ORTHOLOG = ('OL', re.compile('^((N[0-9]+\.)?H)?OG[0-9]{7}$'), re.compile('^[Oo][Gg][0-9]{1,7}$'))
-    GENECODE = ('GC', re.compile('^[0-9a-zA-Z\_\/\-\ \']{3,11}$'), re.compile('^[0-9a-zA-Z\_\/\-\ \']{2,11}$'))
-    PRODUCT = ('GP', re.compile('^.*$'), re.compile('^.*$'))
-    # Note: COMPOUND is not a type that is allowed in the database!
-    COMPOUND = ('CP', re.compile('^C[0-9]{5}$'), re.compile('^[Cc][0-9]{1,5}$'))
 
 
 class AnnotationDescriptionFile:
@@ -52,7 +30,7 @@ class AnnotationDescriptionFile:
         if reload:
             queryset = Annotation.objects.filter(anno_type=self.anno_type)
         else:
-            queryset = Annotation.objects.filter(anno_type=self.anno_type, description=None)
+            queryset = Annotation.objects.filter(anno_type=self.anno_type, description='')
 
         for chunk in self.chunked_queryset(queryset, chunk_size=chunk_size):
             for anno in chunk:
@@ -97,28 +75,42 @@ class AnnotationDescriptionFile:
         return reader
 
 
+class AnnotationType:
+    def __init__(self, anno_type: str, data: dict):
+        self._raw: dict = data
+        self.anno_type: str = anno_type
+        self.name: str = data['name']
+        self.color: str = data['color']
+        self.regex: re.Pattern = re.compile(data['regex'])
+        self.hyperlinks: list = data['hyperlinks']
+
+        for hyperlink in self.hyperlinks:
+            for key in ['url', 'name']:
+                assert key in hyperlink and type(hyperlink[key]) is str, self
+            assert '{anno}' in hyperlink['url'], self
+
+    def __repr__(self) -> str:
+        return f'<AnnotationType {self.anno_type}>'
+
+    @property
+    def css(self):
+        return f'[data-annotype="{self.anno_type}"] {{background-color: {self.color} !important; color: black !important}}'
+
+
+annotation_types: dict[str, AnnotationType]
+with open(f'{settings.GENOMIC_DATABASE}/annotations.json') as f:
+    annotation_types = {anno_type: AnnotationType(anno_type, data) for anno_type, data in json.load(f).items()}
+
+
 class Annotation(models.Model):
     name = models.CharField(max_length=200, unique=True, primary_key=True)
     description = models.TextField(blank=True)
 
-    class AnnotationTypes(models.TextChoices):
-        PRODUCT = 'GP', _('Gene Product')
-        GENECODE = 'GC', _('Gene Code')
-        ORTHOLOG = "OL", _('Ortholog')
-        CUSTOM = 'CU', _('Custom Annotation')
-        KEGGGENE = 'KG', _('KEGG Gene')
-        KEGGREACTION = 'KR', _('KEGG Reaction')
-        ENZYMECOMMISSION = 'EC', _('Enzyme Commission')
-        GENEONTOLOGY = 'GO', _('Gene Ontology')
-
-    anno_type = models.CharField(
-        max_length=2,
-        choices=AnnotationTypes.choices
-    )
+    anno_type = models.CharField(max_length=2)
 
     @property
     def anno_type_verbose(self):
-        return self.get_anno_type_display()
+        return annotation_types[self.anno_type].name
 
     # ensure these things are only calculated once
     _descr = None
@@ -215,3 +207,24 @@ class Annotation(models.Model):
         Gene.annotations.through.objects.bulk_create(gene_to_ortholog_links)
 
         print('Success.')
+
+    @staticmethod
+    def get_annotype_css_paths():
+        files = [
+            os.path.abspath(F'{settings.BASE_DIR}/website/static/global/css/annotype_color.css'),
+            os.path.abspath(F'{settings.BASE_DIR}/static_root/global/css/annotype_color.css')
+        ]
+        for file in files:
+            # ensure parent folder exists
+            os.makedirs(os.path.dirname(file), exist_ok=True)
+        return files
+
+    @staticmethod
+    def create_annotype_color_css():
+        css = ['[data-annotype="fake"] {background-color: lightgrey !important; color: black !important}']
+        for anno_type in annotation_types.values():
+            css.append(anno_type.css)
+
+        for file in Annotation.get_annotype_css_paths():
+            with open(file, 'w') as f:
+                f.write('\n'.join(css))

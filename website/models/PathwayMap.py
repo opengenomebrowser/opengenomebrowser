@@ -34,15 +34,6 @@ class PathwayMap(models.Model):
         else:
             print('default type dict')
             type_dict = {a.label: a.value for a in Annotation.AnnotationTypes}
-            additional = {
-                "KEGG Compound": "ignore",
-                "KEGG Glycan": "ignore",
-                "KEGG Drug": "ignore",
-                "KEGG Drug Group": "ignore",
-                "KEGG Map": "ignore",
-                "Unknown": "ignore"
-            }
-            type_dict.update(additional)
             return type_dict
 
     @staticmethod

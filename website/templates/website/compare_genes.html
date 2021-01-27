@@ -70,8 +70,8 @@
     <div class="sidebar-subcontent form-check form-check-inline">
         <label for="colorization-anno-type"><a>Colorize genes based on...</a></label>
         <select class="form-control" id="colorization-anno-type" data-selected="OL">
-            {% for anno_type in anno_types %}
-                <option value="{{ anno_type }}" {% if anno_type == 'OL' %} selected {% endif %}>{{ anno_type.label }} ({{ anno_type }})
+            {% for at in anno_types %}
+                <option value="{{ at.anno_type }}" {% if at.anno_type == 'OL' %} selected {% endif %}>{{ at.name }} ({{ at.anno_type }})
                 </option>{% endfor %}
             <option value="--">Highlight only selected gene</option>
         </select>

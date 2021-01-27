@@ -54,8 +54,8 @@ let loadTree = async function (genomes, method, target, newick_target, type, lay
         }
 
         if (ajax.status !== 200) {
-            alert(`Failed to load ${method} tree.`)
             console.log('ajax-response for debugging:', ajax)
+            alert(`Failed to load ${method} tree. ${ajax.status}`)
             go_on = false
             return null
         }

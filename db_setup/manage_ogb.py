@@ -104,8 +104,8 @@ def import_database(delete_missing: bool = True, auto_delete_missing: bool = Fal
 
     organism_generator = folder_looper.organisms(skip_ignored=True, sanity_check=False)
     for organism in progressbar(organism_generator, max_value=n_organisms, redirect_stdout=True):
+        organism: MockOrganism
         with transaction.atomic():
-            organism: MockOrganism
             color_print(f'└── {organism.name}', color=Fore.BLUE, end=' ')
 
             organism_serializer = OrganismSerializer(data=organism.json)
@@ -156,8 +156,7 @@ def import_database(delete_missing: bool = True, auto_delete_missing: bool = Fal
             for g in genomes:
                 GenomeSerializer.update_genomecontent(g)
 
-    Tag.create_tag_color_css()
-    TaxID.create_taxid_color_css()
+    reload_color_css()
 
     sanity_check_postgres()
 
@@ -170,6 +169,7 @@ def reload_color_css() -> None:
     """
     Tag.create_tag_color_css()
     TaxID.create_taxid_color_css()
+    Annotation.create_annotype_color_css()
 
 
 def import_pathway_maps() -> None:
@@ -189,16 +189,6 @@ def remove_missing_organisms(auto_delete_missing: bool = False) -> None:
     all_organisms = [o.name for o in folder_looper.organisms(skip_ignored=True, sanity_check=False)]
     all_genomes = [g.identifier for g in folder_looper.genomes(skip_ignored=True, sanity_check=False)]
 
-    for genome in Genome.objects.all():
-        if genome.identifier not in all_genomes:
-            if not auto_delete_missing:
-                print_warning(
-                    F"Genome '{genome.identifier}' is missing from the database-folder. Remove it from the database?",
-                    color=Fore.MAGENTA
-                )
-                confirm_delete(color=Fore.MAGENTA)
-            genome.delete()
-
     for organism in Organism.objects.all():
         if organism.name not in all_organisms:
             if not auto_delete_missing:
@@ -209,6 +199,17 @@ def remove_missing_organisms(auto_delete_missing: bool = False) -> None:
                 confirm_delete(color=Fore.MAGENTA)
             organism.delete()
 
+    for genome in Genome.objects.all():
+        if genome.identifier not in all_genomes:
+            if not auto_delete_missing:
+                print_warning(
+                    F"Genome '{genome.identifier}' is missing from the database-folder. Remove it from the database?",
+                    color=Fore.MAGENTA
+                )
+                confirm_delete(color=Fore.MAGENTA)
+            genome.delete()
+
+    GenomeContent.objects.filter(genome__isnull=True).delete()
 
 def reset_database(auto_delete: bool = False) -> None:
     """
@@ -316,6 +317,12 @@ def send_mail(to: str) -> None:
     print('Mail sent!')
 
 
+def download_go_data() -> None:
+    from lib.gene_ontology.gene_ontology import GeneOntology
+
+    GeneOntology(reload=True)
+
+
 def download_kegg_data(n_parallel=4) -> None:
     import requests
     import asyncio
@@ -323,7 +330,7 @@ def download_kegg_data(n_parallel=4) -> None:
 
     print('Downloading KEGG data...')
 
-    os.makedirs(settings.ANNOTATION_DATA, exist_ok=True)
+    os.makedirs(settings.ANNOTATION_DESCRIPTIONS, exist_ok=True)
 
     def fetch(session, url, save_path, raw=False):
         with session.get(url) as response:
@@ -362,26 +369,26 @@ def download_kegg_data(n_parallel=4) -> None:
                     pass
 
     # files = ['path', 'rn', 'ko', 'compound', 'drug', 'glycan', 'dgroup', 'enzyme']
-    files = ['rn', 'ko', 'compound', 'enzyme']
+    files = [('rn', 'KR.tsv'), ('ko', 'KG.tsv'), ('compound', 'CP.tsv'), ('enzyme', 'EC-unsorted.tsv')]
     url_fn_raw_list = [
-        (F'http://rest.kegg.jp/list/{file}', F'{settings.ANNOTATION_DATA}/{file}.tsv', False)
-        for file in files
+        (F'http://rest.kegg.jp/list/{type}', F'{settings.ANNOTATION_DESCRIPTIONS}/{filename}', False)
+        for type, filename in files
     ]
 
     loop = asyncio.get_event_loop()
     future = asyncio.ensure_future(fetch_all(url_fn_raw_list=url_fn_raw_list, n_parallel=n_parallel))
     loop.run_until_complete(future)
 
-    if 'enzyme' in files:
-        print('Sorting enzyme.tsv')
-        # sort enzyme.tsv according to C-language logic
-        import subprocess
-        myenv = os.environ.copy()
-        myenv['LC_ALL'] = 'C'
-        subprocess.run(
-            F"sort --key=1 --field-separator=$'\t' "
-            F"--output={settings.ANNOTATION_DATA}/enzyme_sorted.tsv {settings.ANNOTATION_DATA}/enzyme.tsv",
-            shell=True, env=myenv)
+    print('Sorting EC.tsv')
+    # sort EC-unsorted.tsv according to C-language logic
+    import subprocess
+    myenv = os.environ.copy()
+    myenv['LC_ALL'] = 'C'
+    subprocess.run(
+        F"sort --key=1 --field-separator=$'\t' "
+        F"--output={settings.ANNOTATION_DESCRIPTIONS}/EC.tsv {settings.ANNOTATION_DESCRIPTIONS}/EC-unsorted.tsv",
+        shell=True, env=myenv)
+    os.remove(f'{settings.ANNOTATION_DESCRIPTIONS}/EC-unsorted.tsv')
 
 
 def load_annotation_descriptions(anno_type: str = None, reload: bool = True) -> None:

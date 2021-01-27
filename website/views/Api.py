@@ -5,8 +5,7 @@ import itertools
 from collections import Counter
 
 from OpenGenomeBrowser import settings
-from website.models.Annotation import Annotation
-from website.models import GenomeContent, Genome, PathwayMap, Gene, TaxID, GenomeSimilarity
+from website.models import GenomeContent, Genome, PathwayMap, Gene, TaxID, GenomeSimilarity, Annotation, annotation_types
 from website.models.Tree import TaxIdTree, AniTree, OrthofinderTree, TreeNotDoneError
 from django.db.models.functions import Concat
 from django.db.models import CharField, Value as V
@@ -18,9 +17,9 @@ from lib.multiplesequencealignment.multiple_sequence_alignment import ClustalOme
 from .helpers.magic_string import MagicQueryManager, MagicObject
 
 
-def err(error_message):
+def err(error_message, status=500):
     print(error_message)
-    return JsonResponse(dict(status='false', message=error_message), status=500)
+    return JsonResponse(dict(status='false', message=error_message), status=status)
 
 
 UNIQUE_COLORS_HEX = json.load(open('lib/tax_id_to_color/300_different_colors.txt'))
@@ -417,8 +416,9 @@ class Api:
         span = int(request.GET['span'])
 
         colorize_by = request.GET['colorize_by']
-        if colorize_by not in Annotation.AnnotationTypes.values + ['--']:
-            return err(F"colorize_by must be one of the following: {Annotation.AnnotationTypes.values + ['--']}, but is {colorize_by}")
+        allowed_colorize_bys = list(annotation_types.keys()) + ['--']
+        if colorize_by not in allowed_colorize_bys:
+            return err(F"colorize_by must be one of the following: {allowed_colorize_bys}, but is {colorize_by}")
 
         gene_identifiers = request.GET.getlist('gene_identifiers[]')
 
@@ -579,10 +579,6 @@ class Api:
         identifiers = set(request.GET.getlist('genomes[]'))
 
         objs = MODEL.objects.filter(identifier__in=identifiers)
-        try:
-            tree = METHOD(objs)
-        except TreeNotDoneError as e:
-            return JsonResponse(dict(status='still_running', message=e.message), status=409)  # 409 = conflict
 
         if not len(objs) == len(identifiers):
             found = set(objs.values_list('identifier', flat=True))
@@ -592,7 +588,11 @@ class Api:
         # create dictionary: organism -> color based on taxid
         species_dict = {o.identifier: o.taxid.taxscientificname for o in objs}
 
-        result = dict(method=method, newick=tree.newick, color_dict=species_dict)
+        try:
+            tree = METHOD(objs)
+            result = dict(method=method, newick=tree.newick, color_dict=species_dict)
+        except TreeNotDoneError as e:
+            return JsonResponse(dict(status='still_running', message=e.message), status=409)  # 409 = conflict
 
         if hasattr(tree, 'distance_matrix'):
             result['distance-matrix'] = tree.distance_matrix.to_csv()

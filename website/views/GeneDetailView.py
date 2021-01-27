@@ -1,4 +1,4 @@
-from website.models import Gene, Annotation
+from website.models import Gene, Annotation, annotation_types
 from django.views.generic import DetailView
 import re
 
@@ -26,8 +26,9 @@ class GeneDetailView(DetailView):
 
         annotations = g.annotations.order_by('name').reverse()  # reverse because interesting GO-terms tend to have high values
 
-        annotations = {anno_type: annotations.filter(anno_type=anno_type) for anno_type in Annotation.AnnotationTypes}
+        annotations = {at.anno_type: annotations.filter(anno_type=at.anno_type) for at in annotation_types.values()}
 
+        # remove empty categories
         annotations = {anno_type: annos for anno_type, annos in annotations.items() if len(annos) > 0}
 
         context['annotations'] = annotations

@@ -57,6 +57,7 @@ lib/assembly_stats/assembly-stats/
 website/static/global/css/tag_color.css
 website/static/global/css/taxid_color.css
 website/static/global/css/taxid_color_label.css
+website/static/global/css/annotype_color.css
 
 /lib/orthofinder/OrthoFinder/
 /db_setup/huey.db

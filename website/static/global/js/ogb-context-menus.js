@@ -344,6 +344,20 @@ Show details about this annotation</a>
 Copy annotation</a>
 `)
 
+    // show hyperlinks
+    let hyperlinks
+    try {
+        hyperlinks = annotations_json[annotype]['hyperlinks']
+    } catch (e) {
+        console.log('showAnnotationClickMenu: Failed to read hyperlinks for', annotype, annotation)
+        hyperlinks = []
+    }
+    hyperlinks.forEach(function (data) {
+        const name = data['name']
+        const url = data['url'].replace('{anno}', annotation)
+        cm.appendElement(`<a href="${url}" class="dropdown-item context-menu-icon context-menu-icon-hyperlink">${name}</a>`)
+    })
+
     if (siblings.length > 1) {
         cm.appendElement(`
 <h6 class="dropdown-header context-menu-header many-annotations">

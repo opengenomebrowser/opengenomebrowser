@@ -6,7 +6,7 @@ def click_view(request):
     context = dict(
         title='Test Click Menu',
         taxids=TaxID.objects.all()[:5],
-        annotations=Annotation.objects.all()[:5],
+        annotations=Annotation.objects.all().distinct('anno_type'),
         genomes=Genome.objects.all()[:5],
         organisms=Organism.objects.all()[:5],
         genes=Gene.objects.all()[:5]

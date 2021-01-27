@@ -33,7 +33,7 @@
             <span class="h1">{{ annotation.name }}</span>
             <!-- anno_type -->
             <span class="type-label">type:</span>
-            <span class="h2" data-annotype="{{ annotation.anno_type }}">{{ annotation.get_anno_type_display }}</span>
+            <span class="h2" data-annotype="{{ annotation.anno_type }}">{{ annotation.anno_type_verbose }}</span>
 
         </div>
 
@@ -41,13 +41,20 @@
             <hr class="featurette-divider">
 
             <h3>Description</h3>
-
             <p>{{ annotation.description }}</p>
 
             <hr class="featurette-divider">
 
-            <h3>Genomes that cover the annotation</h3>
+            {% if annotation.pathwaymap_set.count %}
+                <h3>Occurs in the following pathway maps:</h3>
+                <div class="black-links">
+                    {% for pathway in annotation.pathwaymap_set.all %}
+                        <p><a href="/pathway/?map={{ pathway.slug }}">{{ pathway.slug }} : {{ pathway.title }}</a></p>
+                    {% endfor %}
+                </div>
+            {% endif %}
 
+            <h3>Genomes that cover the annotation</h3>
             <table class="table table-bordered table-sm white-links">
                 <thead class="thead-dark">
                 <tr>

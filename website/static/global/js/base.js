@@ -40,6 +40,53 @@ jQuery.fn.extend({
 });
 
 /**
+ * Read and write cookies
+ *
+ * https://stackoverflow.com/questions/11344531/pure-javascript-store-object-in-cookie/11344672
+ */
+function write_cookie(name, value, expires_minutes = 120) {
+    let expires = new Date();
+    expires.setTime(expires.getTime() + (expires_minutes * 60 * 1000));
+
+    let cookie = `${name}=${JSON.stringify(value)}; expires=${expires.toGMTString()}; path=/;`
+    if (!window.location.host.startsWith('127.0.0.1')) {
+        // cannot save cookies to localhost
+        cookie += ` domain=.${window.location.host.toString()};`
+    }
+    document.cookie = cookie
+}
+
+function read_cookie(name) {
+    let result = document.cookie.match(new RegExp(name + '=([^;]+)'))
+    result && (result = JSON.parse(result[1]))
+    return result
+}
+
+function delete_cookie(name) {
+    let cookie = `${name}=; expires=Thu, 01-Jan-1970 00:00:01 GMT; path=/;`
+    if (!window.location.host.startsWith('127.0.0.1')) {
+        // cannot save cookies to localhost
+        cookie += ` domain=.${window.location.host.toString()};`
+    }
+    document.cookie = cookie
+}
+
+/**
+ * Read annotations.json from cookie
+ */
+let annotations_json
+jQuery(document).ready(function () {
+    annotations_json = read_cookie('annotations_json')
+    if (annotations_json === null) {
+        $.getJSON("/files_html/annotations.json", function (data) {
+            console.log('reload annotations_json!')
+            annotations_json = data
+            write_cookie('annotations_json', data, 120)
+        })
+    }
+})
+
+/**
  * Toggle the taxonomy-stylesheet.
  */
 function toggle_colorize_tax() {

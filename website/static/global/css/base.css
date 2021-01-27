@@ -157,6 +157,11 @@ convert hex (e.g. #2980b9) to filter: https://codepen.io/sosuke/pen/Pjoqqp
     filter: invert(39%) sepia(80%) saturate(459%) hue-rotate(160deg) brightness(96%) contrast(93%); /* #2980b9 */
 }
 
+.context-menu-icon-hyperlink::before {
+    content: url("/static/global/ionicons/md-link.svg");
+    filter: invert(39%) sepia(80%) saturate(459%) hue-rotate(160deg) brightness(96%) contrast(93%); /* #2980b9 */
+}
+
 .context-menu-icon::before {
     position: absolute;
     left: 0.5em;

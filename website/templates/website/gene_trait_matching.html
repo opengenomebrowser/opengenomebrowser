@@ -40,7 +40,7 @@
         <label for="gene-trait-matching-anno-type"><a>Which category of annotations to use?</a></label>
         <select class="form-control" id="gene-trait-matching-anno-type" data-selected="{{ default_anno_type }}">
             {% for at in anno_types %}
-                <option value="{{ at }}" {% if at == default_anno_type %} selected {% endif %}>{{ at.label }} ({{ at }})
+                <option value="{{ at.anno_type }}" {% if at.anno_type == default_anno_type %} selected {% endif %}>{{ at.name }} ({{ at.anno_type }})
                 </option>{% endfor %}
         </select>
     </div>

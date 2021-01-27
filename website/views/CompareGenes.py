@@ -1,7 +1,7 @@
 from django.shortcuts import render, HttpResponse, redirect
 from django.db.models import Q
 
-from website.models import Annotation, Genome, Gene
+from website.models import Annotation, annotation_types, Genome, Gene
 from website.views.Api import err
 
 
@@ -10,7 +10,7 @@ class CompareGenes:
     def compare(request):
         context = dict(title='Compare Genes')
 
-        context['anno_types'] = Annotation.AnnotationTypes
+        context['anno_types'] = annotation_types.values()
 
         # If annotations and genomes in query: find genes and redirect to here.
         if 'annotations' in request.GET or 'genomes' in request.GET:

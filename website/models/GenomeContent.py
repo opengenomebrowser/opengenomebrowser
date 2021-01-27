@@ -1,7 +1,7 @@
 import os
 from django.db import models
 from django.db.models import JSONField
-from website.models.Annotation import Annotation, AnnotationRegex, AnnotationDescriptionFile
+from website.models.Annotation import Annotation, AnnotationDescriptionFile, AnnotationType, annotation_types
 from .TaxID import TaxID
 from .GenomeSimilarity import GenomeSimilarity
 from OpenGenomeBrowser import settings
@@ -210,15 +210,15 @@ class GenomeContent(models.Model):
         assert file_dict['type'] == 'eggnog'
         from .Gene import Gene
 
-        go = (set(), set(), AnnotationRegex.GENEONTOLOGY)
-        ec = (set(), set(), AnnotationRegex.ENZYMECOMMISSION)
-        kegg = (set(), set(), AnnotationRegex.KEGGGENE)
-        r = (set(), set(), AnnotationRegex.KEGGREACTION)
+        go = (set(), set(), annotation_types['GO'])
+        ec = (set(), set(), annotation_types['EC'])
+        kegg = (set(), set(), annotation_types['KG'])
+        r = (set(), set(), annotation_types['KR'])
 
-        def add_anno(annotations: list, all_annotations, annotations_relationships, regex):
+        def add_anno(annotations: list, all_annotations, annotations_relationships, anno_type: AnnotationType):
             for annotation in annotations:
-                assert regex.match_regex.match(
-                    annotation) is not None, F"Error: Annotation '{annotation}' does not match regex '{regex.match_regex.pattern}'!"
+                assert anno_type.regex.match(
+                    annotation) is not None, F"Error: Annotation '{annotation}' does not match regex '{anno_type.regex.pattern}'!"
                 all_annotations.update(annotations)
                 annotations_relationships.update([(locus_tag, anno) for anno in annotations])
             pass
@@ -255,8 +255,8 @@ class GenomeContent(models.Model):
                 assert h.startswith('#'), F'Error parsing file: {file_dict}'
 
         # Create Annotation-Objects and many-to-many relationships
-        for all_annotations, annotations_relationships, regex in (go, ec, kegg, r):
-            self.add_many_annotations(model=self, anno_type=regex.value, annos_to_add=all_annotations)
+        for all_annotations, annotations_relationships, anno_type in (go, ec, kegg, r):
+            self.add_many_annotations(model=self, anno_type=anno_type.anno_type, annos_to_add=all_annotations)
             objects = [Gene.annotations.through(gene_id=gene, annotation_id=anno) for gene, anno in
                        annotations_relationships]
             Gene.annotations.through.objects.bulk_create(objects, ignore_conflicts=True)
@@ -264,21 +264,13 @@ class GenomeContent(models.Model):
     def load_regular_file(self, file_dict):
         from .Gene import Gene
 
-        if file_dict['type'] == 'KEGG':
-            anno_type = AnnotationRegex.KEGGGENE
-        elif file_dict['type'] == 'GO':
-            anno_type = AnnotationRegex.GENEONTOLOGY
-        elif file_dict['type'] == 'R':
-            anno_type = AnnotationRegex.KEGGREACTION
-        elif file_dict['type'] == 'EC':
-            anno_type = AnnotationRegex.ENZYMECOMMISSION
-        elif file_dict['type'] == 'custom':
-            anno_type = AnnotationRegex.CUSTOM
-        else:
-            raise NotImplementedError(F'Custom file is poorly formatted: {file_dict}\nOnly the following types are allowed: KEGG, GO, EC, custom.')
+        anno_type = file_dict['type']
+        assert anno_type in annotation_types, \
+            f'Error in annotation file:{file_dict}\nType {anno_type} is not defined in {settings.ANNOTATION_DESCRIPTIONS}.'
+        regex = annotation_types[anno_type].regex
 
-        all_annotations = set()
-        annotations_relationships = set()  # [('gene1', 'anno1), ('gene1', 'anno2), ...]
+        all_annotations = set()  # {'anno1', 'anno2', ...}
+        annotations_relationships = set()  # {('gene1', 'anno1), ('gene1', 'anno2'), ...}
 
         with open(F"{self.genome.base_path(relative=False)}/{file_dict['file']}") as f:
             line = f.readline().strip()
@@ -287,8 +279,8 @@ class GenomeContent(models.Model):
                 if len(line) == 2:
                     annotations = set(line[1].split(","))
                     for annotation in annotations:
-                        assert anno_type.match_regex.match(
-                            annotation) is not None, F"Error: Annotation '{annotation}' does not match regex '{anno_type.match_regex.pattern}'!"
+                        assert regex.match(
+                            annotation) is not None, F"Error: Annotation '{annotation}' does not match regex '{regex.pattern}'!"
                     all_annotations.update(annotations)
                     annotations_relationships.update([(line[0], anno) for anno in annotations])
 
@@ -303,7 +295,7 @@ class GenomeContent(models.Model):
     @staticmethod
     def add_many_annotations(model, anno_type: str, annos_to_add: set):
         # static method because it's also used elsewhere
-        assert anno_type in Annotation.AnnotationTypes.values
+        assert anno_type in annotation_types
 
         # create missing annotation objects (without description)
         Annotation.objects.bulk_create([

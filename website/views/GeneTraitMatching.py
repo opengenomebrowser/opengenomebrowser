@@ -8,7 +8,7 @@ from scipy.stats import fisher_exact
 from statsmodels.stats.multitest import multipletests
 
 from website.models import Genome, Gene, GenomeContent
-from website.models.Annotation import Annotation
+from website.models.Annotation import Annotation, annotation_types
 
 from .GenomeDetailView import dataframe_to_bootstrap_html
 from .helpers.magic_string import MagicQueryManager, MagicError
@@ -37,7 +37,7 @@ def gtm_view(request):
 
     context = dict(
         title='Gene trait matching',
-        anno_types=Annotation.AnnotationTypes,
+        anno_types=annotation_types.values(),
         multiple_testing_methods=multiple_testing_methods,
         # defaults:
         default_anno_type='OL',
@@ -211,10 +211,16 @@ def gtm(g1: [Genome], g2: [Genome], anno_type='OL', alpha=0.25, multiple_testing
 
 
 def prettify(gtm_df: pd.DataFrame, anno_type: str) -> pd.DataFrame:
-    assert list(gtm_df.columns) == ['annotation', 'g1', 'g2', 'p_fisher_exact', 'p_corrected', 'reject']
-    gtm_df.columns = ['Annotation', 'Group 1', 'Group 2', 'pvalue (Fisher\'s test)', 'pvalue (corrected)', 'reject H0']
-    gtm_df['Annotation'] = [F'<div class="annotation ogb-tag" data-annotype="{anno_type}" title="not-loaded">{a}</div>'
-                            for a in gtm_df['Annotation']]
+    assert list(gtm_df.columns) == ['annotation', 'description', 'g1', 'g2', 'p_fisher_exact', 'p_corrected', 'reject']
+
+    def html(row):
+        return F'<div class="annotation ogb-tag" data-annotype="{anno_type}" title="{row["description"]}">{row["annotation"]}</div>'
+
+    gtm_df['annotation'] = gtm_df.apply(lambda row: html(row), axis=1)
+    gtm_df.drop('description', axis=1, inplace=True)
+
+    gtm_df.columns = ['Annotation', 'Group 1', 'Group 2', 'pvalue (Fisher\'s test)', 'qvalue (corrected)', 'reject H0']
+
     return gtm_df
 
 
