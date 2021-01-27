@@ -40,7 +40,7 @@ function addGenomesGroup(target, genomes = [], deleteButton = true, groupId = tr
 }
 
 function removeGenomesQuery(target) {
-    target.remove()
+    $(target).closest('.get-genomes').remove()
     $('#query-genomes .group-count').each(function (i, element) {
         element.text = i + 1
     })
