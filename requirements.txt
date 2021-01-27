@@ -9,7 +9,6 @@ certifi==2020.12.5
 chardet==4.0.0
 click==7.1.2
 click-completion==0.5.2
-click-help-colors==0.9
 colorama==0.4.4
 colorspacious==1.1.2
 cycler==0.10.0
