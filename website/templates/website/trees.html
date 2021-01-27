@@ -6,13 +6,13 @@
     <script src="{% static 'global/js/tidytree.min.js' %}"></script>
     <script src="{% static 'global/js/phylogeneticTrees.js' %}"></script>
     <script src="{% static 'global/js/ResizeSensor.js' %}"></script>
+    <script src="{% static 'global/js/query-groups.js' %}"></script>
 
     <link rel="stylesheet" type="text/css" href="{% static 'global/css/taxid_color.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'global/css/taxid_color_label.css' %}" id="taxid-color-stylesheet">
     <link rel="stylesheet" type="text/css" href="{% static 'global/css/tag_color.css' %}"/>
 
     <!-- autocomplete -->
-    <link href="{% static 'website/css/jquery-ui.css' %}" rel="stylesheet"/>
     <link href="{% static 'global/css/jquery.tag-editor.css' %}" rel="stylesheet"/>
     <script src="{% static 'global/js/jquery.caret.min.js' %}"></script>
     <script src="{% static 'global/js/jquery.tag-editor.min.js' %}"></script>
@@ -60,61 +60,58 @@
 
 {% block body %}
     <section>
-        <section>
-            <div class="container">
-                <form>
-                    {% csrf_token %}
-                    <div class="form-group">
-                        <label for="get-genomes">Genomes:</label>
-                        <input type="text" class="form-control" id="get-genomes"
-                               value="{{ magic_query_manager.regular_genomes|join:", " }},{{ magic_query_manager.magic_objects|join:", " }}">
-                    </div>
 
-                    <button type="button" class="btn btn-primary" onclick="submit_function()">Submit</button>
-                </form>
+        <div class="container">
+            <form>
+                {% csrf_token %}
+                <div id="query-genomes"></div>
+
+                <button type="button" class="btn btn-primary" onclick="submit_function()">Submit</button>
+            </form>
 
 
+            {% if magic_query_manager %}
                 <hr class="featurette-divider">
 
                 <button type="button" class="btn btn-light" data-toggle="collapse" href="#real-div" aria-expanded="false" aria-controls="real-div"
                 >Show query
                 </button>
 
-
                 <form id="real-div" class="collapse">
                     <div class="form-group">
-                        <label for="real-genomes">Genomes:</label>
+                        <label for="real-genomes-1">Genomes:</label>
                         <div class="read-only-div" id="real-genomes">
                             {% for genome in magic_query_manager.all_genomes %}{{ genome.html|safe }}{% endfor %}
                         </div>
                     </div>
+
                 </form>
+            {% endif %}
+        </div>
 
-                {% if can_calculate_trees %}
+        {% if can_calculate_trees %}
 
-                    <hr class="featurette-divider">
+            <hr class="featurette-divider">
 
-                    <form>
-                        {% csrf_token %}
-                        <div style="display: flex; justify-content: space-evenly;">
-                            <button type="button" class="btn btn-primary" onclick="load_taxid_tree(genomes)">
-                                Calculate Taxid-based tree
-                            </button>
-                            <button type="button" class="btn btn-success" onclick="load_genome_similarity_tree(genomes)">
-                                Calculate Genome-similarity-based tree
-                            </button>
-                            <button type="button" class="btn btn-info"
-                                    {% if ORTHOFINDER_ENABLED %} onclick="load_orthofinder_tree(genomes)"
-                                    {% else %} aria-disabled="true" disabled
-                                    {% endif %}>
-                                Calculate Orthofinder-based tree
-                            </button>
-                        </div>
-                    </form>
+            <form>
+                {% csrf_token %}
+                <div style="display: flex; justify-content: space-evenly;">
+                    <button type="button" class="btn btn-primary" onclick="load_taxid_tree(allGenomes)">
+                        Calculate Taxid-based tree
+                    </button>
+                    <button type="button" class="btn btn-success" onclick="load_genome_similarity_tree(allGenomes)">
+                        Calculate Genome-similarity-based tree
+                    </button>
+                    <button type="button" class="btn btn-info"
+                            {% if ORTHOFINDER_ENABLED %} onclick="load_orthofinder_tree(allGenomes)"
+                            {% else %} aria-disabled="true" disabled
+                            {% endif %}>
+                        Calculate Orthofinder-based tree
+                    </button>
+                </div>
+            </form>
 
-                {% endif %}
-            </div>
-        </section>
+        {% endif %}
 
 
         <div class="container" id="taxid-tree-container" hidden>{#{% if not can_calculate_trees %} hidden {% endif %}#}
@@ -232,9 +229,21 @@
     <script>
         "use strict"
 
-        let genome_to_species = {{ genome_to_species|safe }};
+        const genomesQuery = [{% if magic_query_manager %} '{{ magic_query_manager.queries|join:"', '" }}' {% else %}{% endif %}]
+        const allGenomes = [{% if magic_query_manager %} '{{ magic_query_manager.all_genomes|join:"', '" }}' {% else %}{% endif %}]
 
-        const genomes = [{% if magic_query_manager %} '{{ magic_query_manager.all_genomes|join:"', '" }}' {% else %}{% endif %}]
+        const queryGenomes = $('#query-genomes')
+
+        $(document).ready(function () {
+            addGenomesGroup(queryGenomes, genomesQuery, false, false)
+
+            $('.ogb-tag.genome')
+                .ogbTooltip()
+                .click(function () {
+                    showGenomeClickMenu(event)
+                })
+
+        })
 
         let taxid_tree
         let genome_similarity_tree
@@ -242,32 +251,12 @@
 
         let ajax_timer
 
-        $(document).ready(function () {
-
-            genome_to_species = init_autocomplete_genomes("#get-genomes")
-
-            {#if (genomes.length >= 3) {#}
-            {#    console.log('load tree!')#}
-            {#    load_taxid_tree(genomes)#}
-            {# }#}
-
-            $('#real-genomes .genome').click(function (event) {
-                showGenomeClickMenu(event)
-            })
-
-        })
-
         function submit_function() {
-            const genomes = $('#get-genomes').val().split(',')
+            const target = queryGenomes.find('.get-genomes')[0]
+            const genomes = extractQuery(target)
 
             $.when(validate_genomes(genomes)).done(function (genomes_valid) {
                 genomes_valid = genomes_valid['success']
-
-                if (genomes_valid) {
-                    $('#get-genomes').next().removeClass('is-invalid')
-                } else {
-                    $('#get-genomes').next().addClass('is-invalid')
-                }
 
                 if (genomes_valid) {
                     window.location.href = `/trees?genomes=${urlReplBlanks(genomes)}`;
@@ -311,10 +300,8 @@
 
 
         async function add_resize_listener(target, tree) {
-            console.log('adding resize listener to', target, tree)
             tree.then(function () {
                 addResizeListener(document.getElementById(target), function () {
-                    console.log('resize')
                     clearTimeout(ajax_timer)
                     ajax_timer = setTimeout(function () {
                         redrawTree(tree)

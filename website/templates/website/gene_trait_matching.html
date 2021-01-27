@@ -6,40 +6,16 @@
     <link rel="stylesheet" type="text/css" href="{% static 'global/css/annotype_color.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'global/css/taxid_color.css' %}" id="taxid-color-stylesheet"/>
     <link rel="stylesheet" type="text/css" href="{% static 'global/css/tag_color.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'gene-trait-matching/css/gene-trait-matching.css' %}"/>
+    <script src="{% static 'global/js/query-groups.js' %}"></script>
 
     <!-- autocomplete -->
-    <link href="{% static 'website/css/jquery-ui.css' %}" rel="stylesheet"/>
     <link href="{% static 'global/css/jquery.tag-editor.css' %}" rel="stylesheet"/>
     <script src="{% static 'global/js/jquery.caret.min.js' %}"></script>
     <script src="{% static 'global/js/jquery.tag-editor.min.js' %}"></script>
 
     <!-- DataTables -->
-    <script type="text/javascript" src="{% static 'website/js/datatables.min.js' %}"></script>
-
-    <style>
-        div.row:nth-child(1) {
-            justify-content: space-between;
-        }
-
-        div.col-md-6:nth-child(2) {
-            flex: unset;
-            width: min-content;
-        }
-
-        #gene-trait-matching-table_length > label, #gene-trait-matching-table_filter > label {
-            display: inline-flex
-        }
-
-        #gene-trait-matching-table_filter > label:nth-child(1) {
-            width: 264px
-        }
-
-        #gene-trait-matching-table_length .custom-select, #gene-trait-matching-table_filter .form-control {
-            margin: 0 7px 0 7px;
-        }
-
-
-    </style>
+    <script type="text/javascript" src="{% static 'global/js/datatables.min.js' %}"></script>
 
 {% endblock %}
 
@@ -102,17 +78,7 @@
         <div class="container">
             <form>
                 {% csrf_token %}
-                <div class="form-group">
-                    <label for="get-genomes-g1">Group 1:</label>
-                    <input type="text" class="form-control" id="get-genomes-g1"
-                           value="{{ magic_query_manager_g1.regular_genomes|join:", " }},{{ magic_query_manager_g1.magic_objects|join:", " }}">
-                </div>
-
-                <div class="form-group">
-                    <label for="get-genomes-g2">Group 2:</label>
-                    <input type="text" class="form-control" id="get-genomes-g2"
-                           value="{{ magic_query_manager_g2.regular_genomes|join:", " }},{{ magic_query_manager_g2.magic_objects|join:", " }}">
-                </div>
+                <div id="query-genomes"></div>
 
                 <button id="gene-trait-matching-submit-button" type="button" class="btn btn-primary" onclick="submit_function()">Submit</button>
             </form>
@@ -127,14 +93,14 @@
                 <form id="real-div" class="collapse">
                     <div class="form-group">
                         <label for="real-genomes-1">Group 1:</label>
-                        <div class="read-only-div" id="real-genomes">
+                        <div class="read-only-div">
                             {% for genome in magic_query_manager_g1.all_genomes %}{{ genome.html|safe }}{% endfor %}
                         </div>
                     </div>
 
                     <div class="form-group">
                         <label for="real-genomes-2">Group 2:</label>
-                        <div class="read-only-div" id="real-genomes">
+                        <div class="read-only-div">
                             {% for genome in magic_query_manager_g2.all_genomes %}{{ genome.html|safe }}{% endfor %}
                         </div>
                     </div>
@@ -148,11 +114,10 @@
                         </div>
                     </div>
 
-
                 </form>
-
                 </div>
             {% endif %}
+
         </div>
 
     </section>
@@ -168,45 +133,40 @@
 
 {% block end %}
     <script>
-
         "use strict"
 
-        let genomes_g1 = [{% if magic_query_manager_g1 %} '{{ magic_query_manager_g1.all_genomes|join:"', '" }}' {% else %}{% endif %}]
-        let genomes_g2 = [{% if magic_query_manager_g2 %} '{{ magic_query_manager_g2.all_genomes|join:"', '" }}' {% else %}{% endif %}]
+        const genomesG1 = [{% if magic_query_manager_g1 %} '{{ magic_query_manager_g1.queries|join:"', '" }}' {% else %}{% endif %}]
+        const genomesG2 = [{% if magic_query_manager_g2 %} '{{ magic_query_manager_g2.queries|join:"', '" }}' {% else %}{% endif %}]
 
-        let genome_to_species
+        const queryGenomes = $('#query-genomes')
 
         $(document).ready(function () {
-            let genome_to_species_g1 = init_autocomplete_genomes("#get-genomes-g1")
-            let genome_to_species_g2 = init_autocomplete_genomes("#get-genomes-g2")
-            let genome_to_species = {
-                ...genome_to_species_g1,
-                ...genome_to_species_g2
-            }
+            addGenomesGroup(queryGenomes, genomesG1, false)
+            addGenomesGroup(queryGenomes, genomesG2, false)
 
-            $('.ogb-tag.genome').click(function (event) {
-                showGenomeClickMenu(event)
-            })
+            $('.ogb-tag.genome')
+                .ogbTooltip()
+                .click(function () {
+                    showGenomeClickMenu(event)
+                })
 
+        })
+
+        $(document).ready(function () {
             {% if success %}
-                console.log(genomes_g1, genomes_g2, {{default_alpha}}, "{{default_anno_type}}", "{{default_multiple_testing_method}}")
-                loadTable(genomes_g1, genomes_g2, {{default_alpha}}, "{{default_anno_type}}", "{{default_multiple_testing_method}}")
+                loadTable(genomesG1, genomesG2, {{default_alpha}}, "{{default_anno_type}}", "{{default_multiple_testing_method}}")
             {% endif %}
         })
 
         function submit_function() {
-            const genomes_g1 = $('#get-genomes-g1').val().split(',')
-            const genomes_g2 = $('#get-genomes-g2').val().split(',')
+            const getQueries = queryGenomes.find('.get-genomes')
+
+            const genomes_g1 = extractQuery(getQueries[0])
+            const genomes_g2 = extractQuery(getQueries[1])
 
             const alpha = parseFloat($('#range-span').text())
             const anno_type = $('#gene-trait-matching-anno-type').val()
             const multiple_testing_method = $('#gene-trait-matching-multiple-testing-method').val()
-
-            console.log('genomes-g1:', genomes_g1)
-            console.log('genomes-g2:', genomes_g2)
-            console.log('alpha:', alpha)
-            console.log('anno_type:', anno_type)
-            console.log('multiple_testing_method:', multiple_testing_method)
 
             $.when(validate_genomes(genomes_g1), validate_genomes(genomes_g2)).done(function (genomes_g1_valid, genomes_g2_valid) {
                 genomes_g1_valid = genomes_g1_valid[2].responseJSON['success']
@@ -225,9 +185,6 @@
                 }
 
                 if (genomes_g1_valid && genomes_g2_valid) {
-                    console.log('FORM CONTROL SUCCESS', genomes_g1_valid, genomes_g2_valid)
-                    console.log('FORWARD TO NEW URL!')
-
                     let url = `?alpha=${alpha}&anno_type=${anno_type}&multiple_testing_method=${multiple_testing_method}`
 
                     if (genomes_g1.length !== 0) {
@@ -243,12 +200,6 @@
         }
 
         async function loadTable(genomes_g1, genomes_g2, alpha, anno_type, multiple_testing_method) {
-            console.log('GENOMES GROUP 1: ', genomes_g1)
-            console.log('GENOMES GROUP 2: ', genomes_g2)
-            console.log('alpha: ', alpha)
-            console.log('anno_type: ', anno_type)
-            console.log('multiple_testing_method: ', multiple_testing_method)
-
             if (genomes_g1.length === 0 && genomes_g2.length === 0) {
                 console.log('no annotations or no genomes!')
                 return
@@ -261,8 +212,6 @@
                 'anno_type': anno_type,
                 'multiple_testing_method': multiple_testing_method
             }, function (data) {
-                console.log('data', data)
-
                 let table = $('#gene-trait-matching-table').DataTable({
                     data: data['dataset'],
                     columns: data['columns'],
@@ -273,9 +222,11 @@
                         $(".ogb-tag.annotation").each(function (index) {
                             // only add click event if there is none yet
                             if (jQuery._data(this, 'events') === undefined) {
-                                $(this).on("click", function () {
-                                    showAnnotationClickMenu(event)
-                                })
+                                $(this)
+                                    .ogbTooltip()
+                                    .on("click", function () {
+                                        showAnnotationClickMenu(event)
+                                    })
                             }
                         })
                     },

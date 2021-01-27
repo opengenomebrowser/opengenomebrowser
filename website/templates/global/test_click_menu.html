@@ -85,23 +85,21 @@
         "use strict";
 
         $(document).ready(function () {
-            $('.ogb-tag').tooltip({
-                title: function () {
-                    return $(this).attr('data-species');
-                }
-            }).each(function () {
-                if ($(this).hasClass('genome')) {
-                    this.setAttribute('onclick', `showGenomeClickMenu(event)`)
-                } else if ($(this).hasClass('annotation')) {
-                    this.setAttribute('onclick', `showAnnotationClickMenu(event, 'auto', 'auto', '#genome-container', 'auto')`)
-                } else if ($(this).hasClass('gene')) {
-                    this.setAttribute('onclick', `showGeneClickMenu(event)`)
-                } else if ($(this).hasClass('taxid')) {
-                    this.setAttribute('onclick', `showTaxidClickMenu(event)`)
-                } else if ($(this).hasClass('organism')) {
-                    this.setAttribute('onclick', `showOrganismClickMenu(event)`)
-                }
-            })
+            $('.ogb-tag')
+                .ogbTooltip()
+                .each(function () {
+                    if ($(this).hasClass('genome')) {
+                        this.setAttribute('onclick', `showGenomeClickMenu(event)`)
+                    } else if ($(this).hasClass('annotation')) {
+                        this.setAttribute('onclick', `showAnnotationClickMenu(event, 'auto', 'auto', '#genome-container', 'auto')`)
+                    } else if ($(this).hasClass('gene')) {
+                        this.setAttribute('onclick', `showGeneClickMenu(event)`)
+                    } else if ($(this).hasClass('taxid')) {
+                        this.setAttribute('onclick', `showTaxidClickMenu(event)`)
+                    } else if ($(this).hasClass('organism')) {
+                        this.setAttribute('onclick', `showOrganismClickMenu(event)`)
+                    }
+                })
         });
 
     </script>

@@ -145,8 +145,10 @@ class MagicQueryManager:
             refers to a category to be filtered
     """
 
-    def __init__(self, queries: [str]):
-        self.queries = queries
+    def __init__(self, queries: [str], raise_errors=True):
+        self.queries = set(q.replace('!!!', ' ') for q in queries)
+        self.raise_errors = raise_errors
+
         self.genome_identifiers, \
         self.magic_strings = self.__split_queries(queries)
 
@@ -180,8 +182,7 @@ class MagicQueryManager:
 
         return genome_to_species
 
-    @staticmethod
-    def __magic_object_to_species(magic_objects: [MagicObject]):
+    def __magic_object_to_species(self, magic_objects: [MagicObject]):
         result = {}
         for magic_object in magic_objects:
             if type(magic_object.obj) is TaxID:
@@ -197,7 +198,8 @@ class MagicQueryManager:
                     description=magic_object.obj.description
                 )
             else:
-                raise MagicError(f'Magic Object obj is of unknown type: {type(magic_object.obj)}')
+                if self.raise_errors:
+                    raise MagicError(f'Magic Object obj is of unknown type: {type(magic_object.obj)}')
         return result
 
     @staticmethod
@@ -228,7 +230,7 @@ class MagicQueryManager:
     def __load_regular_genomes(self):
         # process regular identifiers
         genomes = Genome.objects.filter(identifier__in=self.genome_identifiers).prefetch_related('organism', 'organism__taxid')
-        if len(genomes) != len(self.genome_identifiers):
+        if self.raise_errors and len(genomes) != len(self.genome_identifiers):
             raise MagicError(F"Could not find all genomes!'")
         return genomes
 

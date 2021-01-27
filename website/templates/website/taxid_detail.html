@@ -5,8 +5,8 @@
     <!-- Site-specific css/js -->
     <link rel="stylesheet" type="text/css" href="{% static 'global/css/taxid_color.css' %}" id="taxid-color-stylesheet"/>
     <link rel="stylesheet" type="text/css" href="{% static 'global/css/tag_color.css' %}"/>
-    <link rel="stylesheet" type="text/css" href="{% static 'website/css/detail.css' %}"/>
-    <link rel="stylesheet" type="text/css" href="{% static 'website/css/warning-stripes.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'global/css/detail.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'global/css/warning-stripes.css' %}"/>
 {% endblock %}
 
 {% block sidebar %}
@@ -93,11 +93,7 @@
     <script>
 
         $(document).ready(function () {
-            $('.ogb-tag').tooltip({
-                title: function () {
-                    return $(this).attr('data-species');
-                }
-            });
+            $('.ogb-tag').ogbTooltip();
         });
 
     </script>

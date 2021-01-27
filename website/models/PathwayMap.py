@@ -67,7 +67,7 @@ class PathwayMap(models.Model):
 
     @staticmethod
     def load_map(filename: str, type_dict: dict):
-        slug = slugify(filename[:-4])
+        slug = slugify(filename.rstrip('.svg'))
         path = F'{settings.PATHWAY_MAPS}/{filename}'
 
         soup = bs4.BeautifulSoup(open(path).read(), 'xml')

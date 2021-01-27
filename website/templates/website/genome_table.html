@@ -3,26 +3,25 @@
 
 {% block styles %}
     <!-- Site-specific css/js -->
-    <link rel="stylesheet" type="text/css" href="{% static 'website/css/genome_table.css' %}"/>
-    <link rel="stylesheet" type="text/css" href="{% static 'website/css/warning-stripes.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'global/css/genome_table.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'global/css/warning-stripes.css' %}"/>
 
     <link rel="stylesheet" type="text/css" href="{% static 'global/css/taxid_color.css' %}" id="taxid-color-stylesheet" disabled/>
     <link rel="stylesheet" type="text/css" href="{% static 'global/css/tag_color.css' %}"/>
 
     <!-- yadcf - interactive tables - uses JQuery-UI and DataTables-->
-    <script type="text/javascript" src="{% static 'website/js/pdfmake.min.js' %}"></script>
-    <script type="text/javascript" src="{% static 'website/js/datatables.min.js' %}"></script>
-    <script type="text/javascript" src='{% static 'website/js/jquery.dataTables.yadcf.js' %}'></script>
-    <script type="text/javascript" src='{% static 'website/js/select2.min.js' %}'></script>
+    <script type="text/javascript" src="{% static 'global/js/pdfmake.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'global/js/datatables.min.js' %}"></script>
+    <script type="text/javascript" src='{% static 'global/js/jquery.dataTables.yadcf.js' %}'></script>
+    <script type="text/javascript" src='{% static 'global/js/select2.min.js' %}'></script>
 
     <!-- yadcf css -->
-    <link href="{% static 'website/css/datatables.min.css' %}" rel="stylesheet"/>
-    {#    <link href="{% static 'website/css/jquery.dataTables.yadcf.css' %}" rel="stylesheet"/>#}
-    <link href="{% static 'website/css/select2.min.css' %}" rel="stylesheet"/>
-    <link href="{% static 'website/css/jquery-ui.css' %}" rel="stylesheet"/>
+    <link href="{% static 'global/css/datatables.min.css' %}" rel="stylesheet"/>
+    {#    <link href="{% static 'global/css/jquery.dataTables.yadcf.css' %}" rel="stylesheet"/>#}
+    <link href="{% static 'global/css/select2.min.css' %}" rel="stylesheet"/>
 
     <!-- SortableJS - https://github.com/SortableJS/Sortable -->
-    <script src="{% static 'website/js/Sortable.min.js' %}"></script>
+    <script src="{% static 'global/js/Sortable.min.js' %}"></script>
 
 {% endblock %}
 
@@ -127,12 +126,8 @@
         })
 
         $(document).ready(function () {
-            console.log('init contextmenu')
-
             $('#table').on('contextmenu', 'tr', function (event) {
                 event.preventDefault()
-
-                console.log('click on table', event)
 
                 let this_row_idx = $(this).index()
                 let id_col_idx = all_colnames.indexOf('Identifier')

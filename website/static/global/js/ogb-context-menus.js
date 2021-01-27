@@ -138,7 +138,7 @@ let autoDiscoverSelf = function (event, self_string) {
 
 let autoDiscoverSiblings = function (event, self_string, siblings, type) {
     if (siblings instanceof jQuery) {
-        return siblings.find('.' + type).map(function () {
+        return siblings.find('.' + type).not('[data-annotype="fake"]').map(function () {
             return $(this).text()
         }).get()
     } else if (siblings === 'auto') {
@@ -156,7 +156,7 @@ let autoDiscoverSiblings = function (event, self_string, siblings, type) {
     } else if (typeof (siblings) === 'string') {
         let target = siblings
         siblings = []
-        $(target).find('.' + type).each(function () {
+        $(target).find('.' + type).not('[data-annotype="fake"]').each(function () {
             siblings.push($(this).text())
         })
     } else {
@@ -232,7 +232,7 @@ let showGenomeClickMenu = function (event, genome = 'auto', species = 'auto', si
 
     // auto-discover annotations
     annotations = autoDiscoverSiblings(event, undefined, annotations, 'annotation')
-    console.log(annotations)
+    // remove fake annotations ([data-annotype="fake"])
 
     let cm = new ClickMenu(event, 'genome-context-menu')
 
@@ -252,7 +252,7 @@ ${species}</a>`
 Open genome info</a>
 <a onclick="CopyToClipboard('${genome}')" class="dropdown-item context-menu-icon context-menu-icon-copy">
 Copy identifier</a>
-<a href="/pathway/?genomes=${genome}" class="dropdown-item context-menu-icon context-menu-icon-pathway">
+<a href="/pathway/?g1=${genome}" class="dropdown-item context-menu-icon context-menu-icon-pathway">
 Open genome on pathway map</a>
 <a href="/annotation-search/?genomes=${genome}" class="dropdown-item context-menu-icon context-menu-icon-annotation">
 Search for annotations in genome</a>
@@ -273,7 +273,6 @@ Perform annotation search</a>
     if (siblings.length > 1) {
         const siblings_str = siblings.join('+')
         const siblings_str_comma = siblings.join(', ')
-        console.log(siblings_str_comma)
         html += `
 <h6 class="dropdown-header context-menu-header many-genomes">
 ${siblings.length} selected genomes</h6>
@@ -281,7 +280,7 @@ ${siblings.length} selected genomes</h6>
 Show phylogenetic trees</a>
 <a onclick="CopyToClipboard('${siblings_str_comma}')" class="dropdown-item many-genomes context-menu-icon context-menu-icon-copy">
 Copy selected genomes</a>
-<a href="/pathway/?genomes=${siblings_str}" class="dropdown-item many-genomes context-menu-icon context-menu-icon-pathway">
+<a href="/pathway/?g1=${siblings_str}" class="dropdown-item many-genomes context-menu-icon context-menu-icon-pathway">
 Open genomes on pathway map</a>
 <a href="/annotation-search/?genomes=${siblings_str}" class="dropdown-item many-genomes context-menu-icon context-menu-icon-annotations">
 Search for annotations in genomes</a>
@@ -316,6 +315,18 @@ let showAnnotationClickMenu = function (event, annotation = 'auto', siblings = '
     let siblings_repl = urlReplBlanks(siblings)
     genomes = autoDiscoverGenomes(genomes)
 
+    let description = ''
+    for (var attr of ['data-original-title', 'title']) {
+        const val = event.target.getAttribute(attr)
+        if (typeof val === 'string' && val.length > 0) {
+            description = `
+<h6 class="dropdown-header context-menu-header">
+${val}</h6>
+`
+            break
+        }
+    }
+
     if (annotype === 'auto') {
         annotype = $(event.target).data('annotype')
     }
@@ -326,6 +337,7 @@ let showAnnotationClickMenu = function (event, annotation = 'auto', siblings = '
     cm.appendElement(`
 <h6 class="dropdown-header context-menu-header" data-annotype="${annotype}">
 ${annotation}</h6>
+${description}
 <a href="/annotation/${annotation}" class="dropdown-item context-menu-icon context-menu-icon-annotation">
 Show details about this annotation</a>
 <a onclick="CopyToClipboard('${annotation}')" class="dropdown-item context-menu-icon context-menu-icon-copy">
@@ -367,8 +379,6 @@ Compare the genes of these annotations</a>
 
 let showGenesClickMenu = function (event, genes, species) {
     console.log('showGeneSClickMenu event:', event, 'genes', genes, 'species', species)
-    // const genes = event.target.getAttribute('data-genes').split(separator)
-    // console.log(genes)
 
     // initiate context menu
     let cm = new ClickMenu(event, 'genes-context-menu')
@@ -379,7 +389,6 @@ ${genes.length} genes</h6>
 <div class="read-only-div">`
 
     genes.forEach(gene => {
-        console.log(gene)
         html += `<div class="gene ogb-tag" data-species="${species}" onclick="showGeneClickMenu(event)">${gene}</div>`
     })
 
@@ -388,6 +397,8 @@ ${genes.length} genes</h6>
     cm.appendElement(html)
 
     cm.show()
+
+    $('#' + cm.menu_id).find('.gene').ogbTooltip()
 }
 
 let showGeneClickMenu = function (event, gene = 'auto', siblings = 'auto') {

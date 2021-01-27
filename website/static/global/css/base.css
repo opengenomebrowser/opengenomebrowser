@@ -40,6 +40,7 @@
 
 .ogb-tag {
     width: min-content;
+    height: min-content;
     white-space: nowrap;
     margin: 3px 3px 3px 3px;
     border-radius: .25rem;
@@ -64,14 +65,22 @@
 }
 
 .read-only-div {
+    max-height: 13rem;
+    min-height: 1rem;
+    resize: vertical;
+    overflow: auto;
     padding: 6px 6px 6px 6px;
-    display: flex !important;
-    flex-wrap: wrap;
-    height: unset;
     background-color: #e9ecef;
     border: 1px solid #ced4da;
     border-radius: .25rem;
+    display: flex !important;
+    flex-wrap: wrap;
     justify-content: space-around;
+    align-content: flex-start;
+}
+
+.read-only-div[style*="height"] {
+    max-height: unset;
 }
 
 /*
@@ -160,7 +169,7 @@ convert hex (e.g. #2980b9) to filter: https://codepen.io/sosuke/pen/Pjoqqp
 }
 
 .dropdown-item.active, .dropdown-item:active {
-	background-color: #86b4e6 !important;
+    background-color: #86b4e6 !important;
 }
 
 .ogb-click-menu .dropdown-header {
@@ -193,6 +202,24 @@ convert hex (e.g. #2980b9) to filter: https://codepen.io/sosuke/pen/Pjoqqp
     height: 8rem;
     resize: vertical;
     overflow-y: scroll !important;
+}
+
+.form-group label {
+    margin-top: 0.2rem;
+}
+
+.form-group .tag-editor .tag-editor-tag {
+    color: red;
+    background: black;
+}
+
+.form-group .tag-editor .tag-editor-delete {
+    color: red;
+    background: black;
+}
+
+.form-group .tag-editor .tag-editor-delete i::before {
+    color: white;
 }
 
 /*

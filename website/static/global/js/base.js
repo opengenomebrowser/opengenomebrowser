@@ -1,5 +1,44 @@
 "use strict"
 
+
+jQuery.fn.extend({
+    ogbTooltip: function () {
+        this.each(function () {
+            if (jQuery._data(this, 'events') !== undefined) {
+                console.log('do not append multiple events!')
+                return  // ensure not two events are appended
+            }
+            if (this.matches('.genome')) {
+                $(this).tooltip({
+                    boundary: 'window',
+                    title: function () {
+                        return $(this).attr('data-species');
+                    }
+                })
+            } else if (this.matches('.gene')) {
+                $(this).tooltip({
+                    boundary: 'window',
+                    title: function () {
+                        return $(this).attr('data-species');
+                    }
+                })
+            } else if (this.matches('.taxid')) {
+                $(this).tooltip({
+                    boundary: 'window',
+                    title: function () {
+                        return $(this).attr('data-species');
+                    }
+                })
+            } else {
+                $(this).tooltip({
+                    boundary: 'window',
+                })
+            }
+        })
+        return this
+    },
+});
+
 /**
  * Toggle the taxonomy-stylesheet.
  */
@@ -89,6 +128,12 @@ let waitForElement = function (selector, callback, timeout = 200) {
     }
 }
 
+/*
+* Takes decimal like 0.2222 and returns 22.2  (rounded to one decimal)
+*/
+let formatPercent = function (relative) {
+    return Math.round(relative * 1000) / 10
+}
 
 /*
 * This function creates dummy elements. Necessary for popups that emerge from canvas/svg.
@@ -189,7 +234,6 @@ function validate_annotations(annotations) {
 }
 
 function create_read_only_genome_div(genome_array, genome_to_species, additional_classes = '', click_menu_annotation = 'auto') {
-    console.log('click_menu_annotations', click_menu_annotation)
     let read_only_genome_div = $('<div>', {
         class: "read-only-div " + additional_classes,
         onclick: `CopyToClipboard('${genome_array.join(', ')}')`
@@ -203,9 +247,8 @@ function create_read_only_genome_div(genome_array, genome_to_species, additional
             text: genome,
             class: 'genome ogb-tag',
             onclick: `showGenomeClickMenu(event, 'auto', 'auto', 'auto', '${click_menu_annotation}')`,
-            'data-species': genome_to_species[genome]['sciname'],
-            'title': genome_to_species[genome]['sciname']
-        }).tooltip())
+            'data-species': genome_to_species[genome]['sciname']
+        }).ogbTooltip())
     }
 
     return read_only_genome_div
@@ -226,7 +269,7 @@ function create_read_only_annotations_div(annotations_array, annotation_to_type)
             onclick: `showAnnotationClickMenu(event, 'auto', 'auto', $(this).parent().parent().parent().parent() )`,
             'data-annotype': annotation_to_type[annotations_array[idx]]['anno_type'],
             'title': annotation_to_type[annotations_array[idx]]['description']
-        }).tooltip())
+        }).ogbTooltip())
     }
 
     return read_only_annotations_div
@@ -237,40 +280,45 @@ function init_autocomplete_annotations(div_name) {
     $(div_name).tagEditor({
         autocomplete: {
             source: '/api/autocomplete-annotations',
-            minLength: 0
+            minLength: 1
         },
         forceLowercase: false,
         onChange: on_annotations_change
     })
 
     let tag_editor_objects = $(div_name).tagEditor('getTags')[0]
-
     on_annotations_change(tag_editor_objects.field, tag_editor_objects.editor, tag_editor_objects.tags)
+
+    // fix bug: sometimes, after pasting data, the on_change event was not triggered
+    $(tag_editor_objects.editor).bind("paste", function (e) {
+        setTimeout(function () {
+            let tag_editor_objects = $(div_name).tagEditor('getTags')[0]
+            on_annotations_change(tag_editor_objects.field, tag_editor_objects.editor, tag_editor_objects.tags)
+        }, 100);
+    })
 }
 
 function on_annotations_change(field, editor, tags) {
-    console.log('field  :', field)
-    console.log('editor :', editor)
-    console.log('tags   :', tags)
-
     $.getJSON('/api/annotation-to-type/', {'annotations[]': tags}, function (data) {
-        console.log('annotation-to-type', data)
-
-        let annotation_to_type = data
-
-        let entries = $('li', editor).slice(1)  // remove first placeholder element
+        let entries = $('li', editor)
 
         entries.each(function () {
             let li = $(this)
+            let child_1 = li.children()[1]
+            let child_2 = li.children()[2]
+
             let anno = li[0].innerText.substring(3)
 
-            let child_1 = li.children()[1]
-            child_1.setAttribute('data-annotype', data[anno]['anno_type'])
-            child_1.setAttribute('title', data[anno]['description'])
-            $(child_1).tooltip()
+            if (anno in data) {
+                let annoData = data[anno]
 
-            let child_2 = li.children()[2]
-            child_2.setAttribute('data-annotype', data[anno]['anno_type'])
+                child_1.setAttribute('data-annotype', annoData['anno_type'])
+                child_1.setAttribute('title', data[anno]['description'])
+                child_2.setAttribute('data-annotype', annoData['anno_type'])
+
+                child_1.classList.add('annotation')
+                $(child_1).tooltip()
+            }
         })
     })
 }
@@ -280,54 +328,54 @@ function init_autocomplete_genomes(div_name) {
     $(div_name).tagEditor({
         autocomplete: {
             source: '/api/autocomplete-genomes/',
-            minLength: 0
+            minLength: 1
         },
         forceLowercase: false,
         onChange: on_genomes_change
     })
 
     let tag_editor_objects = $(div_name).tagEditor('getTags')[0]
+    on_genomes_change(tag_editor_objects.field, tag_editor_objects.editor, tag_editor_objects.tags)
 
-    return on_genomes_change(tag_editor_objects.field, tag_editor_objects.editor, tag_editor_objects.tags)
+    // fix bug: sometimes, after pasting data, the on_change event was not triggered
+    $(tag_editor_objects.editor).bind("paste", function (e) {
+        setTimeout(function () {
+            let tag_editor_objects = $(div_name).tagEditor('getTags')[0]
+            on_genomes_change(tag_editor_objects.field, tag_editor_objects.editor, tag_editor_objects.tags)
+        }, 100);
+    })
 }
 
 function on_genomes_change(field, editor, tags) {
-    console.log('field  :', field)
-    console.log('editor :', editor)
-    console.log('tags   :', tags)
-
     $.getJSON('/api/genome-identifier-to-species/', {'genomes[]': tags}, function (data) {
         delete data.success
 
-        genome_to_species = data
-
-        let entries = $('li', editor).slice(1)  // remove first placeholder element
+        let entries = $('li', editor)
 
         entries.each(function () {
             let li = $(this)
-            let genome = li[0].innerText.substring(3)
-            let genome_data = data[genome]
-
-            console.log('XXXXXXXXXXXXXXXXXXXXXXXXx', genome, genome_data)
-
             let child_1 = li.children()[1]
             let child_2 = li.children()[2]
 
-            if (genome_data['type'] === 'taxid' || genome_data['type'] === 'genome') {
-                child_1.setAttribute('data-species', genome_data['sciname'])
-                child_1.setAttribute('title', genome_data['sciname'])
-                child_2.setAttribute('data-species', genome_data['sciname'])
-            } else if (genome_data['type'] === 'tag') {
-                child_1.setAttribute('data-tag', genome_data['tag'])
-                child_1.setAttribute('title', genome_data['description'])
-                child_2.setAttribute('data-tag', genome_data['tag'])
-            } else {
-                console.log('ERROR in on_genomes_change!', genome, genome_data, li)
-            }
+            let genome = li[0].innerText.substring(3)
 
-            $(child_1).tooltip()
+            if (genome in data) {
+                let genome_data = data[genome]
+
+                if (genome_data['type'] === 'taxid' || genome_data['type'] === 'genome') {
+                    child_1.setAttribute('data-species', genome_data['sciname'])
+                    child_2.setAttribute('data-species', genome_data['sciname'])
+                } else if (genome_data['type'] === 'tag') {
+                    child_1.setAttribute('data-tag', genome_data['tag'])
+                    child_2.setAttribute('data-tag', genome_data['tag'])
+                } else {
+                    console.log('ERROR in on_genomes_change!', genome, genome_data, li)
+                }
+
+                child_1.classList.add('genome')
+                $(child_1).ogbTooltip()
+            }
         })
-        return genome_to_species
     })
 }
 
@@ -336,7 +384,7 @@ function init_autocomplete_genes(div_name) {
     $(div_name).tagEditor({
         autocomplete: {
             source: '/api/autocomplete-genes/',
-            minLength: 0
+            minLength: 1
         },
         forceLowercase: false,
         onChange: on_genes_change
@@ -344,14 +392,18 @@ function init_autocomplete_genes(div_name) {
 
     let tag_editor_objects = $(div_name).tagEditor('getTags')[0]
 
-    return on_genes_change(tag_editor_objects.field, tag_editor_objects.editor, tag_editor_objects.tags)
+    on_genes_change(tag_editor_objects.field, tag_editor_objects.editor, tag_editor_objects.tags)
+
+    // fix bug: sometimes, after pasting data, the on_change event was not triggered
+    $(tag_editor_objects.editor).bind("paste", function (e) {
+        setTimeout(function () {
+            let tag_editor_objects = $(div_name).tagEditor('getTags')[0]
+            on_genes_change(tag_editor_objects.field, tag_editor_objects.editor, tag_editor_objects.tags)
+        }, 100);
+    })
 }
 
 function on_genes_change(field, editor, tags) {
-    console.log('field  :', field)
-    console.log('editor :', editor)
-    console.log('tags   :', tags)
-
     const genomes = Array.from(new Set(tags.map(function (gene) {
         return gene.rsplit('_', 1)[0]
     })))
@@ -359,24 +411,23 @@ function on_genes_change(field, editor, tags) {
     $.getJSON('/api/genome-identifier-to-species/', {'genomes[]': genomes}, function (data) {
         delete data.success
 
-        genome_to_species = data
-
-        let entries = $('li', editor).slice(1)  // remove first placeholder element
+        let entries = $('li', editor)
 
         entries.each(function () {
-            const li = $(this)
+            let li = $(this)
+            let child_1 = li.children()[1]
+            let child_2 = li.children()[2]
+
             const gene = li[0].innerText.substring(3)
             const genome = gene.rsplit('_', 1)[0]
 
-            let child_1 = li.children()[1]
-            child_1.setAttribute('data-species', data[genome]['sciname'])
-            child_1.setAttribute('title', data[genome]['sciname'])
-            $(child_1).tooltip()
+            if (genome in data) {
+                child_1.setAttribute('data-species', data[genome]['sciname'])
+                child_2.setAttribute('data-species', data[genome]['sciname'])
 
-            let child_2 = li.children()[2]
-            child_2.setAttribute('data-species', data[genome]['sciname'])
+                child_1.classList.add('gene')
+                $(child_1).ogbTooltip()
+            }
         })
-
-        return genome_to_species
     })
 }

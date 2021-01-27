@@ -6,9 +6,9 @@
     <link rel="stylesheet" type="text/css" href="{% static 'global/css/annotype_color.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'global/css/taxid_color.css' %}" id="taxid-color-stylesheet"/>
     <link rel="stylesheet" type="text/css" href="{% static 'global/css/tag_color.css' %}"/>
+    <script src="{% static 'global/js/query-groups.js' %}"></script>
 
     <!-- autocomplete -->
-    <link href="{% static 'website/css/jquery-ui.css' %}" rel="stylesheet"/>
     <link href="{% static 'global/css/jquery.tag-editor.css' %}" rel="stylesheet"/>
     <script src="{% static 'global/js/jquery.caret.min.js' %}"></script>
     <script src="{% static 'global/js/jquery.tag-editor.min.js' %}"></script>
@@ -40,14 +40,29 @@
         <div class="container">
             <form>
                 {% csrf_token %}
-                <div class="form-group">
-                    <label for="get-genomes">Genomes:</label>
-                    <input type="text" class="form-control" id="get-genomes"
-                           value="{{ magic_query_manager.regular_genomes|join:", " }},{{ magic_query_manager.magic_objects|join:", " }}">
-                </div>
+                <div id="query-genomes"></div>
 
                 <button type="button" class="btn btn-primary" onclick="submit_function()">Submit</button>
             </form>
+
+
+            {% if magic_query_manager %}
+                <hr class="featurette-divider">
+
+                <button type="button" class="btn btn-light" data-toggle="collapse" href="#real-div" aria-expanded="false" aria-controls="real-div"
+                >Show query
+                </button>
+
+                <form id="real-div" class="collapse">
+                    <div class="form-group">
+                        <label for="real-genomes-1">Genomes:</label>
+                        <div class="read-only-div" id="real-genomes">
+                            {% for genome in magic_query_manager.all_genomes %}{{ genome.html|safe }}{% endfor %}
+                        </div>
+                    </div>
+
+                </form>
+            {% endif %}
         </div>
 
         {% if magic_query_manager %}
@@ -55,22 +70,8 @@
 
                 <hr class="featurette-divider">
 
-                <button type="button" class="btn btn-light" data-toggle="collapse" href="#real-div" aria-expanded="false" aria-controls="real-div"
-                >Show query
-                </button>
-
-
                 <form id="blast-form" method="POST" action="{% url 'website:blast-submit' %}">
                     {% csrf_token %}
-
-                    <div id="real-div" class="form-group collapse">
-                        <label for="real-genomes">Genomes:</label>
-                        <div class="read-only-div" id="real-genomes">
-                            {% for genome in magic_query_manager.all_genomes %}{{ genome.html|safe }}{% endfor %}
-                        </div>
-                    </div>
-
-
                     <div class="form-group">
                         <label for="id_blast_type" class=" requiredField">Blast type</label>
                         <div>
@@ -130,42 +131,33 @@
 {% block end %}
 
     <script>
-
         "use strict"
 
-        let genome_to_species = {{ genome_to_species|safe }};
+        const genomesQuery = [{% if magic_query_manager %} '{{ magic_query_manager.queries|join:"', '" }}' {% else %}{% endif %}]
+        const allGenomes = [{% if magic_query_manager %} '{{ magic_query_manager.all_genomes|join:"', '" }}' {% else %}{% endif %}]
 
-        const genomes = [{% if magic_query_manager %} '{{ magic_query_manager.all_genomes|join:"', '" }}' {% else %}{% endif %}]
+        const queryGenomes = $('#query-genomes')
 
         $(document).ready(function () {
-            genome_to_species = init_autocomplete_genomes("#get-genomes")
+            addGenomesGroup(queryGenomes, genomesQuery, false, false)
 
-            $('#real-genomes .genome').click(function (event) {
-                showGenomeClickMenu(event)
-            })
+            $('.ogb-tag.genome')
+                .ogbTooltip()
+                .click(function () {
+                    showGenomeClickMenu(event)
+                })
+
         })
 
 
         function submit_function() {
-
-            const genomes = $('#get-genomes').val().split(',')
-
-            console.log('genomes:', genomes)
+            const target = queryGenomes.find('.get-genomes')[0]
+            const genomes = extractQuery(target)
 
             $.when(validate_genomes(genomes)).done(function (genomes_valid) {
-
                 genomes_valid = genomes_valid['success']
 
                 if (genomes_valid) {
-                    $('#get-genomes').next().removeClass('is-invalid')
-                } else {
-                    $('#get-genomes').next().addClass('is-invalid')
-                }
-
-                if (genomes_valid) {
-                    console.log('FORM CONTROL SUCCESS', genomes)
-                    console.log('FORWARD TO NEW URL!')
-
                     window.location.href = `?genomes=${urlReplBlanks(genomes)}`
                 }
             })
@@ -182,7 +174,7 @@
 
             let frm = $('#blast-form')
 
-            const serialized_query = frm.serialize() + '&genomes[]=' + urlReplBlanks(genomes)
+            const serialized_query = frm.serialize() + '&genomes[]=' + urlReplBlanks(allGenomes)
 
             // load new blast results
             $.ajax({

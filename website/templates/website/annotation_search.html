@@ -7,9 +7,9 @@
     <link rel="stylesheet" type="text/css" href="{% static 'global/css/annotype_color.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'global/css/tag_color.css' %}"/>
     <link rel="stylesheet" type="text/css" href="{% static 'global/css/taxid_color.css' %}" id="taxid-color-stylesheet"/>
+    <script src="{% static 'global/js/query-groups.js' %}"></script>
 
     <!-- autocomplete -->
-    <link href="{% static 'website/css/jquery-ui.css' %}" rel="stylesheet"/>
     <link href="{% static 'global/css/jquery.tag-editor.css' %}" rel="stylesheet"/>
     <script src="{% static 'global/js/jquery.caret.min.js' %}"></script>
     <script src="{% static 'global/js/jquery.tag-editor.min.js' %}"></script>
@@ -35,16 +35,18 @@
                 {% csrf_token %}
                 <div class="form-group">
                     <label for="get-annotations">Annotations:</label>
+                    <button onclick="wipeQuery(event.target.parentElement)" type="button" class="btn-sm btn-warning float-right" title=""
+                            data-original-title="Wipe content">Wipe
+                    </button>
+                    <button onclick="copyQuery(event.target.parentElement)" type="button" class="btn-sm btn-info float-right" title=""
+                            data-original-title="Copy content">Copy
+                    </button>
+
                     <input type="text" class="form-control" id="get-annotations" value="{{ annotations|join:", " }}">
-                </div>
 
-                <div class="form-group">
-                    <label for="get-genomes">Genome:</label>
-                    <input type="text" class="form-control" id="get-genomes"
-                           value="{{ magic_query_manager.regular_genomes|join:", " }},{{ magic_query_manager.magic_objects|join:", " }}">
+                    <div id="query-genomes"></div>
+                    <button type="button" class="btn btn-primary" onclick="submit_function()">Submit</button>
                 </div>
-
-                <button type="button" class="btn btn-primary" onclick="submit_function()">Submit</button>
             </form>
 
             {% if magic_query_manager and annotations %}
@@ -87,39 +89,47 @@
 
 {% block end %}
     <script>
-
         "use strict"
 
         let annotations = [{% if annotations %} '{{ annotations|join:"', '" }}' {% else %}{% endif %}]
-        let genomes = [{% if magic_query_manager %} '{{ magic_query_manager.all_genomes|join:"', '" }}' {% else %}{% endif %}]
 
-        let genome_to_species
+        const genomesQuery = [{% if magic_query_manager %} '{{ magic_query_manager.queries|join:"', '" }}' {% else %}{% endif %}]
+        const allGenomes = [{% if magic_query_manager %} '{{ magic_query_manager.all_genomes|join:"', '" }}' {% else %}{% endif %}]
+
+        const queryGenomes = $('#query-genomes')
+
+        $(document).ready(function () {
+            addGenomesGroup(queryGenomes, genomesQuery, false, false)
+
+            $('.ogb-tag.genome')
+                .ogbTooltip()
+                .click(function () {
+                    showGenomeClickMenu(event)
+                })
+
+        })
+
+
+        let genomes = [{% if magic_query_manager %} '{{ magic_query_manager.all_genomes|join:"', '" }}' {% else %}{% endif %}]
 
         $(document).ready(function () {
             init_autocomplete_annotations("#get-annotations")
-            genome_to_species = init_autocomplete_genomes("#get-genomes")
 
-            $('#real-genomes .ogb-tag.genome').tooltip({
-                title: function () {
-                    return $(this).attr('data-species');
-                }
-            }).click(function (event) {
-                showGenomeClickMenu(event)
-            })
+            const target = $(queryGenomes.find('.get-genomes')[0])
 
-            $('#real-annotations .ogb-tag.annotation').tooltip().click(function (event) {
-                showAnnotationClickMenu(event, 'auto', 'auto', $('#real-genomes'))
-            })
+            $('#real-annotations .ogb-tag.annotation')
+                .ogbTooltip()
+                .click(function (event) {
+                    showAnnotationClickMenu(event, 'auto', 'auto', target)
+                })
 
             loadTable(annotations, genomes, true)
         })
 
         function submit_function() {
             let annotations = $('#get-annotations').val().split(',')
-            const genomes = $('#get-genomes').val().split(',')
-
-            console.log('annotations:', annotations)
-            console.log('genomes:', genomes)
+            const target = $(queryGenomes.find('.get-genomes')[0])
+            const genomes = extractQuery(target)
 
             $.when(validate_annotations(annotations), validate_genomes(genomes)).done(function (annotations_valid, genomes_valid) {
                 annotations_valid = annotations_valid[2].responseJSON['success']
@@ -138,9 +148,6 @@
                 }
 
                 if (annotations_valid && genomes_valid) {
-                    console.log('FORM CONTROL SUCCESS', annotations, genomes)
-                    console.log('FORWARD TO NEW URL!')
-
                     let url = ''
                     if (annotations.length !== 0) {
                         url += `?annotations=${urlReplBlanks(annotations)}`
@@ -159,9 +166,6 @@
         }
 
         async function loadTable(annotations, genomes) {
-            console.log('LOAD ANNOTATIONS: ', annotations, '----->', annotations)
-            console.log('LOAD GENOME:      ', genomes, '----->', genomes)
-
             if (annotations.length === 0 && genomes.length === 0) {
                 console.log('no annotations or no genomes!')
                 return
@@ -172,22 +176,22 @@
                     genomes: genomes
                 }, function () {
                     // activate tooltips in newly loaded container
-                    $('#annotation-matrix-container .ogb-tag').tooltip({
-                        title: function () {
-                            return $(this).attr('data-species')
-                        }
-                    }).each(function () {
-                        if ($(this).hasClass('genome')) {
-                            this.setAttribute('onclick', `showGenomeClickMenu(event, 'auto', 'auto', $(this).parent().parent() )`)
-                        } else if ($(this).hasClass('annotation')) {
-                            this.setAttribute('onclick', `showAnnotationClickMenu(event, 'auto', $(this).parent().parent().parent(), $(this).parent().parent().parent().parent() )`)
-                        }
-                    })
-                    $('#coverage-matrix tbody [data-genes]').each(function () {
-                        if ($(this).text() !== '0') {
-                            this.setAttribute('onclick', `showGenesClickMenu(event, $(this).data('genes'), $($(event.target).closest('table').find('th')[$(event.target).parent().index()].firstChild).data('species'))`)
-                        }
-                    })
+                    $('#annotation-matrix-container .ogb-tag')
+                        .ogbTooltip()
+                        .each(function () {
+                            if ($(this).hasClass('genome')) {
+                                this.setAttribute('onclick', `showGenomeClickMenu(event, 'auto', 'auto', $(this).parent().parent() )`)
+                            } else if ($(this).hasClass('annotation')) {
+                                this.setAttribute('onclick', `showAnnotationClickMenu(event, 'auto', $(this).parent().parent().parent(), $(this).parent().parent().parent().parent() )`)
+                            }
+                        })
+
+                    $('#coverage-matrix tbody [data-genes]')
+                        .each(function () {
+                            if ($(this).text() !== '0') {
+                                this.setAttribute('onclick', `showGenesClickMenu(event, $(this).data('genes'), $($(event.target).closest('table').find('th')[$(event.target).parent().index()].firstChild).data('species'))`)
+                            }
+                        })
                 }
             )
 

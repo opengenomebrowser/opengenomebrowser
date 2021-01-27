@@ -3,7 +3,7 @@
 
 {% block styles %}
     <!-- Site-specific css/js -->
-    <link rel="stylesheet" type="text/css" href="{% static 'website/css/detail.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'global/css/detail.css' %}"/>
     <link rel="stylesheet" type="text/css" href="{% static 'global/css/annotype_color.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'global/css/taxid_color.css' %}">
 
@@ -77,19 +77,15 @@
 {% block end %}
     <script>
         $(document).ready(function () {
-            $('.genome').tooltip({
-                title: function () {
-                    return $(this).attr('data-species');
-                }
-            }).each(function () {
-                this.setAttribute('onclick', "showGenomeClickMenu(event, 'auto', 'auto', '.genome-and-anno-container')")
-            })
+            $('.genome')
+                .ogbTooltip()
+                .each(function () {
+                    this.setAttribute('onclick', "showGenomeClickMenu(event, 'auto', 'auto', '.genome-and-anno-container')")
+                })
 
-            $('.gene').tooltip({
-                title: function () {
-                    return $(this).attr('data-species');
-                }
-            }).each(function () {
+            $('.gene')
+                .ogbTooltip()
+                .each(function () {
                 this.setAttribute('onclick', "showGeneClickMenu(event, 'auto', '.genome-and-anno-container')")
             })
 

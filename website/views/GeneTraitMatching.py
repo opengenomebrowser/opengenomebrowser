@@ -134,7 +134,7 @@ def gtm_table(request):
     multiple_testing_method = request.GET.get('multiple_testing_method')
 
     gtm_df = gtm(g1=magic_query_manager_g1.all_genomes, g2=magic_query_manager_g2.all_genomes,
-                  anno_type=anno_type, alpha=alpha, multiple_testing_method=multiple_testing_method)
+                 anno_type=anno_type, alpha=alpha, multiple_testing_method=multiple_testing_method)
 
     json_response = to_json(gtm_df=gtm_df, anno_type=anno_type)
 
@@ -166,9 +166,9 @@ def gtm(g1: [Genome], g2: [Genome], anno_type='OL', alpha=0.25, multiple_testing
         .annotate(g2=Count('genomecontent', filter=Q(genomecontent__in=g2))) \
         .filter(anno_type=anno_type)
 
-    annos = annos_qs.all().values_list('name', 'g1', 'g2')
+    annos = annos_qs.all().values_list('name', 'description', 'g1', 'g2')
 
-    annos = pd.DataFrame(list(annos), columns=['annotation', 'g1', 'g2'])
+    annos = pd.DataFrame(list(annos), columns=['annotation', 'description', 'g1', 'g2'])
 
     # only keep annotations which are covered
     annos = annos.loc[np.where(annos['g1'] + annos['g2'] > 0)]

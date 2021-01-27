@@ -6,6 +6,7 @@
     <link rel="stylesheet" type="text/css" href="{% static 'global/css/annotype_color.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'global/css/taxid_color.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'dna-feature-viewer/css/dna-feature-viewer.js.css' %}">
+    <script src="{% static 'global/js/query-groups.js' %}"></script>
 
     <script src="{% static 'align/js/align.js' %}"></script>
     <script src="{% static 'align/js/msa.min.js' %}"></script>
@@ -16,13 +17,12 @@
     <script src="{% static 'global/js/bokeh-widgets.min.js' %}"></script>
 
     <!-- autocomplete -->
-    <link href="{% static 'website/css/jquery-ui.css' %}" rel="stylesheet"/>
     <link href="{% static 'global/css/jquery.tag-editor.css' %}" rel="stylesheet"/>
     <script src="{% static 'global/js/jquery.caret.min.js' %}"></script>
     <script src="{% static 'global/js/jquery.tag-editor.min.js' %}"></script>
 
     <!-- SortableJS - https://github.com/SortableJS/Sortable -->
-    <script src="{% static 'website/js/Sortable.min.js' %}"></script>
+    <script src="{% static 'global/js/Sortable.min.js' %}"></script>
 
     <style>
 
@@ -93,6 +93,13 @@
                 {% csrf_token %}
                 <div class="form-group">
                     <label for="get-genes">Genes:</label>
+                    <button onclick="wipeQuery(event.target.parentElement)" type="button" class="btn-sm btn-warning float-right" title=""
+                            data-original-title="Wipe content">Wipe
+                    </button>
+                    <button onclick="copyQuery(event.target.parentElement)" type="button" class="btn-sm btn-info float-right" title=""
+                            data-original-title="Copy content">Copy
+                    </button>
+
                     <input type="text" class="form-control" id="get-genes" value="{{ genes|join:", " }}">
                 </div>
 
@@ -178,20 +185,18 @@
 
         let alignment  // will contain the MSA (not currently used)
 
-        let genome_to_species
-
         $(document).ready(function () {
-            genome_to_species = init_autocomplete_genes("#get-genes")
+            init_autocomplete_genes("#get-genes")
 
-            $('#real-genes .gene').click(function (event) {
-                showGeneClickMenu(event)
-            })
+            $('#real-genes .gene')
+                .ogbTooltip()
+                .click(function (event) {
+                    showGeneClickMenu(event)
+                })
         })
 
         function submit_function() {
             const genes = $('#get-genes').val().split(',')
-
-            console.log('genes:', genes)
 
             $.when(validate_genes(genes)).done(function (genes_valid) {
 
@@ -204,9 +209,6 @@
                 }
 
                 if (genes_valid) {
-                    console.log('FORM CONTROL SUCCESS', genes)
-                    console.log('FORWARD TO NEW URL!')
-
                     window.location.href = `?genes=${urlReplBlanks(genes)}`
                 }
             })

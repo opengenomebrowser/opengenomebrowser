@@ -1,0 +1,20 @@
+div.row:nth-child(1) {
+    justify-content: space-between;
+}
+
+div.col-md-6:nth-child(2) {
+    flex: unset;
+    width: min-content;
+}
+
+#gene-trait-matching-table_length > label, #gene-trait-matching-table_filter > label {
+    display: inline-flex
+}
+
+#gene-trait-matching-table_filter > label:nth-child(1) {
+    width: 264px
+}
+
+#gene-trait-matching-table_length .custom-select, #gene-trait-matching-table_filter .form-control {
+    margin: 0 7px 0 7px;
+}

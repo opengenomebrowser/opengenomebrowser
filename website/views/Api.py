@@ -36,10 +36,8 @@ class Api:
             return err(F"missing parameter 'annotations[]'. Got: {request.GET.keys()}")
 
         annotations = request.GET.getlist('annotations[]')
-        try:
-            annotations = [Annotation.objects.get(name=anno) for anno in annotations]
-        except Annotation.DoesNotExist:
-            return err("One or more annotations doesn't mach any type.")
+
+        annotations = Annotation.objects.filter(name__in=annotations)
 
         annotation_to_type = {anno.name:
             dict(
@@ -59,12 +57,12 @@ class Api:
 
         # create 'synthetic' charfield
         # https://docs.djangoproject.com/en/2.2/ref/models/database-functions/#concat
-        all_keggmaps = PathwayMap.objects.annotate(slug_and_title=Concat(
+        all_maps = PathwayMap.objects.annotate(slug_and_title=Concat(
             'slug', V(' : '), 'title',
             output_field=CharField()
         )).all()
 
-        maps = all_keggmaps.filter(slug_and_title__icontains=q)[:20]  # return 20 results
+        maps = all_maps.filter(slug_and_title__icontains=q)[:20]  # return 20 results
         results = []
         for map in maps:
             results.append({
@@ -90,7 +88,7 @@ class Api:
         results = []
         for annotation in annotations:
             results.append({
-                'label': F"{annotation.name} ({Annotation.description})",
+                'label': F"{annotation.name} ({annotation.description})",
                 'value': annotation.name
             })
         data = json.dumps(results)
@@ -215,7 +213,7 @@ class Api:
         qs = set(request.GET.getlist('genomes[]'))
 
         try:
-            genome_to_species = MagicQueryManager(qs).genome_to_species()
+            genome_to_species = MagicQueryManager(qs, raise_errors=False).genome_to_species()
         except Exception as e:
             return err(F'magic query is bad: {e}')
         return JsonResponse(genome_to_species)

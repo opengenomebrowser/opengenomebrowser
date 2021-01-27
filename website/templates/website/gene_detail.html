@@ -3,8 +3,8 @@
 
 {% block styles %}
     <!-- Site-specific css/js -->
-    <link rel="stylesheet" type="text/css" href="{% static 'website/css/detail.css' %}"/>
-    <link rel="stylesheet" type="text/css" href="{% static 'website/css/sequence-viewer.css' %}" id="sequence-stylesheet"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'global/css/detail.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'global/css/sequence-viewer.css' %}" id="sequence-stylesheet"/>
     <link rel="stylesheet" type="text/css" href="{% static 'global/css/annotype_color.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'global/css/taxid_color.css' %}">
 
@@ -190,9 +190,11 @@
             load_dfvm()
 
             $(".ogb-tag.annotation").each(function (index) {
-                $(this).on("click", function () {
-                    showAnnotationClickMenu(event)
-                })
+                $(this)
+                    .ogbTooltip()
+                    .on("click", function () {
+                        showAnnotationClickMenu(event)
+                    })
             })
 
         })

@@ -1,3 +1,5 @@
+import json
+
 from django.shortcuts import render
 from website.models.PathwayMap import PathwayMap
 from website.models.Genome import Genome
@@ -6,6 +8,7 @@ from OpenGenomeBrowser import settings
 from website.views.helpers.magic_string import MagicQueryManager
 
 type_dict = PathwayMap._get_type_dict()
+
 
 
 def pathway_view(request):
@@ -27,13 +30,17 @@ def pathway_view(request):
         except PathwayMap.DoesNotExist:
             context['error_danger'] = F'Could not find map by slug: {map_slug}.'
 
-    if 'genomes' in request.GET:
-        qs = set(request.GET['genomes'].split(' '))
-
-        try:
+    magic_query_managers = []
+    genome_to_species = {}
+    try:
+        groups_of_genomes = {}
+        i = 1
+        while f'g{i}' in request.GET:
+            group_id = f'g{i}'
+            qs = set(request.GET[group_id].split(' '))
             magic_query_manager = MagicQueryManager(queries=qs)
-            context['magic_query_manager'] = magic_query_manager
-            context['genome_to_species'] = magic_query_manager.genome_to_species()
+            magic_query_managers.append(magic_query_manager)
+            genome_to_species.update(magic_query_manager.genome_to_species())
 
             if map_is_valid:
                 organism_to_annotations = {
@@ -41,10 +48,19 @@ def pathway_view(request):
                     for genome in magic_query_manager.all_genomes
                 }
 
-                context['organism_to_annotations'] = organism_to_annotations
+                groups_of_genomes[f'g{i}'] = organism_to_annotations
 
-        except Exception as e:
-            import traceback
-            context['error_danger'] = F'Error: {e} :: {traceback.format_exc()}'
+            i += 1
+
+        context['groups_of_genomes'] = groups_of_genomes
+
+    except Exception as e:
+        import traceback
+        context['error_danger'] = F'Error: {e} :: {traceback.format_exc()}'
+
+    context['magic_query_managers'] = magic_query_managers
+    context['initial_queries'] = [list(m.queries) for m in magic_query_managers]
+
+    context['genome_to_species'] = genome_to_species
 
     return render(request, 'website/pathway.html', context)
