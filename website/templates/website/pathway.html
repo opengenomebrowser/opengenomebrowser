@@ -162,22 +162,43 @@
 
         function submit_function() {
             const map_slug = $('#get-map').val().split(' : ')[0]
-            $.when(validate_pathwaymap(map_slug)).done(function (map_valid) {
-                if (map_valid['success']) {
+            let groupsOfGenomes = []
+            let allGenomes = new Set()
+            queryGenomes.find('.get-genomes').each(function () {
+                const genomes = extractQuery(this)
+                groupsOfGenomes.push(extractQuery(this))
+                allGenomes = new Set([...allGenomes, ...genomes])
+            })
+            allGenomes = Array.from(allGenomes)
+
+            $.when(validate_pathwaymap(map_slug), validate_genomes(allGenomes)).done(function (map_valid, genomes_valid) {
+                map_valid = map_valid[2].responseJSON['success']
+                genomes_valid = genomes_valid[2].responseJSON['success']
+
+                console.log(map_valid, genomes_valid)
+
+                if (map_valid) {
                     $('#get-map').removeClass('is-invalid')
                 } else {
                     $('#get-map').addClass('is-invalid')
-                    return false
                 }
 
-                let url = `/pathway?map=${map_slug}`
-                let i = 1
-                queryGenomes.find('.get-genomes').each(function () {
-                    let genomes = extractQuery(this)
-                    url += `&g${i++}=${urlReplBlanks(genomes)}`
-                })
+                if (genomes_valid) {
+                    $('#get-genomes').next().removeClass('is-invalid')
+                } else {
+                    $('#get-genomes').next().addClass('is-invalid')
+                }
 
-                window.location.href = url
+                if (map_valid && genomes_valid) {
+
+                    let url = `/pathway?map=${map_slug}`
+
+                    groupsOfGenomes.forEach(function (genomes, i) {
+                        url += `&g${i + 1}=${urlReplBlanks(genomes)}`
+                    })
+
+                    window.location.href = url
+                }
             })
         }
 
