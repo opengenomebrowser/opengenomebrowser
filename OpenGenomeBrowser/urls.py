@@ -18,6 +18,15 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.auth.views import LoginView
+from rest_framework import routers
+
+from website.views.rest_api import *
+
+router = routers.DefaultRouter()
+router.register(r'genomes', GenomeViewSet)
+router.register(r'organisms', OrganismViewSet)
+router.register(r'taxids', TaxIDViewSet)
+router.register(r'tags', TagViewSet)
 
 
 class OgbLoginView(LoginView):
@@ -36,9 +45,15 @@ class OgbLoginView(LoginView):
 
 urlpatterns = [
                   path('admin/', admin.site.urls),
+
                   path('accounts/login/', OgbLoginView.as_view(), name='login'),
                   path('accounts/', include('django.contrib.auth.urls')),
-                  path('', include('website.urls'))
+
+                  # django-rest-framework
+                  path('rest-auth/', include('rest_framework.urls', namespace='rest_framework')),
+                  path('rest/', include(router.urls)),
+
+                  path('', include('website.urls')),
               ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 if settings.DEBUG:

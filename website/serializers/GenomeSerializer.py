@@ -24,26 +24,30 @@ class GenomeSerializer(serializers.ModelSerializer):
         }
 
         exclude = [
-            'id', 'genomecontent', 'organism',  # primary key, foreign keys
-            'assembly_gc', 'assembly_longest_scf', 'assembly_size', 'assembly_nr_scaffolds', 'assembly_n50'  # calculated automatically
+            # primary key, foreign keys
+            'id', 'genomecontent', 'organism',
+            # calculated automatically
+            'assembly_gc', 'assembly_longest_scf', 'assembly_size', 'assembly_nr_scaffolds', 'assembly_n50',
+            'BUSCO_percent_single'
         ]
 
         set_fields = ['tags']
 
     def create(self, validated_data, organism: Organism) -> Genome:
         genomecontent, created = GenomeContent.objects.get_or_create(identifier=validated_data['identifier'])
+        validated_data['BUSCO_percent_single'] = calculate_busco_single(validated_data)
         validated_data['genomecontent'] = genomecontent
         genome = super().create(validated_data)
         genome.organism = organism
         return genome
 
     def update(self, instance, validated_data, organism: Organism) -> Genome:
+        validated_data['BUSCO_percent_single'] = calculate_busco_single(validated_data)
         genome = super().update(instance, validated_data)
         genome.organism = organism
         return genome
 
     def is_valid(self, raise_exception=False):
-
         return super().is_valid(raise_exception)
 
     @staticmethod
@@ -126,3 +130,11 @@ def serialize_fields(obj):
         return str(obj)
     else:
         raise TypeError(f'Could not serialize {obj}')
+
+
+def calculate_busco_single(data):
+    if 'BUSCO' in data and 'S' in data['BUSCO'] and 'T' in data['BUSCO']:
+        busco = data['BUSCO']
+        return round(busco['S'] / busco['T'] * 100, 1)
+    else:
+        return None

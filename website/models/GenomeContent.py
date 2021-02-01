@@ -94,7 +94,7 @@ class GenomeContent(models.Model):
 
     def wipe_data(self):
         self.custom_files = []
-        self.annotations.all().delete()
+        self.annotations.clear()
 
     def load_genome(self):
         from .Gene import Gene

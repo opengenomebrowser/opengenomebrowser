@@ -94,6 +94,11 @@ if os.environ.get('LOGIN_REQUIRED', 'true') == 'true':
 else:
     print('NO LOGIN REQUIRED TO ACCESS THIS INSTANCE OF OPENGENOMEBROWSER!')
 
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 50
+}
+
 ROOT_URLCONF = 'OpenGenomeBrowser.urls'
 
 TEMPLATES = [
