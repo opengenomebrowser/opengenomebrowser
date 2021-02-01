@@ -105,60 +105,80 @@ def import_database(delete_missing: bool = True, auto_delete_missing: bool = Fal
     organism_generator = folder_looper.organisms(skip_ignored=True, sanity_check=False)
     for organism in progressbar(organism_generator, max_value=n_organisms, redirect_stdout=True):
         organism: MockOrganism
-        with transaction.atomic():
-            color_print(f'└── {organism.name}', color=Fore.BLUE, end=' ')
+        import_organism(organism.name, update_css=False)
 
-            organism_serializer = OrganismSerializer(data=organism.json)
-            organism_serializer.is_valid(raise_exception=True)
+    reload_color_css()
+    sanity_check_postgres()
+
+
+def import_organism(name: str, update_css=True):
+    """
+    Import organism into database
+    """
+    organism = MockOrganism(path=f'{settings.GENOMIC_DATABASE}/organisms/{name}')
+    with transaction.atomic():
+        color_print(f'└── {organism.name}', color=Fore.BLUE, end=' ')
+
+        organism_serializer = OrganismSerializer(data=organism.json)
+        organism_serializer.is_valid(raise_exception=True)
+
+        try:
+            o = Organism.objects.get(name=organism.name)
+            match, difference = OrganismSerializer.json_matches_organism(organism=o, json_dict=organism.json)
+            if match:
+                print(':: unchanged')
+
+            else:
+                print(f':: update: {difference}')
+                o = organism_serializer.update(instance=o, validated_data=organism_serializer.validated_data, representative_isnull=True)
+
+        except Organism.DoesNotExist:
+            print(':: new')
+            o = organism_serializer.create(organism_serializer.validated_data)
+
+        genomes = []
+
+        for genome in organism.genomes(skip_ignored=True, sanity_check=False):
+            genome: MockGenome
+            color_print(f'   └── {genome.identifier}', color=Fore.GREEN, end=' ')
+
+            genome_serializer = GenomeSerializer(data=genome.json)
+            genome_serializer.is_valid(raise_exception=True)
 
             try:
-                o = Organism.objects.get(name=organism.name)
-                match, difference = OrganismSerializer.json_matches_organism(organism=o, json_dict=organism.json)
+                g = Genome.objects.get(identifier=genome.identifier)
+                match, difference = GenomeSerializer.json_matches_genome(genome=g, json_dict=genome.json, organism_name=o.name)
                 if match:
                     print(':: unchanged')
 
                 else:
                     print(f':: update: {difference}')
-                    o = organism_serializer.update(instance=o, validated_data=organism_serializer.validated_data, representative_isnull=True)
+                    g = genome_serializer.update(instance=g, validated_data=genome_serializer.validated_data, organism=o)
 
-            except Organism.DoesNotExist:
+            except Genome.DoesNotExist:
                 print(':: new')
-                o = organism_serializer.create(organism_serializer.validated_data)
+                g = genome_serializer.create(genome_serializer.validated_data, organism=o)
 
-            genomes = []
+            genomes.append(g)
 
-            for genome in organism.genomes(skip_ignored=True, sanity_check=False):
-                genome: MockGenome
-                color_print(f'   └── {genome.identifier}', color=Fore.GREEN, end=' ')
+        o.representative = Genome.objects.get(identifier=organism.representative(sanity_check=False).identifier)
+        o.save()
 
-                genome_serializer = GenomeSerializer(data=genome.json)
-                genome_serializer.is_valid(raise_exception=True)
+        for g in genomes:
+            GenomeSerializer.update_genomecontent(g)
 
-                try:
-                    g = Genome.objects.get(identifier=genome.identifier)
-                    match, difference = GenomeSerializer.json_matches_genome(genome=g, json_dict=genome.json, organism_name=o.name)
-                    if match:
-                        print(':: unchanged')
+    if update_css:
+        reload_color_css()
+        sanity_check_postgres()
+        print('consider reloading orthologs.')
 
-                    else:
-                        print(f':: update: {difference}')
-                        g = genome_serializer.update(instance=g, validated_data=genome_serializer.validated_data, organism=o)
 
-                except Genome.DoesNotExist:
-                    print(':: new')
-                    g = genome_serializer.create(genome_serializer.validated_data, organism=o)
-
-                genomes.append(g)
-
-            o.representative = Genome.objects.get(identifier=organism.representative(sanity_check=False).identifier)
-            o.save()
-
-            for g in genomes:
-                GenomeSerializer.update_genomecontent(g)
-
-    reload_color_css()
-
-    sanity_check_postgres()
+def remove_organism(name: str):
+    """
+    Remove organism from database
+    """
+    Organism.objects.get(name=name).delete()
+    GenomeContent.objects.filter(genome__isnull=True).delete()
 
 
 def reload_color_css() -> None:
@@ -210,6 +230,7 @@ def remove_missing_organisms(auto_delete_missing: bool = False) -> None:
             genome.delete()
 
     GenomeContent.objects.filter(genome__isnull=True).delete()
+
 
 def reset_database(auto_delete: bool = False) -> None:
     """
@@ -460,8 +481,10 @@ if __name__ == "__main__":
     glacier([
         sanity_check_folder_structure,
         import_database,
-        reset_database,
+        import_organism,
+        remove_organism,
         remove_missing_organisms,
+        reset_database,
         import_pathway_maps,
         sanity_check_postgres,
         import_orthologs,

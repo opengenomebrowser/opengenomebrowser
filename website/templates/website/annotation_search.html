@@ -31,23 +31,29 @@
     <section>
 
         <div class="container">
+
             <form>
                 {% csrf_token %}
                 <div class="form-group">
-                    <label for="get-annotations">Annotations:</label>
-                    <button onclick="wipeQuery(event.target.parentElement)" type="button" class="btn-sm btn-warning float-right" title=""
-                            data-original-title="Wipe content">Wipe
-                    </button>
-                    <button onclick="copyQuery(event.target.parentElement)" type="button" class="btn-sm btn-info float-right" title=""
-                            data-original-title="Copy content">Copy
-                    </button>
+                    <div id="query-annotations">
+                        <label for="get-annotations">Annotations:</label>
+                        <button onclick="wipeQuery(event.target.parentElement)" type="button" class="btn-sm btn-warning float-right" title=""
+                                data-original-title="Wipe content">Wipe
+                        </button>
+                        <button onclick="copyQuery(event.target.parentElement)" type="button" class="btn-sm btn-info float-right" title=""
+                                data-original-title="Copy content">Copy
+                        </button>
 
-                    <input type="text" class="form-control" id="get-annotations" value="{{ annotations|join:", " }}">
+                        <input type="text" class="form-control" id="get-annotations" value="{{ annotations|join:", " }}">
+                    </div>
 
-                    <div id="query-genomes"></div>
+                    <div id="query-genomes">
+                        <!--- to be filled using addGenomesGroup function --->
+                    </div>
                     <button type="button" class="btn btn-primary" onclick="submit_function()">Submit</button>
                 </div>
             </form>
+
 
             {% if magic_query_manager and annotations %}
                 <hr class="featurette-divider">
