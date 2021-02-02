@@ -111,6 +111,29 @@ def import_database(delete_missing: bool = True, auto_delete_missing: bool = Fal
     sanity_check_postgres()
 
 
+def reload_organism_genomecontents(name: str = None, all: bool = False):
+    """
+    Forcefully reload fastas and annotations into database.
+
+    :param name: name of an organism
+    :param all: if True, process all organisms
+    """
+    if name:
+        organism = Organism.objects.get(name=name)
+        for genome in organism.genome_set.all():
+            GenomeSerializer.update_genomecontent(genome, wipe=True)
+    elif all:
+        for organism in Organism.objects.all():
+            print(f'└── {organism.name}')
+            for genome in organism.genome_set.all():
+                print(f'   └── {genome.identifier}')
+                GenomeSerializer.update_genomecontent(genome, wipe=True)
+    else:
+        raise AssertionError('Do nothing. Please specify --name=<organism-name> or --all')
+
+    print('consider reloading orthologs.')
+
+
 def import_organism(name: str, update_css=True):
     """
     Import organism into database
@@ -523,5 +546,6 @@ if __name__ == "__main__":
         load_annotation_descriptions,
         update_taxids,
         backup_genome_similarities,
-        import_genome_similarities
+        import_genome_similarities,
+        reload_organism_genomecontents
     ])

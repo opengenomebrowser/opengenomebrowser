@@ -92,7 +92,10 @@ class GenomeContent(models.Model):
                 self.load_custom_file(file_dict)
         self.save()
 
-    def wipe_data(self):
+    def wipe_data(self, genes=False):
+        if genes:
+            self._gbk_file_size = 0
+            self.gene_set.all().delete()
         self.custom_files = []
         self.annotations.clear()
 

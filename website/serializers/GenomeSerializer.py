@@ -51,10 +51,11 @@ class GenomeSerializer(serializers.ModelSerializer):
         return super().is_valid(raise_exception)
 
     @staticmethod
-    def update_genomecontent(genome: Genome):
+    def update_genomecontent(genome: Genome, wipe=False):
+        if wipe:
+            genome.genomecontent.wipe_data(genes=True)
         # update genomecontent
         genome.genomecontent.update()
-
         # update assembly stats
         genome.update_assembly_info()
 
