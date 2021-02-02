@@ -227,7 +227,6 @@ class Genome(models.Model):
         super().save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
-        self.genomecontent.wipe_data()
         self.genomecontent.delete()
         super().delete(*args, **kwargs)
 

@@ -1,8 +1,10 @@
 from django.views.generic import RedirectView
-from django.urls import path, re_path
+from django.urls import path, re_path, include
+
 from website.views import *
 
 app_name = 'website'
+
 
 urlpatterns = [
     # ex: /
@@ -80,5 +82,4 @@ urlpatterns = [
 
     # ex /test-click-menu/
     path('test-click-menu/', ClickMenu.click_view, name='test-click-menu'),
-
 ]

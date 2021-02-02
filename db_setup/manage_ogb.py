@@ -105,60 +105,103 @@ def import_database(delete_missing: bool = True, auto_delete_missing: bool = Fal
     organism_generator = folder_looper.organisms(skip_ignored=True, sanity_check=False)
     for organism in progressbar(organism_generator, max_value=n_organisms, redirect_stdout=True):
         organism: MockOrganism
-        with transaction.atomic():
-            color_print(f'└── {organism.name}', color=Fore.BLUE, end=' ')
+        import_organism(organism.name, update_css=False)
 
-            organism_serializer = OrganismSerializer(data=organism.json)
-            organism_serializer.is_valid(raise_exception=True)
+    reload_color_css()
+    sanity_check_postgres()
+
+
+def reload_organism_genomecontents(name: str = None, all: bool = False):
+    """
+    Forcefully reload fastas and annotations into database.
+
+    :param name: name of an organism
+    :param all: if True, process all organisms
+    """
+    if name:
+        organism = Organism.objects.get(name=name)
+        for genome in organism.genome_set.all():
+            GenomeSerializer.update_genomecontent(genome, wipe=True)
+    elif all:
+        for organism in Organism.objects.all():
+            print(f'└── {organism.name}')
+            for genome in organism.genome_set.all():
+                print(f'   └── {genome.identifier}')
+                GenomeSerializer.update_genomecontent(genome, wipe=True)
+    else:
+        raise AssertionError('Do nothing. Please specify --name=<organism-name> or --all')
+
+    print('consider reloading orthologs.')
+
+
+def import_organism(name: str, update_css=True):
+    """
+    Import organism into database
+    """
+    organism = MockOrganism(path=f'{settings.GENOMIC_DATABASE}/organisms/{name}')
+    with transaction.atomic():
+        color_print(f'└── {organism.name}', color=Fore.BLUE, end=' ')
+
+        organism_serializer = OrganismSerializer(data=organism.json)
+        organism_serializer.is_valid(raise_exception=True)
+
+        try:
+            o = Organism.objects.get(name=organism.name)
+            match, difference = OrganismSerializer.json_matches_organism(organism=o, json_dict=organism.json)
+            if match:
+                print(':: unchanged')
+
+            else:
+                print(f':: update: {difference}')
+                o = organism_serializer.update(instance=o, validated_data=organism_serializer.validated_data, representative_isnull=True)
+
+        except Organism.DoesNotExist:
+            print(':: new')
+            o = organism_serializer.create(organism_serializer.validated_data)
+
+        genomes = []
+
+        for genome in organism.genomes(skip_ignored=True, sanity_check=False):
+            genome: MockGenome
+            color_print(f'   └── {genome.identifier}', color=Fore.GREEN, end=' ')
+
+            genome_serializer = GenomeSerializer(data=genome.json)
+            genome_serializer.is_valid(raise_exception=True)
 
             try:
-                o = Organism.objects.get(name=organism.name)
-                match, difference = OrganismSerializer.json_matches_organism(organism=o, json_dict=organism.json)
+                g = Genome.objects.get(identifier=genome.identifier)
+                match, difference = GenomeSerializer.json_matches_genome(genome=g, json_dict=genome.json, organism_name=o.name)
                 if match:
                     print(':: unchanged')
 
                 else:
                     print(f':: update: {difference}')
-                    o = organism_serializer.update(instance=o, validated_data=organism_serializer.validated_data, representative_isnull=True)
+                    g = genome_serializer.update(instance=g, validated_data=genome_serializer.validated_data, organism=o)
 
-            except Organism.DoesNotExist:
+            except Genome.DoesNotExist:
                 print(':: new')
-                o = organism_serializer.create(organism_serializer.validated_data)
+                g = genome_serializer.create(genome_serializer.validated_data, organism=o)
 
-            genomes = []
+            genomes.append(g)
 
-            for genome in organism.genomes(skip_ignored=True, sanity_check=False):
-                genome: MockGenome
-                color_print(f'   └── {genome.identifier}', color=Fore.GREEN, end=' ')
+        o.representative = Genome.objects.get(identifier=organism.representative(sanity_check=False).identifier)
+        o.save()
 
-                genome_serializer = GenomeSerializer(data=genome.json)
-                genome_serializer.is_valid(raise_exception=True)
+        for g in genomes:
+            GenomeSerializer.update_genomecontent(g)
 
-                try:
-                    g = Genome.objects.get(identifier=genome.identifier)
-                    match, difference = GenomeSerializer.json_matches_genome(genome=g, json_dict=genome.json, organism_name=o.name)
-                    if match:
-                        print(':: unchanged')
+    if update_css:
+        reload_color_css()
+        sanity_check_postgres()
+        print('consider reloading orthologs.')
 
-                    else:
-                        print(f':: update: {difference}')
-                        g = genome_serializer.update(instance=g, validated_data=genome_serializer.validated_data, organism=o)
 
-                except Genome.DoesNotExist:
-                    print(':: new')
-                    g = genome_serializer.create(genome_serializer.validated_data, organism=o)
-
-                genomes.append(g)
-
-            o.representative = Genome.objects.get(identifier=organism.representative(sanity_check=False).identifier)
-            o.save()
-
-            for g in genomes:
-                GenomeSerializer.update_genomecontent(g)
-
-    reload_color_css()
-
-    sanity_check_postgres()
+def remove_organism(name: str):
+    """
+    Remove organism from database
+    """
+    Organism.objects.get(name=name).delete()
+    GenomeContent.objects.filter(genome__isnull=True).delete()
 
 
 def reload_color_css() -> None:
@@ -210,6 +253,7 @@ def remove_missing_organisms(auto_delete_missing: bool = False) -> None:
             genome.delete()
 
     GenomeContent.objects.filter(genome__isnull=True).delete()
+
 
 def reset_database(auto_delete: bool = False) -> None:
     """
@@ -266,6 +310,35 @@ def import_orthologs(auto_delete: bool = False) -> None:
         confirm_delete(color=Fore.MAGENTA)
 
     Annotation.load_ortholog_annotations()
+
+
+def backup_genome_similarities(file: str):
+    from website.models.GenomeSimilarity import GenomeSimilarity
+    done_objects = GenomeSimilarity.objects.filter(status='D')
+    assert not os.path.isfile(file), f'file {file} already exists!'
+    with open(file, 'w') as f:
+        for from_genome, to_genome, similarity in done_objects.values_list('from_genome', 'to_genome', 'similarity'):
+            f.write(f'{from_genome}\t{to_genome}\t{similarity}\n')
+
+
+def import_genome_similarities(file: str, ignore_conflicts: bool = False):
+    from website.models.GenomeSimilarity import GenomeSimilarity
+
+    identifier_to_genome = {g.identifier: g for g in GenomeContent.objects.all()}
+
+    def line_to_object(line) -> GenomeSimilarity:
+        from_genome, to_genome, similarity = line.split()
+        return GenomeSimilarity(
+            from_genome=identifier_to_genome[from_genome],
+            to_genome=identifier_to_genome[to_genome],
+            similarity=float(similarity),
+            status='D'
+        )
+
+    with open(file) as f:
+        objects = [line_to_object(line) for line in f]
+
+    GenomeSimilarity.objects.bulk_create(objects, ignore_conflicts=ignore_conflicts)
 
 
 def update_bokeh(auto_delete: bool = False) -> None:
@@ -460,8 +533,10 @@ if __name__ == "__main__":
     glacier([
         sanity_check_folder_structure,
         import_database,
-        reset_database,
+        import_organism,
+        remove_organism,
         remove_missing_organisms,
+        reset_database,
         import_pathway_maps,
         sanity_check_postgres,
         import_orthologs,
@@ -469,5 +544,8 @@ if __name__ == "__main__":
         reload_color_css,
         reload_blast_dbs,
         load_annotation_descriptions,
-        update_taxids
+        update_taxids,
+        backup_genome_similarities,
+        import_genome_similarities,
+        reload_organism_genomecontents
     ])

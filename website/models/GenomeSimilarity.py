@@ -75,6 +75,9 @@ class GenomeSimilarity(models.Model):
     class Meta:
         unique_together = ('from_genome', 'to_genome')
 
+    def __str__(self):
+        return f'<GenomeSimilarity {self.from_genome.identifier}:{self.to_genome.identifier} ({self.status})>'
+
     def sort(self):
         self.from_genome, self.to_genome = _sort(self.from_genome, self.to_genome)
 

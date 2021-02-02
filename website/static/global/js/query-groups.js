@@ -47,6 +47,8 @@ function removeGenomesQuery(target) {
 }
 
 function extractQuery(target) {
+    console.log($(target))
+    console.log($(target).find('.tag-editor'))
     return $(target).find('.tag-editor').text()
         .replace(/\s*,\s*/g, ",")  // remove all whitespace around commas
         .replace(/^,/, "")  // remove leading comma
@@ -54,6 +56,7 @@ function extractQuery(target) {
 }
 
 function copyQuery(target) {
+    console.log(target)
     CopyToClipboard(extractQuery(target).join(', '))
 }
 

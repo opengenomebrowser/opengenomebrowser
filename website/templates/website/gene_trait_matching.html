@@ -173,15 +173,15 @@
                 genomes_g2_valid = genomes_g2_valid[2].responseJSON['success']
 
                 if (genomes_g1_valid) {
-                    $('#get-genomes-g1').next().removeClass('is-invalid')
+                    $('.get-genomes').first().removeClass('is-invalid')
                 } else {
-                    $('#get-genomes-g1').next().addClass('is-invalid')
+                    $('.get-genomes').first().addClass('is-invalid')
                 }
 
                 if (genomes_g2_valid) {
-                    $('#get-genomes-g2').next().removeClass('is-invalid')
+                    $('.get-genomes').last().removeClass('is-invalid')
                 } else {
-                    $('#get-genomes-g2').next().addClass('is-invalid')
+                    $('.get-genomes').last().addClass('is-invalid')
                 }
 
                 if (genomes_g1_valid && genomes_g2_valid) {
