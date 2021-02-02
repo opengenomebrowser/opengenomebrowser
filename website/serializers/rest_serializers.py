@@ -56,12 +56,24 @@ class OrganismRestSerializer(serializers.ModelSerializer):
         slug_field='identifier'
     )
 
+    representative = serializers.SlugRelatedField(
+        many=False,
+        read_only=True,
+        slug_field='identifier'
+    )
+
+
 
 class GenomesRestSerializer(serializers.ModelSerializer):
     class Meta:
         model = Genome
         fields = '__all__'
         lookup_field = 'identifier'
+
+    representative = serializers.BooleanField(
+        read_only=True,
+        source='is_representative'
+    )
 
     organism = OrganismRestSerializer(
         many=False,

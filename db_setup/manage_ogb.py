@@ -119,15 +119,17 @@ def reload_organism_genomecontents(name: str = None, all: bool = False):
     :param all: if True, process all organisms
     """
     if name:
-        organism = Organism.objects.get(name=name)
-        for genome in organism.genome_set.all():
-            GenomeSerializer.update_genomecontent(genome, wipe=True)
+        with transaction.atomic():
+            organism = Organism.objects.get(name=name)
+            for genome in organism.genome_set.all():
+                GenomeSerializer.update_genomecontent(genome, wipe=True)
     elif all:
         for organism in Organism.objects.all():
             print(f'└── {organism.name}')
-            for genome in organism.genome_set.all():
-                print(f'   └── {genome.identifier}')
-                GenomeSerializer.update_genomecontent(genome, wipe=True)
+            with transaction.atomic():
+                for genome in organism.genome_set.all():
+                    print(f'   └── {genome.identifier}')
+                    GenomeSerializer.update_genomecontent(genome, wipe=True)
     else:
         raise AssertionError('Do nothing. Please specify --name=<organism-name> or --all')
 
