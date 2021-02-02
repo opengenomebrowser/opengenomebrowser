@@ -3,6 +3,11 @@ from rest_framework import serializers
 
 
 class TaxIDRestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TaxID
+        fields = '__all__'
+        lookup_field = 'id'
+
     child_taxids = serializers.SlugRelatedField(
         many=True,
         read_only=True,
@@ -13,22 +18,22 @@ class TaxIDRestSerializer(serializers.ModelSerializer):
         many=True,
         read_only=True,
         source='get_child_organisms',
-        slug_field='id'
+        slug_field='name'
     )
     child_genomes = serializers.SlugRelatedField(
         many=True,
         read_only=True,
         source='get_child_genomes',
-        slug_field='id'
+        slug_field='identifier'
     )
-
-    class Meta:
-        model = TaxID
-        fields = '__all__'
-        lookup_field = 'id'
 
 
 class OrganismRestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Organism
+        fields = '__all__'
+        lookup_field = 'name'
+
     class CustomTaxidSerializer(serializers.ModelSerializer):
         class Meta:
             model = TaxID
@@ -39,22 +44,29 @@ class OrganismRestSerializer(serializers.ModelSerializer):
         read_only=True
     )
 
-    class Meta:
-        model = Organism
-        fields = '__all__'
-        lookup_field = 'name'
+    class CustomGenomeSerializer(serializers.ModelSerializer):
+        class Meta:
+            model = Genome
+            fields = '__all__'
+
+    child_genomes = serializers.SlugRelatedField(
+        many=True,
+        read_only=True,
+        source='genome_set.all',
+        slug_field='identifier'
+    )
 
 
 class GenomesRestSerializer(serializers.ModelSerializer):
-    organism = OrganismRestSerializer(
-        many=False,
-        read_only=True
-    )
-
     class Meta:
         model = Genome
         fields = '__all__'
         lookup_field = 'identifier'
+
+    organism = OrganismRestSerializer(
+        many=False,
+        read_only=True
+    )
 
 
 class TagRestSerializer(serializers.ModelSerializer):
