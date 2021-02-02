@@ -289,6 +289,35 @@ def import_orthologs(auto_delete: bool = False) -> None:
     Annotation.load_ortholog_annotations()
 
 
+def backup_genome_similarities(file: str):
+    from website.models.GenomeSimilarity import GenomeSimilarity
+    done_objects = GenomeSimilarity.objects.filter(status='D')
+    assert not os.path.isfile(file), f'file {file} already exists!'
+    with open(file, 'w') as f:
+        for from_genome, to_genome, similarity in done_objects.values_list('from_genome', 'to_genome', 'similarity'):
+            f.write(f'{from_genome}\t{to_genome}\t{similarity}\n')
+
+
+def import_genome_similarities(file: str, ignore_conflicts: bool = False):
+    from website.models.GenomeSimilarity import GenomeSimilarity
+
+    identifier_to_genome = {g.identifier: g for g in GenomeContent.objects.all()}
+
+    def line_to_object(line) -> GenomeSimilarity:
+        from_genome, to_genome, similarity = line.split()
+        return GenomeSimilarity(
+            from_genome=identifier_to_genome[from_genome],
+            to_genome=identifier_to_genome[to_genome],
+            similarity=float(similarity),
+            status='D'
+        )
+
+    with open(file) as f:
+        objects = [line_to_object(line) for line in f]
+
+    GenomeSimilarity.objects.bulk_create(objects, ignore_conflicts=ignore_conflicts)
+
+
 def update_bokeh(auto_delete: bool = False) -> None:
     import bokeh
     import requests
@@ -492,5 +521,7 @@ if __name__ == "__main__":
         reload_color_css,
         reload_blast_dbs,
         load_annotation_descriptions,
-        update_taxids
+        update_taxids,
+        backup_genome_similarities,
+        import_genome_similarities
     ])

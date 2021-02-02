@@ -259,6 +259,12 @@
                 genomes_valid = genomes_valid['success']
 
                 if (genomes_valid) {
+                    $('.get-genomes').removeClass('is-invalid')
+                } else {
+                    $('.get-genomes').addClass('is-invalid')
+                }
+
+                if (genomes_valid) {
                     window.location.href = `/trees?genomes=${urlReplBlanks(genomes)}`;
                 }
             })
