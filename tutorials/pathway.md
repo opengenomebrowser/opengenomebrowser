@@ -9,7 +9,7 @@ the genomes table page.
 Select a pathway map by entering a search query, for example `citrate cycle`, and selecting a map of interest. On 
 the demo server, all available KEGG-maps are available. Next, select one or more genomes and click on 'submit'.
 
-It is also possible to [select multiple groups](https://opengenomebrowser.bioinformatics.unibe.ch/pathway/?map=kegg-ko00030&g1=@tax:Lactobacillales&g2=@tax:Propionibacteriales) of genomes, and to see how they differ.
+It is also possible to [select multiple groups](https://opengenomebrowser.bioinformatics.unibe.ch/pathway/?map=kornec00030&g1=@tax:Lactobacillales&g2=@tax:Propionibacteriales) of genomes, and to see how they differ.
 
 Click on a shape to learn which genomes cover the contained annotations.
 
