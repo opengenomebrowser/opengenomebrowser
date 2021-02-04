@@ -33,7 +33,7 @@ else
     --processes=5 \
     --harakiri=60 \
     --max-requests=5000 \
-    --buffer-size=100000 \
+    --buffer-size=65535 \
     --vacuum
 
 fi

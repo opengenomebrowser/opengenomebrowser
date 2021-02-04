@@ -205,7 +205,8 @@
                 return
             }
 
-            $.getJSON('{% url "website:gene-trait-matching-table" %}', {
+
+            $.post('{% url "website:gene-trait-matching-table" %}', {
                 'g1[]': genomes_g1,
                 'g2[]': genomes_g2,
                 'alpha': alpha,
@@ -239,8 +240,7 @@
                     buttons: ['csv']
                 }).container().appendTo($('#buttons'))
 
-            })
-
+            }, "json");
         }
 
         $(document).ready(function () {

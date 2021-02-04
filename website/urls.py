@@ -71,7 +71,6 @@ urlpatterns = [
     path('api/validate-genomes/', Api.validate_genomes, name='api-validate-genomes'),
     path('api/validate-genes/', Api.validate_genes, name='api-validate-genes'),
     path('api/validate-annotations/', Api.validate_annotations, name='api-validate-annotations'),
-    path('api/get-anno-description/', Api.get_anno_description, name='api-get-anno-description'),
     path('api/genome-identifier-to-species/', Api.genome_identifier_to_species, name='api-genome-identifier-to-species'),
     path('api/annotation-to-type/', Api.annotation_to_type, name='api-annotation-to-type'),
     path('api/dna-feature-viewer-single/', Api.dna_feature_viewer_single, name='api-dna-feature-viewer'),

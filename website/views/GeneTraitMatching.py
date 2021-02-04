@@ -114,24 +114,24 @@ def gtm_table(request):
 
     # check input
     for input in ['g1[]', 'g2[]', 'alpha', 'anno_type', 'multiple_testing_method']:
-        if input not in request.GET:
+        if input not in request.POST:
             return HttpResponse(f'Request failed! Please POST {input}.')
 
-    qs_g1 = set(request.GET.getlist('g1[]'))
+    qs_g1 = set(request.POST.getlist('g1[]'))
     try:
         magic_query_manager_g1 = MagicQueryManager(qs_g1)
     except Exception as e:
         return HttpResponse(F'Request failed: g1[] incorrect. {e}')
 
-    qs_g2 = set(request.GET.getlist('g2[]'))
+    qs_g2 = set(request.POST.getlist('g2[]'))
     try:
         magic_query_manager_g2 = MagicQueryManager(qs_g2)
     except Exception as e:
         return HttpResponse(F'Request failed: g2[] incorrect. {e}')
 
-    anno_type = request.GET.get('anno_type')
-    alpha = float(request.GET.get('alpha'))
-    multiple_testing_method = request.GET.get('multiple_testing_method')
+    anno_type = request.POST.get('anno_type')
+    alpha = float(request.POST.get('alpha'))
+    multiple_testing_method = request.POST.get('multiple_testing_method')
 
     gtm_df = gtm(g1=magic_query_manager_g1.all_genomes, g2=magic_query_manager_g2.all_genomes,
                  anno_type=anno_type, alpha=alpha, multiple_testing_method=multiple_testing_method)

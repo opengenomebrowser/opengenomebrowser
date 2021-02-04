@@ -29,7 +29,8 @@ let loadTree = async function (genomes, method, target, newick_target, type, lay
 
 
         let ajax = $.ajax({
-            url: "/api/get-tree",
+            url: "/api/get-tree/",
+            method: 'post',
             data: {'genomes[]': genomes, method: method},
             async: false,
             dataType: "json",

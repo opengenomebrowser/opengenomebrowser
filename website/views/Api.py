@@ -28,13 +28,13 @@ UNIQUE_COLORS_HEX = json.load(open('lib/tax_id_to_color/300_different_colors.txt
 class Api:
     @staticmethod
     def annotation_to_type(request):
-        if not request.GET:
+        if not request.POST:
             return err('did not receive valid JSON')
 
-        if not ('annotations[]' in request.GET):
-            return err(F"missing parameter 'annotations[]'. Got: {request.GET.keys()}")
+        if not ('annotations[]' in request.POST):
+            return err(F"missing parameter 'annotations[]'. Got: {request.POST.keys()}")
 
-        annotations = request.GET.getlist('annotations[]')
+        annotations = request.POST.getlist('annotations[]')
 
         annotations = Annotation.objects.filter(name__in=annotations)
 
@@ -95,30 +95,9 @@ class Api:
         return HttpResponse(data, mimetype)
 
     @staticmethod
-    def search_genes(request):
-        term = request.GET.get('term', None)
-
-        genome = request.GET.get('genome', None)
-
-        if term is None and genome is None:
-            return err('"term" and "genome" are not in request.GET')
-
-        if genome:
-            genes = Gene.objects.filter(genomecontent=genome, identifier__icontains=term if term else '').order_by('identifier')[:10]
-        else:
-            genes = Gene.objects.filter(identifier__istartswith=term).order_by('identifier')[:10]
-
-        results = [gene.identifier for gene in genes]
-
-        data = json.dumps(results)
-        mimetype = 'application/json'
-
-        return HttpResponse(data, mimetype)
-
-    @staticmethod
     def autocomplete_genomes(request):
         if not 'term' in request.GET:
-            return err('"term" not in request.GET')
+            return err('"term" not in request.POST')
 
         q = request.GET.get('term', '')
         results = []
@@ -141,7 +120,7 @@ class Api:
     @staticmethod
     def autocomplete_genes(request):
         if not 'term' in request.GET:
-            return err('"term" not in request.GET')
+            return err('"term" not in request.POST')
 
         q = request.GET.get('term', '')
         results = []
@@ -159,19 +138,40 @@ class Api:
         return HttpResponse(data, mimetype)
 
     @staticmethod
+    def search_genes(request):
+        term = request.GET.get('term', None)
+
+        genome = request.GET.get('genome', None)
+
+        if term is None and genome is None:
+            return err('"term" and "genome" are not in request.POST')
+
+        if genome:
+            genes = Gene.objects.filter(genomecontent=genome, identifier__icontains=term if term else '').order_by('identifier')[:10]
+        else:
+            genes = Gene.objects.filter(identifier__istartswith=term).order_by('identifier')[:10]
+
+        results = [gene.identifier for gene in genes]
+
+        data = json.dumps(results)
+        mimetype = 'application/json'
+
+        return HttpResponse(data, mimetype)
+
+    @staticmethod
     def validate_genomes(request):
         """
         Test if genomes exist in the database.
 
         Queries may also be "magic words"
         """
-        if not request.GET:
+        if not request.POST:
             return err('did not receive valid JSON')
 
-        if not 'genomes[]' in request.GET:
+        if not 'genomes[]' in request.POST:
             return err('did not receive genomes[]')
 
-        qs = set(request.GET.getlist('genomes[]'))
+        qs = set(request.POST.getlist('genomes[]'))
 
         try:
             MagicQueryManager(queries=qs)
@@ -187,13 +187,13 @@ class Api:
 
         Queries may also be "magic words"
         """
-        if not request.GET:
+        if not request.POST:
             return err('did not receive valid JSON')
 
-        if not 'genes[]' in request.GET:
+        if not 'genes[]' in request.POST:
             return err('did not receive genes[]')
 
-        qs = set(request.GET.getlist('genes[]'))
+        qs = set(request.POST.getlist('genes[]'))
 
         found_genes = set(Gene.objects.filter(identifier__in=qs).values_list('identifier', flat=True))
         if not qs == found_genes:
@@ -203,13 +203,13 @@ class Api:
 
     @staticmethod
     def genome_identifier_to_species(request):
-        if not request.GET:
+        if not request.POST:
             return err('did not receive valid JSON')
 
-        if not ('genomes[]' in request.GET):
-            return err(F"missing parameter 'genomes[]'. Got: {request.GET.keys()}")
+        if not ('genomes[]' in request.POST):
+            return err(F"missing parameter 'genomes[]'. Got: {request.POST.keys()}")
 
-        qs = set(request.GET.getlist('genomes[]'))
+        qs = set(request.POST.getlist('genomes[]'))
 
         try:
             genome_to_species = MagicQueryManager(qs, raise_errors=False).genome_to_species()
@@ -222,13 +222,13 @@ class Api:
         """
         Test if annotations exist in the database.
         """
-        if not request.GET:
+        if not request.POST:
             return err('did not receive valid JSON')
 
-        if not 'annotations[]' in request.GET:
+        if not 'annotations[]' in request.POST:
             return err('did not receive annotations[]')
 
-        annotations = set(request.GET.getlist('annotations[]'))
+        annotations = set(request.POST.getlist('annotations[]'))
 
         try:
             annotations = [Annotation.objects.get(name=anno) for anno in annotations]
@@ -243,39 +243,15 @@ class Api:
         """
         Test if map_id exist in the database.
         """
-        if not request.GET:
+        if not request.POST:
             return err('did not receive valid JSON')
 
-        if not 'slug' in request.GET:
+        if not 'slug' in request.POST:
             return err('did not receive slug')
 
-        success = PathwayMap.objects.filter(slug=request.GET['slug']).exists()
+        success = PathwayMap.objects.filter(slug=request.POST['slug']).exists()
 
         return JsonResponse(dict(success=success))
-
-    @staticmethod
-    def get_anno_description(request):
-        """
-        Get the description of an annotation.
-
-        Query: ['K0000', ...]
-
-        Returns {'K0000': 'Histidine decarboxylase', ...}
-        """
-
-        if not request.GET:
-            return err('did not receive valid JSON')
-
-        if not ('annotations[]' in request.GET):
-            return err(F"missing parameters. required: 'annotations[]'. Got: {request.GET.keys()}")
-
-        annotations = set(request.GET.getlist('annotations[]'))
-
-        found_annotations = Annotation.objects.filter(name__in=annotations)
-
-        anno_to_description = {anno.name: anno.description for anno in found_annotations}
-
-        return JsonResponse(anno_to_description)
 
     @staticmethod
     def dna_feature_viewer_single(request):
@@ -289,18 +265,18 @@ class Api:
         Todo: Ability to change span around gene_locus
         """
 
-        if not request.GET:
+        if not request.POST:
             return err('did not receive valid JSON')
 
-        if not ('gene_identifier' in request.GET):
-            return err(F"missing parameters. required: 'gene_identifier'. Got: {request.GET.keys()}")
+        if not ('gene_identifier' in request.POST):
+            return err(F"missing parameters. required: 'gene_identifier'. Got: {request.POST.keys()}")
 
-        if not ('span' in request.GET):
-            return err(F"missing parameters. required: 'span'. Got: {request.GET.keys()}")
+        if not ('span' in request.POST):
+            return err(F"missing parameters. required: 'span'. Got: {request.POST.keys()}")
 
-        span = int(request.GET['span'])
+        span = int(request.POST['span'])
 
-        gene_identifier = request.GET.get('gene_identifier')
+        gene_identifier = request.POST.get('gene_identifier')
 
         g = Gene.objects.get(identifier=gene_identifier)
 
@@ -324,74 +300,6 @@ class Api:
         return JsonResponse(dict(script=script, plot_div=plot_div))
 
     @staticmethod
-    def align(request):
-        """
-        Align genes. (Multiple Sequence Alignment)
-
-        Three algorithms are currently supported:
-            1) Clustal Omega (clustalo)
-            2) MAFFT (mafft)
-            3) Muscle (muscle)
-
-        Query:
-            - gene_identifiers[]: list of gene identifiers
-            - method = 'clustalo', mafft, muscle'
-            - sequence_type: 'dna', 'protein'
-        """
-
-        if not request.GET:
-            return err('did not receive valid JSON')
-
-        if not ('gene_identifiers[]' in request.GET):
-            return err(F"missing parameters. required: 'gene_identifiers[]'. Got: {request.GET.keys()}")
-
-        if not ('method' in request.GET):
-            return err(F"missing parameters. required: 'method'. Got: {request.GET.keys()}")
-
-        if not ('sequence_type' in request.GET):
-            return err(F"missing parameters. required: 'sequence_type'. Got: {request.GET.keys()}")
-
-        print(request.GET)
-
-        gene_identifiers = request.GET.getlist('gene_identifiers[]')
-        print(gene_identifiers)
-        method = request.GET['method']
-        sequence_type = request.GET['sequence_type']
-
-        print(gene_identifiers, method, sequence_type)
-
-        genes = Gene.objects.filter(identifier__in=gene_identifiers)
-        if not len(set(gene_identifiers)) == len(genes):
-            return err(F"{len(set(gene_identifiers))} were submitted but only {len(genes)} genes were found.")
-
-        if sequence_type == 'dna':
-            FASTAS = [g.fasta_nucleotide() for g in genes]
-        elif sequence_type == 'protein':
-            try:
-                FASTAS = [g.fasta_protein() for g in genes]
-            except KeyError as e:
-                return err(str(e))
-        else:
-            return err(F"'sequence_type' must be either 'dna' or 'protein', got {sequence_type}.")
-
-        if method == 'clustalo':
-            METHOD = ClustalOmega()
-        elif method == 'mafft':
-            METHOD = MAFFT()
-        elif method == 'muscle':
-            METHOD = Muscle()
-        else:
-            return err(F"'method' must be either 'clustalo', 'mafft' or 'muscle', got {method}.")
-
-        version = METHOD.version()
-
-        print(version)
-        print(FASTAS)
-        alignment = METHOD.align(fastas=FASTAS, seq_type=sequence_type)
-
-        return JsonResponse(dict(fastas=FASTAS, method=method, version=version, alignment=alignment))
-
-    @staticmethod
     def dna_feature_viewer_multi(request):
         """
         Get dna_feature_viewer bokeh around gene_identifier.
@@ -401,26 +309,26 @@ class Api:
         Returns bokeh script and div
         """
 
-        if not request.GET:
+        if not request.POST:
             return err('did not receive valid JSON')
 
-        if not ('gene_identifiers[]' in request.GET):
-            return err(F"missing parameters. required: 'gene_identifiers[]'. Got: {request.GET.keys()}")
+        if not ('gene_identifiers[]' in request.POST):
+            return err(F"missing parameters. required: 'gene_identifiers[]'. Got: {request.POST.keys()}")
 
-        if not ('span' in request.GET):
-            return err(F"missing parameters. required: 'span'. Got: {request.GET.keys()}")
+        if not ('span' in request.POST):
+            return err(F"missing parameters. required: 'span'. Got: {request.POST.keys()}")
 
-        if not ('colorize_by' in request.GET):
-            return err(F"missing parameters. required: 'colorize_by'. Got: {request.GET.keys()}")
+        if not ('colorize_by' in request.POST):
+            return err(F"missing parameters. required: 'colorize_by'. Got: {request.POST.keys()}")
 
-        span = int(request.GET['span'])
+        span = int(request.POST['span'])
 
-        colorize_by = request.GET['colorize_by']
+        colorize_by = request.POST['colorize_by']
         allowed_colorize_bys = list(annotation_types.keys()) + ['--']
         if colorize_by not in allowed_colorize_bys:
             return err(F"colorize_by must be one of the following: {allowed_colorize_bys}, but is {colorize_by}")
 
-        gene_identifiers = request.GET.getlist('gene_identifiers[]')
+        gene_identifiers = request.POST.getlist('gene_identifiers[]')
 
         gs = Gene.objects.filter(identifier__in=gene_identifiers)
 
@@ -487,6 +395,67 @@ class Api:
         return JsonResponse(dict(script=script, plot_div=plot_div))
 
     @staticmethod
+    def align(request):
+        """
+        Align genes. (Multiple Sequence Alignment)
+
+        Three algorithms are currently supported:
+            1) Clustal Omega (clustalo)
+            2) MAFFT (mafft)
+            3) Muscle (muscle)
+
+        Query:
+            - gene_identifiers[]: list of gene identifiers
+            - method = 'clustalo', mafft, muscle'
+            - sequence_type: 'dna', 'protein'
+        """
+
+        if not request.POST:
+            return err('did not receive valid JSON')
+
+        if not ('gene_identifiers[]' in request.POST):
+            return err(F"missing parameters. required: 'gene_identifiers[]'. Got: {request.POST.keys()}")
+
+        if not ('method' in request.POST):
+            return err(F"missing parameters. required: 'method'. Got: {request.POST.keys()}")
+
+        if not ('sequence_type' in request.POST):
+            return err(F"missing parameters. required: 'sequence_type'. Got: {request.POST.keys()}")
+
+        gene_identifiers = request.POST.getlist('gene_identifiers[]')
+        method = request.POST['method']
+        sequence_type = request.POST['sequence_type']
+
+        genes = Gene.objects.filter(identifier__in=gene_identifiers)
+        if not len(set(gene_identifiers)) == len(genes):
+            return err(F"{len(set(gene_identifiers))} were submitted but only {len(genes)} genes were found.")
+
+        if sequence_type == 'dna':
+            FASTAS = [g.fasta_nucleotide() for g in genes]
+        elif sequence_type == 'protein':
+            try:
+                FASTAS = [g.fasta_protein() for g in genes]
+            except KeyError as e:
+                return err(str(e))
+        else:
+            return err(F"'sequence_type' must be either 'dna' or 'protein', got {sequence_type}.")
+
+        if method == 'clustalo':
+            METHOD = ClustalOmega()
+        elif method == 'mafft':
+            METHOD = MAFFT()
+        elif method == 'muscle':
+            METHOD = Muscle()
+        else:
+            return err(F"'method' must be either 'clustalo', 'mafft' or 'muscle', got {method}.")
+
+        version = METHOD.version()
+
+        alignment = METHOD.align(fastas=FASTAS, seq_type=sequence_type)
+
+        return JsonResponse(dict(fastas=FASTAS, method=method, version=version, alignment=alignment))
+
+    @staticmethod
     def get_gene(request):
         """
         Get information about a gene.
@@ -496,13 +465,13 @@ class Api:
         Returns JSON
         """
 
-        if not request.GET:
+        if not request.POST:
             return err('did not receive valid JSON')
 
-        if not ('gene_identifier' in request.GET):
-            return err(F"missing parameters. required: 'gene_identifier'. Got: {request.GET.keys()}")
+        if not ('gene_identifier' in request.POST):
+            return err(F"missing parameters. required: 'gene_identifier'. Got: {request.POST.keys()}")
 
-        gene_identifier = request.GET.get('gene_identifier')
+        gene_identifier = request.POST.get('gene_identifier')
 
         g = Gene.objects.get(identifier=gene_identifier)
 
@@ -553,13 +522,13 @@ class Api:
             - method: 'taxid', 'genome-similarity' or 'orthofinder'
             - genomes[]: list of genome identifiers
         """
-        if not request.GET:
+        if not request.POST:
             return err('did not receive valid JSON')
 
-        if not ('method' in request.GET):
-            return err(F"missing parameters. required: 'method'. Got: {request.GET.keys()}")
+        if not ('method' in request.POST):
+            return err(F"missing parameters. required: 'method'. Got: {request.POST.keys()}")
 
-        method = request.GET.get('method')
+        method = request.POST.get('method')
 
         if method == 'taxid':
             MODEL = Genome
@@ -576,7 +545,7 @@ class Api:
         else:
             return err(F"method must be either taxid', 'genome-similarity' or 'orthofinder'. Got: {method}")
 
-        identifiers = set(request.GET.getlist('genomes[]'))
+        identifiers = set(request.POST.getlist('genomes[]'))
 
         objs = MODEL.objects.filter(identifier__in=identifiers)
 

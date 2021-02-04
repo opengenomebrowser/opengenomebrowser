@@ -7,9 +7,7 @@ async function load_alignment(gene_identifiers, target_div, method = 'clustalo',
     console.log('start MSA:', gene_identifiers, target_div, method, sequence_type);
 
     let result
-
-    await $.getJSON('/api/align/', {'gene_identifiers': gene_identifiers, 'method': method, 'sequence_type': sequence_type}, function (data) {
-
+    await $.post('/api/align/', {'gene_identifiers': gene_identifiers, 'method': method, 'sequence_type': sequence_type}, function (data) {
         console.log('MSA complete:', data)
 
         const seqs = msa.io.fasta.parse(data['alignment'])
@@ -32,7 +30,7 @@ async function load_alignment(gene_identifiers, target_div, method = 'clustalo',
 
         result = data['alignment']
 
-    }).fail(function (data) {
+    }, "json").fail(function (data) {
         const msg = data.responseJSON['message']
         console.log(msg)
         target_div.append(`

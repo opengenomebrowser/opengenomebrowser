@@ -447,7 +447,7 @@ Compare genes</a>
 `)
     }
 
-    $.getJSON("/api/get-gene", {'gene_identifier': gene}, function (data) {
+    $.post('/api/get-gene/', {'gene_identifier': gene}, function (data) {
         let genome = data['genome']
         let taxid = data['taxid']
         let species = data['species']
@@ -490,7 +490,8 @@ Annotations</h6>
         }
         cm.appendElement(html)
         cm.popper.update()
-    })
+    }, "json")
+
     cm.show()
 }
 

@@ -12,21 +12,21 @@ jQuery.fn.extend({
                 $(this).tooltip({
                     boundary: 'window',
                     title: function () {
-                        return $(this).attr('data-species');
+                        return $(this).attr('data-species')
                     }
                 })
             } else if (this.matches('.gene')) {
                 $(this).tooltip({
                     boundary: 'window',
                     title: function () {
-                        return $(this).attr('data-species');
+                        return $(this).attr('data-species')
                     }
                 })
             } else if (this.matches('.taxid')) {
                 $(this).tooltip({
                     boundary: 'window',
                     title: function () {
-                        return $(this).attr('data-species');
+                        return $(this).attr('data-species')
                     }
                 })
             } else {
@@ -37,7 +37,7 @@ jQuery.fn.extend({
         })
         return this
     },
-});
+})
 
 /**
  * Read and write cookies
@@ -45,8 +45,8 @@ jQuery.fn.extend({
  * https://stackoverflow.com/questions/11344531/pure-javascript-store-object-in-cookie/11344672
  */
 function write_cookie(name, value, expires_minutes = 120) {
-    let expires = new Date();
-    expires.setTime(expires.getTime() + (expires_minutes * 60 * 1000));
+    let expires = new Date()
+    expires.setTime(expires.getTime() + (expires_minutes * 60 * 1000))
 
     let cookie = `${name}=${JSON.stringify(value)}; expires=${expires.toGMTString()}; path=/;`
     if (!window.location.host.startsWith('127.0.0.1')) {
@@ -132,8 +132,8 @@ function assert(condition, message) {
  * Equivalent of Python's rsplit
  */
 String.prototype.rsplit = function (sep, maxsplit) {
-    let split = this.split(sep);
-    return maxsplit ? [split.slice(0, -maxsplit).join(sep)].concat(split.slice(-maxsplit)) : split;
+    let split = this.split(sep)
+    return maxsplit ? [split.slice(0, -maxsplit).join(sep)].concat(split.slice(-maxsplit)) : split
 }
 
 /*
@@ -261,23 +261,23 @@ function sleep(ms) {
 }
 
 function validate_genomes(genomes) {
-    return $.getJSON("/api/validate-genomes", {genomes}, function (data) {
-    })
+    return $.post('/api/validate-genomes/', {'genomes': genomes}, function (data) {
+    }, "json")
 }
 
 function validate_genes(genes) {
-    return $.getJSON("/api/validate-genes", {genes}, function (data) {
-    })
+    return $.post('/api/validate-genes/', {'genes': genes}, function (data) {
+    }, "json")
 }
 
 function validate_pathwaymap(slug) {
-    return $.getJSON("/api/validate-pathwaymap", {slug}, function (data) {
-    })
+    return $.post('/api/validate-pathwaymap/', {'slug': slug}, function (data) {
+    }, "json")
 }
 
 function validate_annotations(annotations) {
-    return $.getJSON("/api/validate-annotations", {annotations}, function (data) {
-    })
+    return $.post('/api/validate-annotations/', {'annotations': annotations}, function (data) {
+    }, "json")
 }
 
 function create_read_only_genome_div(genome_array, genome_to_species, additional_classes = '', click_menu_annotation = 'auto') {
@@ -326,7 +326,7 @@ function init_autocomplete_annotations(div_name) {
     // https://goodies.pixabay.com/jquery/tag-editor/demo.html
     $(div_name).tagEditor({
         autocomplete: {
-            source: '/api/autocomplete-annotations',
+            source: '/api/autocomplete-annotations/',
             minLength: 1
         },
         forceLowercase: false,
@@ -341,32 +341,38 @@ function init_autocomplete_annotations(div_name) {
         setTimeout(function () {
             let tag_editor_objects = $(div_name).tagEditor('getTags')[0]
             on_annotations_change(tag_editor_objects.field, tag_editor_objects.editor, tag_editor_objects.tags)
-        }, 100);
+        }, 100)
     })
 }
 
 function on_annotations_change(field, editor, tags) {
-    $.getJSON('/api/annotation-to-type/', {'annotations[]': tags}, function (data) {
-        let entries = $('li', editor)
+    $.ajax({
+        dataType: "json",
+        url: '/api/annotation-to-type/',
+        method:'post',
+        data: {'annotations[]': tags},
+        success: function (data) {
+            let entries = $('li', editor)
 
-        entries.each(function () {
-            let li = $(this)
-            let child_1 = li.children()[1]
-            let child_2 = li.children()[2]
+            entries.each(function () {
+                let li = $(this)
+                let child_1 = li.children()[1]
+                let child_2 = li.children()[2]
 
-            let anno = li[0].innerText.substring(3)
+                let anno = li[0].innerText.substring(3)
 
-            if (anno in data) {
-                let annoData = data[anno]
+                if (anno in data) {
+                    let annoData = data[anno]
 
-                child_1.setAttribute('data-annotype', annoData['anno_type'])
-                child_1.setAttribute('title', data[anno]['description'])
-                child_2.setAttribute('data-annotype', annoData['anno_type'])
+                    child_1.setAttribute('data-annotype', annoData['anno_type'])
+                    child_1.setAttribute('title', data[anno]['description'])
+                    child_2.setAttribute('data-annotype', annoData['anno_type'])
 
-                child_1.classList.add('annotation')
-                $(child_1).tooltip()
-            }
-        })
+                    child_1.classList.add('annotation')
+                    $(child_1).tooltip()
+                }
+            })
+        }
     })
 }
 
@@ -389,40 +395,46 @@ function init_autocomplete_genomes(div_name) {
         setTimeout(function () {
             let tag_editor_objects = $(div_name).tagEditor('getTags')[0]
             on_genomes_change(tag_editor_objects.field, tag_editor_objects.editor, tag_editor_objects.tags)
-        }, 100);
+        }, 100)
     })
 }
 
 function on_genomes_change(field, editor, tags) {
-    $.getJSON('/api/genome-identifier-to-species/', {'genomes[]': tags}, function (data) {
-        delete data.success
+    $.ajax({
+        dataType: "json",
+        url: '/api/genome-identifier-to-species/',
+        method:'post',
+        data: {'genomes[]': tags},
+        success: function (data) {
+            delete data.success
 
-        let entries = $('li', editor)
+            let entries = $('li', editor)
 
-        entries.each(function () {
-            let li = $(this)
-            let child_1 = li.children()[1]
-            let child_2 = li.children()[2]
+            entries.each(function () {
+                let li = $(this)
+                let child_1 = li.children()[1]
+                let child_2 = li.children()[2]
 
-            let genome = li[0].innerText.substring(3)
+                let genome = li[0].innerText.substring(3)
 
-            if (genome in data) {
-                let genome_data = data[genome]
+                if (genome in data) {
+                    let genome_data = data[genome]
 
-                if (genome_data['type'] === 'taxid' || genome_data['type'] === 'genome') {
-                    child_1.setAttribute('data-species', genome_data['sciname'])
-                    child_2.setAttribute('data-species', genome_data['sciname'])
-                } else if (genome_data['type'] === 'tag') {
-                    child_1.setAttribute('data-tag', genome_data['tag'])
-                    child_2.setAttribute('data-tag', genome_data['tag'])
-                } else {
-                    console.log('ERROR in on_genomes_change!', genome, genome_data, li)
+                    if (genome_data['type'] === 'taxid' || genome_data['type'] === 'genome') {
+                        child_1.setAttribute('data-species', genome_data['sciname'])
+                        child_2.setAttribute('data-species', genome_data['sciname'])
+                    } else if (genome_data['type'] === 'tag') {
+                        child_1.setAttribute('data-tag', genome_data['tag'])
+                        child_2.setAttribute('data-tag', genome_data['tag'])
+                    } else {
+                        console.log('ERROR in on_genomes_change!', genome, genome_data, li)
+                    }
+
+                    child_1.classList.add('genome')
+                    $(child_1).ogbTooltip()
                 }
-
-                child_1.classList.add('genome')
-                $(child_1).ogbTooltip()
-            }
-        })
+            })
+        }
     })
 }
 
@@ -446,7 +458,7 @@ function init_autocomplete_genes(div_name) {
         setTimeout(function () {
             let tag_editor_objects = $(div_name).tagEditor('getTags')[0]
             on_genes_change(tag_editor_objects.field, tag_editor_objects.editor, tag_editor_objects.tags)
-        }, 100);
+        }, 100)
     })
 }
 
@@ -455,26 +467,32 @@ function on_genes_change(field, editor, tags) {
         return gene.rsplit('_', 1)[0]
     })))
 
-    $.getJSON('/api/genome-identifier-to-species/', {'genomes[]': genomes}, function (data) {
-        delete data.success
+    $.ajax({
+        dataType: "json",
+        url: '/api/genome-identifier-to-species/',
+        method:'post',
+        data: {'genomes[]': genomes},
+        success: function (data) {
+            delete data.success
 
-        let entries = $('li', editor)
+            let entries = $('li', editor)
 
-        entries.each(function () {
-            let li = $(this)
-            let child_1 = li.children()[1]
-            let child_2 = li.children()[2]
+            entries.each(function () {
+                let li = $(this)
+                let child_1 = li.children()[1]
+                let child_2 = li.children()[2]
 
-            const gene = li[0].innerText.substring(3)
-            const genome = gene.rsplit('_', 1)[0]
+                const gene = li[0].innerText.substring(3)
+                const genome = gene.rsplit('_', 1)[0]
 
-            if (genome in data) {
-                child_1.setAttribute('data-species', data[genome]['sciname'])
-                child_2.setAttribute('data-species', data[genome]['sciname'])
+                if (genome in data) {
+                    child_1.setAttribute('data-species', data[genome]['sciname'])
+                    child_2.setAttribute('data-species', data[genome]['sciname'])
 
-                child_1.classList.add('gene')
-                $(child_1).ogbTooltip()
-            }
-        })
+                    child_1.classList.add('gene')
+                    $(child_1).ogbTooltip()
+                }
+            })
+        }
     })
 }

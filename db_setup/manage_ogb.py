@@ -529,6 +529,27 @@ def update_taxids(download_taxdump: bool = False) -> None:
     print('done')
 
 
+def postgres_vacuum(full: bool = True):
+    from django.db import connection
+
+    SQL = """
+    SELECT schemaname,relname
+    FROM pg_stat_all_tables
+    WHERE schemaname!='pg_catalog' AND schemaname!='pg_toast';
+    """
+
+    if full:
+        cmd = 'VACUUM FULL "%s"."%s";'
+    else:
+        cmd = 'VACUUM "%s"."%s";'
+
+    cursor = connection.cursor()
+    cursor.execute(SQL)
+    for r in cursor.fetchall():
+        print(cmd, r)
+        cursor.execute(cmd % (r[0], r[1]))
+
+
 if __name__ == "__main__":
     from glacier import glacier
 
@@ -549,5 +570,6 @@ if __name__ == "__main__":
         update_taxids,
         backup_genome_similarities,
         import_genome_similarities,
-        reload_organism_genomecontents
+        reload_organism_genomecontents,
+        postgres_vacuum
     ])
