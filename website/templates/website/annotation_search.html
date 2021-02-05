@@ -154,19 +154,15 @@
                 }
 
                 if (annotations_valid && genomes_valid) {
-                    let url = ''
+                    let data = {}
                     if (annotations.length !== 0) {
-                        url += `?annotations=${urlReplBlanks(annotations)}`
+                        data['annotations'] = annotations
                     }
                     if (genomes.length !== 0) {
-                        if (annotations.length === 0) {
-                            url += `?genomes=${urlReplBlanks(genomes)}`
-                        } else {
-                            url += `&genomes=${urlReplBlanks(genomes)}`
-                        }
+                        data['genomes'] = genomes
                     }
 
-                    window.location.href = url
+                    goToPageWithData('/annotation-search', data)
                 }
             })
         }

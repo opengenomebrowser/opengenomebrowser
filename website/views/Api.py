@@ -4,7 +4,6 @@ import json
 import itertools
 from collections import Counter
 
-from OpenGenomeBrowser import settings
 from website.models import GenomeContent, Genome, PathwayMap, Gene, TaxID, GenomeSimilarity, Annotation, annotation_types
 from website.models.Tree import TaxIdTree, AniTree, OrthofinderTree, TreeNotDoneError
 from django.db.models.functions import Concat
@@ -14,7 +13,7 @@ from lib.gene_loci_comparison.gene_loci_comparison import GraphicRecordLocus
 from bokeh.embed import components
 
 from lib.multiplesequencealignment.multiple_sequence_alignment import ClustalOmega, MAFFT, Muscle
-from .helpers.magic_string import MagicQueryManager, MagicObject
+from website.views.helpers.magic_string import MagicQueryManager, MagicObject
 
 
 def err(error_message, status=500):
@@ -27,32 +26,8 @@ UNIQUE_COLORS_HEX = json.load(open('lib/tax_id_to_color/300_different_colors.txt
 
 class Api:
     @staticmethod
-    def annotation_to_type(request):
-        if not request.POST:
-            return err('did not receive valid JSON')
-
-        if not ('annotations[]' in request.POST):
-            return err(F"missing parameter 'annotations[]'. Got: {request.POST.keys()}")
-
-        annotations = request.POST.getlist('annotations[]')
-
-        annotations = Annotation.objects.filter(name__in=annotations)
-
-        annotation_to_type = {anno.name:
-            dict(
-                anno_type=anno.anno_type,
-                description=anno.description
-            )
-            for anno in annotations}
-
-        return JsonResponse(annotation_to_type)
-
-    @staticmethod
     def autocomplete_pathway(request):
-        if not 'term' in request.GET:
-            return err('"term" not in request.GET')
-
-        q = request.GET.get('term', '')
+        q = request.GET.get('term')
 
         # create 'synthetic' charfield
         # https://docs.djangoproject.com/en/2.2/ref/models/database-functions/#concat
@@ -74,10 +49,7 @@ class Api:
 
     @staticmethod
     def autocomplete_annotations(request):
-        if not 'term' in request.GET:
-            return err('"term" not in request.GET')
-
-        q = request.GET.get('term', '')
+        q = request.GET.get('term')
 
         try:
             annotations = Annotation.objects.filter(name__istartswith=q)[:20]
@@ -96,10 +68,7 @@ class Api:
 
     @staticmethod
     def autocomplete_genomes(request):
-        if not 'term' in request.GET:
-            return err('"term" not in request.POST')
-
-        q = request.GET.get('term', '')
+        q = request.GET.get('term')
         results = []
 
         if q.startswith('@'):
@@ -119,10 +88,7 @@ class Api:
 
     @staticmethod
     def autocomplete_genes(request):
-        if not 'term' in request.GET:
-            return err('"term" not in request.POST')
-
-        q = request.GET.get('term', '')
+        q = request.GET.get('term')
         results = []
 
         genes = Gene.objects.filter(identifier__icontains=q)[:20]
@@ -138,16 +104,30 @@ class Api:
         return HttpResponse(data, mimetype)
 
     @staticmethod
-    def search_genes(request):
-        term = request.GET.get('term', None)
+    def annotation_to_type(request):
+        annotations = request.POST.getlist('annotations[]')
 
+        annotations = Annotation.objects.filter(name__in=annotations)
+
+        annotation_to_type = {anno.name:
+            dict(
+                anno_type=anno.anno_type,
+                description=anno.description
+            )
+            for anno in annotations}
+
+        return JsonResponse(annotation_to_type)
+
+    @staticmethod
+    def autocomplete_genes(request):
+        term = request.GET.get('term', '')
         genome = request.GET.get('genome', None)
 
         if term is None and genome is None:
             return err('"term" and "genome" are not in request.POST')
 
         if genome:
-            genes = Gene.objects.filter(genomecontent=genome, identifier__icontains=term if term else '').order_by('identifier')[:10]
+            genes = Gene.objects.filter(genomecontent=genome, identifier__icontains=term).order_by('identifier')[:10]
         else:
             genes = Gene.objects.filter(identifier__istartswith=term).order_by('identifier')[:10]
 
@@ -165,12 +145,6 @@ class Api:
 
         Queries may also be "magic words"
         """
-        if not request.POST:
-            return err('did not receive valid JSON')
-
-        if not 'genomes[]' in request.POST:
-            return err('did not receive genomes[]')
-
         qs = set(request.POST.getlist('genomes[]'))
 
         try:
@@ -187,12 +161,6 @@ class Api:
 
         Queries may also be "magic words"
         """
-        if not request.POST:
-            return err('did not receive valid JSON')
-
-        if not 'genes[]' in request.POST:
-            return err('did not receive genes[]')
-
         qs = set(request.POST.getlist('genes[]'))
 
         found_genes = set(Gene.objects.filter(identifier__in=qs).values_list('identifier', flat=True))
@@ -203,12 +171,6 @@ class Api:
 
     @staticmethod
     def genome_identifier_to_species(request):
-        if not request.POST:
-            return err('did not receive valid JSON')
-
-        if not ('genomes[]' in request.POST):
-            return err(F"missing parameter 'genomes[]'. Got: {request.POST.keys()}")
-
         qs = set(request.POST.getlist('genomes[]'))
 
         try:
@@ -222,12 +184,6 @@ class Api:
         """
         Test if annotations exist in the database.
         """
-        if not request.POST:
-            return err('did not receive valid JSON')
-
-        if not 'annotations[]' in request.POST:
-            return err('did not receive annotations[]')
-
         annotations = set(request.POST.getlist('annotations[]'))
 
         try:
@@ -243,12 +199,6 @@ class Api:
         """
         Test if map_id exist in the database.
         """
-        if not request.POST:
-            return err('did not receive valid JSON')
-
-        if not 'slug' in request.POST:
-            return err('did not receive slug')
-
         success = PathwayMap.objects.filter(slug=request.POST['slug']).exists()
 
         return JsonResponse(dict(success=success))
@@ -261,19 +211,7 @@ class Api:
         Query: gene_identifier = "organism3_000345", span=10000
 
         Returns bokeh script and div
-
-        Todo: Ability to change span around gene_locus
         """
-
-        if not request.POST:
-            return err('did not receive valid JSON')
-
-        if not ('gene_identifier' in request.POST):
-            return err(F"missing parameters. required: 'gene_identifier'. Got: {request.POST.keys()}")
-
-        if not ('span' in request.POST):
-            return err(F"missing parameters. required: 'span'. Got: {request.POST.keys()}")
-
         span = int(request.POST['span'])
 
         gene_identifier = request.POST.get('gene_identifier')
@@ -308,19 +246,6 @@ class Api:
 
         Returns bokeh script and div
         """
-
-        if not request.POST:
-            return err('did not receive valid JSON')
-
-        if not ('gene_identifiers[]' in request.POST):
-            return err(F"missing parameters. required: 'gene_identifiers[]'. Got: {request.POST.keys()}")
-
-        if not ('span' in request.POST):
-            return err(F"missing parameters. required: 'span'. Got: {request.POST.keys()}")
-
-        if not ('colorize_by' in request.POST):
-            return err(F"missing parameters. required: 'colorize_by'. Got: {request.POST.keys()}")
-
         span = int(request.POST['span'])
 
         colorize_by = request.POST['colorize_by']
@@ -409,19 +334,6 @@ class Api:
             - method = 'clustalo', mafft, muscle'
             - sequence_type: 'dna', 'protein'
         """
-
-        if not request.POST:
-            return err('did not receive valid JSON')
-
-        if not ('gene_identifiers[]' in request.POST):
-            return err(F"missing parameters. required: 'gene_identifiers[]'. Got: {request.POST.keys()}")
-
-        if not ('method' in request.POST):
-            return err(F"missing parameters. required: 'method'. Got: {request.POST.keys()}")
-
-        if not ('sequence_type' in request.POST):
-            return err(F"missing parameters. required: 'sequence_type'. Got: {request.POST.keys()}")
-
         gene_identifiers = request.POST.getlist('gene_identifiers[]')
         method = request.POST['method']
         sequence_type = request.POST['sequence_type']
@@ -464,13 +376,6 @@ class Api:
 
         Returns JSON
         """
-
-        if not request.POST:
-            return err('did not receive valid JSON')
-
-        if not ('gene_identifier' in request.POST):
-            return err(F"missing parameters. required: 'gene_identifier'. Got: {request.POST.keys()}")
-
         gene_identifier = request.POST.get('gene_identifier')
 
         g = Gene.objects.get(identifier=gene_identifier)
@@ -522,12 +427,6 @@ class Api:
             - method: 'taxid', 'genome-similarity' or 'orthofinder'
             - genomes[]: list of genome identifiers
         """
-        if not request.POST:
-            return err('did not receive valid JSON')
-
-        if not ('method' in request.POST):
-            return err(F"missing parameters. required: 'method'. Got: {request.POST.keys()}")
-
         method = request.POST.get('method')
 
         if method == 'taxid':

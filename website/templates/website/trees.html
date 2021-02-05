@@ -265,7 +265,7 @@
                 }
 
                 if (genomes_valid) {
-                    window.location.href = `/trees?genomes=${urlReplBlanks(genomes)}`;
+                    goToPageWithData('/trees', {'genomes': genomes})
                 }
             })
         }

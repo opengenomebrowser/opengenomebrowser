@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from website.views.helpers.magic_string import MagicQueryManager
+from website.views.helpers.extract_requests import contains_data, extract_data
 from OpenGenomeBrowser.settings import ORTHOFINDER_ENABLED
 
 
@@ -9,8 +10,8 @@ def trees(request):
     context['genomes'] = []
     context['genome_to_species'] = dict()
 
-    if 'genomes' in request.GET:
-        qs = set(request.GET['genomes'].split(' '))
+    if contains_data(request, 'genomes'):
+        qs = extract_data(request, 'genomes', list=True)
 
         try:
             magic_query_manager = MagicQueryManager(queries=qs)

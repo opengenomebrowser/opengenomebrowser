@@ -209,7 +209,7 @@
                 }
 
                 if (genes_valid) {
-                    window.location.href = `?genes=${urlReplBlanks(genes)}`
+                    goToPageWithData('/compare-genes', {'genes': genes})
                 }
             })
         }

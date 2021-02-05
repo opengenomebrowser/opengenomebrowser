@@ -39,8 +39,7 @@ class MagicObject:
     def __init__(self, magic_string: str):
         assert magic_string.startswith('@')
 
-        self.safe_string = magic_string.replace(' ', '!!!')
-        self.magic_string = magic_string.replace('!!!', ' ')
+        self.magic_string = magic_string
 
         magic_word, query = self.magic_string[1:].split(':', maxsplit=1)
 
@@ -146,7 +145,7 @@ class MagicQueryManager:
     """
 
     def __init__(self, queries: [str], raise_errors=True):
-        self.queries = set(q.replace('!!!', ' ') for q in queries)
+        self.queries = set(queries)
         self.raise_errors = raise_errors
 
         self.genome_identifiers, \
@@ -221,7 +220,7 @@ class MagicQueryManager:
             if q.startswith('@'):
                 magic_strings.add(q)
             else:
-                genome_identifiers.add(q.replace('!!!', ' '))
+                genome_identifiers.add(q)
         return genome_identifiers, magic_strings
 
     def __load_magic_objects(self) -> [MagicObject]:

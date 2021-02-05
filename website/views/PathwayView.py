@@ -1,14 +1,10 @@
-import json
-
 from django.shortcuts import render
 from website.models.PathwayMap import PathwayMap
-from website.models.Genome import Genome
-from website.models.TaxID import TaxID
 from OpenGenomeBrowser import settings
 from website.views.helpers.magic_string import MagicQueryManager
+from website.views.helpers.extract_requests import contains_data, extract_data
 
 type_dict = PathwayMap._get_type_dict()
-
 
 
 def pathway_view(request):
@@ -21,8 +17,8 @@ def pathway_view(request):
     context['PATHWAY_MAPS_RELATIVE'] = settings.PATHWAY_MAPS_RELATIVE
     context['genome_to_species'] = '{}'
 
-    if 'map' in request.GET:
-        map_slug = request.GET['map']
+    if contains_data(request, key='map'):
+        map_slug = extract_data(request, key='map')
         try:
             map = PathwayMap.objects.get(slug=map_slug)
             context['map'] = map
@@ -32,12 +28,13 @@ def pathway_view(request):
 
     magic_query_managers = []
     genome_to_species = {}
+
     try:
         groups_of_genomes = {}
         i = 1
-        while f'g{i}' in request.GET:
+        while contains_data(request, key=f'g{i}'):
             group_id = f'g{i}'
-            qs = set(request.GET[group_id].split(' '))
+            qs = set(extract_data(request, key=group_id, list=True))
             magic_query_manager = MagicQueryManager(queries=qs)
             magic_query_managers.append(magic_query_manager)
             genome_to_species.update(magic_query_manager.genome_to_species())

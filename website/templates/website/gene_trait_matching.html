@@ -185,16 +185,19 @@
                 }
 
                 if (genomes_g1_valid && genomes_g2_valid) {
-                    let url = `?alpha=${alpha}&anno_type=${anno_type}&multiple_testing_method=${multiple_testing_method}`
-
+                    let data = {
+                        'alpha': alpha.toString(),
+                        'anno_type': anno_type,
+                        'multiple_testing_method': multiple_testing_method
+                    }
                     if (genomes_g1.length !== 0) {
-                        url += `&g1=${urlReplBlanks(genomes_g1)}`
+                        data['g1'] = genomes_g1
                     }
                     if (genomes_g2.length !== 0) {
-                        url += `&g2=${urlReplBlanks(genomes_g2)}`
+                        data['g2'] = genomes_g2
                     }
 
-                    window.location.href = url
+                    goToPageWithData('/gene-trait-matching', data)
                 }
             })
         }

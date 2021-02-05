@@ -12,6 +12,7 @@ from website.models.Annotation import Annotation, annotation_types
 
 from .GenomeDetailView import dataframe_to_bootstrap_html
 from .helpers.magic_string import MagicQueryManager, MagicError
+from website.views.helpers.extract_requests import contains_data, contains_all, extract_data
 
 multiple_testing_methods = {
     'bonferroni': 'Bonferroni: one-step correction',
@@ -47,20 +48,20 @@ def gtm_view(request):
 
     anno_type_valid, alpha_valid, multiple_testing_method, genomes_g1_valid, genomes_g2_valid = False, False, False, False, False
 
-    if 'anno_type' in request.GET:
+    if contains_data(request, 'anno_type'):
         anno_type_valid = True
-        context['default_anno_type'] = request.GET['anno_type']
+        context['default_anno_type'] = extract_data(request, 'anno_type')
 
-    if 'alpha' in request.GET:
+    if contains_data(request, 'alpha'):
         alpha_valid = True
-        context['default_alpha'] = request.GET['alpha']
+        context['default_alpha'] = extract_data(request, 'alpha')
 
-    if 'multiple_testing_method' in request.GET:
+    if contains_data(request, 'multiple_testing_method'):
         multiple_testing_method = True
-        context['default_multiple_testing_method'] = request.GET['multiple_testing_method']
+        context['default_multiple_testing_method'] = extract_data(request, 'multiple_testing_method')
 
-    if 'g1' in request.GET:
-        qs_g1 = set(request.GET['g1'].split(' '))
+    if contains_data(request, 'g1'):
+        qs_g1 = extract_data(request, 'g1', list=True)
 
         try:
             magic_query_manager_g1 = MagicQueryManager(queries=qs_g1)
@@ -71,8 +72,8 @@ def gtm_view(request):
         except Exception as e:
             context['error_danger'] = str(e)
 
-    if 'g2' in request.GET:
-        qs_g2 = set(request.GET['g2'].split(' '))
+    if contains_data(request, 'g2'):
+        qs_g2 = extract_data(request, 'g2', list=True)
 
         try:
             magic_query_manager_g2 = MagicQueryManager(queries=qs_g2)

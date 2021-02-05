@@ -446,7 +446,7 @@
 
             $("#gene-search").autocomplete({
                 source: function (request, response) {
-                    jQuery.get("/api/search-genes", {
+                    jQuery.get("/api/autocomplete-genes", {
                         term: request.term
                     }, function (data) {
                         response(data)

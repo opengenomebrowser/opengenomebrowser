@@ -191,13 +191,12 @@
 
                 if (map_valid && genomes_valid) {
 
-                    let url = `/pathway?map=${map_slug}`
-
+                    let data = {'map': map_slug}
                     groupsOfGenomes.forEach(function (genomes, i) {
-                        url += `&g${i + 1}=${urlReplBlanks(genomes)}`
+                        data[`g${i + 1}`] = genomes
                     })
 
-                    window.location.href = url
+                    goToPageWithData('/pathway', data)
                 }
             })
         }

@@ -4,6 +4,7 @@ from django.contrib.postgres.aggregates.general import ArrayAgg
 
 from website.models import Genome
 
+
 class GenomeTableAjax(BaseDatatableView):
     # The model we're going to show
     model = Genome
@@ -62,6 +63,7 @@ class GenomeTableAjax(BaseDatatableView):
 
                 # column specific filter
                 if col['search.value']:
+                    col['search.value'] = col['search.value'].replace('\\', '')  # this happens if there is a . in the string.
                     colname = col['name']
 
                     ## CUSTOM FILTERS

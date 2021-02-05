@@ -7,6 +7,7 @@ import json
 
 from website.models import Genome, Gene, GenomeContent
 from website.models.Annotation import Annotation
+from website.views.helpers.extract_requests import contains_data, extract_data
 
 from .GenomeDetailView import dataframe_to_bootstrap_html
 
@@ -19,8 +20,8 @@ def annotation_view(request):
     genomes_valid = False
     annotations_valid = False
 
-    if 'genomes' in request.GET:
-        qs = set(request.GET['genomes'].split(' '))
+    if contains_data(request, 'genomes'):
+        qs = extract_data(request, 'genomes', list=True)
 
         try:
             magic_query_manager = MagicQueryManager(queries=qs)
@@ -33,8 +34,8 @@ def annotation_view(request):
         except Exception as e:
             context['error_danger'] = str(e)
 
-    if 'annotations' in request.GET:
-        annotation_name_list = set(ann.replace('!!!', ' ') for ann in request.GET['annotations'].split(' '))
+    if contains_data(request, 'annotations'):
+        annotation_name_list = extract_data(request, 'annotations', list=True)
         annotations = Annotation.objects.filter(name__in=annotation_name_list)
         context['annotations'] = annotations
         if not len(annotation_name_list) == len(set(annotations.values_list('name', flat=True))):
@@ -43,6 +44,7 @@ def annotation_view(request):
             annotations_valid = True
 
     if genomes_valid and annotations_valid:
+        assert len(magic_query_manager.all_genomes) > 0, f'something went wrong in magic_query_manager'
         mm = MatrixMaker(magic_query_manager.all_genomes, annotations)
 
         group_to_table = mm.get_group_to_table()
@@ -145,7 +147,7 @@ class NewMatrixMaker:
 
         return matrix
 
-    def __pattern_to_rank(self, matrix, axis:int):
+    def __pattern_to_rank(self, matrix, axis: int):
         # sort by most common pattern
         if axis == 0:
             patterns = list(set([tuple(row.values) for i, row in matrix.applymap(bool).iterrows()]))
@@ -168,7 +170,6 @@ class NewMatrixMaker:
                 return F"<p data-genes='{json.dumps(genes)}'>{n_genes}</p>"
 
         tmp = tmp.applymap(cell_to_html)
-
 
         html = dataframe_to_bootstrap_html(tmp, table_id=id, index=True)
 

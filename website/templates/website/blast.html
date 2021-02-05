@@ -164,7 +164,7 @@
                 }
 
                 if (genomes_valid) {
-                    window.location.href = `?genomes=${urlReplBlanks(genomes)}`
+                    goToPageWithData('/blast', {'genomes': genomes})
                 }
             })
 

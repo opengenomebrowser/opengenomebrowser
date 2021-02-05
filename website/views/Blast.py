@@ -2,6 +2,7 @@ from django.shortcuts import render, HttpResponse
 from website.views.helpers.magic_string import MagicQueryManager
 from django.http import HttpResponseBadRequest
 from lib.ncbiblast.ncbi_blast.blast_wrapper import Blast
+from website.views.helpers.extract_requests import contains_data, extract_data
 
 blast = Blast(system_blast=True, outfmt=5)
 
@@ -32,8 +33,8 @@ def blast_view(request):
 
     context['genome_to_species'] = '{}'
 
-    if 'genomes' in request.GET:
-        qs = set(request.GET['genomes'].split(' '))
+    if contains_data(request, 'genomes'):
+        qs = extract_data(request, 'genomes', list=True)
 
         try:
             magic_query_manager = MagicQueryManager(queries=qs)

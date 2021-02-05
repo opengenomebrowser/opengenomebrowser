@@ -3,6 +3,7 @@ from django.db.models import Q
 
 from website.models import Annotation, annotation_types, Genome, Gene
 from website.views.Api import err
+from website.views.helpers.extract_requests import contains_data, extract_data
 
 
 class CompareGenes:
@@ -12,40 +13,28 @@ class CompareGenes:
 
         context['anno_types'] = annotation_types.values()
 
-        # If annotations and genomes in query: find genes and redirect to here.
-        if 'annotations' in request.GET or 'genomes' in request.GET:
-            if not 'annotations' in request.GET and 'genomes' in request.GET:
-                return HttpResponse(F'annotations and genomes only work together. Got: {request.GET.keys()}', status=400)
-            annotations = [a.replace('!!!', ' ') for a in request.GET['annotations'].split(' ')]
-            genomes = request.GET['genomes'].split(' ')
-
-            print(annotations, genomes)
-
-            # GENOMES, ANNOTATIONS AND GENES
-            if 'genes' in request.GET:
-                gene_ids = request.GET['genes'].split(' ')
-                overlap_genes = Gene.objects.filter(
-                    Q(identifier__in=gene_ids),
-                    Q(genomecontent__in=genomes) & Q(annotations__in=annotations)
-                )
-            else:
-                # GENOMES AND ANNOTATIONS
-                overlap_genes = Gene.objects.filter(
-                    Q(genomecontent__in=genomes) & Q(annotations__in=annotations)
-                )
-
-            overlap_genes_string = '+'.join(overlap_genes.values_list('identifier', flat=True))
-            return redirect(F"/compare-genes/?genes={overlap_genes_string}")
-
-        # If only genes in request
-        if 'genes' in request.GET:
-            gene_ids = request.GET['genes'].split(' ')
+        # Get genes
+        if contains_data(request, 'genes'):
+            gene_ids = extract_data(request, 'genes', list=True)
         else:
             gene_ids = []
 
         genes = Gene.objects.filter(identifier__in=gene_ids)
         if not len(set(gene_ids)) == len(genes):
             return err(F"{len(set(gene_ids))} were submitted but only {len(genes)} genes were found.")
+
+        # If annotations and genomes in query: find genes and union queryset
+        if contains_data(request, 'annotations') or contains_data(request, 'genomes'):
+            if not contains_data(request, 'annotations') and contains_data(request, 'genomes'):
+                return HttpResponse(F'annotations and genomes only work together. Got: {request.GET.keys()}', status=400)
+            annotations = extract_data(request, 'annotations', list=True)
+            genomes = extract_data(request, 'genomes', list=True)
+
+            overlap_genes = Gene.objects.filter(
+                Q(genomecontent__in=genomes) & Q(annotations__in=annotations)
+            )
+
+            genes = genes.union(overlap_genes)
 
         n_genes = len(genes)
 

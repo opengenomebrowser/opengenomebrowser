@@ -71,6 +71,44 @@ function delete_cookie(name) {
     document.cookie = cookie
 }
 
+let postRequestsOnly = false  // forwarding to new pages using POST requests (used for debugging only)
+
+function goToPageWithData(location, data) {
+    assert(location.substr(-1) !== '/', 'BAD URL in goToPageWithData: must NOT end in /')
+    const url = calcUrl(location, data)
+    const urlSize = (new TextEncoder().encode(url)).length
+    console.log(postRequestsOnly, url, urlSize, data)
+
+    if (postRequestsOnly || urlSize > 32000) {
+        console.log('forward to new URL (POST request)')
+        redirect(`${location}/?postrequest=true`, data)
+    } else {
+        console.log('forward to new URL (GET request)')
+        window.location.href = url
+    }
+
+}
+
+function redirect(location, data) {
+    let form = ''
+    $.each(data, function (key, value) {
+        form += `<input type="hidden" name="${key}" value="${postReplBlanks(value)}">`
+    })
+    $(`<form action="${location}" method="POST">
+        <input type="hidden" name="csrfmiddlewaretoken" value="${getCookie('csrftoken')}">
+        ${form}
+    </form>`).appendTo($(document.body)).submit()
+}
+
+function calcUrl(location, data) {
+    let components = []
+    for (const [key, value] of Object.entries(data)) {
+        components.push(`${key}=${urlReplBlanks(value)}`)
+    }
+    return `${location}?${components.join('&')}`
+}
+
+
 /**
  * Read annotations.json from cookie
  */
@@ -137,25 +175,33 @@ String.prototype.rsplit = function (sep, maxsplit) {
 }
 
 /*
- * Encode blanks as !!!, join array
+ * Encode blanks as !!!, join array with +
  * E.g. ['OG0000006', 'OG0000010S24', 'S24 family peptidase']
  * becomes "OG0000006+OG0000010S24+S24!!!family!!!peptidase"
  */
-let urlReplBlanks = function (arr) {
-    let encode = function (str) {
-        return str.replaceAll(' ', '!!!')
+let urlReplBlanks = function (input) {
+    console.log(input)
+    if ($.isArray(input)) {
+        let encode = function (str) {
+            return encodeURIComponent(str.replaceAll(' ', '!!!'))
+        }
+        return input.map(str => encode(str)).join('+')
+        return input.map(str => encode(str)).join('+')
+    } else {
+        return encodeURIComponent(input.replaceAll(' ', '!!!'))
     }
-    return arr.map(str => encode(str)).join('+')
+}
+let postReplBlanks = function (input) {
+    if ($.isArray(input)) {
+        let encode = function (str) {
+            return str.replaceAll(' ', '!!!')
+        }
+        return input.map(str => encode(str)).join(' ')
+    } else {
+        return input.replaceAll(' ', '!!!')
+    }
 }
 
-/*
- * Undo urlReplBlanks
- * E.g. ['OG0000010S24', 'S24!!!family!!!peptidase']
- * becomes ['OG0000010S24', 'S24 family peptidase']
- */
-let undoReplBlanks = function (arr) {
-    return arr.map(str => str.replaceAll('!!!', ' '))
-}
 
 /*
  * Waits until an element exists
@@ -349,7 +395,7 @@ function on_annotations_change(field, editor, tags) {
     $.ajax({
         dataType: "json",
         url: '/api/annotation-to-type/',
-        method:'post',
+        method: 'post',
         data: {'annotations[]': tags},
         success: function (data) {
             let entries = $('li', editor)
@@ -403,7 +449,7 @@ function on_genomes_change(field, editor, tags) {
     $.ajax({
         dataType: "json",
         url: '/api/genome-identifier-to-species/',
-        method:'post',
+        method: 'post',
         data: {'genomes[]': tags},
         success: function (data) {
             delete data.success
@@ -470,7 +516,7 @@ function on_genes_change(field, editor, tags) {
     $.ajax({
         dataType: "json",
         url: '/api/genome-identifier-to-species/',
-        method:'post',
+        method: 'post',
         data: {'genomes[]': genomes},
         success: function (data) {
             delete data.success
