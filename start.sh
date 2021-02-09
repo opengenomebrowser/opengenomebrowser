@@ -2,6 +2,10 @@
 
 echo "RUNNING AS $(whoami) $(id -u) $(id -g) IN $PWD"
 
+set -e
+python db_setup/wait_for_postgres.py
+set +e
+
 python manage.py migrate
 python manage.py collectstatic --no-input
 
