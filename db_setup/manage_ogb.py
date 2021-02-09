@@ -136,7 +136,7 @@ def reload_organism_genomecontents(name: str = None, all: bool = False):
     print('consider reloading orthologs.')
 
 
-def import_organism(name: str, update_css=True):
+def import_organism(name: str, update_css: bool = True):
     """
     Import organism into database
     """

@@ -197,7 +197,7 @@ class GenomeContent(models.Model):
         for fasta, blast_db_location, dbtype in blastable_files:
             if not os.path.isdir(blast_db_location):
                 os.makedirs(os.path.dirname(blast_db_location))
-                os.link(src=fasta, dst=blast_db_location)
+                os.symlink(src=fasta, dst=blast_db_location)
             blast.mkblastdb(file=blast_db_location, dbtype=dbtype, overwrite=True)
 
     def load_custom_file(self, file_dict):
