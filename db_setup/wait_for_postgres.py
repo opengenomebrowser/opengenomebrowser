@@ -22,7 +22,7 @@ while not postgres_up():
     print(f'waiting for postgresql... {counter}')
     time.sleep(1)
 
-    if counter >= 5:
+    if counter >= 50:
         print(f'could not connect to postgresql! {DB_HOST=} {DB_PORT=} {DB_USER=} {DB_PASSWORD=}')
         exit(1)
     counter += 1
