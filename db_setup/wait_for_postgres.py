@@ -4,13 +4,13 @@ import time
 
 DB_HOST = os.environ.get('DB_HOST', 'db')
 DB_PORT = os.environ.get('DB_PORT', '5432')
+DB_NAME = os.environ.get('DB_NAME', 'opengenomebrowser_db')
 DB_USER = os.environ.get('DB_USER', 'postgres')
 DB_PASSWORD = os.environ.get('DB_PASSWORD', 'postgres')
 
-
 def postgres_up() -> bool:
     try:
-        conn = psycopg2.connect(host=DB_HOST, port=DB_PORT, user=DB_USER, password=DB_PASSWORD, connect_timeout=1)
+        conn = psycopg2.connect(host=DB_HOST, port=DB_PORT, user=DB_USER, password=DB_PASSWORD, database=DB_NAME, connect_timeout=1)
         conn.close()
         return True
     except:
