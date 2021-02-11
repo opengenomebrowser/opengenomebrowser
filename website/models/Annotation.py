@@ -87,7 +87,6 @@ class AnnotationType:
         for hyperlink in self.hyperlinks:
             for key in ['url', 'name']:
                 assert key in hyperlink and type(hyperlink[key]) is str, self
-            assert '{anno}' in hyperlink['url'], self
 
     def __repr__(self) -> str:
         return f'<AnnotationType {self.anno_type}>'
@@ -102,7 +101,7 @@ with open(f'{settings.GENOMIC_DATABASE}/annotations.json') as f:
 
 
 class Annotation(models.Model):
-    name = models.CharField(max_length=200, unique=True, primary_key=True)
+    name = models.TextField(unique=True, primary_key=True)
     description = models.TextField(blank=True)
 
     anno_type = models.CharField(max_length=2)
@@ -124,7 +123,8 @@ class Annotation(models.Model):
     @staticmethod
     def invariant():
         return len(Annotation.objects.filter(name__contains=',')) == 0 and \
-               len(Annotation.objects.filter(name__contains=';')) == 0
+               len(Annotation.objects.filter(name__contains=';')) == 0, \
+               'Some annotations contain invalid characers: , or :'
 
     @staticmethod
     def load_descriptions(anno_types: list = None, reload=True):

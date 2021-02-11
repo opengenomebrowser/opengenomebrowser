@@ -8,6 +8,7 @@ DB_NAME = os.environ.get('DB_NAME', 'opengenomebrowser_db')
 DB_USER = os.environ.get('DB_USER', 'postgres')
 DB_PASSWORD = os.environ.get('DB_PASSWORD', 'postgres')
 
+
 def postgres_up() -> bool:
     try:
         conn = psycopg2.connect(host=DB_HOST, port=DB_PORT, user=DB_USER, password=DB_PASSWORD, database=DB_NAME, connect_timeout=1)

@@ -69,15 +69,22 @@ class GenomeDetailView(DetailView):
 
 
 def create_table(data: dict, table_id: str) -> str:
-    df = pd.DataFrame(data['rows'])
-    df.set_index(data['index_col'])
-    df.index.name = None
+    try:
+        df = pd.DataFrame(data['rows'])
+        df.set_index(data['index_col'])
+        df.index.name = None
 
-    for taxid_col in data['taxid_cols']:
-        df[taxid_col] = df[taxid_col].apply(taxid_to_html)
+        for taxid_col in data['taxid_cols']:
+            df[taxid_col] = df[taxid_col].apply(taxid_to_html)
 
-    html = dataframe_to_bootstrap_html(df, table_id)
-
+        html = dataframe_to_bootstrap_html(df, table_id)
+    except Exception as e:
+        import json
+        return f'''
+        <div class="alert alert-danger" role="alert">
+            Failed to parse custom table: {e}<br>
+            Data: {json.dumps(data)}
+        </div>'''
     return html
 
 

@@ -354,7 +354,8 @@ Copy annotation</a>
     }
     hyperlinks.forEach(function (data) {
         const name = data['name']
-        const url = data['url'].replace('{anno}', annotation)
+        console.log('`' + data['url'] + '`', eval('`' + data['url'] + '`'))
+        const url = eval('`' + data['url'] + '`')
         cm.appendElement(`<a href="${url}" class="dropdown-item context-menu-icon context-menu-icon-hyperlink">${name}</a>`)
     })
 

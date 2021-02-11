@@ -213,10 +213,13 @@ class GenomeContent(models.Model):
         assert file_dict['type'] == 'eggnog'
         from .Gene import Gene
 
-        go = (set(), set(), annotation_types['GO'])
-        ec = (set(), set(), annotation_types['EC'])
-        kegg = (set(), set(), annotation_types['KG'])
-        r = (set(), set(), annotation_types['KR'])
+        go = (set(), set(), annotation_types['GO'])  # gene ontology
+        ec = (set(), set(), annotation_types['EC'])  # enzyme commission
+        kg = (set(), set(), annotation_types['KG'])  # kegg gene
+        kr = (set(), set(), annotation_types['KR'])  # kegg reaction
+        ep = (set(), set(), annotation_types['EP'])  # eggnog protein name
+        eo = (set(), set(), annotation_types['EO'])  # eggnog ortholog
+        ed = (set(), set(), annotation_types['ED'])  # eggnog description
 
         def add_anno(annotations: list, all_annotations, annotations_relationships, anno_type: AnnotationType):
             for annotation in annotations:
@@ -244,11 +247,17 @@ class GenomeContent(models.Model):
                 if line[6] != "":
                     add_anno(line[6].split(','), *go)
                 if line[7] != "":
-                    add_anno([F'EC:{l}' for l in line[7].split(',')], *ec)
+                    add_anno([f'EC:{l}' for l in line[7].split(',')], *ec)
                 if line[8] != "":
-                    add_anno([l[3:] for l in line[8].split(',')], *kegg)
+                    add_anno([l[3:] for l in line[8].split(',')], *kg)
                 if line[11] != "":
-                    add_anno(line[11].split(','), *r)
+                    add_anno(line[11].split(','), *kr)
+                if line[5] != "":
+                    add_anno([f'EP:{line[5]}'], *ep)
+                if line[18] != "":
+                    add_anno([f"EO:{l.split('@', maxsplit=1)[0]}" for l in line[18].split(',')], *eo)
+                if line[21] != "":
+                    add_anno([f"ED:{line[21].split(',', maxsplit=1)[0].split(';', maxsplit=1)[0]}"], *ed)
 
                 line = f.readline()[:-1]
 
@@ -258,7 +267,7 @@ class GenomeContent(models.Model):
                 assert h.startswith('#'), F'Error parsing file: {file_dict}'
 
         # Create Annotation-Objects and many-to-many relationships
-        for all_annotations, annotations_relationships, anno_type in (go, ec, kegg, r):
+        for all_annotations, annotations_relationships, anno_type in (go, ec, kg, kr, ep, eo, ed):
             self.add_many_annotations(model=self, anno_type=anno_type.anno_type, annos_to_add=all_annotations)
             objects = [Gene.annotations.through(gene_id=gene, annotation_id=anno) for gene, anno in
                        annotations_relationships]
