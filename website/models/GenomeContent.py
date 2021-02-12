@@ -255,7 +255,7 @@ class GenomeContent(models.Model):
                 if line[5] != "":
                     add_anno([f'EP:{line[5]}'], *ep)
                 if line[18] != "":
-                    add_anno([f"EO:{l.split('@', maxsplit=1)[0]}" for l in line[18].split(',')], *eo)
+                    add_anno([f'EO:{line[18].split("@", maxsplit=1)[0]}'], *eo)
                 if line[21] != "":
                     add_anno([f"ED:{line[21].split(',', maxsplit=1)[0].split(';', maxsplit=1)[0]}"], *ed)
 

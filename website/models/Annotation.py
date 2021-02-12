@@ -145,15 +145,15 @@ class Annotation(models.Model):
                 print(f'Annotation-description file does not exist: {settings.ANNOTATION_DESCRIPTIONS}/{anno_type}.tsv')
 
     @staticmethod
-    def load_ortholog_annotations():
+    def load_ortholog_annotations(batch_size: int = 5000):
         from website.models import GenomeContent, Gene
 
         assert os.path.isfile(settings.ORTHOLOG_ANNOTATIONS), F'File does not exist: {settings.ORTHOLOG_ANNOTATIONS}'
 
-        print(F'Step 1/5: Deleting all ortholog-annotations.', end=' ', flush=True)
+        print(F'Step 1: Deleting all ortholog-annotations.')
         Annotation.objects.filter(anno_type='OL').delete()
 
-        print(F'Step 2/5: Importing ortholog-annotations from {settings.ORTHOLOG_ANNOTATIONS}.', end=' ', flush=True)
+        print(F'Step 2: Importing ortholog-annotations from {settings.ORTHOLOG_ANNOTATIONS}.')
 
         all_genomecontent_ids = set(GenomeContent.objects.all().values_list('identifier', flat=True))
         all_genes = set(Gene.objects.all().values_list('identifier', flat=True))
@@ -171,7 +171,7 @@ class Annotation(models.Model):
                 return '-'
 
         with open(settings.ORTHOLOG_ANNOTATIONS) as f:
-            for line in f:
+            for line_nr, line in enumerate(f, 1):
                 orthogroup, gene_ids = line.rstrip().split('\t', maxsplit=1)
                 gene_ids = [gid.rsplit('|', maxsplit=1)[1] for gid in gene_ids.split(', ')]
                 genome_ids = set(gid.rsplit('_', maxsplit=1)[0] for gid in gene_ids)
@@ -194,16 +194,22 @@ class Annotation(models.Model):
                     ]
                 )
 
-        # Create Annotation-Objects
-        print(F'Step 3/5: Add {len(orthogroups)} orthogroup-annotations to database.', end=' ', flush=True)
-        Annotation.objects.bulk_create(orthogroups)
+                if line_nr % batch_size == 0:
+                    print(F'Step 3, batch {line_nr // batch_size}:', end=' ', flush=True)
+                    # Create Annotation-Objects
+                    print(F'+{len(orthogroups)} orthogroups', end=' ', flush=True)
+                    Annotation.objects.bulk_create(orthogroups)
 
-        # Create many-to-many relationships
-        print(F'Step 4/5: Link {len(genomecontent_to_ortholog_links)} orthogroup-annotations to genomes.', end=' ', flush=True)
-        GenomeContent.annotations.through.objects.bulk_create(genomecontent_to_ortholog_links)
+                    # Create many-to-many relationships
+                    print(F'+{len(genomecontent_to_ortholog_links)} orthogroups-to-genomes.', end=' ', flush=True)
+                    GenomeContent.annotations.through.objects.bulk_create(genomecontent_to_ortholog_links)
 
-        print(F'Step 5/5: Link {len(gene_to_ortholog_links)} orthogroup-annotations to genes.', end=' ', flush=True)
-        Gene.annotations.through.objects.bulk_create(gene_to_ortholog_links)
+                    print(F'+{len(gene_to_ortholog_links)} orthogroups-to-genes.')
+                    Gene.annotations.through.objects.bulk_create(gene_to_ortholog_links)
+
+                    orthogroups = []
+                    genomecontent_to_ortholog_links = []
+                    gene_to_ortholog_links = []
 
         print('Success.')
 

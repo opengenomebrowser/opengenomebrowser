@@ -124,7 +124,7 @@ def reload_organism_genomecontents(name: str = None, all: bool = False):
             for genome in organism.genome_set.all():
                 GenomeSerializer.update_genomecontent(genome, wipe=True)
     elif all:
-        for organism in Organism.objects.all():
+        for organism in progressbar(Organism.objects.all(), max_value=Organism.objects.count(), redirect_stdout=True):
             print(f'└── {organism.name}')
             with transaction.atomic():
                 for genome in organism.genome_set.all():
