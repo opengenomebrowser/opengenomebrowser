@@ -110,7 +110,7 @@ def score_pathway_maps(request):
     return JsonResponse(dict(success='true', result=res, message=message))
 
 
-def get_score_one(map: PathwayMap, groups_of_genomes: dict[str, list]) -> float:
+def get_score_one(map: PathwayMap, groups_of_genomes) -> float:
     """
     :param map: PathwayMap, annotated with g{i} and n_annos
     :param groups_of_genomes: dict of list of identifiers ({g1: [identifier, identifier, ...], g2: [...])
@@ -122,7 +122,7 @@ def get_score_one(map: PathwayMap, groups_of_genomes: dict[str, list]) -> float:
     return round(score, 10)
 
 
-def get_score_many(map: PathwayMap, groups_of_genomes: dict[str, list]) -> float:
+def get_score_many(map: PathwayMap, groups_of_genomes) -> float:
     """
     :param map: PathwayMap, annotated with g{i} and n_annos
     :param groups_of_genomes: dict of list of identifiers ({g1: [identifier, identifier, ...], g2: [...])
