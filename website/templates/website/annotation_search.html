@@ -133,9 +133,12 @@
         })
 
         function submit_function() {
-            let annotations = $('#get-annotations').val().split(',')
+            const annotations = extractQuery('#query-annotations')
+
             const target = $(queryGenomes.find('.get-genomes')[0])
             const genomes = extractQuery(target)
+
+            console.log(annotations)
 
             $.when(validate_annotations(annotations), validate_genomes(genomes)).done(function (annotations_valid, genomes_valid) {
                 annotations_valid = annotations_valid[2].responseJSON['success']

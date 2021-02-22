@@ -91,7 +91,7 @@
         <div class="container">
             <form>
                 {% csrf_token %}
-                <div class="form-group">
+                <div class="form-group" id="query-genes">
                     <label for="get-genes">Genes:</label>
                     <button onclick="wipeQuery(event.target.parentElement)" type="button" class="btn-sm btn-warning float-right" title=""
                             data-original-title="Wipe content">Wipe
@@ -196,11 +196,11 @@
         })
 
         function submit_function() {
-            const genes = $('#get-genes').val().split(',')
+            const genes = extractQuery('#query-genes')
 
             $.when(validate_genes(genes)).done(function (genes_valid) {
 
-                genes_valid = genes_valid.success
+                genes_valid = genes_valid.success && genes.length > 0
 
                 if (genes_valid) {
                     $('#get-genes').next().removeClass('is-invalid')

@@ -497,7 +497,7 @@ def update_taxids(download_taxdump: bool = False) -> None:
     """
     Update OpenGenomeBrowser TaxIDs to NCBI taxdump.
 
-    :param update_taxdb: if true, download newest taxdump
+    :param download_taxdump: if true, download newest taxdump
     """
 
     if download_taxdump:
@@ -517,7 +517,7 @@ def update_taxids(download_taxdump: bool = False) -> None:
     organisms.update(taxid=root_taxid)
 
     print('remove all other taxids')
-    TaxID.objects.exclude(id=1)
+    TaxID.objects.exclude(id=1).delete()
 
     print('recreate taxids')
     for o in organisms:

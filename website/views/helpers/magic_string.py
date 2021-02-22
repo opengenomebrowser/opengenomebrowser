@@ -230,7 +230,7 @@ class MagicQueryManager:
         # process regular identifiers
         genomes = Genome.objects.filter(identifier__in=self.genome_identifiers).prefetch_related('organism', 'organism__taxid')
         if self.raise_errors and len(genomes) != len(self.genome_identifiers):
-            raise MagicError(F"Could not find all genomes!'")
+            raise MagicError(F"Could not find all genomes!")
         return genomes
 
     def __load_magic_genomes(self):

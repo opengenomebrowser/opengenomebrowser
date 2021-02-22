@@ -23,6 +23,9 @@ class PathwayMap(models.Model):
 
     annotations = models.ManyToManyField(Annotation)
 
+    def __str__(self):
+        return f'<PathwayMap: {self.slug}>'
+
     @property
     def svg(self):
         return open(F'{settings.PATHWAY_MAPS}/{self.filename}').read()

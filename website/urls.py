@@ -5,7 +5,6 @@ from website.views import *
 
 app_name = 'website'
 
-
 urlpatterns = [
     # ex: /
     path('', Home.home_view, name='index'),
@@ -78,6 +77,7 @@ urlpatterns = [
     path('api/align/', Api.align, name='api-align'),
     path('api/get-gene/', Api.get_gene, name='api-get-gene'),
     path('api/get-tree/', Api.get_tree, name='api-get-tree'),
+    path('api/score-pathway-maps/', PathwayView.score_pathway_maps, name='api-score-pathway-maps'),
 
     # ex /test-click-menu/
     path('test-click-menu/', ClickMenu.click_view, name='test-click-menu'),

@@ -18,7 +18,7 @@ from website.views.helpers.magic_string import MagicQueryManager, MagicObject
 
 def err(error_message, status=500):
     print(error_message)
-    return JsonResponse(dict(status='false', message=error_message), status=status)
+    return JsonResponse(dict(success='false', message=error_message), status=status)
 
 
 UNIQUE_COLORS_HEX = json.load(open('lib/tax_id_to_color/300_different_colors.txt'))

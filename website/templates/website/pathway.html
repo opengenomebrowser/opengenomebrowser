@@ -48,10 +48,27 @@
                 <div class="form-group row">
                     <label for="get-map" class="col-sm-2 col-form-label" style="white-space: nowrap">Pathway Map:</label>
                     <div class="col-sm-10">
-                        <input type="text" class="form-control" id="get-map"
-                               value="{% if map %}{{ map.slug }} : {{ map.title }}{% endif %}">
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="get-map"
+                                   value="{% if map %}{{ map.slug }} : {{ map.title }}{% endif %}">
+                            <div class="input-group-append">
+                                <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true"
+                                        style="height: 38px" aria-expanded="false" onclick="rankPathwaysDropdown()">Select
+                                </button>
+                                <div id="score-pathways-dropdown" class="dropdown-menu dropdown-menu-right">
+                                    <div id="score-pathways-dropdown-spinner" class="dropdown-item" style="text-align: center" hidden>
+                                        <div class="spinner-border text-dark" role="status">
+                                            <span class="sr-only">Loading...</span>
+                                        </div>
+                                    </div>
+                                    <div id="score-pathways-dropdown-message" style="max-height: 30rem;overflow: auto"></div>
+                                    <div id="score-pathways-dropdown-content" style="max-height: 30rem;overflow: auto"></div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
+
 
                 <div id="query-genomes"></div>
 
@@ -160,13 +177,73 @@
             {% endif %}
         })
 
+        function rankPathwaysDropdown() {
+            const dropdown = $('#score-pathways-dropdown')
+            const dropdownMessage = $('#score-pathways-dropdown-message')
+            const dropdownContent = $('#score-pathways-dropdown-content')
+            const spinner = $('#score-pathways-dropdown-spinner')
+            spinner.attr('hidden', false)
+
+            let groupsOfGenomes = {}
+            let counter = 1
+            queryGenomes.find('.get-genomes').each(function () {
+                const genomes = extractQuery(this)
+                if (genomes.length > 0) { // skip empty groups
+                    groupsOfGenomes[`g${counter}`] = genomes
+                    counter += 1
+                }
+            })
+
+            $.post('/api/score-pathway-maps/', groupsOfGenomes, function (data, statusText, xhr) {
+                spinner.attr('hidden', true)
+                dropdownMessage.empty()
+                dropdownContent.empty()
+
+                if (xhr.status !== 200 || data['success'] !== 'true') {
+                    let msg = 'result' in data ? data['result'] : ''
+                    dropdownMessage.append(`<a class="dropdown-item bg-warning">Failed to get ranking. ${msg}</a>`)
+                } else {
+                    dropdownMessage.append(`<a class="dropdown-item bg-success">${data['message']}</a>`)
+                    $(data['result']).each(function () {
+
+                        let score = ''
+                        if ('score' in this && this['score'] !== 0 && this['score'] !== 'none') {
+                            score = `<button type="button" class="btn btn-outline-secondary btn-sm" disabled>score:${this['score'].toFixed(4)}</button>`
+                        }
+                        dropdownContent.append(`
+                        <div class="dropdown-item pathway-dropdown">
+                            <p>${this['slug']} : ${this['title']}</p>
+                            <div>
+                                ${score}
+                                <button type="button" class="btn btn-primary btn-sm" data-slug="${this['slug']}">open</button>
+                            </div>
+                        </div>`)
+                    })
+                    dropdown.find('.pathway-dropdown').on("click", function (event) {
+                        $('#get-map').val(this.children[0].textContent)
+                    })
+                    dropdown.find('.btn-primary').on("click", function (event) {
+                            data = groupsOfGenomes
+                            data['map'] = $(this).data('slug')
+                            redirect('/pathway/?postrequest=true', data, '_blank')
+                            event.stopPropagation()
+                        }
+                    )
+
+
+                }
+
+                window.scrollTo(window.scrollX + 1, window.scrollY)  // update position of dropdown
+            }, "json")
+        }
+
         function submit_function() {
             const map_slug = $('#get-map').val().split(' : ')[0]
             let groupsOfGenomes = []
             let allGenomes = new Set()
             queryGenomes.find('.get-genomes').each(function () {
                 const genomes = extractQuery(this)
-                groupsOfGenomes.push(extractQuery(this))
+                groupsOfGenomes.push(genomes)
                 allGenomes = new Set([...allGenomes, ...genomes])
             })
             allGenomes = Array.from(allGenomes)

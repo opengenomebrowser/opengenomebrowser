@@ -11,7 +11,7 @@
 #center-content {
     /* outer */
     width: 100%;
-    overflow:auto
+    overflow: auto
 }
 
 #pathway-map-container {
@@ -20,4 +20,19 @@
     display: table;
     margin: 0 auto;
     border: 1px solid black;
+}
+
+.pathway-dropdown {
+    display: flex;
+    justify-content: space-between;
+    padding-right: 0.5rem;
+    margin-right: 0.5rem;
+}
+
+.pathway-dropdown > p {
+    margin-bottom: 0 !important;
+}
+
+.pathway-dropdown .btn {
+    padding: 1px 3px;
 }

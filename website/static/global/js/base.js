@@ -78,7 +78,6 @@ function goToPageWithData(location, data) {
     const url = calcUrl(location, data)
     const urlSize = (new TextEncoder().encode(url)).length
     console.log(postRequestsOnly, url, urlSize, data)
-
     if (postRequestsOnly || urlSize > 32000) {
         console.log('forward to new URL (POST request)')
         redirect(`${location}/?postrequest=true`, data)
@@ -89,12 +88,12 @@ function goToPageWithData(location, data) {
 
 }
 
-function redirect(location, data) {
+function redirect(location, data, target='_self') {
     let form = ''
     $.each(data, function (key, value) {
         form += `<input type="hidden" name="${key}" value="${postReplBlanks(value)}">`
     })
-    $(`<form action="${location}" method="POST">
+    $(`<form action="${location}" method="POST" target="${target}">
         <input type="hidden" name="csrfmiddlewaretoken" value="${getCookie('csrftoken')}">
         ${form}
     </form>`).appendTo($(document.body)).submit()
@@ -180,12 +179,10 @@ String.prototype.rsplit = function (sep, maxsplit) {
  * becomes "OG0000006+OG0000010S24+S24!!!family!!!peptidase"
  */
 let urlReplBlanks = function (input) {
-    console.log(input)
     if ($.isArray(input)) {
         let encode = function (str) {
             return encodeURIComponent(str.replaceAll(' ', '!!!'))
         }
-        return input.map(str => encode(str)).join('+')
         return input.map(str => encode(str)).join('+')
     } else {
         return encodeURIComponent(input.replaceAll(' ', '!!!'))

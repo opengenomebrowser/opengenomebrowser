@@ -47,16 +47,19 @@ function removeGenomesQuery(target) {
 }
 
 function extractQuery(target) {
-    console.log($(target))
-    console.log($(target).find('.tag-editor'))
-    return $(target).find('.tag-editor').text()
+    const text = $(target).find('.tag-editor').text()
+
+    if (text.length === 0 || text === decodeURI('%C2%A0')) {
+        return [] // no content
+    }
+
+    return text
         .replace(/\s*,\s*/g, ",")  // remove all whitespace around commas
         .replace(/^,/, "")  // remove leading comma
         .split(",")  // split into list of identifiers/magic strings
 }
 
 function copyQuery(target) {
-    console.log(target)
     CopyToClipboard(extractQuery(target).join(', '))
 }
 
