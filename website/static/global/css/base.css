@@ -1,3 +1,7 @@
+html {
+  height: 100%;
+}
+
 .navbar a {
     white-space: nowrap;
 }
@@ -31,7 +35,8 @@
 }
 
 .ogb-body {
-    margin-top: 70px; /* overwrite with selector #ogb-body */
+    min-height: 100%;
+    padding-top: 70px; /* overwrite with selector #ogb-body */
 }
 
 .is-invalid {

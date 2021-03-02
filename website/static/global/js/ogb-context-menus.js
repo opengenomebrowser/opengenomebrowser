@@ -68,9 +68,9 @@ class ClickMenu {
         }
         contextMenuQueue.push(this.menu_id)
 
-        // set z-index accordingly, starting at z-index 10
+        // set z-index accordingly, starting at z-index 1500
         for (const [idx, menu_id] of Object.entries(contextMenuQueue)) {
-            document.getElementById(menu_id).style.zIndex = 10 + idx
+            document.getElementById(menu_id).style.zIndex = 1500 + idx
         }
 
     }
@@ -100,6 +100,10 @@ class ClickMenu {
             {
                 placement: placement,
                 modifiers: {
+                    preventOverflow: {
+                        enabled: true,
+                        boundariesElement: 'viewport',
+                    },
                     eventsEnabled: {enabled: true},
                 },
             })
@@ -285,7 +289,7 @@ Open genomes on pathway map</a>
 <a href="/annotation-search/?genomes=${siblings_str}" class="dropdown-item many-genomes context-menu-icon context-menu-icon-annotations">
 Search for annotations in genomes</a>
 <a href="/gene-trait-matching/?g1=${siblings_str}" class="dropdown-item many-genomes context-menu-icon context-menu-icon-gene-trait-matching">
-Perform gene trait matching with these genomes as Group 1</a>
+Perform Gene trait matching with these genomes</a>
 <a href="/blast/?genomes=${siblings_str}" class="dropdown-item many-genomes context-menu-icon context-menu-icon-blast">
 Blast genomes</a>
 </div>

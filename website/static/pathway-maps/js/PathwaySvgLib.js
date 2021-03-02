@@ -383,9 +383,10 @@ function saveUriAs(uri, filename) {
 /**
  * Save a map as png, opens save-as dialog
  *
- * @param  {Object} element Div to save as png
+ * @param  {String} elementId Element ID of div to save as png
  */
-function savePng(element) {
+function savePng(elementId) {
+    const element = document.getElementById(elementId)
     $(window).scrollTop(0)  // otherwise, png will be cropped.
     html2canvas(element).then(function (canvas) {
         saveUriAs(canvas.toDataURL(), 'pathway.png')
@@ -395,9 +396,10 @@ function savePng(element) {
 /**
  * Save a map as svg, opens save-as dialog
  *
- * @param svg {Object} target svg element
+ * @param elementId {String} elementId Element ID of div that contains an svg to download
  */
-function saveSvg(svg) {
+function saveSvg(elementId) {
+    const svg = $('#' + elementId).find('svg')[0]
     //serialize svg.
     let serializer = new XMLSerializer()
     let data = serializer.serializeToString(svg)
