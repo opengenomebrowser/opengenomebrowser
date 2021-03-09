@@ -4,8 +4,15 @@
 
 First, let's explore the genomes table. Click on [`Genomes`](https://opengenomebrowser.bioinformatics.unibe.ch/genomes).
 
-This page contains powerful filter and search options.
-  - Columns can be sorted and filtered by clicking on the column header.
+On this page you can...
+  - search the genome database
+  - apply filters
+  - sort by column
+  - forward selected genomes to further analysis
+  - add or remove metadata columns (settings panel)
+  - download the table in xlsx or csv format (settings panel)
+
+## Usage
 
 To dive deeper into a genome, open the context menu: **right click** on a row.
   - This is an exception: everywhere else on OpenGenomeBrowser the context menu can be opened with 
