@@ -49,7 +49,7 @@
     <div class="sidebar-subcontent form-check form-check-inline">
         <label for="mode-selector"><a>Mode</a></label>
         <select class="form-control" id="mode-selector"
-                onchange="[taxid_tree, genome_similarity_tree].forEach(t=>changeTree(t, 'mode', this.value))">
+                onchange="[taxid_tree, genome_similarity_tree, orthofinder_tree].forEach(t=>changeTree(t, 'mode', this.value))">
             <option>smooth</option>
             <option>square</option>
             <option>straight</option>
@@ -273,24 +273,30 @@
 
         function load_taxid_tree(genomes) {
             $('#taxid-tree-container').attr("hidden", false)
-            taxid_tree = loadTree(
+            loadTree(
                 genomes, 'taxid', '#taxid-tree', '#taxid-newick',
                 $('#type-selector-taxid').val(),
                 $('#layout-selector-taxid').val(),
-                $('#mode-selector').val()
+                $('#mode-selector').val(),
+                function (tree) {
+                    taxid_tree = tree
+                    addTreeSizeListener(taxid_tree, 'taxid-tree')
+                }
             )
-            add_resize_listener('taxid-tree', taxid_tree)
         }
 
         function load_genome_similarity_tree(genomes) {
             $('#genome-similarity-tree-container').attr("hidden", false)
-            genome_similarity_tree = loadTree(
+            loadTree(
                 genomes, 'genome-similarity', '#genome-similarity-tree', '#genome-similarity-newick',
                 $('#type-selector-genome-similarity').val(),
                 $('#layout-selector-genome-similarity').val(),
-                $('#mode-selector').val()
+                $('#mode-selector').val(),
+                function (tree) {
+                    genome_similarity_tree = tree
+                    addTreeSizeListener(genome_similarity_tree, 'genome-similarity-tree')
+                }
             )
-            add_resize_listener('genome-similarity-tree', genome_similarity_tree)
         }
 
         function load_orthofinder_tree(genomes) {
@@ -299,23 +305,14 @@
                 genomes, 'orthofinder', '#orthofinder-tree', '#orthofinder-newick',
                 $('#type-selector-orthofinder').val(),
                 $('#layout-selector-orthofinder').val(),
-                $('#mode-selector').val()
+                $('#mode-selector').val(),
+                function (tree) {
+                    orthofinder_tree = tree
+                    addTreeSizeListener(orthofinder_tree, 'orthofinder-tree')
+                }
             )
-            add_resize_listener('orthofinder-tree', orthofinder_tree)
         }
 
-
-        async function add_resize_listener(target, tree) {
-            tree.then(function () {
-                addResizeListener(document.getElementById(target), function () {
-                    clearTimeout(ajax_timer)
-                    ajax_timer = setTimeout(function () {
-                        redrawTree(tree)
-                    }, 500)
-                });
-            })
-
-        }
 
     </script>
 

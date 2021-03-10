@@ -16,169 +16,146 @@
 /**
  * Create Phylogenetic Tree.
  */
-let loadTree = async function (genomes, method, target, newick_target, type, layout, mode) {
-    // load newick synchronously
-    let go_on
+function loadTree(genomes, method, target, newick_target, type, layout, mode, callback) {
 
-    let load_tree = function () {
-        // abort if current_genomes have changed
-        if (genomes.join('::') != genomes.join('::')) {
-            go_on = false
-            return null
-        }
+    $.ajax({
+        url: "/api/get-tree/",
+        method: 'post',
+        data: {'genomes[]': genomes, method: method},
+        dataType: "json",
+        success: function (data) {
+            console.log('success!!', data)
 
+            $(newick_target).val(data.newick)
 
-        let ajax = $.ajax({
-            url: "/api/get-tree/",
-            method: 'post',
-            data: {'genomes[]': genomes, method: method},
-            async: false,
-            dataType: "json",
-        })
+            if ('distance-matrix' in data) {
+                $('#genome-distance-matrix').data('distance-matrix', data['distance-matrix'])
+            }
 
-        if (ajax.status === 409) {
-            // still calculating...
-            console.log('still calculating', ajax.responseJSON.message, ajax)
-            go_on = true
-
+            $(target).height(600)
             $(target).empty()
-            $(target).append($('<p>', {
-                class: "error-message",
-                text: ajax.responseJSON.message
-            }))
-            $(target).append($('<div>', {
-                class: "spinner-border text-dark",
-                role: "status"
-            }).append($('<span>', {class: "sr-only", text: "Loading..."})))
 
-            return null
-        }
+            const newick = data.newick
+            const species_dict = data.color_dict
+            let tree = new TidyTree(
+                newick ? newick : tree.data.clone(),
+                {
+                    parent: target,
+                    layout: layout,
+                    mode: mode,
+                    type: type,
+                    leafNodes: true,
+                    branchNodes: false,
+                    leafLabels: true,
+                    branchLabels: true,
+                    branchDistances: method !== 'taxid',
+                    ruler: false,
+                    vStretch: 0.9,
+                })
 
-        if (ajax.status !== 200) {
-            console.log('ajax-response for debugging:', ajax)
-            alert(`Failed to load ${method} tree. ${ajax.status}`)
-            go_on = false
-            return null
-        }
+            if (method === 'taxid') {
+                // colorize branch labels, which represent TaxIDs
+                tree = tree.eachBranchLabel((label, data) => {
+                    d3.select(label).style("font-size", 1 + "rem")
+                        .style("text-anchor", "middle")
+                        .attr("data-species-label", label.textContent)
+                        .on("click", function (data) {
+                            d3.event.stopPropagation()
+                            showTaxidClickMenu([10, 12], data.data.id) // could use d3.event insted of null
+                        })
+                });
+            }
+            if (method === 'orthofinder') {
+                // colorize branch labels, which represent TaxIDs
+                tree = tree.eachBranchLabel((label, data) => {
+                    d3.select(label).style("font-size", 1 + "rem")
+                        .style("text-anchor", "middle")
+                });
+            }
 
-        $(newick_target).val(ajax.responseJSON.newick)
-
-        if ('distance-matrix' in ajax.responseJSON) {
-            $('#genome-distance-matrix').data('distance-matrix', ajax.responseJSON['distance-matrix'])
-        }
-
-        $(target).height(600)
-        $(target).empty()
-        go_on = false
-
-        const newick = ajax.responseJSON.newick
-        const species_dict = ajax.responseJSON.color_dict
-        tree = new TidyTree(
-            newick ? newick : tree.data.clone(),
-            {
-                parent: target,
-                layout: layout,
-                mode: mode,
-                type: type,
-                leafNodes: true,
-                branchNodes: false,
-                leafLabels: true,
-                branchLabels: true,
-                branchDistances: false,
-                ruler: false,
-                vStretch: 0.9,
-            })
-
-        if (method === 'taxid') {
-            // colorize branch labels, which represent TaxIDs
-            tree = tree.eachBranchLabel((label, data) => {
+            // colorize leaf labels, which represent genomes
+            tree = tree.eachLeafLabel((label, data) => {
                 d3.select(label).style("font-size", 1 + "rem")
-                    .style("text-anchor", "middle")
-                    .attr("data-species-label", label.textContent)
+                    .attr("data-species-label", species_dict[label.textContent])
                     .on("click", function (data) {
                         d3.event.stopPropagation()
-                        showTaxidClickMenu([10, 12], data.data.id) // could use d3.event insted of null
+                        showGenomeClickMenu([10, 12], data.data.id, species_dict[label.textContent])
                     })
-            });
+            })
+
+            console.log('DONE', tree)
+
+            turnBranchLabels(tree)
+
+            callback(tree)
+        },
+        error: function (data) {
+            if (data.status === 409) {
+                // still calculating...
+                console.log('still calculating', data.responseJSON.message, data)
+
+                $(target).empty()
+                $(target).append($('<p>', {
+                    class: "error-message",
+                    text: data.responseJSON.message
+                }))
+                $(target).append($('<div>', {
+                    class: "spinner-border text-dark",
+                    role: "status"
+                }).append($('<span>', {class: "sr-only", text: "Loading..."})))
+
+                setTimeout(function () {
+                        loadTree(genomes, method, target, newick_target, type, layout, mode, callback)
+                    }, 7000
+                )
+            } else {
+                console.log('ajax-response for debugging:', data)
+                const message = 'responseJSON' in data ? data.responseJSON.status : 'no message.'
+                alert(`Failed to load ${method} tree. ${message}`)
+            }
+
         }
-        if (method === 'orthofinder') {
-            // colorize branch labels, which represent TaxIDs
-            tree = tree.eachBranchLabel((label, data) => {
-                d3.select(label).style("font-size", 1 + "rem")
-                    .style("text-anchor", "middle")
-            });
-        }
-
-        // colorize leaf labels, which represent genomes
-        tree = tree.eachLeafLabel((label, data) => {
-            d3.select(label).style("font-size", 1 + "rem")
-                .attr("data-species-label", species_dict[label.textContent])
-                .on("click", function (data) {
-                    d3.event.stopPropagation()
-                    showGenomeClickMenu([10, 12], data.data.id, species_dict[label.textContent])
-                })
-        });
-
-        return tree
-    }
-
-    let tree
-    do {
-        tree = await load_tree()
-
-        if (go_on) {
-            await sleep(5000)  // sleep from base.js
-        } else {
-            await sleep(500)
-        }
-
-    } while (go_on)
-
-    turnBranchLabels(tree)
-
-    return tree
-}
-
-let turnBranchLabels = async function (tree) {
-    console.log('turn branch labels')
-    console.log(tree)
-    if (tree == null) {
-        return
-    }
-
-    tree = await tree.redraw()
-
-    if (tree.layout === 'vertical' || tree.layout === 'horizontal') {
-        let rotation
-        if (tree.layout === 'vertical') {
-            rotation = 0
-        } else {
-            rotation = -90
-        }
-        await sleep(1000) // i hate javascript so much
-        tree = tree.eachBranchLabel((label, data) => {
-            d3.select(label).attr("transform", `rotate(${rotation})`)
-        })
-    }
-}
-
-let redrawTree = function (tree_promise) {
-    tree_promise.then(function (tree) {
-        turnBranchLabels(tree)
     })
 }
 
-let changeTree = function (tree_promise, property, value) {
-    tree_promise.then(function (tree) {
-        console.log(tree, property)
-        if (property === 'type') {
-            tree = tree.setType(value)
-        } else if (property === 'mode') {
-            tree = tree.setMode(value)
-        } else if (property === 'layout') {
-            tree = tree.setLayout(value)
-        }
 
-        redrawTree(tree_promise)
+let changeTree = function (tree, property, value) {
+    if (tree === undefined) {
+        return  // means tree is not drawn yet
+    }
+    console.log(tree, property)
+    if (property === 'type') {
+        tree = tree.setType(value)
+    } else if (property === 'mode') {
+        tree = tree.setMode(value)
+    } else if (property === 'layout') {
+        tree = tree.setLayout(value)
+    }
+
+    redrawTree(tree)
+}
+
+let redrawTree = function (tree) {
+    tree.redraw()
+    turnBranchLabels(tree)
+}
+
+let turnBranchLabels = function (tree) {
+    console.log('turn branch labels')
+    setTimeout(function () {
+        const rotation = tree.layout === 'vertical' ? 0 : -90
+        tree.eachBranchLabel((label, data) => {
+            d3.select(label).attr("transform", `rotate(${rotation})`)
+        })
+    }, 1000)
+}
+
+let addTreeSizeListener = function (tree, divId) {
+    addResizeListener(document.getElementById(divId), function () {
+        clearTimeout(ajax_timer)
+        ajax_timer = setTimeout(function () {
+            console.log('resizing')
+            redrawTree(tree)
+        }, 500)
     })
 }

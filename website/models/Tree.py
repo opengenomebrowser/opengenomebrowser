@@ -2,8 +2,6 @@ import os
 from django.db import models
 from website.models import TaxID, GenomeSimilarity, Annotation, Genome, GenomeContent, Organism, CoreGenomeDendrogram
 import pandas as pd
-from skbio import DistanceMatrix
-from skbio.tree import nj
 from biotite.sequence.phylo import upgma
 
 
