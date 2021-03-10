@@ -387,10 +387,11 @@ function saveUriAs(uri, filename) {
 /**
  * Save a map as png, opens save-as dialog
  *
- * @param  {Object} element Div to save as png
+ * @param  {String} elementId Element ID of div to save as png
  * @param filename default: download.png
  */
-function savePng(element, filename='download.png') {
+function savePng(elementId, filename='download.png') {
+    const element = document.getElementById(elementId)
     $(window).scrollTop(0)  // otherwise, png will be cropped.
     html2canvas(element).then(function (canvas) {
         saveUriAs(canvas.toDataURL(), filename)
@@ -400,14 +401,15 @@ function savePng(element, filename='download.png') {
 /**
  * Save a map as svg, opens save-as dialog
  *
- * @param svg {Object} target svg element
+ * @param elementId {String} elementId Element ID of div that contains an svg to download
  * @param filename default: download.svg
  */
-function saveSvg(svg, filename='download.svg') {
+function saveSvg(elementId, filename='download.svg') {
+    const svg = $('#' + elementId).find('svg')[0]
     //serialize svg.
     let serializer = new XMLSerializer()
-    console.log('svg', svg)
     let data = serializer.serializeToString(svg)
+
     data = encodeURIComponent(data)
 
     // add file type declaration

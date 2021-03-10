@@ -73,10 +73,10 @@
         <a>Download pathway map:</a>
     </div>
     <div class="sidebar-subcontent form-check form-check-inline">
-        <button type="button" class="btn btn-secondary" onclick="savePng(document.getElementById('pathway-map-container'), `${mapSlug}.png`)" style="margin-right: 1rem;">
+        <button type="button" class="btn btn-secondary" onclick="savePng('pathway-map-container', `${mapSlug}.png`)" style="margin-right: 1rem;">
             Save as PNG
         </button>
-        <button type="button" class="btn btn-secondary" onclick="saveSvg(document.getElementById('pathway-map-container').firstChild, `${mapSlug}.svg`)">
+        <button type="button" class="btn btn-secondary" onclick="saveSvg('pathway-map-container', `${mapSlug}.svg`)">
             Save as SVG
         </button>
     </div>
