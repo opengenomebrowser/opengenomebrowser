@@ -173,7 +173,9 @@
 
         const type_dict = {{ type_dict|safe }};
 
-        const initial_queries = {{ initial_queries|safe }};
+        const initialQueries = {{ initial_queries|safe }};
+
+        const initialGenomes = [{% for magic_query_manager in magic_query_managers %}[{% for genome in magic_query_manager.all_genomes %}"{{ genome.identifier }}", {% endfor %}],{% endfor %}]
 
         const queryGenomes = $('#query-genomes')
 
@@ -182,10 +184,10 @@
         const mapSlug = "{{ map.slug }}"
 
         $(document).ready(function () {
-            if (initial_queries.length == 0) {
+            if (initialQueries.length == 0) {
                 addGenomesGroup(queryGenomes)  // add empty group
             } else {
-                for (const genomes of initial_queries) {
+                for (const genomes of initialQueries) {
                     addGenomesGroup(queryGenomes, genomes)
                 }
             }
@@ -272,7 +274,7 @@
             let table = 'data:text/csv;charset=utf-8,'
             let groupIds = []
             let genomes = []
-            initial_queries.forEach(function (orgs, i) {
+            initialGenomes.forEach(function (orgs, i) {
                 groupIds.push(...Array(orgs.length).fill(`g${i + 1}`))
                 genomes.push(...orgs)
             })
@@ -300,7 +302,7 @@
             let table = 'data:text/csv;charset=utf-8,'
             let groupIds = []
             let genomes = []
-            initial_queries.forEach(function (orgs, i) {
+            initialGenomes.forEach(function (orgs, i) {
                 groupIds.push(...Array(orgs.length).fill(`g${i + 1}`))
                 genomes.push(...orgs)
             })

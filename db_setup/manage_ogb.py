@@ -566,6 +566,7 @@ if __name__ == "__main__":
         send_mail,
         reload_color_css,
         reload_blast_dbs,
+        update_bokeh,
         load_annotation_descriptions,
         update_taxids,
         backup_genome_similarities,
