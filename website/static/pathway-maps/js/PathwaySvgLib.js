@@ -2,9 +2,13 @@
 
 function calcColorArray(nSteps, colors) {
     if (nSteps === 1) {
-        return ['transparent', colors[1]]
+        return [colors[0], colors[colors.length-1]]
     } else {
-        return ['transparent'].concat(chroma.scale(colors).mode('lch').colors(nSteps))
+        if (colors.length === 4) {
+            return [colors[0]].concat(chroma.scale([colors[1], colors[2]]).mode('lch').colors(nSteps - 1)).concat([colors[3]])
+        } else {
+            return [colors[0]].concat(chroma.scale([colors[1], colors[2]]).mode('lch').colors(nSteps))
+        }
     }
 }
 
@@ -90,7 +94,7 @@ function highlightBinary(
 function highlightOrganisms(
     svg,
     organisms,
-    colors = ['yellow', 'red']
+    colors = ['transparent', 'yellow', 'red', 'green']
 ) {
     resetMap(svg)
 
@@ -161,7 +165,7 @@ function highlightOrganisms(
 function highlightGroupsOfOrganisms(
     svg,
     groupsOfOrganisms,
-    colors = ['yellow', 'red']
+    colors = ['transparent', 'yellow', 'red', 'green']
 ) {
     resetMap(svg)
 
@@ -383,31 +387,31 @@ function saveUriAs(uri, filename) {
 /**
  * Save a map as png, opens save-as dialog
  *
- * @param  {String} elementId Element ID of div to save as png
+ * @param  {Object} element Div to save as png
+ * @param filename default: download.png
  */
-function savePng(elementId) {
-    const element = document.getElementById(elementId)
+function savePng(element, filename='download.png') {
     $(window).scrollTop(0)  // otherwise, png will be cropped.
     html2canvas(element).then(function (canvas) {
-        saveUriAs(canvas.toDataURL(), 'pathway.png')
+        saveUriAs(canvas.toDataURL(), filename)
     })
 }
 
 /**
  * Save a map as svg, opens save-as dialog
  *
- * @param elementId {String} elementId Element ID of div that contains an svg to download
+ * @param svg {Object} target svg element
+ * @param filename default: download.svg
  */
-function saveSvg(elementId) {
-    const svg = $('#' + elementId).find('svg')[0]
+function saveSvg(svg, filename='download.svg') {
     //serialize svg.
     let serializer = new XMLSerializer()
+    console.log('svg', svg)
     let data = serializer.serializeToString(svg)
-
     data = encodeURIComponent(data)
 
     // add file type declaration
     data = 'data:image/svg+xml;charset=utf-8,' + data
 
-    saveUriAs(data, 'pathway.svg')
+    saveUriAs(data, filename)
 }

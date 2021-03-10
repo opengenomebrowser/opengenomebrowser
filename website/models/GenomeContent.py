@@ -242,7 +242,7 @@ class GenomeContent(models.Model):
                 if len(line) != 22:
                     break
 
-                locus_tag = line[0].rsplit('|', maxsplit=1)[1]
+                locus_tag = line[0].rsplit('|', maxsplit=1)[-1]
 
                 if line[6] != "":
                     add_anno(line[6].split(','), *go)

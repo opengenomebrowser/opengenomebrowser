@@ -29,12 +29,56 @@
                checked>
     </div>
 
-    <div class="sidebar-subcontent form-check form-check-inline">
-        <button type="button" class="btn btn-light" onclick="savePng('pathway-map-container')">Save as PNG</button>
-    </div>
+    <hr>
+
+    {% if map and groups_of_genomes %}
+        <div class="sidebar-subcontent form-check form-check-inline">
+            <a>Change pathway colors:</a>
+        </div>
+        <div class="sidebar-subcontent form-check form-check-inline">
+            <label class="form-check-label" for="color-0"><a>not covered:</a></label>
+            <input class="form-check-input" type="text" id="color-0" placeholder="transparent">
+            <label class="form-check-label" for="color-1"><a>gradient start:</a></label>
+            <input class="form-check-input" type="text" id="color-1" placeholder="yellow">
+            <label class="form-check-label" for="color-1"><a>gradient end:</a></label>
+            <input class="form-check-input" type="text" id="color-2" placeholder="red">
+            <label class="form-check-label" for="color-3"><a>all covered (optional):</a></label>
+            <input class="form-check-input" type="text" id="color-3" placeholder="none">
+            <button type="button" class="btn btn-danger" onclick="writeColors(defaultColors)" style="margin-right: 1rem;">
+                Reset colors
+            </button>
+            <button type="button" class="btn btn-success" onclick="applyColors()">
+                Apply colors
+            </button>
+        </div>
+
+        <hr>
+
+        <div class="sidebar-subcontent form-check form-check-inline">
+            <a>Download coverage data:</a>
+        </div>
+        <div class="sidebar-subcontent form-check form-check-inline">
+            <button type="button" class="btn btn-secondary" onclick="exportShapeTable()" style="margin-right: 1rem;">
+                Shape table
+            </button>
+            <button type="button" class="btn btn-secondary" onclick="exportAnnotationTable()">
+                Annotation table
+            </button>
+        </div>
+
+        <hr>
+    {% endif %}
 
     <div class="sidebar-subcontent form-check form-check-inline">
-        <button type="button" class="btn btn-light" onclick="saveSvg('pathway-map-container')">Save as SVG</button>
+        <a>Download pathway map:</a>
+    </div>
+    <div class="sidebar-subcontent form-check form-check-inline">
+        <button type="button" class="btn btn-secondary" onclick="savePng(document.getElementById('pathway-map-container'), `${mapSlug}.png`)" style="margin-right: 1rem;">
+            Save as PNG
+        </button>
+        <button type="button" class="btn btn-secondary" onclick="saveSvg(document.getElementById('pathway-map-container').firstChild, `${mapSlug}.svg`)">
+            Save as SVG
+        </button>
     </div>
 
 {% endblock %}
@@ -133,6 +177,10 @@
 
         const queryGenomes = $('#query-genomes')
 
+        const defaultColors = ['transparent', 'yellow', 'red']
+
+        const mapSlug = "{{ map.slug }}"
+
         $(document).ready(function () {
             if (initial_queries.length == 0) {
                 addGenomesGroup(queryGenomes)  // add empty group
@@ -142,6 +190,53 @@
                 }
             }
         })
+
+
+        $(document).ready(function () {
+            const colors = readColors()  // get default colors or cookie-colors
+            writeColors(colors)  // write them to the input fields
+        })
+
+        let colorPathway = function () {
+            const colors = readColors()
+            {% if map and groups_of_genomes %}
+                highlightGroupsOfOrganisms(
+                    document.getElementById('pathway-map-container').firstChild,  // svg
+                    {{ groups_of_genomes|safe }},  // groupsOfOrganisms
+                    colors
+                )
+            {% else %}
+                console.log('Dummy function: Cannot colorize map because map or groupsOfOrganisms missing. colors:', colors)
+            {% endif %}
+        }
+
+        function applyColors() {
+            // read colors from input fields
+            let colors = [$('#color-0').val(), $('#color-1').val(), $('#color-2').val()]
+            const color4 = $('#color-3').val()
+            if (color4 !== 'none' && color4 !== '') {
+                colors.push(color4)
+            }
+            // write to cookie
+            write_cookie('pathway-colors', colors, 14400)  // 10 days
+            // apply colors to pathway map
+            colorPathway()
+        }
+
+
+        function readColors() {
+            // return cookie-colors (or default colors)
+            const cookieColors = read_cookie('pathway-colors')
+            return cookieColors === null ? defaultColors : cookieColors
+        }
+
+        function writeColors(colors) {
+            // write colors to input fields
+            $('#color-0').val(colors[0])
+            $('#color-1').val(colors[1])
+            $('#color-2').val(colors[2])
+            $('#color-3').val(colors.length > 3 ? colors[3] : 'none')
+        }
 
 
         $(document).ready(function () {
@@ -165,17 +260,66 @@
                         })
 
                     {% if groups_of_genomes %}
-                        let svg, groupsOfOrganisms, colors;
-                        highlightGroupsOfOrganisms(
-                            svg = document.getElementById('pathway-map-container').firstChild,
-                            groupsOfOrganisms = {{ groups_of_genomes|safe }},
-                            colors = ['yellow', 'red']
-                        )
+                        colorPathway()
                     {% endif %}
 
                 })
             {% endif %}
         })
+
+        function exportAnnotationTable() {
+            // export pathway map information as table
+            let table = 'data:text/csv;charset=utf-8,'
+            let groupIds = []
+            let genomes = []
+            initial_queries.forEach(function (orgs, i) {
+                groupIds.push(...Array(orgs.length).fill(`g${i + 1}`))
+                genomes.push(...orgs)
+            })
+            table += "\t\t\t\t" + groupIds.join("\t") + "\r\n"
+            table += "shapeID\ttype\tname\tdescription\t" + genomes.join("\t") + "\r\n"
+
+            let shapeCount = 1
+            $('.shape').each(function () {
+                const shape = this
+                $($(this).data('annotations')).each(function () {
+                    const anno = this
+                    let line = [shapeCount, anno['type'], anno['name'], ('description' in anno) ? decodeURIComponent(anno['description']) : '']
+                    genomes.map(function (genome, i) {
+                        line.push(anno['organisms'][groupIds[i]]['covering'].has(genome))
+                    })
+                    table += line.join("\t") + "\r\n"
+                })
+                shapeCount += 1
+            })
+            saveUriAs(encodeURI(table), `${mapSlug}-annotations.tsv`)
+        }
+
+        function exportShapeTable() {
+            // export pathway map information as table
+            let table = 'data:text/csv;charset=utf-8,'
+            let groupIds = []
+            let genomes = []
+            initial_queries.forEach(function (orgs, i) {
+                groupIds.push(...Array(orgs.length).fill(`g${i + 1}`))
+                genomes.push(...orgs)
+            })
+            table += "\t\t" + groupIds.join("\t") + "\r\n"
+            table += "shapeID\tdescription\t" + genomes.join("\t") + "\r\n"
+
+            let shapeCount = 1
+            $('.shape').each(function () {
+                const shape = this
+                const dataOrganisms = $(shape).data('organisms')
+                let line = [shapeCount, $(shape).data('original-title')]
+                genomes.map(function (genome, i) {
+                    line.push(dataOrganisms[groupIds[i]]['covering'].has(genome))
+                })
+                table += line.join("\t") + "\r\n"
+                shapeCount += 1
+            })
+            saveUriAs(encodeURI(table), `${mapSlug}-shapes.tsv`)
+        }
 
         function rankPathwaysDropdown() {
             const dropdown = $('#score-pathways-dropdown')
@@ -211,13 +355,13 @@
                             score = `<button type="button" class="btn btn-outline-secondary btn-sm" disabled>score:${this['score'].toFixed(4)}</button>`
                         }
                         dropdownContent.append(`
-                        <div class="dropdown-item pathway-dropdown">
-                            <p>${this['slug']} : ${this['title']}</p>
-                            <div>
-                                ${score}
-                                <button type="button" class="btn btn-primary btn-sm" data-slug="${this['slug']}">open</button>
-                            </div>
-                        </div>`)
+                    <div class="dropdown-item pathway-dropdown">
+                        <p>${this['slug']} : ${this['title']}</p>
+                        <div>
+                            ${score}
+                            <button type="button" class="btn btn-primary btn-sm" data-slug="${this['slug']}">open</button>
+                        </div>
+                    </div>`)
                     })
                     dropdown.find('.pathway-dropdown').on("click", function (event) {
                         $('#get-map').val(this.children[0].textContent)
@@ -314,11 +458,11 @@
 
                     // coverage percentage
                     let el = `
-                        <div class="dropdown-item" style="background-color: ${color}" data-toggle="collapse" href="#collapse-strains-${groupId}" role="button" aria-expanded="false" aria-controls="collapse-strains-${groupId}">
-                            ${groupId}: ${percentage} % (${covering} out of ${total})
-                            <img src="/static/global/ionicons/ios-arrow-down.svg" style="height: 1.5rem" class="float-right">
-                        </div>
-                        <div class="collapse" id="collapse-strains-${groupId}" style="margin: 0 0.2rem 1rem 0.2rem">
+                    <div class="dropdown-item" style="background-color: ${color}" data-toggle="collapse" href="#collapse-strains-${groupId}" role="button" aria-expanded="false" aria-controls="collapse-strains-${groupId}">
+                        ${groupId}: ${percentage} % (${covering} out of ${total})
+                        <img src="/static/global/ionicons/ios-arrow-down.svg" style="height: 1.5rem" class="float-right">
+                    </div>
+                    <div class="collapse" id="collapse-strains-${groupId}" style="margin: 0 0.2rem 1rem 0.2rem">
 `
 
                     // covering genomes
@@ -352,13 +496,13 @@
                 const tag = (annoType === 'ignore') ? "<div class='annotation ogb-tag' data-annotype='fake'>" + this['name'] + "</div>" : `<div class="annotation ogb-tag" onclick="console.log('input', event, this);showAnnotationClickMenu(event, 'auto', '#map-context-menu', '#map-context-menu .positive' )" data-annotype="${annoType}" title="${description}">${this['name']}</div>`
 
                 let el = `
-                    <div style="display: inline-flex">
-                        <div class="anno-dropdown-item dropdown-item context-menu-icon context-menu-icon-annotation">${tag}${(isCovered) ? ' (' + nCovered.join(':') + ')' : ''}</div>
-                        <div class="btn-group dropabrowright">
-                            <button class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="font-size: 1rem; padding: 0rem 0.8rem;"></button>
-                            <div class="dropdown-menu" style="width: 400px">
-                            <h6 class="dropdown-header context-menu-header">Description</h6>
-                            <a class="dropdown-item context-menu-icon context-menu-icon-copy" style="display: flex; flex-wrap: wrap; white-space: break-spaces;">${description}</a>`
+                <div style="display: inline-flex">
+                    <div class="anno-dropdown-item dropdown-item context-menu-icon context-menu-icon-annotation">${tag}${(isCovered) ? ' (' + nCovered.join(':') + ')' : ''}</div>
+                    <div class="btn-group dropabrowright">
+                        <button class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="font-size: 1rem; padding: 0rem 0.8rem;"></button>
+                        <div class="dropdown-menu" style="width: 400px">
+                        <h6 class="dropdown-header context-menu-header">Description</h6>
+                        <a class="dropdown-item context-menu-icon context-menu-icon-copy" style="display: flex; flex-wrap: wrap; white-space: break-spaces;">${description}</a>`
 
                 if (isCovered) {
                     for (const [groupId, genomes] of Object.entries(dataGenomes)) {
@@ -366,15 +510,15 @@
                         nCovered.push(this['organisms'][groupId]['covering'].size)
 
                         el += `
-                            <h6 class="dropdown-header context-menu-header">Positive genomes ${groupId}</h6>
-                            <div class="read-only-div"> ${create_read_only_genome_div(Array.from(this['organisms'][groupId]['covering']), local_genome_to_species, 'positive', '#map-context-menu').html()} </div>`
+                        <h6 class="dropdown-header context-menu-header">Positive genomes ${groupId}</h6>
+                        <div class="read-only-div"> ${create_read_only_genome_div(Array.from(this['organisms'][groupId]['covering']), local_genome_to_species, 'positive', '#map-context-menu').html()} </div>`
 
                     }
                 }
 
                 el += `
-        </div>
     </div>
+</div>
 </div>`
                 cm.appendElement(el)
             })
@@ -389,10 +533,10 @@
                 }
 
                 cm.appendElement(`
-                    <h6 class="dropdown-header context-menu-header">Positive genomes</h6>
-                    <div class="read-only-div"> ${create_read_only_genome_div(Array.from(allCovering), local_genome_to_species, 'positive', '#map-context-menu').html()} </div>
-                    <h6 class="dropdown-header context-menu-header">Negative genomes</h6>
-                    <div class="read-only-div"> ${create_read_only_genome_div(Array.from(allNotCovering), local_genome_to_species, 'negative', '#map-context-menu').html()} </div>`
+                <h6 class="dropdown-header context-menu-header">Positive genomes</h6>
+                <div class="read-only-div"> ${create_read_only_genome_div(Array.from(allCovering), local_genome_to_species, 'positive', '#map-context-menu').html()} </div>
+                <h6 class="dropdown-header context-menu-header">Negative genomes</h6>
+                <div class="read-only-div"> ${create_read_only_genome_div(Array.from(allNotCovering), local_genome_to_species, 'negative', '#map-context-menu').html()} </div>`
                 )
             }
 
