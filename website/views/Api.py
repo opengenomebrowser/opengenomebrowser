@@ -5,7 +5,7 @@ import itertools
 from collections import Counter
 
 from website.models import GenomeContent, Genome, PathwayMap, Gene, TaxID, GenomeSimilarity, Annotation, annotation_types
-from website.models.Tree import TaxIdTree, AniTree, OrthofinderTree, TreeNotDoneError
+from website.models.Tree import TaxIdTree, AniTree, OrthofinderTree, TreeNotDoneError, TreeFailedError
 from django.db.models.functions import Concat
 from django.db.models import CharField, Value as V
 
@@ -460,7 +460,9 @@ class Api:
             tree = METHOD(objs)
             result = dict(method=method, newick=tree.newick, color_dict=species_dict)
         except TreeNotDoneError as e:
-            return JsonResponse(dict(status='still_running', message=e.message), status=409)  # 409 = conflict
+            return JsonResponse(dict(status='still_running', message=e.message), status=408)  # 408 = request timeout
+        except TreeFailedError as e:
+            return JsonResponse(dict(status='still_running', message=e.message), status=500)  # 500 = internal server error
 
         if hasattr(tree, 'distance_matrix'):
             result['distance-matrix'] = tree.distance_matrix.to_csv()

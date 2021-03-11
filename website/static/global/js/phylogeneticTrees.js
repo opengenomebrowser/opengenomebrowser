@@ -48,7 +48,7 @@ function loadTree(genomes, method, target, newick_target, type, layout, mode, ca
                     branchNodes: false,
                     leafLabels: true,
                     branchLabels: true,
-                    branchDistances: method !== 'taxid',
+                    branchDistances: false,
                     ruler: false,
                     vStretch: 0.9,
                 })
@@ -90,15 +90,18 @@ function loadTree(genomes, method, target, newick_target, type, layout, mode, ca
             callback(tree)
         },
         error: function (data) {
-            if (data.status === 409) {
-                // still calculating...
-                console.log('still calculating', data.responseJSON.message, data)
+            $(target).empty()
 
-                $(target).empty()
-                $(target).append($('<p>', {
-                    class: "error-message",
-                    text: data.responseJSON.message
-                }))
+            const status = 'responseJSON' in data && 'status' in data.responseJSON ? data.responseJSON.status : ''
+            const message = 'responseJSON' in data && 'message' in data.responseJSON ? data.responseJSON.message : ''
+
+            $(target).append($('<p>', {
+                class: "error-message",
+                text: message
+            }))
+
+            if (data.status === 408) {
+                // still calculating... Try again in 7 seconds
                 $(target).append($('<div>', {
                     class: "spinner-border text-dark",
                     role: "status"
@@ -109,9 +112,10 @@ function loadTree(genomes, method, target, newick_target, type, layout, mode, ca
                     }, 7000
                 )
             } else {
+                // failure. Abort.
                 console.log('ajax-response for debugging:', data)
-                const message = 'responseJSON' in data ? data.responseJSON.status : 'no message.'
-                alert(`Failed to load ${method} tree. ${message}`)
+
+                alert(`Failed to load ${method} tree. ${status} ${message}`)
             }
 
         }

@@ -10,6 +10,11 @@ class TreeNotDoneError(Exception):
         self.message = message
 
 
+class TreeFailedError(Exception):
+    def __init__(self, message):
+        self.message = message
+
+
 class AbstractTree:
     @property
     def newick(self):
@@ -99,9 +104,13 @@ class AniTree(AbstractTree):
 
         assert n_done + n_running + n_failed == len(self.__anis)
 
-        if n_running > 0 or n_failed > 0:
-            raise TreeNotDoneError('ANI are still being calculated. ' +
-                                   F'Finished: {n_done}, running: {n_running}, failed: {n_failed}')
+        if n_failed > 0:
+            TreeFailedError('Similarity calculations failed. ' +
+                             F'Finished: {n_done}, running: {n_running}, failed: {n_failed}')
+
+        if n_running > 0:
+            raise TreeNotDoneError('Similarities are still being calculated. ' +
+                                   F'Finished: {n_done}, running: {n_running}')
 
         similarity_matrix = pd.DataFrame(
             {g1.identifier: [GenomeSimilarity.objects.get(g1, g2).similarity for g2 in self.__genomes]
@@ -138,6 +147,6 @@ class OrthofinderTree(AbstractTree):
         if status == 'R':
             raise TreeNotDoneError('Tree is still being calculated...')
         if status == 'F':
-            raise TreeNotDoneError('Tree calculation failed.')
+            raise TreeFailedError(f'Tree calculation failed. {self.__dendrogram.message}')
 
         raise AssertionError('Code should never end up here!')

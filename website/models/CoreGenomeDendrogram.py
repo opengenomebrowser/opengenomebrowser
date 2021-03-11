@@ -6,7 +6,6 @@ from plugins import calculate_core_genome_dendrogram
 from .GenomeContent import GenomeContent
 
 
-
 class DendrogramManager(models.Manager):
     def get_or_create(self, genomes, **kwargs):
         assert ORTHOFINDER_ENABLED, 'OrthoFinder is disabled!'
@@ -24,7 +23,6 @@ class DendrogramManager(models.Manager):
         new_dendrogram.save()
 
         new_dendrogram.genomes.set(genomes)
-
 
         print('calculate!')
         calculate_core_genome_dendrogram(genomes=genomes)
@@ -49,7 +47,7 @@ class CoreGenomeDendrogram(models.Model):
 
     unique_id = models.CharField(max_length=56, unique=True)  # sha224-encoded list of identifiers
 
-    newick = models.TextField()  # TextFields have an unlimited number of characters
+    newick = models.TextField()
 
     genomes = models.ManyToManyField(GenomeContent)
 
@@ -59,6 +57,8 @@ class CoreGenomeDendrogram(models.Model):
     STATUS_CHOICES = ((DONE, 'DONE'), (RUNNING, 'RUNNING'), (FAILED, 'FAILED'))
 
     status = models.CharField(max_length=1, choices=STATUS_CHOICES)
+
+    message = models.TextField(default='')
 
     @staticmethod
     def hash_genomes(genomes) -> str:

@@ -21,9 +21,12 @@ def calculate_orthofinder(genomes) -> str:
         newick = Orthofinder().run_precomputed(identifiers=identifiers)
     except Exception as e:
         dendrogram_obj = CoreGenomeDendrogram.objects.get(unique_id=CoreGenomeDendrogram.hash_genomes(genomes))
-        if dendrogram_obj.status in ['R', 'F']:
-            dendrogram_obj.status = 'F'  # FAILED
-            dendrogram_obj.save()
+        if dendrogram_obj.status == 'D':
+            return dendrogram_obj.newick
+
+        dendrogram_obj.status = 'F'  # FAILED
+        dendrogram_obj.message = str(e)
+        dendrogram_obj.save()
         print(F'OrthoFinder failed: {identifiers}')
         raise e
 
