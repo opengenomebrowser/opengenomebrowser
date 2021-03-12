@@ -68,9 +68,9 @@ class ClickMenu {
         }
         contextMenuQueue.push(this.menu_id)
 
-        // set z-index accordingly, starting at z-index 1500
+        // set z-index accordingly, starting at z-index 1031
         for (const [idx, menu_id] of Object.entries(contextMenuQueue)) {
-            document.getElementById(menu_id).style.zIndex = 1500 + idx
+            document.getElementById(menu_id).style.zIndex = 1031 + eval(idx)
         }
 
     }

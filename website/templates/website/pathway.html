@@ -33,20 +33,42 @@
 
     {% if map and groups_of_genomes %}
         <div class="sidebar-subcontent form-check form-check-inline">
-            <a>Change pathway colors:</a>
+            <div>
+                <a>Change pathway colors:</a>
+            </div>
+
+            <div>
+                <label class="form-check-label" for="color-not-covered"><a>not covered:</a></label>
+                <input class="form-check-input" type="color" id="color-not-covered" value="#808080" disabled>  <!-- grey -->
+
+                <label class="form-check-label" for="color-not-covered-toggle"> <a>transparent</a></label>
+                <input class="form-check-input" type="checkbox" value="" id="color-not-covered-toggle"
+                       onchange="document.getElementById('color-not-covered').disabled = this.checked;" checked>  <!-- transparent -->
+            </div>
+
+            <div>
+                <label class="form-check-label" for="color-gradient-start"><a>gradient start:</a></label>
+                <input class="form-check-input" type="color" id="color-gradient-start" value="#FFFF00">  <!-- yellow -->
+
+                <label class="form-check-label" for="color-gradient-end"><a>gradient end:</a></label>
+                <input class="form-check-input" type="color" id="color-gradient-end" value="#FF0000">  <!-- red -->
+            </div>
+
+            <div>
+                <label class="form-check-label" for="color-all-covered"><a>all covered:</a></label>
+                <input class="form-check-input" type="color" id="color-all-covered" value="#808080" disabled>  <!-- grey -->
+
+                <label class="form-check-label" for="color-all-covered-toggle"> <a>disabled</a></label>
+                <input class="form-check-input" type="checkbox" value="" id="color-all-covered-toggle"
+                       onchange="document.getElementById('color-all-covered').disabled = this.checked;" checked>  <!-- none -->
+            </div>
         </div>
+
         <div class="sidebar-subcontent form-check form-check-inline">
-            <label class="form-check-label" for="color-0"><a>not covered:</a></label>
-            <input class="form-check-input" type="text" id="color-0" placeholder="transparent">
-            <label class="form-check-label" for="color-1"><a>gradient start:</a></label>
-            <input class="form-check-input" type="text" id="color-1" placeholder="yellow">
-            <label class="form-check-label" for="color-1"><a>gradient end:</a></label>
-            <input class="form-check-input" type="text" id="color-2" placeholder="red">
-            <label class="form-check-label" for="color-3"><a>all covered (optional):</a></label>
-            <input class="form-check-input" type="text" id="color-3" placeholder="none">
             <button type="button" class="btn btn-danger" onclick="writeColors(defaultColors)" style="margin-right: 1rem;">
                 Reset colors
             </button>
+
             <button type="button" class="btn btn-success" onclick="applyColors()">
                 Apply colors
             </button>
@@ -175,11 +197,17 @@
 
         const initialQueries = {{ initial_queries|safe }};
 
-        const initialGenomes = [{% for magic_query_manager in magic_query_managers %}[{% for genome in magic_query_manager.all_genomes %}"{{ genome.identifier }}", {% endfor %}],{% endfor %}]
+        const initialGenomes = [{% for magic_query_manager in magic_query_managers %}[
+            {% for genome in magic_query_manager.all_genomes %}"{{ genome.identifier }}", {% endfor %}],{% endfor %}]
 
         const queryGenomes = $('#query-genomes')
 
-        const defaultColors = ['transparent', 'yellow', 'red']
+        const defaultColors = {
+            'color-not-covered': 'transparent',
+            'color-gradient-start': '#FFFF00',
+            'color-gradient-end': '#FF0000',
+            'color-all-covered': null
+        }
 
         const mapSlug = "{{ map.slug }}"
 
@@ -200,7 +228,12 @@
         })
 
         let colorPathway = function () {
-            const colors = readColors()
+            const colorDict = readColors()
+            let colors = [colorDict['color-not-covered'], colorDict['color-gradient-start'], colorDict['color-gradient-end']]
+            if (colorDict['color-all-covered']) {
+                colors.push(colorDict['color-all-covered'])
+            }
+
             {% if map and groups_of_genomes %}
                 highlightGroupsOfOrganisms(
                     document.getElementById('pathway-map-container').firstChild,  // svg
@@ -212,32 +245,44 @@
             {% endif %}
         }
 
+        function readColors() {
+            // return cookie-colors (or default colors)
+            const cookieColors = read_cookie('pathway-colors')
+            return Object.assign({}, defaultColors, cookieColors)  // overwrite missing values with default values
+        }
+
         function applyColors() {
             // read colors from input fields
-            let colors = [$('#color-0').val(), $('#color-1').val(), $('#color-2').val()]
-            const color4 = $('#color-3').val()
-            if (color4 !== 'none' && color4 !== '') {
-                colors.push(color4)
+
+            let colors = {
+                'color-not-covered': $('#color-not-covered-toggle').prop('checked') ? 'transparent' : $('#color-not-covered').val(),
+                'color-gradient-start': $('#color-gradient-start').val(),
+                'color-gradient-end': $('#color-gradient-end').val(),
+                'color-all-covered': $('#color-all-covered-toggle').prop('checked') ? null : $('#color-all-covered').val()
             }
+
             // write to cookie
             write_cookie('pathway-colors', colors, 14400)  // 10 days
             // apply colors to pathway map
             colorPathway()
         }
 
-
-        function readColors() {
-            // return cookie-colors (or default colors)
-            const cookieColors = read_cookie('pathway-colors')
-            return cookieColors === null ? defaultColors : cookieColors
-        }
-
         function writeColors(colors) {
             // write colors to input fields
-            $('#color-0').val(colors[0])
-            $('#color-1').val(colors[1])
-            $('#color-2').val(colors[2])
-            $('#color-3').val(colors.length > 3 ? colors[3] : 'none')
+            const isTransparent = colors['color-not-covered'] === 'transparent'
+            $('#color-not-covered-toggle').prop('checked', isTransparent)
+            $('#color-not-covered')
+                .val(isTransparent ? '#808080' : colors['color-not-covered'])
+                .prop('disabled', isTransparent)
+
+            $('#color-gradient-start').val(colors['color-gradient-start'])
+            $('#color-gradient-end').val(colors['color-gradient-end'])
+
+            const allCoveredColorDisabled = !colors['color-all-covered']
+            $('#color-all-covered-toggle').prop('checked', allCoveredColorDisabled)
+            $('#color-all-covered')
+                .val(allCoveredColorDisabled ? '#808080' : colors['color-all-covered'])
+                .prop('disabled', allCoveredColorDisabled)
         }
 
 
