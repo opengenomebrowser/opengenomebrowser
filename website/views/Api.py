@@ -440,14 +440,11 @@ class Api:
         elif method == 'orthofinder':
             MODEL = GenomeContent
             METHOD = OrthofinderTree
-
         else:
             return err(F"method must be either taxid', 'genome-similarity' or 'orthofinder'. Got: {method}")
 
         identifiers = set(request.POST.getlist('genomes[]'))
-
         objs = MODEL.objects.filter(identifier__in=identifiers)
-
         if not len(objs) == len(identifiers):
             found = set(objs.values_list('identifier', flat=True))
             print(F"Could not find these {type(objs.first()).__name__}s: {identifiers.difference(found)}")
@@ -460,7 +457,7 @@ class Api:
             tree = METHOD(objs)
             result = dict(method=method, newick=tree.newick, color_dict=species_dict)
         except TreeNotDoneError as e:
-            return JsonResponse(dict(status='still_running', message=e.message), status=408)  # 408 = request timeout
+            return JsonResponse(dict(status='still_running', message=e.message), status=420)  # 420 = enhance your calm (but nginx changes 408!)
         except TreeFailedError as e:
             return JsonResponse(dict(status='still_running', message=e.message), status=500)  # 500 = internal server error
 

@@ -23,7 +23,7 @@ function loadTree(genomes, method, target, newick_target, type, layout, mode, ca
         method: 'post',
         data: {'genomes[]': genomes, method: method},
         dataType: "json",
-        success: function (data) {
+        success: function (data, textStatus, xhr) {
             console.log('success!!', data)
 
             $(newick_target).val(data.newick)
@@ -89,18 +89,21 @@ function loadTree(genomes, method, target, newick_target, type, layout, mode, ca
 
             callback(tree)
         },
-        error: function (data) {
+        error: function (jqXHR, textStatus, errorThrown) {
+            console.log('jqXHR:', jqXHR)
+            console.log('textStatus:', textStatus)
+            console.log('errorThrown:', errorThrown)
             $(target).empty()
 
-            const status = 'responseJSON' in data && 'status' in data.responseJSON ? data.responseJSON.status : ''
-            const message = 'responseJSON' in data && 'message' in data.responseJSON ? data.responseJSON.message : ''
+            const status = jqXHR.responseJSON?.status || ''
+            const message = jqXHR.responseJSON?.message || ''
 
             $(target).append($('<p>', {
                 class: "error-message",
                 text: message
             }))
 
-            if (data.status === 408) {
+            if (jqXHR.status === 420) {
                 // still calculating... Try again in 7 seconds
                 $(target).append($('<div>', {
                     class: "spinner-border text-dark",
@@ -113,7 +116,7 @@ function loadTree(genomes, method, target, newick_target, type, layout, mode, ca
                 )
             } else {
                 // failure. Abort.
-                console.log('ajax-response for debugging:', data)
+                console.log('ajax-response for debugging:', jqXHR, textStatus, errorThrown)
 
                 alert(`Failed to load ${method} tree. ${status} ${message}`)
             }
