@@ -3,7 +3,7 @@ import json
 import bs4
 from django.utils.text import slugify
 from django.db import models
-from .Annotation import Annotation
+from website.models.Annotation import Annotation
 from website.models.GenomeContent import GenomeContent
 from OpenGenomeBrowser import settings
 

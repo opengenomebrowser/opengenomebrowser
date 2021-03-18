@@ -33,7 +33,7 @@ def gtm_view(request):
     This function loads the page /gene-trait-matching/
 
     :param request: may contain: ['g1[]', 'g2[]', 'alpha', 'anno_type', 'multiple_testing_method']
-    :return: rendered gene_trait_matching.html
+    :returns: rendered gene_trait_matching.html
     """
 
     context = dict(
@@ -43,7 +43,8 @@ def gtm_view(request):
         # defaults:
         default_anno_type='OL',
         default_alpha=0.1,
-        default_multiple_testing_method='fdr_bh'
+        default_multiple_testing_method='fdr_bh',
+        error_danger=[], error_warning=[]
     )
 
     anno_type_valid, alpha_valid, multiple_testing_method, genomes_g1_valid, genomes_g2_valid = False, False, False, False, False
@@ -70,7 +71,7 @@ def gtm_view(request):
             context['genome_to_species_g1'] = genome_to_species_g1
             genomes_g1_valid = True
         except Exception as e:
-            context['error_danger'] = str(e)
+            context['error_danger'].append(str(e))
 
     if contains_data(request, 'g2'):
         qs_g2 = extract_data(request, 'g2', list=True)
@@ -82,7 +83,7 @@ def gtm_view(request):
             context['genome_to_species_g2'] = genome_to_species_g2
             genomes_g2_valid = True
         except Exception as e:
-            context['error_danger'] = str(e)
+            context['error_danger'].append(str(e))
 
     if genomes_g1_valid and genomes_g2_valid:
         g1_identifiers = set(magic_query_manager_g1.all_genomes.values_list('identifier', flat=True))
@@ -90,15 +91,15 @@ def gtm_view(request):
 
         intersection = g1_identifiers.intersection(g2_identifiers)
         if len(intersection) > 0:
-            context['error_warning'] = F'The following genomes occur in both lists: {", ".join(intersection)}'
+            context['error_warning'].append(F'The following genomes occur in both lists: {", ".join(intersection)}')
         if len(g1_identifiers) == 0:
-            context['error_warning'] = 'Group 1 contains no genomes!'
+            context['error_warning'].append('Group 1 contains no genomes!')
         if len(g2_identifiers) == 0:
-            context['error_warning'] = 'Group 2 contains no genomes!'
+            context['error_warning'].append('Group 2 contains no genomes!')
 
     if all([anno_type_valid, alpha_valid, multiple_testing_method, genomes_g1_valid, genomes_g2_valid]):
         context.update(dict(
-            success='error_warning' not in context
+            success=len(context['error_warning']) == 0
         ))
 
     return render(request, 'website/gene_trait_matching.html', context)

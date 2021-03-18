@@ -481,15 +481,25 @@ def load_annotation_descriptions(anno_type: str = None, reload: bool = True) -> 
     Annotation.load_descriptions(anno_types=anno_types, reload=reload)
 
 
-def reload_blast_dbs() -> None:
+def load_blast_dbs(reload=False) -> None:
     """
-    Create all blast_dbs anew. This may be useful when NCBI changes their blast db version, for example.
+    Create missing blast_dbs.
+
+    :param reload: if True: Recreate all blast_dbs. (This may be useful when NCBI changes their blast db version.)
     """
+
+    def blast_dbs_exist(gc: GenomeContent) -> bool:
+        for f in [gc.blast_db_fna(relative=False), gc.blast_db_faa(relative=False), gc.blast_db_ffn(relative=False)]:
+            if not os.path.isfile(f):
+                return False
+        return True
+
     gcs = GenomeContent.objects.all()
     n_gcs = len(gcs)
     for i, gc in enumerate(gcs):
-        print(f'Creating blast-db {i + 1}/{n_gcs}: {gc.identifier}')
-        gc.create_blast_dbs(reload=True)
+        if reload or not blast_dbs_exist(gc):
+            print(f'Creating blast-db {i + 1}/{n_gcs}: {gc.identifier}')
+            gc.create_blast_dbs(reload=True)
 
 
 @transaction.atomic
@@ -565,7 +575,7 @@ if __name__ == "__main__":
         import_orthologs,
         send_mail,
         reload_color_css,
-        reload_blast_dbs,
+        load_blast_dbs,
         update_bokeh,
         load_annotation_descriptions,
         update_taxids,

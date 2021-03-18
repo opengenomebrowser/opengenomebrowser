@@ -29,7 +29,10 @@ choice_to_settings = dict(
 
 
 def blast_view(request):
-    context = dict(title='Blast')
+    context = dict(
+        title='Blast',
+        error_danger=[], error_warning=[]
+    )
 
     context['genome_to_species'] = '{}'
 
@@ -41,7 +44,7 @@ def blast_view(request):
             context['magic_query_manager'] = magic_query_manager
             context['genome_to_species'] = magic_query_manager.genome_to_species()
         except ValueError as e:
-            context['error_danger'] = str(e)
+            context['error_danger'].append(str(e))
 
     return render(request, 'website/blast.html', context)
 
@@ -73,6 +76,7 @@ def blast_submit(request):
     try:
         blast_output = blast.blast(fasta_string=query, db=fasta_files, mode=blast_algorithm)
     except Exception as e:
+        print(e)
         return HttpResponse('Blast failed. Reason:' + str(e))
 
     return HttpResponse(blast_output, content_type="text/plain")

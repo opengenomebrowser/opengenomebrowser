@@ -2,7 +2,7 @@
 
 function calcColorArray(nSteps, colors) {
     if (nSteps === 1) {
-        return [colors[0], colors[colors.length-1]]
+        return [colors[0], colors[colors.length - 1]]
     } else {
         if (colors.length === 4) {
             return [colors[0]].concat(chroma.scale([colors[1], colors[2]]).mode('lch').colors(nSteps - 1)).concat([colors[3]])
@@ -387,11 +387,10 @@ function saveUriAs(uri, filename) {
 /**
  * Save a map as png, opens save-as dialog
  *
- * @param  {String} elementId Element ID of div to save as png
- * @param filename default: download.png
+ * @param {Element} element Element to be saved
+ * @param {String} filename default: download.png
  */
-function savePng(elementId, filename='download.png') {
-    const element = document.getElementById(elementId)
+function savePng(element, filename = 'download.png') {
     $(window).scrollTop(0)  // otherwise, png will be cropped.
     html2canvas(element).then(function (canvas) {
         saveUriAs(canvas.toDataURL(), filename)
@@ -401,14 +400,13 @@ function savePng(elementId, filename='download.png') {
 /**
  * Save a map as svg, opens save-as dialog
  *
- * @param elementId {String} elementId Element ID of div that contains an svg to download
- * @param filename default: download.svg
+ * @param {Element} element SVG element to be saved
+ * @param {String} filename default: download.png
  */
-function saveSvg(elementId, filename='download.svg') {
-    const svg = $('#' + elementId).find('svg')[0]
+function saveSvg(element, filename = 'download.svg') {
     //serialize svg.
     let serializer = new XMLSerializer()
-    let data = serializer.serializeToString(svg)
+    let data = serializer.serializeToString(element)
 
     data = encodeURIComponent(data)
 

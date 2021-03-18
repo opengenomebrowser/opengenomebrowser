@@ -164,22 +164,22 @@
 
 <section>
     <!-- warning or danger messages -->
-    {% if error_warning %}
+    {% for error in error_warning %}
         <!-- warning -->
         <div class="container black-links">
             <div class="alert alert-warning" role="alert">
-                {{ error_warning }}
+                {{ error }}
             </div>
         </div>
-    {% endif %}
-    {% if error_danger %}
+    {% endfor %}
+    {% for error in error_danger %}
         <!-- danger -->
         <div class="container black-links">
             <div class="alert alert-danger" role="alert">
-                {{ error_danger }}
+                {{ error }}
             </div>
         </div>
-    {% endif %}
+    {% endfor %}
 </section>
 
 {% block body %}{% endblock %}

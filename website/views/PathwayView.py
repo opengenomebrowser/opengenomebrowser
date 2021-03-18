@@ -10,7 +10,7 @@ type_dict = PathwayMap._get_type_dict()
 
 
 def pathway_view(request):
-    context = dict(title='Pathways')
+    context = dict(title='Pathways', error_danger=[], error_warning=[])
 
     map: PathwayMap = None
     map_is_valid = False
@@ -26,15 +26,15 @@ def pathway_view(request):
             context['map'] = map
             map_is_valid = True
         except PathwayMap.DoesNotExist:
-            context['error_danger'] = F'Could not find map by slug: {map_slug}.'
+            context['error_danger'].append(F'Could not find map by slug: {map_slug}.')
 
     magic_query_managers = []
     genome_to_species = {}
 
-    try:
-        groups_of_genomes = {}
-        i = 1
-        while contains_data(request, key=f'g{i}'):
+    groups_of_genomes = {}
+    i = 1
+    while contains_data(request, key=f'g{i}'):
+        try:
             group_id = f'g{i}'
             qs = set(extract_data(request, key=group_id, list=True))
             magic_query_manager = MagicQueryManager(queries=qs)
@@ -50,12 +50,12 @@ def pathway_view(request):
                 groups_of_genomes[f'g{i}'] = organism_to_annotations
 
             i += 1
+        except Exception:
+            context['error_danger'].append(F'Failed to extract genomes from group {i}.')
+            groups_of_genomes = {}
+            break
 
-        context['groups_of_genomes'] = groups_of_genomes
-
-    except Exception as e:
-        import traceback
-        context['error_danger'] = F'Error: {e} :: {traceback.format_exc()}'
+    context['groups_of_genomes'] = groups_of_genomes
 
     context['magic_query_managers'] = magic_query_managers
     context['initial_queries'] = [list(m.queries) for m in magic_query_managers]

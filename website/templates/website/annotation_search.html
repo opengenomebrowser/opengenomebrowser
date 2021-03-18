@@ -87,7 +87,13 @@
     </section>
 
     <section style="padding-top: 1rem">
-        <div id="annotation-matrix-container"></div>
+        <div id="annotation-matrix-container">
+            <div style="display:flex; justify-content: center;">
+                <div id="gene-loci-spinner" class="spinner-border text-dark" role="status" hidden>
+                    <span class="sr-only">Loading...</span>
+                </div>
+            </div>
+        </div>
     </section>
 
 
@@ -171,10 +177,12 @@
         }
 
         async function loadTable(annotations, genomes) {
-            if (annotations.length === 0 && genomes.length === 0) {
+            if (annotations.length === 0 || genomes.length === 0) {
                 console.log('no annotations or no genomes!')
                 return
             }
+
+            $('#gene-loci-spinner').attr('hidden', false)
 
             await $('#annotation-matrix-container').load('{% url "website:annotation-search-matrix" %}', {
                     annotations: annotations,

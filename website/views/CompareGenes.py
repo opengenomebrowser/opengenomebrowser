@@ -9,7 +9,10 @@ from website.views.helpers.extract_requests import contains_data, extract_data
 class CompareGenes:
     @staticmethod
     def compare(request):
-        context = dict(title='Compare Genes')
+        context = dict(
+            title='Compare Genes',
+            error_danger=[], error_warning=[]
+        )
 
         context['anno_types'] = annotation_types.values()
 
@@ -42,6 +45,6 @@ class CompareGenes:
         context['n_genes'] = n_genes
 
         if n_genes > 20:
-            context['error_warning'] = F'Queries with {n_genes} genes may be slow - consider comparing fewer.'
+            context['error_warning'].append(F'Queries with {n_genes} genes may be slow - consider comparing fewer.')
 
         return render(request, 'website/compare_genes.html', context)

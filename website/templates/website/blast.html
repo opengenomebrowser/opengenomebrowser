@@ -7,6 +7,7 @@
     <link rel="stylesheet" type="text/css" href="{% static 'global/css/taxid_color.css' %}" id="taxid-color-stylesheet"/>
     <link rel="stylesheet" type="text/css" href="{% static 'global/css/tag_color.css' %}"/>
     <script src="{% static 'global/js/query-groups.js' %}"></script>
+    <link rel="stylesheet" type="text/css" href="{% static 'blast/css/blast.css' %}">
 
     <!-- autocomplete -->
     <link href="{% static 'global/css/jquery.tag-editor.css' %}" rel="stylesheet"/>
@@ -17,6 +18,7 @@
     {{ form.media }}
 
     <!-- blasterjs -->
+    <script src="{% static 'blast/js/html2canvas-0.4.1.js' %}"></script>
     <script src="{% static 'global/js/blaster.min.js' %}"></script>
 
 {% endblock %}
@@ -208,7 +210,6 @@
                     })
                 })
             })
-            return false
         }
 
     </script>
