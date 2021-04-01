@@ -23,7 +23,7 @@ It is also possible to [select multiple groups](https://opengenomebrowser.bioinf
 Click on a shape to learn which genomes cover the contained annotations.
 
 Click on a covered annotation, then on ` Compare the genes of this annotation` to see [sequence alignments or 
-compare the gene loci](compare-genes.md).
+compare the gene loci](compare-genes.html).
 
 The resulting colored pathway map can be downloaded by clicking on the settings wheel, and then on `Save as PNG`
 or `Save as SVG`.
