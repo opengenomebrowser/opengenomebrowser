@@ -79,7 +79,7 @@ def score_pathway_maps(request):
 
     for group_id in group_ids:
         try:
-            qs = set(extract_data(request, key=group_id, list=True))
+            qs = set(request.POST.getlist(group_id))
             magic_query_manager = MagicQueryManager(queries=qs)
         except Exception as e:
             return JsonResponse(dict(success='false', result=e.message))

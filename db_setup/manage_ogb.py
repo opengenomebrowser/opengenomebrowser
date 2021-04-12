@@ -514,29 +514,30 @@ def update_taxids(download_taxdump: bool = False) -> None:
         from lib.get_tax_info.get_tax_info import GetTaxInfo
         GetTaxInfo().update_ncbi_taxonomy_from_web()
 
-    organisms = Organism.objects.all()
+    with transaction.atomic():
+        organisms = Organism.objects.all()
 
-    print('sanity check: metadata taxid must be same as db taxid')
-    for o in organisms:
-        metadata_taxid = json.load(open(o.metadata_json))['taxid']
-        db_taxid = o.taxid.id
-        assert metadata_taxid == db_taxid, f'{o} has inconsistent taxid metadata: in db: {db_taxid}, in json: {metadata_taxid}'
+        print('sanity check: metadata taxid must be same as db taxid')
+        for o in organisms:
+            metadata_taxid = json.load(open(o.metadata_json))['taxid']
+            db_taxid = o.taxid.id
+            assert metadata_taxid == db_taxid, f'{o} has inconsistent taxid metadata: in db: {db_taxid}, in json: {metadata_taxid}'
 
-    print('set taxid to taxid 1 (root)')
-    root_taxid = TaxID.objects.get(id=1)
-    organisms.update(taxid=root_taxid)
+        print('set taxid to taxid 1 (root)')
+        root_taxid = TaxID.objects.get(id=1)
+        organisms.update(taxid=root_taxid)
 
-    print('remove all other taxids')
-    TaxID.objects.exclude(id=1).delete()
+        print('remove all other taxids')
+        TaxID.objects.exclude(id=1).delete()
 
-    print('recreate taxids')
-    for o in organisms:
-        metadata_taxid = json.load(open(o.metadata_json))['taxid']
-        o.taxid = TaxID.get_or_create(taxid=metadata_taxid)
+        print('recreate taxids')
+        for o in organisms:
+            metadata_taxid = json.load(open(o.metadata_json))['taxid']
+            o.taxid = TaxID.get_or_create(taxid=metadata_taxid)
 
-    print('update organisms')
-    Organism.objects.bulk_update(organisms, ['taxid'])
-    print('done')
+        print('update organisms')
+        Organism.objects.bulk_update(organisms, ['taxid'])
+        print('done')
 
 
 def postgres_vacuum(full: bool = True):
