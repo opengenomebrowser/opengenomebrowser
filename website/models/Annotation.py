@@ -173,7 +173,7 @@ class Annotation(models.Model):
         with open(settings.ORTHOLOG_ANNOTATIONS) as f:
             for line_nr, line in enumerate(f, 1):
                 orthogroup, gene_ids = line.rstrip().split('\t', maxsplit=1)
-                gene_ids = [gid.rsplit('|', maxsplit=1)[1] for gid in gene_ids.split(', ')]
+                gene_ids = [gid.rsplit('|', maxsplit=1)[-1] for gid in gene_ids.split(', ')]
                 genome_ids = set(gid.rsplit('_', maxsplit=1)[0] for gid in gene_ids)
 
                 orthogroups.append(Annotation(name=orthogroup, anno_type='OL', description=get_descr(orthogroup)))
