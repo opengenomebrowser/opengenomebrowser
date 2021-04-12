@@ -80,7 +80,9 @@ class Orthofinder:
 
         # if old_identifiers == identifiers, simply return the already-computed newick tree.
         if old_identifiers == identifiers:
-            return open(F'{orthofinder_fastas}/fastas/OrthoFinder/{precomputed_folder}/Species_Tree/SpeciesTree_rooted.txt').read().strip()
+            precalculated_tree = F'{orthofinder_fastas}/fastas/OrthoFinder/{precomputed_folder}/Species_Tree/SpeciesTree_rooted.txt'
+            if os.path.isfile(precalculated_tree):
+                return open(precalculated_tree).read().strip()
 
         # raise OrthofinderError if an identifier is not amongst the precomputed fastas
         not_precomputed = identifiers.difference(old_identifiers)
@@ -102,12 +104,6 @@ class Orthofinder:
 
         # run Orthofinder
         subprocess = self.__run(['-b', precomputed_folder])
-
-        # print('XXXXXXXXXXXX')
-        # print(subprocess.stdout)
-        # print('XXXXXXXXXXXX')
-        # print(subprocess.stderr)
-        # print('XXXXXXXXXXXX')
 
         # get result_dir from stdout
         stdout = subprocess.stdout.split('\n')

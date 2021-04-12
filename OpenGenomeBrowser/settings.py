@@ -56,6 +56,8 @@ if all([var in os.environ for var in ['EMAIL_HOST', 'EMAIL_HOST_USER', 'DEFAULT_
 
 LOGIN_MESSAGE = os.environ.get('LOGIN_MESSAGE', 'Welcome to OpenGenomeBrowser!')
 
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
 HUEY_WORKERS = int(os.environ.get('HUEY_WORKERS', 4))
 
 # Application definition
