@@ -17,7 +17,7 @@ class TagAdmin(admin.ModelAdmin):
 
     def save_model(self, request, obj: Tag, form, change):
         # to change the tag name, the change would have to be propagated to all metadata json files!
-        if form.initial['tag'] != form.cleaned_data['tag']:
+        if 'tag' in form.initial and form.initial['tag'] != form.cleaned_data['tag']:
             messages.warning(request, messages.INFO, F'Changing tag names is currently not supported.')
             return
 
