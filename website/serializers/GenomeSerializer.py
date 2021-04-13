@@ -107,7 +107,7 @@ class GenomeSerializer(serializers.ModelSerializer):
 
         # ensure data is serializable
         try:
-            json.dumps(new_data, default=serialize_fields)
+            json.dumps(new_data, cls=ComplexEncoder)
         except json.JSONDecodeError as e:
             raise AssertionError(f'Could not save dictionary as json: {e}')
 
@@ -121,16 +121,19 @@ class GenomeSerializer(serializers.ModelSerializer):
         assert not os.path.isfile(genome.metadata_json)
 
         with open(genome.metadata_json, 'w') as f:
-            json.dump(new_data, f, sort_keys=True, indent=4, default=serialize_fields)
+            json.dump(new_data, f, sort_keys=True, indent=4, cls=ComplexEncoder)
 
 
-def serialize_fields(obj):
-    if isinstance(obj, set):
-        return list(obj)
-    elif isinstance(obj, date):
-        return str(obj)
-    else:
-        raise TypeError(f'Could not serialize {obj}')
+class ComplexEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, set):
+            return list(obj)
+        if isinstance(obj, date):
+            return str(obj)
+        from decimal import Decimal
+        if isinstance(obj, Decimal):
+            return str(obj)
+        return json.JSONEncoder.default(self, obj)
 
 
 def calculate_busco_single(data):

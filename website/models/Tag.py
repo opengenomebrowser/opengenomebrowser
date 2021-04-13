@@ -8,6 +8,8 @@ from website.models.helpers import KeyValueStore
 
 class TagManager(models.Manager):
     def create(self, *args, **kwargs):
+        from lib.color_generator.ColorGenerator import ColorGenerator
+
         tag_name = kwargs['tag']
         tag_desciptions = TagDescriptions()
         tag_colors = TagColors()
@@ -22,11 +24,12 @@ class TagManager(models.Manager):
                 tag_desciptions.set_key(key=tag_name, value=description)
             kwargs['description'] = description
 
-        color = tag_colors.get_or_generate_key(key=tag_name)
-        from lib.color_generator.ColorGenerator import ColorGenerator
-        text_color_white = ColorGenerator.is_dark(color_int=color, is_float=False)
+        color_string = tag_colors.get_or_generate_color(key=tag_name)
+        color_int = ColorGenerator.import_string(color_string)
 
-        kwargs['color'] = color
+        text_color_white = ColorGenerator.is_dark(color_int=color_int, is_float=False)
+
+        kwargs['color'] = color_string
         kwargs['text_color_white'] = text_color_white
 
         return super(TagManager, self).create(*args, **kwargs)
@@ -131,11 +134,12 @@ class TagColors(KeyValueStore):
             return self.get_key(key)
         except KeyError:
             from lib.color_generator.ColorGenerator import ColorGenerator
-            color = ColorGenerator.generate_new_color_bright(
+            color_float = ColorGenerator.generate_new_color_bright(
                 brightness=1000,
-                existing_colors=self.get_dict().values(),
+                existing_colors=[ColorGenerator.import_string(c) for c in self.get_dict().values()],
                 n_iter=1000
             )
-            color_int = ColorGenerator.colors_to_int(color)
-            self.set_key(key, value=color_int)
-            return color_int
+            color_int = ColorGenerator.color_to_int(color_float)
+            color = ','.join([str(c) for c in color_int])
+            self.set_key(key, value=color)
+            return color

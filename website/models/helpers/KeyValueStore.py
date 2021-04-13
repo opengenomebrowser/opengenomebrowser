@@ -35,3 +35,18 @@ class KeyValueStore:
         tmp_dict = self.get_dict()
         tmp_dict[key] = value
         json.dump(tmp_dict, open(self._file, 'w'), indent=4)
+
+    def get_or_generate_color(self, key):
+        try:
+            return self.get_key(key)
+        except KeyError:
+            from lib.color_generator.ColorGenerator import ColorGenerator
+            color_float = ColorGenerator.generate_new_color_bright(
+                brightness=2,
+                existing_colors=[ColorGenerator.import_string(c) for c in self.get_dict().values()],
+                n_iter=1000
+            )
+            color_int = ColorGenerator.color_to_int(color_float)
+            color = ','.join([str(c) for c in color_int])
+            self.set_key(key, value=color)
+            return color

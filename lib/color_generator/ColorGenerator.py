@@ -98,13 +98,21 @@ class ColorGenerator:
 
         return existing_colors
 
-    @staticmethod
-    def colors_to_float(colors_int: [tuple[int, int, int]]) -> [tuple[float, float, float]]:
-        return [tuple(c / 255 for c in color) for color in colors_int]
+    @classmethod
+    def color_to_float(cls, color_int: tuple[int, int, int]) -> tuple[float, float, float]:
+        return tuple(c / 255 for c in color_int)
 
-    @staticmethod
-    def colors_to_int(colors: [tuple[float, float, float]]) -> [tuple[int, int, int]]:
-        return [tuple(round(c * 255) for c in color) for color in colors]
+    @classmethod
+    def colors_to_float(cls, colors_int: [tuple[int, int, int]]) -> [tuple[float, float, float]]:
+        return [cls.color_to_float(color) for color in colors_int]
+
+    @classmethod
+    def color_to_int(cls, color: tuple[float, float, float]) -> tuple[int, int, int]:
+        return tuple(round(c * 255) for c in color)
+
+    @classmethod
+    def colors_to_int(cls, colors: [tuple[float, float, float]]) -> [tuple[int, int, int]]:
+        return [cls.color_to_int(color) for color in colors]
 
     @staticmethod
     def colors_to_cmap(colors: [tuple[float, float, float]]):
@@ -132,17 +140,32 @@ class ColorGenerator:
             assert 0 <= color <= 255, f'Color malformatted: {color_int=}, {color=}'
         return color_int
 
-    @staticmethod
-    def is_dark(color_int: tuple[int, int, int], is_float: bool, threshold: int = 160) -> bool:
+    @classmethod
+    def is_dark(cls, color_int: tuple[int, int, int], is_float: bool, threshold: int = 160) -> bool:
         if is_float:
-            color_int = tuple(c * 255 for c in color_int)
+            color_int = cls.color_to_int(color_int)
         r, g, b = color_int
         luminance = sqrt(0.299 * (r ** 2) + 0.587 * (g ** 2) + 0.114 * (b ** 2))
         return luminance < threshold
 
 
 if __name__ == '__main__':
-    n_colors = 5
+    # basic function
+    colors = [(1, 1, 1)]
+    # # add bright
+    colors = ColorGenerator.get_random_colors(existing_colors=colors, n_colors=100, brightness=2)
+
+    print("Your colors:", colors)
+    print("In int format:", ColorGenerator.colors_to_int(colors))
+
+    print("Dark?", [ColorGenerator.is_dark(c, is_float=True) for c in colors])
+
+    print(ColorGenerator.import_string('3,4,5'))
+
+    ColorGenerator.show_colors(colors)
+
+
+    exit(0)
 
     # basic function
     colors = ColorGenerator.get_random_colors(n_colors=n_colors)
