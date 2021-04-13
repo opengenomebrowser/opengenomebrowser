@@ -117,7 +117,9 @@ class TagDescriptions:
             json.dump({}, open(self.description_file, 'w'))
 
     def get_dict(self) -> dict:
-        return json.load(open(self.description_file))
+        if os.path.isfile(self.description_file):
+            return json.load(open(self.description_file))
+        return {}
 
     def get_key(self, key) -> str:
         tmp_dict = self.get_dict()

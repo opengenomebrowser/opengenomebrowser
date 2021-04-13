@@ -41,7 +41,7 @@ PROTEIN_FASTA_ENDINGS = os.environ.get('PROTEIN_FASTA_ENDINGS')
 
 # genomes table: default columns
 if 'DEFAULT_COLUMNS' in os.environ:
-    DEFAULT_GENOMES_COLUMNS = [os.environ.get('DEFAULT_COLUMNS').split(',')]
+    DEFAULT_GENOMES_COLUMNS = os.environ.get('DEFAULT_COLUMNS').split(',')
 else:
     DEFAULT_GENOMES_COLUMNS = ["organism.name", "identifier", "organism.taxid.taxscientificname", "sequencing_tech"]
 

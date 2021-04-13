@@ -76,8 +76,9 @@ class GlasbeyWrapper:
             with open(color_json_path, 'r') as f:
                 color_json = json.load(f)
         else:
-            open(color_json_path, 'a').close()
             color_json = {"tag_to_color": {}, "non_assigned_colors": []}
+            with open(color_json_path, 'w') as f:
+                json.dump(color_json, f)
 
         if tag in color_json["tag_to_color"]:
             color = color_json["tag_to_color"][tag]["color"]
@@ -96,7 +97,7 @@ class GlasbeyWrapper:
 
             # add 30 visually distinct colors to non_assigned_colors
             from .glasbey import Glasbey
-            gb = Glasbey(base_palette=used_colors, chroma_range=(50,100))
+            gb = Glasbey(base_palette=used_colors, chroma_range=(50, 100))
             new_colors = gb.convert_palette_to_rgb(gb.generate_palette(len(used_colors) + 30))[-30:]
             new_colors = [str(a) + "," + str(b) + "," + str(c) for a, b, c in new_colors]
             color_json['non_assigned_colors'] = new_colors
