@@ -42,8 +42,6 @@ docs/_build/
 
 # MY CUSTOM ADDITIONS
 .idea/
-# Generated Glasbey color lookup table
-*_lut.npz
 
 species_color_dict.json
 

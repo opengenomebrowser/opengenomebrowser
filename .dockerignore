@@ -42,8 +42,6 @@ docs/_build/
 
 # MY CUSTOM ADDITIONS
 .idea/
-# Generated Glasbey color lookup table
-*_lut.npz
 
 website/static/global/css/tag_color.css
 website/static/global/css/taxid_color.css

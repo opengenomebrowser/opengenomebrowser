@@ -1,14 +1,16 @@
+import os
 from django.db import models
 from django.db.models import Q
 from django.db.utils import ProgrammingError
 from OpenGenomeBrowser import settings
-import json
-import os
+from website.models.helpers import KeyValueStore
 
 
 class TagManager(models.Manager):
     def create(self, *args, **kwargs):
         tag_name = kwargs['tag']
+        tag_desciptions = TagDescriptions()
+        tag_colors = TagColors()
 
         if 'description' in kwargs and kwargs['description'] is not None:
             tag_desciptions.set_key(key=tag_name, value=kwargs['description'])
@@ -20,8 +22,9 @@ class TagManager(models.Manager):
                 tag_desciptions.set_key(key=tag_name, value=description)
             kwargs['description'] = description
 
-        from lib.tax_id_to_color.glasbey_wrapper import GlasbeyWrapper
-        color, text_color_white = GlasbeyWrapper.get_color_from_tag(tag=tag_name)
+        color = tag_colors.get_or_generate_key(key=tag_name)
+        from lib.color_generator.ColorGenerator import ColorGenerator
+        text_color_white = ColorGenerator.is_dark(color_int=color, is_float=False)
 
         kwargs['color'] = color
         kwargs['text_color_white'] = text_color_white
@@ -110,25 +113,29 @@ class Tag(models.Model):
         return True
 
 
-class TagDescriptions:
-    def __init__(self):
-        self.description_file = F'{settings.GENOMIC_DATABASE}/tag_to_description.json'
-        if not os.path.isfile(self.description_file):
-            json.dump({}, open(self.description_file, 'w'))
-
-    def get_dict(self) -> dict:
-        if os.path.isfile(self.description_file):
-            return json.load(open(self.description_file))
-        return {}
-
-    def get_key(self, key) -> str:
-        tmp_dict = self.get_dict()
-        return tmp_dict[key]
-
-    def set_key(self, key, value):
-        tmp_dict = self.get_dict()
-        tmp_dict[key] = value
-        json.dump(tmp_dict, open(self.description_file, 'w'), indent=4)
+class TagDescriptions(KeyValueStore):
+    _file = F'{settings.GENOMIC_DATABASE}/tag_to_description.json'
+    _model = Tag
+    _key = 'tag'
+    _value = 'description'
 
 
-tag_desciptions = TagDescriptions()
+class TagColors(KeyValueStore):
+    _file = F'{settings.GENOMIC_DATABASE}/tag_to_color.json'
+    _model = Tag
+    _key = 'tag'
+    _value = 'color'
+
+    def get_or_generate_key(self, key):
+        try:
+            return self.get_key(key)
+        except KeyError:
+            from lib.color_generator.ColorGenerator import ColorGenerator
+            color = ColorGenerator.generate_new_color_bright(
+                brightness=1000,
+                existing_colors=self.get_dict().values(),
+                n_iter=1000
+            )
+            color_int = ColorGenerator.colors_to_int(color)
+            self.set_key(key, value=color_int)
+            return color_int

@@ -21,7 +21,7 @@ def err(error_message, status=500):
     return JsonResponse(dict(success='false', message=error_message), status=status)
 
 
-UNIQUE_COLORS_HEX = json.load(open('lib/tax_id_to_color/300_different_colors.txt'))
+UNIQUE_COLORS_HEX = json.load(open('lib/color_generator/300_different_colors.txt'))
 
 
 class Api:

@@ -1,6 +1,3 @@
-[submodule "lib/tax_id_to_color/glasbey"]
-	path = lib/tax_id_to_color/glasbey
-	url = https://github.com/taketwo/glasbey
 [submodule "lib/get_tax_info"]
 	path = lib/get_tax_info
 	url = https://gitlab.bioinformatics.unibe.ch/troder/get_tax_info

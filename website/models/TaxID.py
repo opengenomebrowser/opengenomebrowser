@@ -3,6 +3,7 @@ from OpenGenomeBrowser import settings
 from django.db import models
 from mptt.models import MPTTModel, TreeForeignKey
 from django.db.models.query import QuerySet
+from website.models.helpers import KeyValueStore
 
 
 class TaxID(MPTTModel):
@@ -75,14 +76,16 @@ class TaxID(MPTTModel):
             return TaxID.objects.get(id=taxid)
 
         except TaxID.DoesNotExist:
-            from lib.tax_id_to_color.glasbey_wrapper import GlasbeyWrapper
+            from lib.color_generator.ColorGenerator import ColorGenerator
             from lib.get_tax_info.get_tax_info import GetTaxInfo
             from lib.get_tax_info.get_tax_info import TaxID as RawTaxID
             RawTaxID.gti = GetTaxInfo()
+            taxid_colors = TaxIdColors()
 
             if taxid == 1:  # create root node without parent
                 t = RawTaxID(taxid=1)
-                color, text_color_white = GlasbeyWrapper.get_color_from_taxid(t.taxid, t.scientific_name)
+                color = taxid_colors.get_or_generate_key(key=1)
+                text_color_white = ColorGenerator.is_dark(color_int=color, is_float=False)
                 root_node = TaxID(id=1,
                                   taxscientificname=t.scientific_name,
                                   rank=t.rank,
@@ -95,7 +98,8 @@ class TaxID(MPTTModel):
             else:  # create regular node
                 t = RawTaxID(taxid=taxid)
                 parent = TaxID.get_or_create(taxid=t.parent_taxid)
-                color, text_color_white = GlasbeyWrapper.get_color_from_taxid(taxid, t.scientific_name)
+                color = taxid_colors.get_or_generate_key(key=taxid)
+                text_color_white = ColorGenerator.is_dark(color_int=color, is_float=False)
                 # create new NCBI_TaxID
                 tid = TaxID(
                     id=taxid,
@@ -188,3 +192,25 @@ class TaxID(MPTTModel):
             file = F'{basepath}/taxid_color_label.css'
             os.makedirs(os.path.dirname(file), exist_ok=True)
             open(file, 'w').write(svg_css)
+
+
+class TaxIdColors(KeyValueStore):
+    _file = F'{settings.GENOMIC_DATABASE}/taxid_color_dict.json'
+    _model = TaxID
+    _key = 'id'
+    _key_isint = True
+    _value = 'color'
+
+    def get_or_generate_key(self, key):
+        try:
+            return self.get_key(key)
+        except KeyError:
+            from lib.color_generator.ColorGenerator import ColorGenerator
+            color_float = ColorGenerator.generate_new_color_bright(
+                brightness=1000,
+                existing_colors=self.get_dict().values(),
+                n_iter=1000
+            )
+            color_int = ColorGenerator.colors_to_int(color_float)
+            self.set_key(key, value=color_int)
+            return color_int
