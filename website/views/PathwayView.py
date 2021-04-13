@@ -73,7 +73,7 @@ def score_pathway_maps(request):
     groups_of_genomes = {}
 
     i = 1
-    while contains_data(request, key=f'g{i}[]'):
+    while f'g{i}[]' in request.POST:
         group_ids.append(f'g{i}[]')
         i += 1
 

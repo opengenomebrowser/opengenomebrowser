@@ -29,7 +29,7 @@ class Genome(models.Model):
     env_broad_scale = JSONField(default=list, blank=True, null=True)
     env_local_scale = JSONField(default=list, blank=True, null=True)
     env_medium = JSONField(default=list, blank=True, null=True)
-    growth_condition = models.CharField('Growth vondition', max_length=100, null=True, blank=True)
+    growth_condition = models.CharField('Growth condition', max_length=100, null=True, blank=True)
     geographical_coordinates = models.CharField('Geographical coordinates', max_length=200, null=True, blank=True)
     geographical_name = models.CharField('Geographical name', max_length=50, null=True, blank=True)
 
