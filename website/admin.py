@@ -8,6 +8,7 @@ from django.core.exceptions import ValidationError
 from prettyjson import PrettyJSONWidget
 import json
 from dictdiffer import diff
+from datetime import date
 
 
 class TagAdmin(admin.ModelAdmin):
@@ -71,8 +72,13 @@ class OrganismAdmin(admin.ModelAdmin):
             messages.add_message(request, messages.INFO, F'Representative ({json_data["representative"]}) does not belong to this organism!')
             return
 
+        # load current json, turn tags into set
+        old_dict = json.load(open(obj.metadata_json))
+        old_dict['tags'] = set(old_dict['tags'])
+
         # did something change?
-        match, difference = OrganismSerializer.json_matches_organism(organism=obj.name, json_dict=json_data)
+        difference = list(diff(json_data, old_dict))
+        match = len(difference) == 0
 
         if match:
             messages.add_message(request, messages.INFO, 'No difference!')
@@ -123,10 +129,18 @@ class GenomeAdmin(admin.ModelAdmin):
         for field in self.readonly_fields:
             assert field not in json_data
             json_data[field] = getattr(obj, field)
+        for field, data in json_data.items():
+            if type(data) is date:
+                # convert dates in to strings
+                json_data[field] = str(data)
 
+        # load current json, turn tags into set
         old_dict = json.load(open(obj.metadata_json))
+        old_dict['tags'] = set(old_dict['tags'])
+
         # did something change?
-        match, difference = GenomeSerializer.json_matches_genome(genome=obj, json_dict=old_dict, organism_name=obj.organism.name)
+        difference = list(diff(json_data, old_dict))
+        match = len(difference) == 0
 
         if match:
             messages.add_message(request, messages.INFO, 'No difference!')
