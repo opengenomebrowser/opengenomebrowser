@@ -149,6 +149,11 @@ class MockGenome(BaseEntity):
 
         genome_metadata_is_valid(data=self.json, path_to_genome=self.path, raise_exception=True)
 
+        with open(f'{self.path}/{self.json["cds_tool_faa_file"]}') as f:
+            first_gene = f.readline().lstrip('>')
+            first_gene = first_gene.split(' ', 1)[0].rsplit('|', 1)[-1]
+            assert first_gene.startswith(f'{self.identifier}_'), f'Gene identifiers must begin with {self.identifier} :: {first_gene}'
+
         genome_serializer = GenomeSerializer(data=self.json)
         genome_serializer.is_valid(raise_exception=True)
 

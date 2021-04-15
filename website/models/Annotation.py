@@ -170,6 +170,19 @@ class Annotation(models.Model):
             def get_descr(query):
                 return '-'
 
+        def load():
+            print(F'Step 3, batch {line_nr // batch_size}:', end=' ', flush=True)
+            # Create Annotation-Objects
+            print(F'+{len(orthogroups)} orthogroups', end=' ', flush=True)
+            Annotation.objects.bulk_create(orthogroups)
+
+            # Create many-to-many relationships
+            print(F'+{len(genomecontent_to_ortholog_links)} orthogroups-to-genomes.', end=' ', flush=True)
+            GenomeContent.annotations.through.objects.bulk_create(genomecontent_to_ortholog_links)
+
+            print(F'+{len(gene_to_ortholog_links)} orthogroups-to-genes.')
+            Gene.annotations.through.objects.bulk_create(gene_to_ortholog_links)
+
         with open(settings.ORTHOLOG_ANNOTATIONS) as f:
             for line_nr, line in enumerate(f, 1):
                 orthogroup, gene_ids = line.rstrip().split('\t', maxsplit=1)
@@ -195,23 +208,15 @@ class Annotation(models.Model):
                 )
 
                 if line_nr % batch_size == 0:
-                    print(F'Step 3, batch {line_nr // batch_size}:', end=' ', flush=True)
-                    # Create Annotation-Objects
-                    print(F'+{len(orthogroups)} orthogroups', end=' ', flush=True)
-                    Annotation.objects.bulk_create(orthogroups)
-
-                    # Create many-to-many relationships
-                    print(F'+{len(genomecontent_to_ortholog_links)} orthogroups-to-genomes.', end=' ', flush=True)
-                    GenomeContent.annotations.through.objects.bulk_create(genomecontent_to_ortholog_links)
-
-                    print(F'+{len(gene_to_ortholog_links)} orthogroups-to-genes.')
-                    Gene.annotations.through.objects.bulk_create(gene_to_ortholog_links)
+                    load()  # load batch
 
                     orthogroups = []
                     genomecontent_to_ortholog_links = []
                     gene_to_ortholog_links = []
 
-        print('Success.')
+        load()  # load last batch
+        n_imported = Annotation.objects.filter(anno_type='OL').count()
+        print(f'Success: Imported {n_imported} ortholog annotations.')
 
     @staticmethod
     def get_annotype_css_paths():

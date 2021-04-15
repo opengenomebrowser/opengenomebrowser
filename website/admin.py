@@ -134,6 +134,13 @@ class GenomeAdmin(admin.ModelAdmin):
                 # convert dates in to strings
                 json_data[field] = str(data)
 
+        from db_setup.check_metadata import genome_metadata_is_valid
+        try:
+            assert genome_metadata_is_valid(data=json_data, path_to_genome=obj.base_path(relative=False), raise_exception=True), 'check_metadata raised an error'
+        except Exception as e:
+            messages.add_message(request, messages.INFO, F'Something is wrong with your data: {str(e)}')
+            return
+
         # load current json, turn tags into set
         old_dict = json.load(open(obj.metadata_json))
         old_dict['tags'] = set(old_dict['tags'])
