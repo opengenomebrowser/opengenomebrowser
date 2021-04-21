@@ -43,6 +43,9 @@ urlpatterns = [
     # ex: /trees/?genomes={organism1}+{organism2}
     path('trees/', Trees.trees, name='trees'),
 
+    # ex: /trees/?genomes={organism1}+{organism2}
+    path('dotplot/', Dotplot.dotplot_view, name='dotplot'),
+
     # ex: /compare-genes/?genes={gene 1}+{gene 2}
     path('compare-genes/', CompareGenes.compare, name='compare-genes'),
 
@@ -77,6 +80,7 @@ urlpatterns = [
     path('api/align/', Api.align, name='api-align'),
     path('api/get-gene/', Api.get_gene, name='api-get-gene'),
     path('api/get-tree/', Api.get_tree, name='api-get-tree'),
+    path('api/get-dotplot/', get_dotplot, name='api-get-dotplot'),
     path('api/score-pathway-maps/', PathwayView.score_pathway_maps, name='api-score-pathway-maps'),
 
     # ex /test-click-menu/

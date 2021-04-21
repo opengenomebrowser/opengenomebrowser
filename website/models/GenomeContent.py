@@ -101,7 +101,7 @@ class GenomeContent(models.Model):
 
     def load_genome(self):
         from .Gene import Gene
-        from Bio import SeqIO, SeqRecord
+        from Bio import SeqIO
         print("       (re)loading gbk")
         self.wipe_data()
 

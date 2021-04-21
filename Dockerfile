@@ -13,6 +13,15 @@ tar -xvf OrthoFinder_source.tar.gz && \
 mv OrthoFinder_source /opt/ && \
 rm OrthoFinder_source.tar.gz
 
+RUN wget --quiet https://github.com/mummer4/mummer/releases/download/v4.0.0rc1/mummer-4.0.0rc1.tar.gz && \
+tar -xvf mummer-4.0.0rc1.tar.gz && \
+rm mummer-4.0.0rc1.tar.gz && \
+cd mummer-4.0.0rc1 && \
+./configure --prefix=/usr/local && make && make install && \
+ldconfig && \
+cd .. && \
+rm -rf mummer-4.0.0rc1/
+
 ENV WORKDIR=/opengenomebrowser
 WORKDIR ${WORKDIR}
 

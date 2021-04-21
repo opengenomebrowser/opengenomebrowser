@@ -10,6 +10,7 @@ from .GeneDetailView import GeneDetailView
 from .AnnotationSearch import annotation_view
 from .AnnotationDetailView import AnnotationDetailView
 from .Trees import trees
+from .Dotplot import dotplot_view, get_dotplot
 from .Blast import blast_view
 from .Api import Api
 from .Files import files_html, files_json

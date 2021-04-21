@@ -24,6 +24,10 @@
     text-align: center;
 }
 
+#sidebar-content {
+    color: #f3f3f3;
+}
+
 /* When you mouse over the navigation links, change their color */
 .sidenav a:hover {
     color: #f1f1f1;

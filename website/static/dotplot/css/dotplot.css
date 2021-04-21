@@ -1,0 +1,46 @@
+#plotting-area {
+    justify-content: center;
+}
+
+/* hide unnecessary entries */
+#inspectorArea, #linkOutArea {
+    display: none !important;
+}
+
+/* Show overflow prevents labels from being cropped */
+#dotplot svg {
+    overflow: visible;
+}
+
+/* sidebar: overwrite button css */
+#dotplot-panel .btn.btn-xs.btn-default {
+    color: #fff;
+    background-color: #6c757d;
+    border-color: #6c757d;
+    padding: .3rem .3rem;
+    font-size: .875rem;
+    line-height: 1;
+    border-radius: .2rem;
+}
+
+/* sidebar: show table border */
+.d3-superUI-row {
+    border: 1px solid #8a8a8a;
+    border-width: 1px 0;
+}
+
+/* sidebar: center row  content */
+#dotplot-panel .superUI-default, .superUI-value {
+    text-align: center;
+}
+
+/* sidebar: hide unnecessary entries */
+#dotplot-panel h4, .load_unique, .load_repetitive {
+    display: none;
+}
+
+#plotting-area div#mainLeft div {
+    display: none;
+}
+
+
