@@ -1,0 +1,6 @@
+*
+!media
+!media/*
+!tutorials
+!tutorials/*
+!*.md

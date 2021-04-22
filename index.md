@@ -14,6 +14,7 @@ _OpenGenomeBrowser is a dynamic and scalable web platform for comparative genomi
     - Visualization of gene loci for comparative genomic analyses
     - Generation of dendrograms (Taxid-based, ANI-based and OrthoFinder-based)
     - Pathway analyses (visualization of gene content of genomes on pathway maps)
+    - Comparison of assemblies using dotplots
     - BLAST searches (nucleotide or protein level)
     - Download raw data through a webbrowser 
   - OpenGenomeBrowser has only few prerequisites:
