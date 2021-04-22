@@ -5,7 +5,7 @@ import contextlib
 import tempfile
 from subprocess import call, run, PIPE
 from Bio import SeqIO
-from .DotPrep import run as dotprep_run
+from lib.dot.DotPrep import run as dotprep_run
 
 
 def is_installed(program):
@@ -43,14 +43,14 @@ class Nucmer:
         # nucmer works
         assert call([self.nucmer_path, '--version'], stderr=PIPE, stdout=PIPE) == 0, 'Nucmer is not executable!'
 
-    def align(self, fasta1: str, fasta2: str, work_dir: str, arguments: dict = None) -> str:
+    def align(self, fasta_ref: str, fasta_qry: str, work_dir: str, arguments: dict = None) -> str:
         """
-        :param fasta1: path to first assembly fasta
-        :param fasta2: path to second assembly fasta
+        :param fasta_ref: path to first assembly fasta
+        :param fasta_qry: path to second assembly fasta
         :param arguments: dict with additional arguments for nucmer, e.g. {'--mincluster': 100}
         :return: str: path to out.delta
         """
-        for fasta in [fasta1, fasta2]:
+        for fasta in [fasta_ref, fasta_qry]:
             assert os.path.isfile(fasta), f'path is invalid: {fasta}'
 
         assert os.path.isdir(work_dir), f'work_dir does not exist: {work_dir}'
@@ -63,14 +63,14 @@ class Nucmer:
         if arguments is not None:
             for arg, val in arguments.items():
                 cmd.extend([str(arg), str(val)])
-        cmd.extend([os.path.abspath(fasta1), os.path.abspath(fasta2)])
+        cmd.extend([os.path.abspath(fasta_ref), os.path.abspath(fasta_qry)])
 
         subprocess = run(
             cmd,
             cwd=work_dir,
             stdout=PIPE, stderr=PIPE, encoding='ascii')
 
-        error_message = F'Nucmer occurred with fasta1={fasta1} and fasta2={fasta2}; stdout={subprocess.stdout}; stderr={subprocess.stderr}'
+        error_message = F'Nucmer occurred with fasta_ref={fasta_ref} and fasta_qry={fasta_qry}; stdout={subprocess.stdout}; stderr={subprocess.stderr}'
 
         assert subprocess.returncode == 0, error_message
         assert os.path.isfile(result_path), error_message
@@ -90,18 +90,18 @@ class DotPrepArgs:
 
 class DotPrep:
     @classmethod
-    def run(cls, fasta1: str, fasta2: str, gbk1: str = None, mincluster: int = 65) -> (str, str):
+    def run(cls, fasta_ref: str, fasta_qry: str, gbk1: str = None, mincluster: int = 65) -> (str, str):
         """
-        :param fasta1: path to first assembly fasta
-        :param fasta2: path to second assembly fasta
+        :param fasta_ref: path to first assembly fasta
+        :param fasta_qry: path to second assembly fasta
         :return: coords, index
         """
-        for fasta in [fasta1, fasta2]:
+        for fasta in [fasta_ref, fasta_qry]:
             assert os.path.isfile(fasta), f'path is invalid: {fasta}'
 
         tempdir = tempfile.TemporaryDirectory()
 
-        delta_path = nucmer.align(fasta1=fasta1, fasta2=fasta2, work_dir=tempdir.name, arguments={'--mincluster': mincluster})
+        delta_path = nucmer.align(fasta_ref=fasta_ref, fasta_qry=fasta_qry, work_dir=tempdir.name, arguments={'--mincluster': mincluster})
 
         with contextlib.redirect_stdout(StringIO()):
             dotprep_run(DotPrepArgs(delta=delta_path, output_filename=f'{tempdir.name}/out'))
@@ -124,14 +124,18 @@ class DotPrep:
         return coords, index
 
     @classmethod
-    def gbk_to_annotation__(cls, gbk: str) -> str:
+    def gbk_to_annotation_file(cls, gbk: str, is_ref: bool) -> str:
         """
         Turn gbk into Dot-compliant format.
 
-        :param gbk: path to genbank file that corresponds to fasta1
-        :return:
+        :param gbk: path to genbank file that corresponds to fasta_ref
+        :param is_ref: are the annotations for the reference- or the query sequence?
+        :return: dot-compliant annotations string
         """
-        result = 'ref,ref_start,ref_end,name,strand\n'
+        if is_ref:
+            result = 'ref,ref_start,ref_end,name,strand\n'
+        else:
+            result = 'query,query_start,query_end,name,strand\n'
 
         with open(gbk, "r") as input_handle:
             for scf in SeqIO.parse(input_handle, "genbank"):
@@ -142,18 +146,28 @@ class DotPrep:
         return result
 
     @classmethod
-    def gbk_to_annotation(cls, gbk: str) -> [dict]:
+    def gbk_to_annotation(cls, gbk: str, is_ref: bool) -> [dict]:
         """
         Turn gbk into Dot-compliant format.
 
-        :param gbk: path to genbank file that corresponds to fasta1
-        :return:
+        :param gbk: path to genbank file that corresponds to fasta_ref
+        :param is_ref: are the annotations for the reference- or the query sequence?
+        :return: dot-compliant annotations list of dictionaries
         """
+        if is_ref:
+            ref_or_query = 'ref'
+            ref_or_query_start = 'ref_start'
+            ref_or_query_end = 'ref_end'
+        else:
+            ref_or_query = 'query'
+            ref_or_query_start = 'query_start'
+            ref_or_query_end = 'query_end'
+
         with open(gbk, "r") as input_handle:
             result = [{
-                'ref': scf.id,
-                'ref_start': f.location.nofuzzy_start,
-                'ref_end': f.location.nofuzzy_end,
+                ref_or_query: scf.id,
+                ref_or_query_start: f.location.nofuzzy_start,
+                ref_or_query_end: f.location.nofuzzy_end,
                 'name': f.qualifiers['locus_tag'][0],
                 'strand': '+' if f.strand else '-'
             }
@@ -165,9 +179,10 @@ class DotPrep:
 
 
 if __name__ == '__main__':
-    fasta1 = 'database/organisms/FAM21789/genomes/FAM21789-i1-1.1/1_assembly/FAM21789-i1-1.fna'
-    gbk1 = 'database/organisms/FAM21789/genomes/FAM21789-i1-1.1/2_cds/FAM21789-i1-1.1.gbk'
-    fasta2 = 'database/organisms/FAM6135/genomes/FAM6135-i1-1.1/1_assembly/FAM6135-i1-1.fna'
+    fasta_ref = 'database/organisms/FAM21789/genomes/FAM21789-i1-1.1/1_assembly/FAM21789-i1-1.fna'
+    gbk_ref = 'database/organisms/FAM21789/genomes/FAM21789-i1-1.1/2_cds/FAM21789-i1-1.1.gbk'
+    fasta_qry = 'database/organisms/FAM6135/genomes/FAM6135-i1-1.1/1_assembly/FAM6135-i1-1.fna'
+    gbk_qry = 'database/organisms/FAM6135/genomes/FAM6135-i1-1.1/2_cds/FAM6135-i1-1.1.gbk'
 
 
     def test_nucmer():
@@ -176,34 +191,30 @@ if __name__ == '__main__':
             rmtree(tmp_dir)
         os.makedirs(tmp_dir)
         res = nucmer.align(
-            fasta1=fasta1, fasta2=fasta2,
+            fasta_ref=fasta_ref, fasta_qry=fasta_qry,
             work_dir=tmp_dir,
             arguments={'--mincluster': 100}
         )
-        print(res)
+        assert os.path.isfile(res)
 
 
     def test_dotprep():
-        coords, index = DotPrep.run(fasta1=fasta1, fasta2=fasta2, mincluster=65)
-        print()
+        coords, index = DotPrep.run(fasta_ref=fasta_ref, fasta_qry=fasta_qry, mincluster=65)
         print('######### COORDS #########')
-        print(coords)
-        print()
+        print(coords[:200])
         print('######### INDEX #########')
-        print(index)
-
-        with open('/home/thomas/Downloads/c.txt', 'w') as f:
-            f.write(coords)
-        with open('/home/thomas/Downloads/i.txt', 'w') as f:
-            f.write(index)
+        print(index[:200])
 
 
     def test_gbk_to_annotation():
-        annotations = DotPrep.gbk_to_annotation_old(gbk1)
-        with open('/home/thomas/Downloads/a.txt', 'w') as f:
-            f.write(annotations)
+        print('######### ANNO: FILE #########')
+        annotations = DotPrep.gbk_to_annotation_file(gbk_ref, is_ref=True)
+        print(annotations[:200])
+        print('######### ANNO: DICT #########')
+        annotations = DotPrep.gbk_to_annotation(gbk_ref, is_ref=False)
+        print(annotations[:4])
 
 
-    # test_nucmer()
+    test_nucmer()
     test_dotprep()
     test_gbk_to_annotation()

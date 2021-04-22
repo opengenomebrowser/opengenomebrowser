@@ -280,10 +280,19 @@ Perform annotation search</a>
         html += `
 <h6 class="dropdown-header context-menu-header many-genomes">
 ${siblings.length} selected genomes</h6>
+<a onclick="CopyToClipboard('${siblings_str_comma}')" class="dropdown-item many-genomes context-menu-icon context-menu-icon-copy">
+Copy selected genomes</a>`
+
+        if (siblings.length === 2) {
+            html += `
+<a href="/dotplot/?ref=${siblings[0]}&query=${siblings[1]}" class="dropdown-item many-genomes context-menu-icon context-menu-icon-dotplot">
+Compare the assemblies using dotplot</a>
+`
+        }
+
+        html += `
 <a href="/trees/?genomes=${siblings_str}" class="dropdown-item many-genomes context-menu-icon context-menu-icon-tree">
 Show phylogenetic trees</a>
-<a onclick="CopyToClipboard('${siblings_str_comma}')" class="dropdown-item many-genomes context-menu-icon context-menu-icon-copy">
-Copy selected genomes</a>
 <a href="/pathway/?g1=${siblings_str}" class="dropdown-item many-genomes context-menu-icon context-menu-icon-pathway">
 Open genomes on pathway map</a>
 <a href="/annotation-search/?genomes=${siblings_str}" class="dropdown-item many-genomes context-menu-icon context-menu-icon-annotations">

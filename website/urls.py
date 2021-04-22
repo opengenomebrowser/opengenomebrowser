@@ -81,6 +81,7 @@ urlpatterns = [
     path('api/get-gene/', Api.get_gene, name='api-get-gene'),
     path('api/get-tree/', Api.get_tree, name='api-get-tree'),
     path('api/get-dotplot/', get_dotplot, name='api-get-dotplot'),
+    path('api/get-dotplot-annotations/', get_dotplot_annotations, name='api-get-dotplot-annotations'),
     path('api/score-pathway-maps/', PathwayView.score_pathway_maps, name='api-score-pathway-maps'),
 
     # ex /test-click-menu/

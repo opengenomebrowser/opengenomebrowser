@@ -64,7 +64,7 @@
         <div class="container">
             <form>
                 {% csrf_token %}
-                <div id="query-genomes"></div>
+                <div id="magic-query"></div>
 
                 <button type="button" class="btn btn-primary" onclick="submit_function()">Submit</button>
             </form>
@@ -229,13 +229,13 @@
     <script>
         "use strict"
 
-        const genomesQuery = [{% if magic_query_manager %} '{{ magic_query_manager.queries|join:"', '" }}' {% else %}{% endif %}]
+        const magicQuery = [{% if magic_query_manager %} '{{ magic_query_manager.queries|join:"', '" }}' {% else %}{% endif %}]
         const allGenomes = [{% if magic_query_manager %} '{{ magic_query_manager.all_genomes|join:"', '" }}' {% else %}{% endif %}]
 
-        const queryGenomes = $('#query-genomes')
+        const magicQueryDiv = $('#magic-query')
 
         $(document).ready(function () {
-            addGenomesGroup(queryGenomes, genomesQuery, false, false)
+            addGenomesGroup(magicQueryDiv, magicQuery, false, false)
 
             $('.ogb-tag.genome')
                 .ogbTooltip()
@@ -252,7 +252,7 @@
         let ajax_timer
 
         function submit_function() {
-            const target = queryGenomes.find('.get-genomes')[0]
+            const target = magicQueryDiv.find('.get-genomes')[0]
             const genomes = extractQuery(target)
 
             $.when(validate_genomes(genomes)).done(function (genomes_valid) {

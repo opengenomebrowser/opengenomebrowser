@@ -43,4 +43,8 @@
     display: none;
 }
 
-
+#dotplot-form .tag-editor {
+    height: unset;
+    resize: unset;
+    overflow-y: unset !important;
+}

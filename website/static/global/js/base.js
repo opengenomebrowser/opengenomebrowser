@@ -88,7 +88,7 @@ function goToPageWithData(location, data) {
 
 }
 
-function redirect(location, data, target='_self') {
+function redirect(location, data, target = '_self') {
     let form = ''
     $.each(data, function (key, value) {
         form += `<input type="hidden" name="${key}" value="${postReplBlanks(value)}">`
@@ -154,8 +154,20 @@ jQuery(document).ready(function () {
     })
 })
 
+/*
+* Give or take 'is-invalid' class depending on test.
+*/
+const toggleValid = function (test, target) {
+    if (test) {
+        target.removeClass('is-invalid')
+    } else {
+        target.addClass('is-invalid')
+    }
 
-function assert(condition, message) {
+}
+
+
+const assert = function (condition, message) {
     if (!condition) {
         message = message || "Assertion failed"
         if (typeof Error !== "undefined") {
@@ -419,7 +431,7 @@ function on_annotations_change(field, editor, tags) {
     })
 }
 
-function init_autocomplete_genomes(div_name) {
+function init_autocomplete_genomes(div_name, maxTags) {
     // https://goodies.pixabay.com/jquery/tag-editor/demo.html
     $(div_name).tagEditor({
         autocomplete: {
@@ -427,6 +439,7 @@ function init_autocomplete_genomes(div_name) {
             minLength: 1
         },
         forceLowercase: false,
+        maxTags: maxTags ? maxTags : null,
         onChange: on_genomes_change
     })
 
