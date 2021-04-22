@@ -103,6 +103,12 @@
             {% endif %}
         </div>
 
+        <div style="display:flex; justify-content: center;" id="gene-loci-spinner" hidden>
+            <div class="spinner-border text-dark" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+        </div>
+
     </section>
 
     <section>
@@ -111,8 +117,6 @@
 
             </div>
         </div>
-
-        <div class="container" id="spinner"></div>
 
     </section>
 
@@ -143,9 +147,6 @@
                 refValid = refValid[0]['success']
                 queryValid = queryValid[0]['success']
 
-                console.log(minclusterValid, refValid, queryValid)
-
-
                 toggleValid(minclusterValid, $('#mincluster'))
                 toggleValid(refValid, $('#reference-genome'))
                 toggleValid(queryValid, $('#query-genome'))
@@ -175,12 +176,14 @@
         }
 
         let loadDotPlot = function (ref, query, mincluster) {
+            $('#gene-loci-spinner').attr('hidden', false)
             $.ajax({
                 url: "/api/get-dotplot/",
                 method: 'post',
                 data: {'identifier_ref': ref, 'identifier_query': query, 'mincluster': mincluster},
                 dataType: "json",
                 success: function (data, textStatus, xhr) {
+                    $('#gene-loci-spinner').attr('hidden', true)
                     console.log('success!!', data)
                     _dot.setCoords(data.coords, data.coords_index)
                     loadDotPlotAnnotations(ref, true)
