@@ -111,7 +111,7 @@ def import_database(delete_missing: bool = True, auto_delete_missing: bool = Fal
     sanity_check_postgres()
 
 
-def reload_organism_genomecontents(name: str = None, all: bool = False):
+def reload_organism_genomecontents(name: str = None, all: bool = False, assembly_stats_only: bool = False):
     """
     Forcefully reload fastas and annotations into database.
 
@@ -122,18 +122,25 @@ def reload_organism_genomecontents(name: str = None, all: bool = False):
         with transaction.atomic():
             organism = Organism.objects.get(name=name)
             for genome in organism.genome_set.all():
-                GenomeSerializer.update_genomecontent(genome, wipe=True)
+                if assembly_stats_only:
+                    genome.update_assembly_info()
+                else:
+                    GenomeSerializer.update_genomecontent(genome, wipe=True)
     elif all:
         for organism in progressbar(Organism.objects.all(), max_value=Organism.objects.count(), redirect_stdout=True):
             print(f'└── {organism.name}')
             with transaction.atomic():
                 for genome in organism.genome_set.all():
                     print(f'   └── {genome.identifier}')
-                    GenomeSerializer.update_genomecontent(genome, wipe=True)
+                    if assembly_stats_only:
+                        genome.update_assembly_info()
+                    else:
+                        GenomeSerializer.update_genomecontent(genome, wipe=True)
     else:
         raise AssertionError('Do nothing. Please specify --name=<organism-name> or --all')
 
-    print('consider reloading orthologs.')
+    if not assembly_stats_only:
+        print('consider reloading orthologs.')
 
 
 def import_organism(name: str, update_css: bool = True):

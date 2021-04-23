@@ -13,6 +13,7 @@ html {
     background-color: #f3f3f3;
     min-width: 480px;
     min-height: 30px;
+    color: black
 }
 
 .sortable.grid {
@@ -204,7 +205,7 @@ table tbody td {
     margin-left: 5px;
     height: 28px;
     width: 28px;
-    padding:unset
+    padding: unset
 }
 
 .yadcf-filter-reset-button:hover {
@@ -212,12 +213,12 @@ table tbody td {
 }
 
 .yadcf-filter-reset-button:before {
-  display: block;
-  content: ' ';
-  background-image: url('/static/global/ionicons/ios-close.svg');
-  background-size: 28px 28px;
-  height: 28px;
-  width: 28px;
+    display: block;
+    content: ' ';
+    background-image: url('/static/global/ionicons/ios-close.svg');
+    background-size: 28px 28px;
+    height: 28px;
+    width: 28px;
 }
 
 .select2-search__field {

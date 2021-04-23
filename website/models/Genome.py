@@ -52,6 +52,8 @@ class Genome(models.Model):
     assembly_size = models.IntegerField('Assembly size', null=True, blank=True)
     assembly_nr_scaffolds = models.IntegerField('Number of scaffolds', null=True, blank=True)
     assembly_n50 = models.IntegerField('N50', null=True, blank=True)
+    assembly_gaps = models.IntegerField('Number of gaps', null=True, blank=True)
+    assembly_ncount = models.IntegerField('Total Ns', null=True, blank=True)
     nr_replicons = models.IntegerField('Number of replicons', null=True, blank=True)
 
     # contamination analysis
@@ -247,6 +249,8 @@ class Genome(models.Model):
             self.assembly_size = assembly_stats['total_length']
             self.assembly_nr_scaffolds = assembly_stats['number']
             self.assembly_n50 = assembly_stats['N50']
+            self.assembly_gaps = assembly_stats['Gaps']
+            self.assembly_ncount = assembly_stats['N_count']
             self.save()
 
     @staticmethod
@@ -292,6 +296,8 @@ class Genome(models.Model):
             'assembly_size': {'filter_type': 'no-filter', 'description': 'Assembly Size'},
             'assembly_nr_scaffolds': {'filter_type': 'no-filter', 'description': 'Assembly #Scfs'},
             'assembly_n50': {'filter_type': 'no-filter', 'description': 'Assembly N50'},
+            'assembly_gaps': {'filter_type': 'no-filter', 'description': 'Number of gaps'},
+            'assembly_ncount': {'filter_type': 'no-filter', 'description': 'Total Ns'},
             'nr_replicons': {'filter_type': 'no-filter', 'description': 'Assembly #Replicons'},
             'cds_tool': {'filter_type': 'no-filter', 'description': 'CDS Tool'},
             'cds_tool_version': {'filter_type': 'no-filter', 'description': 'CDS Tool Version'},

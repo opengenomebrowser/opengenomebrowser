@@ -7,7 +7,9 @@ import pandas as pd
 
 from lib.get_tax_info.get_tax_info import GetTaxInfo
 from lib.get_tax_info.get_tax_info import TaxID as RawTaxID
+
 RawTaxID.gti = GetTaxInfo()
+
 
 class GenomeDetailView(DetailView):
     model = Genome
@@ -36,7 +38,7 @@ class GenomeDetailView(DetailView):
         context['seq_parameters'] = [[self.__verbose(attr), getattr(g, attr)] for attr in seq_parameters]
 
         ass_parameters = ['assembly_tool', 'assembly_version', 'assembly_date', 'assembly_gc', 'assembly_longest_scf', 'assembly_size',
-                          'assembly_nr_scaffolds', 'assembly_n50', 'nr_replicons']
+                          'assembly_nr_scaffolds', 'assembly_n50', 'assembly_gaps', 'assembly_ncount', 'nr_replicons']
         context['ass_parameters'] = [[self.__verbose(attr), getattr(g, attr)] for attr in ass_parameters]
 
         ann_parameters = ['cds_tool', 'cds_tool_date', 'cds_tool_version']
