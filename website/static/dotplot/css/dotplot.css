@@ -12,6 +12,10 @@
     overflow: visible;
 }
 
+#plotting-area {
+    padding-bottom: 5rem;
+}
+
 /* sidebar: overwrite button css */
 #dotplot-panel .btn.btn-xs.btn-default {
     color: #fff;

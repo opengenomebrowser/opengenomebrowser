@@ -184,9 +184,19 @@
             </div>
         </div>
     {% endfor %}
+    {% for error in error_info %}
+        <!-- info -->
+        <div class="container black-links">
+            <div class="alert alert-info" role="alert">
+                {{ error }}
+            </div>
+        </div>
+    {% endfor %}
 </section>
 
 {% block body %}{% endblock %}
+
+
 
 </body>
 

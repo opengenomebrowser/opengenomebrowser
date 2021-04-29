@@ -17,7 +17,7 @@ from .helpers.magic_string import MagicQueryManager
 def annotation_view(request):
     context = dict(
         title='Annotation search',
-        error_danger=[], error_warning=[]
+        error_danger=[], error_warning=[], error_info=[]
     )
 
     if contains_data(request, 'genomes'):

@@ -29,7 +29,7 @@ choice_to_settings = dict(
 def blast_view(request):
     context = dict(
         title='Blast',
-        error_danger=[], error_warning=[]
+        error_danger=[], error_warning=[], error_info=[]
     )
 
     context['genome_to_species'] = '{}'

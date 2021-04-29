@@ -44,7 +44,7 @@ def gtm_view(request):
         default_anno_type='OL',
         default_alpha=0.1,
         default_multiple_testing_method='fdr_bh',
-        error_danger=[], error_warning=[]
+        error_danger=[], error_warning=[], error_info=[]
     )
 
     anno_type_valid, alpha_valid, multiple_testing_method, genomes_g1_valid, genomes_g2_valid = False, False, False, False, False

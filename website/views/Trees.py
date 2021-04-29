@@ -7,7 +7,7 @@ from OpenGenomeBrowser.settings import ORTHOFINDER_ENABLED
 def trees(request):
     context = dict(
         title='Trees',
-        error_danger=[], error_warning=[],
+        error_danger=[], error_warning=[], error_info=[],
         ORTHOFINDER_ENABLED=ORTHOFINDER_ENABLED,
         genomes=[],
         genome_to_species={}

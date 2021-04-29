@@ -4,10 +4,11 @@ from lib.dot.dot_prep_wrapper import DotPrep
 from website.models.Genome import Genome
 from plugins import calculate_dotplot
 
+
 def dotplot_view(request):
     context = dict(
         title='Dotplot',
-        error_danger=[], error_warning=[]
+        error_danger=[], error_warning=[], error_info=[]
     )
 
     for ref_or_query in ['ref', 'query']:

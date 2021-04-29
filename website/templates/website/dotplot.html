@@ -118,6 +118,14 @@
             </div>
         </div>
 
+        <div class="container black-links">
+            <div id="info-zoom" class="alert alert-info" role="alert" hidden>
+                Click and drag to zoom in, double-click to zoom out.
+            </div>
+            <div id="info-anno" class="alert alert-info" role="alert" hidden>
+                Click on the annotations (green arrows on the bottom of the x-axis) to inspect them.
+            </div>
+        </div>
     </section>
 
 {% endblock %}
@@ -167,6 +175,7 @@
                 success: function (data, textStatus, xhr) {
                     console.log('success!!', data)
                     _dot.addAnnotationData({key: "0", data: data.annotations})
+                    $('#info-zoom').attr('hidden', false)
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
                     console.log('jqXHR:', jqXHR, 'textStatus:', textStatus, 'errorThrown:', errorThrown)
@@ -187,6 +196,7 @@
                     console.log('success!!', data)
                     _dot.setCoords(data.coords, data.coords_index)
                     loadDotPlotAnnotations(ref, true)
+                    $('#info-anno').attr('hidden', false)
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
                     console.log('jqXHR:', jqXHR, 'textStatus:', textStatus, 'errorThrown:', errorThrown)

@@ -68,6 +68,13 @@
 {% endblock %}
 
 {% block body %}
+
+    <div id="hint">
+        <div id="info-anno" class="alert alert-info" role="alert">
+            Use Ctrl or Shift to select rows and <b>right click</b> to open the context menu.
+        </div>
+    </div>
+
     <!-- Table for every Genome in the database -->
     <div id="custom-table-wrapper">
         <table id="table" class="table table-sm"></table>
@@ -192,18 +199,15 @@
             })
         }
 
-        // improve labels in sidebar
+        // make labels in sidebar more meaningful
         let waitForFail = function (timeout = 500) {
             if (Boolean(jQuery('#yadcf-filter--table-0').length) && !document.getElementById('yadcf-filter--table-0')[0].text) {
-                document.getElementById('yadcf-filter--table-0')[0].text = 'all'
-                document.getElementById('yadcf-filter--table-1')[0].text = 'all'
-                document.getElementById('yadcf-filter--table-2')[0].text = 'all'
-                document.getElementById('yadcf-filter--table-0')[1].text = 'no'
-                document.getElementById('yadcf-filter--table-1')[1].text = 'no'
-                document.getElementById('yadcf-filter--table-2')[1].text = 'no'
-                document.getElementById('yadcf-filter--table-0')[2].text = 'only'
-                document.getElementById('yadcf-filter--table-1')[2].text = 'only'
-                document.getElementById('yadcf-filter--table-2')[2].text = 'only'
+                ['yadcf-filter--table-0', 'yadcf-filter--table-1', 'yadcf-filter--table-2'].forEach(function (val) {
+                    const el = document.getElementById(val)
+                    el[0].text = 'all'
+                    el[1].text = 'no'
+                    el[2].text = 'only'
+                })
             }
 
             setTimeout(function () {
@@ -217,7 +221,7 @@
 
         function calcTableSize() {
             let table_start = document.getElementById("custom-table-wrapper").offsetTop  //distance top-table
-            let navigator_height = getElementByXpath("/html/body/div[2]/div/div[3]").offsetHeight  //text and navigator below table
+            let navigator_height = getElementByXpath("/html/body/div[3]/div/div[3]").offsetHeight  //text and navigator below table
 
             let table_size = window.innerHeight - table_start - navigator_height * 2 - 100
 

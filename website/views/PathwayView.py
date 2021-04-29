@@ -10,7 +10,7 @@ type_dict = PathwayMap._get_type_dict()
 
 
 def pathway_view(request):
-    context = dict(title='Pathways', error_danger=[], error_warning=[])
+    context = dict(title='Pathways', error_danger=[], error_warning=[], error_info=[])
 
     map: PathwayMap = None
     map_is_valid = False

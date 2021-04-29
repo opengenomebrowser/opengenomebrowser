@@ -11,7 +11,7 @@ class CompareGenes:
     def compare(request):
         context = dict(
             title='Compare Genes',
-            error_danger=[], error_warning=[]
+            error_danger=[], error_warning=[], error_info=[]
         )
 
         context['anno_types'] = annotation_types.values()
