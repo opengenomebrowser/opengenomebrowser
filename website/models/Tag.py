@@ -11,17 +11,17 @@ class TagManager(models.Manager):
         from lib.color_generator.ColorGenerator import ColorGenerator
 
         tag_name = kwargs['tag']
-        tag_desciptions = TagDescriptions()
+        tag_descriptions = TagDescriptions()
         tag_colors = TagColors()
 
         if 'description' in kwargs and kwargs['description'] is not None:
-            tag_desciptions.set_key(key=tag_name, value=kwargs['description'])
+            tag_descriptions.set_key(key=tag_name, value=kwargs['description'])
         else:
             try:
-                description = tag_desciptions.get_key(key=tag_name)
+                description = tag_descriptions.get_key(key=tag_name)
             except KeyError:
                 description = '-'
-                tag_desciptions.set_key(key=tag_name, value=description)
+                tag_descriptions.set_key(key=tag_name, value=description)
             kwargs['description'] = description
 
         color_string = tag_colors.get_or_generate_color(key=tag_name)

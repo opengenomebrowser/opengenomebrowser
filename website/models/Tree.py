@@ -51,13 +51,14 @@ class TaxIdTree(AbstractTree):
         def newick_render_node(taxid: TaxID) -> str:
             # recursive function: start with root node, let children render themselves
             if taxid not in node_to_children:
-                return str(taxid)
+                return f'{taxid}:1'
             else:
                 children_set = node_to_children[taxid]
                 children_strings = [newick_render_node(child) for child in children_set]
-                return "(" + ','.join(children_strings) + ")" + str(taxid)
+                children_strings = ','.join(children_strings)
+                return f'({children_strings}){taxid}:1'
 
-        self.__newick = newick_render_node(root_node)
+        self.__newick = newick_render_node(root_node) + ';'
 
     @property
     def newick(self) -> str:
@@ -106,7 +107,7 @@ class AniTree(AbstractTree):
 
         if n_failed > 0:
             TreeFailedError('Similarity calculations failed. ' +
-                             F'Finished: {n_done}, running: {n_running}, failed: {n_failed}')
+                            F'Finished: {n_done}, running: {n_running}, failed: {n_failed}')
 
         if n_running > 0:
             raise TreeNotDoneError('Similarities are still being calculated. ' +

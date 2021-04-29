@@ -2,11 +2,30 @@
 {% load static %}
 
 {% block styles %}
-    <script src="{% static 'global/js/d3.v5.min.js' %}"></script>
-    <script src="{% static 'global/js/tidytree.min.js' %}"></script>
-    <script src="{% static 'global/js/phylogeneticTrees.js' %}"></script>
-    <script src="{% static 'global/js/ResizeSensor.js' %}"></script>
+{#    <script src="{% static 'global/js/d3.v5.min.js' %}"></script>#}
+{#    <script src="{% static 'global/js/tidytree.min.js' %}"></script>#}
+{#    <script src="{% static 'global/js/phylogeneticTrees.js' %}"></script>#}
+{#    <script src="{% static 'global/js/ResizeSensor.js' %}"></script>#}
     <script src="{% static 'global/js/query-groups.js' %}"></script>
+
+    <script src="{% static 'trees/js/BigInteger.min.js' %}"></script>
+{#    <script src="{% static 'trees/js/jquery-2.1.4.min.js' %}"></script>#}
+    <script src="{% static 'trees/js/treecompare.js' %}"></script>
+    <script src="{% static 'trees/js/underscore.min.js' %}"></script>
+    <script src="{% static 'trees/js/spin.min.js' %}"></script>
+    <script src="{% static 'trees/js/d3.min.js' %}"></script>
+    <script src="{% static 'trees/js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'trees/js/circular-json.js' %}"></script>
+    <script src="{% static 'trees/js/canvas-toBlob.js' %}"></script>
+    <script src="{% static 'trees/js/FileSaver.min.js' %}"></script>
+
+{#    <link rel="stylesheet" type="text/css" href="{% static 'trees/css/ol.css' %}">#}
+{#    <link rel="stylesheet" type="text/css" href="{% static 'trees/css/simple-sidebar.css' %}">#}
+    <link rel="stylesheet" type="text/css" href="{% static 'trees/css/style.css' %}">
+{#    <link rel="stylesheet" type="text/css" href="{% static 'trees/css/sticky-footer-navbar.css' %}">#}
+    <link rel="stylesheet" type="text/css" href="{% static 'trees/css/style_toolbar.css' %}">
+
+    <script src="{% static 'trees/js/phylogeneticTrees.js' %}"></script>
 
     <link rel="stylesheet" type="text/css" href="{% static 'global/css/taxid_color.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'global/css/taxid_color_label.css' %}" id="taxid-color-stylesheet">
@@ -116,6 +135,8 @@
 
         <div class="container" id="taxid-tree-container" hidden>{#{% if not can_calculate_trees %} hidden {% endif %}#}
             <hr class="featurette-divider">
+
+            <div class="container-fluid vis-container" id="vis-container-2" style="height: 4rem;"></div><div class="vis-scale"></div>
 
             <h2>Taxid-based tree</h2>
             <label for="layout-selector-taxid">Layout</label>

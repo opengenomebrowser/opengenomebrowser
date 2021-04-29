@@ -1,0 +1,121 @@
+/*!
+ * Start Bootstrap - Simple Sidebar HTML Template (http://startbootstrap.com)
+ * Code licensed under the Apache License v2.0.
+ * For details, see http://www.apache.org/licenses/LICENSE-2.0.
+ */
+/* Toggle Styles */
+#wrapper {
+    padding-left: 0;
+    -webkit-transition: all 0.5s ease;
+    -moz-transition: all 0.5s ease;
+    -o-transition: all 0.5s ease;
+    transition: all 0.5s ease;
+}
+#wrapper.toggled {
+    padding-left: 420px;
+}
+#sidebar-wrapper {
+    z-index: 1000;
+    position: fixed;
+    left: 420px;
+    width: 0;
+    height: 100%;
+    margin-left: -420px;
+    overflow-x: hidden;
+    background: #000;
+    -webkit-transition: all 0.5s ease;
+    -moz-transition: all 0.5s ease;
+    -o-transition: all 0.5s ease;
+    transition: all 0.5s ease;
+}
+#wrapper.toggled #sidebar-wrapper {
+    width: 420px;
+}
+#page-content-wrapper {
+    width: 100%;
+    position: absolute;
+    padding: 15px;
+}
+#wrapper.toggled #page-content-wrapper {
+    position: absolute;
+    margin-right: -420px;
+}
+/* Sidebar Styles */
+.sidebar-nav {
+    position: absolute;
+    top: 50px;
+    width: 370px;
+    margin: 0 30px;
+    padding: 0 20px 0 0;
+    list-style: none;
+}
+.sidebar-nav li {
+    margin-left: 20px !important;
+}
+.sidebar-nav li a {
+    text-decoration: underline;
+    color: lightgrey;
+}
+.sidebar-nav li a:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.2);
+}
+.sidebar-nav li a:active,
+.sidebar-nav li a:focus {
+    text-decoration: underline;
+}
+.sidebar-nav > .sidebar-brand {
+    height: 65px;
+    font-size: 18px;
+    line-height: 60px;
+}
+.sidebar-nav > .sidebar-brand a {
+    color: #999999;
+}
+.sidebar-nav > .sidebar-brand a:hover {
+    color: #fff;
+    background: none;
+}
+#wrapper {
+    padding-left: 420px;
+}
+#wrapper.toggled {
+    padding-left: 30px;
+}
+#sidebar-wrapper {
+    width: 420px;
+}
+#wrapper.toggled #sidebar-wrapper {
+    width: 30px;
+}
+#page-content-wrapper {
+    padding: 19px 0 0 0;
+    position: relative;
+}
+#wrapper.toggled #page-content-wrapper {
+    position: relative;
+    margin-right: 0;
+}
+#mode-buttons {
+    padding: 30px 0 30px 20px;
+}
+.settingsLabel {
+    color: whitesmoke;
+}
+.settingsCheckboxLabel {
+    color: whitesmoke;
+}
+.btn-default.active {
+    background: linear-gradient(#ddd, #aaa);
+    text-shadow: 0 1px 0 #c9c9c9;
+    border-color: #dbdbdb;
+}
+#menu-toggle {
+    position: absolute;
+    right: 5px;
+    top: 50px;
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+    z-index: 99;
+}
