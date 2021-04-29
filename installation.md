@@ -80,7 +80,7 @@ In order to run OpenGenomeBrowser with your own data you will have to prepare yo
     "geographical_coordinates": null,
     "geographical_name": null,
     "library_preparation": null,
-    "sequencing_tech": null,
+    "sequencing_tech": null,tables
     "sequencing_tech_version": null,
     "sequencing_date": null,
     "sequencing_coverage": null,
@@ -167,7 +167,7 @@ EXAMPLE1234-2-1.1_000008	K000001, K000002
 ```
 "custom_tables": {
     "Table 1 Title": {
-        "index_col": "taxid",
+        "columns": ["taxid", "description", "evalue"],
         "taxid_cols": ["taxid"],
         "rows": [
             {
@@ -179,6 +179,9 @@ EXAMPLE1234-2-1.1_000008	K000001, K000002
     }
 }
 ```
+
+The entry "taxid_cols" is optional.
+The entry "columns" is optional but recommended. It is used to specify the order of the columns.
 
 
 
