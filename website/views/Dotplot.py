@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from lib.dot.dot_prep_wrapper import DotPrep
 from website.models.Genome import Genome
-
+from plugins import calculate_dotplot
 
 def dotplot_view(request):
     context = dict(
@@ -58,10 +58,10 @@ def get_dotplot(request):
     genome_ref = Genome.objects.get(identifier=identifier_ref)
     genome_query = Genome.objects.get(identifier=identifier_query)
 
-    fasta_ref = genome_ref.assembly_fasta(relative=False)
-    fasta_query = genome_query.assembly_fasta(relative=False)
+    fasta_ref = genome_ref.assembly_fasta(relative=True)
+    fasta_query = genome_query.assembly_fasta(relative=True)
 
-    coords, index = DotPrep.run(fasta_ref=fasta_ref, fasta_qry=fasta_query, mincluster=mincluster)
+    coords, index = calculate_dotplot(fasta_ref=fasta_ref, fasta_qry=fasta_query, mincluster=mincluster)
 
     return JsonResponse(dict(
         coords=coords,

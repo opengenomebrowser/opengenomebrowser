@@ -1,10 +1,8 @@
 from django.shortcuts import render, HttpResponse
 from website.views.helpers.magic_string import MagicQueryManager
 from django.http import HttpResponseBadRequest
-from lib.ncbiblast.ncbi_blast.blast_wrapper import Blast
 from website.views.helpers.extract_requests import contains_data, extract_data
-
-blast = Blast(system_blast=True, outfmt=5)
+from plugins import calculate_blast
 
 choice_to_settings = dict(
     blastn_ffn=dict(
@@ -71,10 +69,10 @@ def blast_submit(request):
 
     file_type = choice_to_settings[blast_type]['file_type']
 
-    fasta_files = [getattr(genome.genomecontent, file_type)(relative=False) for genome in genomes]
+    fasta_files = [getattr(genome.genomecontent, file_type)(relative=True) for genome in genomes]
 
     try:
-        blast_output = blast.blast(fasta_string=query, db=fasta_files, mode=blast_algorithm)
+        blast_output = calculate_blast(fasta_string=query, db=fasta_files, mode=blast_algorithm)
     except Exception as e:
         print(e)
         return HttpResponse('Blast failed. Reason:' + str(e))
