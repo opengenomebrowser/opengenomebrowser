@@ -31,6 +31,9 @@ class TagAdmin(admin.ModelAdmin):
         except Tag.DoesNotExist:
             tag_obj = Tag.objects.create(tag=obj.tag, description=obj.description)
             messages.add_message(request, messages.INFO, 'Created new tag.')
+        except Exception as e:
+            messages.add_message(request, messages.ERROR, f'Something went wrong: {str(e)}')
+
 
         Tag.create_tag_color_css()
 
@@ -86,7 +89,10 @@ class OrganismAdmin(admin.ModelAdmin):
             messages.add_message(request, messages.INFO, F'Saving the following change: {difference}')
             super().save_model(request, obj, form, change)
 
-            OrganismSerializer.update_metadata_json(organism=obj, new_data=json_data, who_did_it=request.user.username)
+            try:
+                OrganismSerializer.update_metadata_json(organism=obj, new_data=json_data, who_did_it=request.user.username)
+            except Exception as e:
+                messages.add_message(request, messages.ERROR, f'Failed to edit the json file! {str(e)}')
 
     def has_add_permission(self, request, obj=None):
         return False
@@ -115,7 +121,8 @@ class GenomeAdmin(admin.ModelAdmin):
 
     exclude = [
         'genomecontent', 'organism',  # primary key, foreign keys
-        'assembly_gc', 'assembly_longest_scf', 'assembly_size', 'assembly_nr_scaffolds', 'assembly_n50'  # calculated automatically
+        'assembly_gc', 'assembly_longest_scf', 'assembly_size', 'assembly_nr_scaffolds',  # calculated automatically
+        'assembly_n50', 'assembly_gaps', 'assembly_ncount', 'BUSCO_percent_single'  # calculated automatically
     ]
 
     formfield_overrides = {
@@ -136,7 +143,8 @@ class GenomeAdmin(admin.ModelAdmin):
 
         from db_setup.check_metadata import genome_metadata_is_valid
         try:
-            assert genome_metadata_is_valid(data=json_data, path_to_genome=obj.base_path(relative=False), raise_exception=True), 'check_metadata raised an error'
+            assert genome_metadata_is_valid(data=json_data, path_to_genome=obj.base_path(relative=False),
+                                            raise_exception=True), 'check_metadata raised an error'
         except Exception as e:
             messages.add_message(request, messages.INFO, F'Something is wrong with your data: {str(e)}')
             return
@@ -155,7 +163,10 @@ class GenomeAdmin(admin.ModelAdmin):
             messages.add_message(request, messages.INFO, F'Saving the following change: {difference}')
             super().save_model(request, obj, form, change)
 
-            GenomeSerializer.update_metadata_json(genome=obj, new_data=json_data, who_did_it=request.user.username)
+            try:
+                GenomeSerializer.update_metadata_json(genome=obj, new_data=json_data, who_did_it=request.user.username)
+            except Exception as e:
+                messages.add_message(request, messages.ERROR, f'Failed to edit the json file! {str(e)}')
 
     def has_add_permission(self, request, obj=None):
         return False
