@@ -80,7 +80,7 @@ In order to run OpenGenomeBrowser with your own data you will have to prepare yo
     "geographical_coordinates": null,
     "geographical_name": null,
     "library_preparation": null,
-    "sequencing_tech": null,tables
+    "sequencing_tech": null,
     "sequencing_tech_version": null,
     "sequencing_date": null,
     "sequencing_coverage": null,
