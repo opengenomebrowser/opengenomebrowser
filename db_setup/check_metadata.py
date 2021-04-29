@@ -68,7 +68,10 @@ def genome_metadata_is_valid(data: dict, path_to_genome: str, raise_exception=Fa
         if get_attr('custom_tables'):
             for table_name, table in get_attr('custom_tables').items():
                 assert 'rows' in table
-                assert 'index_col' in table
+                if 'index_col' in table:
+                    assert type(table['index_col']) is str, table['index_col']
+                if 'columns' in table:
+                    assert type(table['columns']) is list, table['columns']
 
         if get_attr('BUSCO'):
             for char in ['C', 'D', 'F', 'M', 'S', 'T']:

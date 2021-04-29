@@ -50,7 +50,7 @@ class GenomeDetailView(DetailView):
                 (
                     title,
                     create_table(data, table_id=F'custom_table_{title}'),
-                    data['pie_chart_col'] if 'pie_chart_col' in data else None
+                    data.get('pie_chart_col', None)
                 )
                 for title, data in g.custom_tables.items()]
 
@@ -73,15 +73,16 @@ class GenomeDetailView(DetailView):
 def create_table(data: dict, table_id: str) -> str:
     try:
         df = pd.DataFrame(data['rows'])
-        df.set_index(data['index_col'])
-        df.index.name = None
-
+        if 'columns' in data:
+            df=df.reindex(data['columns'], axis=1)
+        if 'index_col' in data:
+            df.set_index(data['index_col'])
         for taxid_col in data['taxid_cols']:
             df[taxid_col] = df[taxid_col].apply(taxid_to_html)
-
         html = dataframe_to_bootstrap_html(df, table_id)
     except Exception as e:
-        import json
+        import json, traceback
+        traceback.print_exc()
         return f'''
         <div class="alert alert-danger" role="alert">
             Failed to parse custom table: {e}<br>

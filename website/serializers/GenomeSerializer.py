@@ -28,7 +28,7 @@ class GenomeSerializer(serializers.ModelSerializer):
             'id', 'genomecontent', 'organism',
             # calculated automatically
             'assembly_gc', 'assembly_longest_scf', 'assembly_size', 'assembly_nr_scaffolds', 'assembly_n50',
-            'BUSCO_percent_single'
+            'BUSCO_percent_single', 'assembly_gaps', 'assembly_ncount'
         ]
 
         set_fields = ['tags']
