@@ -36,24 +36,27 @@ class Nucmer:
     Requires nucmer to be installed.
     """
 
-    def __init__(self, gendiscal_path=None):
-        self.nucmer_path = 'nucmer'
-        assert is_installed('nucmer'), f'Nucmer is not installed! {self.nucmer_path}'
+    def __init__(self, nucmer_path='nucmer'):
+        self.nucmer_path = nucmer_path
+        assert is_installed(self.nucmer_path), f'Nucmer is not installed! {self.nucmer_path}'
 
         # nucmer works
         assert call([self.nucmer_path, '--version'], stderr=PIPE, stdout=PIPE) == 0, 'Nucmer is not executable!'
 
-    def align(self, fasta_ref: str, fasta_qry: str, work_dir: str, arguments: dict = None) -> str:
+    def align(self, fasta_ref: str, fasta_qry: str, work_dir: str, arguments: dict = None, clean_input: bool = True) -> str:
         """
         :param fasta_ref: path to first assembly fasta
         :param fasta_qry: path to second assembly fasta
         :param arguments: dict with additional arguments for nucmer, e.g. {'--mincluster': 100}
+        :param clean_input: if true, remove prefixes such as 'gnl|Prokka|' or 'gnl|extdb|' from input fnas
         :return: str: path to out.delta
         """
-        for fasta in [fasta_ref, fasta_qry]:
-            assert os.path.isfile(fasta), f'path is invalid: {fasta}'
-
         assert os.path.isdir(work_dir), f'work_dir does not exist: {work_dir}'
+
+        if clean_input:
+            # create clean input fastas in temp dir
+            fasta_ref = self.remove_fasta_prefix(in_fasta=fasta_ref, out_fasta=f'{work_dir}/ref.fna')
+            fasta_qry = self.remove_fasta_prefix(in_fasta=fasta_qry, out_fasta=f'{work_dir}/qry.fna')
 
         result_path = f'{work_dir}/out.delta'
 
@@ -75,6 +78,25 @@ class Nucmer:
         assert subprocess.returncode == 0, error_message
         assert os.path.isfile(result_path), error_message
         return result_path
+
+    @staticmethod
+    def remove_fasta_prefix(in_fasta: str, out_fasta: str) -> str:
+        """
+        Remove prefixes such as 'gnl|Prokka|' or 'gnl|extdb|' from protein/contig identifiers
+        :param in_fasta: path to input fasta
+        :param out_fasta: path to output fasta
+        :type out_fasta: same as out_fasta
+        """
+        assert os.path.isfile(in_fasta), f'file does not exist: {in_fasta}'
+
+        with open(in_fasta) as in_f, open(out_fasta, 'w') as out_f:
+            for line in in_f:
+                out_f.write(
+                    '>' + line[1:].rsplit('|', 1)[-1]
+                    if line.startswith('>')
+                    else line
+                )
+        return out_fasta
 
 
 nucmer = Nucmer()
@@ -108,7 +130,7 @@ class DotPrep:
 
         result_files = os.listdir(tempdir.name)
 
-        assert set(result_files) == {'out.coords.idx', 'out.coords', 'out.uniqueAnchorFiltered_l10000.delta.gz', 'out.delta'}, \
+        assert set(result_files) == {'out.coords.idx', 'out.coords', 'out.uniqueAnchorFiltered_l10000.delta.gz', 'out.delta', 'qry.fna', 'ref.fna'}, \
             f'DotPrep failed: result_files are incomplete. {result_files=} {tempdir.name=}'
 
         with open(f'{tempdir.name}/out.coords') as f:
@@ -124,6 +146,15 @@ class DotPrep:
         return coords, index
 
     @classmethod
+    def __clean_scf_name_coords(cls, coords):
+        header, data = coords.split('\n', 1)[0]
+        data = data.split('\n')
+
+    @classmethod
+    def __clean_scf_name_index(cls, index):
+        pass
+
+    @classmethod
     def gbk_to_annotation_file(cls, gbk: str, is_ref: bool) -> str:
         """
         Turn gbk into Dot-compliant format.
@@ -137,7 +168,7 @@ class DotPrep:
         else:
             result = 'query,query_start,query_end,name,strand\n'
 
-        with open(gbk, "r") as input_handle:
+        with open(gbk) as input_handle:
             for scf in SeqIO.parse(input_handle, "genbank"):
                 for f in scf.features:
                     if 'locus_tag' in f.qualifiers:
@@ -163,7 +194,7 @@ class DotPrep:
             ref_or_query_start = 'query_start'
             ref_or_query_end = 'query_end'
 
-        with open(gbk, "r") as input_handle:
+        with open(gbk) as input_handle:
             result = [{
                 ref_or_query: scf.id,
                 ref_or_query_start: f.location.nofuzzy_start,

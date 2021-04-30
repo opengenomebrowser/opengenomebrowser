@@ -35,10 +35,7 @@ def get_dotplot_annotations(request):
 
     genome = Genome.objects.get(identifier=identifier)
 
-    if is_ref:
-        annotations = DotPrep.gbk_to_annotation(genome.cds_gbk(relative=False), is_ref=is_ref)
-    else:
-        annotations = DotPrep.gbk_to_annotation(genome.cds_gbk(relative=False), is_ref=is_ref)
+    annotations = DotPrep.gbk_to_annotation(genome.cds_gbk(relative=False), is_ref=is_ref)
 
     return JsonResponse(dict(
         genome=identifier,

@@ -74,10 +74,10 @@ def create_table(data: dict, table_id: str) -> str:
     try:
         df = pd.DataFrame(data['rows'])
         if 'columns' in data:
-            df=df.reindex(data['columns'], axis=1)
+            df = df.reindex(data['columns'], axis=1)
         if 'index_col' in data:
             df.set_index(data['index_col'])
-        for taxid_col in data['taxid_cols']:
+        for taxid_col in data.get('taxid_cols', []):
             df[taxid_col] = df[taxid_col].apply(taxid_to_html)
         html = dataframe_to_bootstrap_html(df, table_id)
     except Exception as e:

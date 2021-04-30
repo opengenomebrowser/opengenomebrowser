@@ -208,6 +208,12 @@
         $(document).ready(function () {
             $('#mincluster-label').tooltip()
 
+            $('.ogb-tag.genome')
+                .ogbTooltip()
+                .click(function () {
+                    showGenomeClickMenu(event)
+                })
+
             init_autocomplete_genomes($('#query-genome-value'), 1)
             init_autocomplete_genomes($('#reference-genome-value'), 1)
 
