@@ -1171,7 +1171,7 @@ DotPlot.prototype.style_schema = function () {
 
         {name: "Grid lines", type: "section"},
         {name: "show grid lines (reference)", type: "selection", default: "always", options: ["always", "zoom", "never"]},
-        {name: "show grid lines (query)", type: "selection", default: "never", options: ["always", "zoom", "never"]},
+        {name: "show grid lines (query)", type: "selection", default: "always", options: ["always", "zoom", "never"]},
         {name: "show basepair coordinates markers for reference", type: "bool", default: true},
         {name: "show basepair coordinates markers for query", type: "bool", default: true},
         {name: "font size (basepair coordinates)", type: "number", default: 10},

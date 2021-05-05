@@ -82,7 +82,11 @@ class Nucmer:
     @staticmethod
     def remove_fasta_prefix(in_fasta: str, out_fasta: str) -> str:
         """
-        Remove prefixes such as 'gnl|Prokka|' or 'gnl|extdb|' from protein/contig identifiers
+        Remove prefixes such as 'gnl|Prokka|' or 'gnl|extdb|' from protein/contig identifiers.
+        Also removes comments that follow after the first blank.
+
+        E.g. '>ncbi|prefix|gene_0001 comment' ➜ '>gene_0001'
+
         :param in_fasta: path to input fasta
         :param out_fasta: path to output fasta
         :type out_fasta: same as out_fasta
@@ -92,7 +96,7 @@ class Nucmer:
         with open(in_fasta) as in_f, open(out_fasta, 'w') as out_f:
             for line in in_f:
                 out_f.write(
-                    '>' + line[1:].rsplit('|', 1)[-1]
+                    '>' + line[1:-1].split(' ', 1)[0].rsplit('|', 1)[-1] + '\n'
                     if line.startswith('>')
                     else line
                 )
@@ -144,15 +148,6 @@ class DotPrep:
         tempdir.cleanup()
 
         return coords, index
-
-    @classmethod
-    def __clean_scf_name_coords(cls, coords):
-        header, data = coords.split('\n', 1)[0]
-        data = data.split('\n')
-
-    @classmethod
-    def __clean_scf_name_index(cls, index):
-        pass
 
     @classmethod
     def gbk_to_annotation_file(cls, gbk: str, is_ref: bool) -> str:

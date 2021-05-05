@@ -75,7 +75,6 @@ class AniTree(AbstractTree):
     def __init__(self, genomes: models.QuerySet):
         anis = []
         for g1 in genomes:
-            g1_existing_partners = g1.get_ani_partners()
             for g2 in genomes:
                 if g1 == g2:
                     ani, created = GenomeSimilarity.objects.get_or_create(from_genome=g1, to_genome=g2)

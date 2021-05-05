@@ -4,29 +4,26 @@
 {% block styles %}
     <script src="{% static 'global/js/query-groups.js' %}"></script>
 
+    <!-- files for Dot.js -->
     <script src="{% static 'global/js/d3.v5.min.js' %}"></script>
     <script src="{% static 'dotplot/js/d3-scale-chromatic.v1.min.js' %}"></script>
     <script src="{% static 'dotplot/js/papaparse.min.js' %}"></script>
     <script src="{% static 'dotplot/js/ramda.min.js' %}"></script>
-
-    <script src="{% static 'dotplot/js/Dot.js' %}"></script>
-    <script src="{% static 'dotplot/js/InputPanel.js' %}"></script>
+    <script src="{% static 'dotplot/js/Dot.js' %}"></script>  <!-- this is the only file has been edited -->
     <script src="{% static 'dotplot/js/MultiSegmentScale.js' %}"></script>
-    <script src="{% static 'dotplot/js/ramda.min.js' %}"></script>
     <script src="{% static 'dotplot/js/SuperUI.js' %}"></script>
     <script src="{% static 'dotplot/js/VisToolTemplate.js' %}"></script>
-
-    <link rel="stylesheet" type="text/css" href="{% static 'global/css/annotype_color.css' %}">
-    <link rel="stylesheet" type="text/css" href="{% static 'global/css/taxid_color.css' %}">
-    <link rel="stylesheet" type="text/css" href="{% static 'global/css/taxid_color_label.css' %}" id="taxid-color-stylesheet">
-    <link rel="stylesheet" type="text/css" href="{% static 'global/css/tag_color.css' %}"/>
 
     <!-- autocomplete -->
     <link href="{% static 'global/css/jquery.tag-editor.css' %}" rel="stylesheet"/>
     <script src="{% static 'global/js/jquery.caret.min.js' %}"></script>
     <script src="{% static 'global/js/jquery.tag-editor.min.js' %}"></script>
 
-    <!-- basic css -->
+    <!--  css -->
+    <link rel="stylesheet" type="text/css" href="{% static 'global/css/annotype_color.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'global/css/taxid_color.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'global/css/taxid_color_label.css' %}" id="taxid-color-stylesheet">
+    <link rel="stylesheet" type="text/css" href="{% static 'global/css/tag_color.css' %}"/>
     <link rel="stylesheet" type="text/css" href="{% static 'dotplot/css/dotplot.css' %}"/>
 
 {% endblock %}
