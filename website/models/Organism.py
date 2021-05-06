@@ -2,6 +2,7 @@ from django.db import models
 from .TaxID import TaxID
 from .Tag import Tag
 from OpenGenomeBrowser import settings
+from website.models.helpers.backup_file import read_file_or_default, overwrite_with_backup
 
 
 # class OrganismManager(models.Manager):
@@ -54,14 +55,20 @@ class Organism(models.Model):
 
     def base_path(self, relative=True) -> str:
         rel = F"organisms/{self.name}"
-        if relative:
-            return rel
-        else:
-            return F"{settings.GENOMIC_DATABASE}/{rel}"
+        return rel if relative else f'{settings.GENOMIC_DATABASE}/{rel}'
 
     @property
     def metadata_json(self):
         return F'{settings.GENOMIC_DATABASE}/organisms/{self.name}/organism.json'
+
+    def markdown_path(self, relative=True) -> str:
+        return F"{self.base_path(relative)}/organism.md"
+
+    def markdown(self, default=None) -> str:
+        return read_file_or_default(file=self.markdown_path(relative=False), default=default, default_if_empty=True)
+
+    def set_markdown(self, md: str, user: str = None):
+        overwrite_with_backup(file=self.markdown_path(relative=False), content=md, user=user, delete_if_empty=True)
 
     def __str__(self):
         return self.name

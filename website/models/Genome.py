@@ -1,3 +1,4 @@
+import os
 from django.db import models
 from django.db.models import JSONField
 from .Organism import Organism
@@ -6,6 +7,7 @@ from .Tag import Tag
 from .GenomeContent import GenomeContent
 from OpenGenomeBrowser import settings
 from functools import cached_property
+from website.models.helpers.backup_file import read_file_or_default, overwrite_with_backup
 
 
 class Genome(models.Model):
@@ -133,10 +135,7 @@ class Genome(models.Model):
 
     def base_path(self, relative=True) -> str:
         rel = F"organisms/{self.organism.name}/genomes/{self.identifier}"
-        if relative:
-            return rel
-        else:
-            return F"{settings.GENOMIC_DATABASE}/{rel}"
+        return rel if relative else f'{settings.GENOMIC_DATABASE}/{rel}'
 
     def assembly_fasta(self, relative=True) -> str:  # mandatory
         return F"{self.base_path(relative)}/{self.assembly_fasta_file}"
@@ -165,8 +164,17 @@ class Genome(models.Model):
         return (self.tags.all() | self.organism.tags.all()).distinct()
 
     @property
-    def metadata_json(self):
+    def metadata_json(self) -> str:
         return F'{settings.GENOMIC_DATABASE}/organisms/{self.organism.name}/genomes/{self.identifier}/genome.json'
+
+    def markdown_path(self, relative=True) -> str:
+        return F"{self.base_path(relative)}/genome.md"
+
+    def markdown(self, default=None) -> str:
+        return read_file_or_default(file=self.markdown_path(relative=False), default=default, default_if_empty=True)
+
+    def set_markdown(self, md: str, user: str = None):
+        overwrite_with_backup(file=self.markdown_path(relative=False), content=md, user=user, delete_if_empty=True)
 
     def __str__(self):
         return self.identifier

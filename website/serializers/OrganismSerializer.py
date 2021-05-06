@@ -1,6 +1,5 @@
 from website.models import Organism, Genome, Tag, TaxID
-import os
-import shutil
+from website.models.helpers.backup_file import overwrite_with_backup
 import json
 from rest_framework import serializers
 
@@ -103,22 +102,14 @@ class OrganismSerializer(serializers.ModelSerializer):
         except json.JSONDecodeError as e:
             raise AssertionError(f'Could not save dictionary as json: {e}')
 
-        from datetime import datetime
-        date = datetime.now().strftime("%Y_%b_%d_%H_%M_%S")
-
         if not new_data:
             new_data = cls.export_organism(organism.name)
 
-        # create backup
-        bkp_dir = F'{os.path.dirname(organism.metadata_json)}/.bkp'
-        os.makedirs(bkp_dir, exist_ok=True)
-        bkp_file = F'{bkp_dir}/{date}_{who_did_it}_organism.json'
-        shutil.move(src=organism.metadata_json, dst=bkp_file)
-
-        # write new file
-        assert not os.path.isfile(organism.metadata_json)
-        with open(organism.metadata_json, 'w') as f:
-            json.dump(new_data, f, sort_keys=True, indent=4, default=set_to_list)
+        overwrite_with_backup(
+            file=organism.metadata_json,
+            content=json.dumps(new_data, sort_keys=True, indent=4, default=set_to_list),
+            user=who_did_it
+        )
 
 
 def set_to_list(obj):

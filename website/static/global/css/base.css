@@ -14,6 +14,11 @@ html {
     height: 30px;
 }
 
+#navbarDropdown {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+}
+
 .btn-account {
     width: 100%
 }

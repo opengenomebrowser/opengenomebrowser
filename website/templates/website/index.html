@@ -5,6 +5,12 @@
     <!-- Site-specific css/js -->
     <link rel="stylesheet" type="text/css" href="{% static 'index/css/index.css' %}"/>
 
+    {% if home_markdown %}
+        <!-- Markdown https://marked.js.org/ -->
+        <link rel="stylesheet" type="text/css" href="{% static 'global/css/ogb-markdown.css' %}"/>
+        <script src="{% static 'global/js/marked.min.js' %}"></script>
+    {% endif %}
+
 {% endblock %}
 
 {% block sidebar %}
@@ -12,23 +18,42 @@
 {% endblock %}
 
 {% block body %}
-    <!-- full logo -->
 
-    <div class="container">
-        <a href="{% url 'website:genomes' %}">
-            <div class="logo-container">
-                <img src="{% static 'global/customicons/ogb-full.svg' %}" id="ogb-logo-full">
-            </div>
-        </a>
+    {% if home_markdown %}
 
-        <div class=" logo-container black-links" style="padding-top:3rem">
-            <a href="{% url 'website:genomes' %}">
-                click here to start browsing genomes
-            </a>
+        <!-- markdown -->
+        <div class="container">
+            <div id="home-markdown-content" style="display:none">{{ home_markdown }}</div>
+
+            <div id="home-markdown" class="ogb-markdown"></div>
+            <script>
+                document.getElementById('home-markdown').innerHTML =
+                    marked(document.getElementById('home-markdown-content').textContent)
+            </script>
         </div>
-    </div>
+
+    {% else %}
+
+        <!-- full logo -->
+        <div class="container">
+            <a href="{% url 'website:genomes' %}">
+                <div class="logo-container">
+                    <img src="{% static 'global/customicons/ogb-full.svg' %}" id="ogb-logo-full">
+                </div>
+            </a>
+
+            <div class=" logo-container black-links" style="padding-top:3rem">
+                <a href="{% url 'website:genomes' %}">
+                    click here to start browsing genomes
+                </a>
+            </div>
+        </div>
+
+    {% endif %}
 
     <div class="container">
+
+        <!-- credit -->
 
         {% for credit_type, entries in credit.items %}
 

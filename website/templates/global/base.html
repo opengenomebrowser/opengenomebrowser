@@ -133,6 +133,20 @@
                             Administration
                         </a>
                     </div>
+
+                    {% if admin_actions %}
+                        <div class="dropdown-divider"></div>
+
+                        {% for admin_action in admin_actions %}
+                            <div class="dropdown-item">
+                                <a class="btn btn-secondary btn-account" href="{{ admin_action.url }}">
+                                    {{ admin_action.action }}
+                                </a>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+
                 {% endif %}
 
                 <div class="dropdown-divider"></div>
@@ -195,7 +209,6 @@
 </section>
 
 {% block body %}{% endblock %}
-
 
 
 </body>

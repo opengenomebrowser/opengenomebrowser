@@ -1,7 +1,15 @@
 from django.shortcuts import render
+from website.models.helpers.backup_file import read_file_or_default
+from OpenGenomeBrowser.settings import GENOMIC_DATABASE
 
 
 def home_view(request):
+    home_markdown = read_file_or_default(file=f'{GENOMIC_DATABASE}/index.md', default=None, default_if_empty=True)
+
+    admin_actions = [
+        dict(url='/admin/markdown-editor/?page=index', action='Edit markdown')
+    ]
+
     credit = dict(
         People=[
             dict(
@@ -163,7 +171,9 @@ def home_view(request):
     context = dict(
         title='Home',
         no_help=True,
-        credit=credit
+        credit=credit,
+        home_markdown=home_markdown,
+        admin_actions=admin_actions
     )
 
     return render(request, 'website/index.html', context)

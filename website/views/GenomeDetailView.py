@@ -26,9 +26,18 @@ class GenomeDetailView(DetailView):
         context = super().get_context_data(**kwargs)
 
         g: Genome = self.object
+
+        context['admin_actions'] = [
+            dict(url=f'/admin/markdown-editor/?genome={g.identifier}', action='Edit genome markdown'),
+            dict(url=f'/admin/markdown-editor/?organism={g.organism.name}', action='Edit organism markdown')
+        ]
+
         context['genome'] = g
 
         context['title'] = g.identifier
+
+        context['genome_markdown'] = g.markdown()
+        context['organism_markdown'] = g.organism.markdown()
 
         key_parameters = ['is_representative', 'contaminated', 'isolation_date', 'growth_condition',
                           'geographical_coordinates', 'geographical_name']
@@ -53,19 +62,6 @@ class GenomeDetailView(DetailView):
                     data.get('pie_chart_col', None)
                 )
                 for title, data in g.custom_tables.items()]
-
-        # # origin of sequences
-        # if g.origin_excluded_sequences:
-        #     sorted_list = sorted(g.origin_excluded_sequences, key=lambda entry: entry['percentage'], reverse=True)
-        #     context['excluded_sequences'] = [create_entry(entry['taxid'], entry['percentage'])
-        #                                      for entry in sorted_list]
-        # if g.origin_included_sequences:
-        #     sorted_list = sorted(g.origin_included_sequences, key=lambda entry: entry['percentage'], reverse=True)
-        #     context['included_sequences'] = [create_entry(entry['taxid'], entry['percentage'])
-        #                                      for entry in sorted_list]
-        #
-        # if g.sixteen_s and len(g.sixteen_s) > 0:
-        #     context['sixteen_s'] = {db_name: covert_sixteen_s(data) for db_name, data in g.sixteen_s.items()}
 
         return context
 
@@ -98,7 +94,8 @@ def dataframe_to_bootstrap_html(df: pd.DataFrame, table_id: str, index=False) ->
         .replace('border="1" class="dataframe"',
                  F'class="table table-bordered table-sm white-links"', 1) \
         .replace('<thead>', '<thead class="thead-dark">', 1) \
-        .replace('<th>g', '<th scope="col">g', len(df.columns))
+        .replace('<th>g', '<th scope="col">g', len(df.columns)) \
+        .replace('<tr style="text-align: right;">', '<tr>', 1)
 
     return html
 

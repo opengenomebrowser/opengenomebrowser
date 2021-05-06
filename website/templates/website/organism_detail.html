@@ -7,6 +7,12 @@
     <link rel="stylesheet" type="text/css" href="{% static 'global/css/tag_color.css' %}"/>
     <link rel="stylesheet" type="text/css" href="{% static 'global/css/detail.css' %}"/>
 
+    {% if organism_markdown %}
+        <!-- Markdown https://marked.js.org/ -->
+        <link rel="stylesheet" type="text/css" href="{% static 'global/css/ogb-markdown.css' %}"/>
+        <script src="{% static 'global/js/marked.min.js' %}"></script>
+    {% endif %}
+
     <style>
         #representative div.ogb-tag {
             float: right;
@@ -38,8 +44,6 @@
             </li>
         </ol>
     </nav>
-
-    <div class="body-push"></div>
 
     <section>
         <!-- title -->
@@ -74,16 +78,12 @@
 
         </div>
 
-        <!-- tags -->
-        <div class="container">
+        {% if organism.tags.all.count == 0 %}
+            <!-- tags -->
+            <div class="container">
+                <hr class="featurette-divider">
 
-            <hr class="featurette-divider">
-
-            <h3>Tags</h3>
-
-            {% if organism.tags.all.count == 0 %}
-                <p>No tags</p>
-            {% else %}
+                <h3>Tags</h3>
                 <div class="container flex-container">
                     {% for tag in organism.tags.all %}
                         <div class="card" style="width: 18rem; background-color:rgb({{ tag.color }})">
@@ -97,8 +97,23 @@
                         </div>
                     {% endfor %}
                 </div>
-            {% endif %}
-        </div>
+            </div>
+        {% endif %}
+
+        {% if organism_markdown %}
+            <!-- markdown -->
+            <div class="container">
+                <hr class="featurette-divider">
+
+                <div id="organism-markdown-content" style="display:none">{{ organism_markdown }}</div>
+
+                <div id="organism-markdown" class="ogb-markdown"></div>
+                <script>
+                    document.getElementById('organism-markdown').innerHTML =
+                        marked(document.getElementById('organism-markdown-content').textContent)
+                </script>
+            </div>
+        {% endif %}
 
         <!-- genomes -->
         <div class="container black-links">

@@ -7,6 +7,12 @@
     <link rel="stylesheet" type="text/css" href="{% static 'global/css/tag_color.css' %}"/>
     <link rel="stylesheet" type="text/css" href="{% static 'global/css/detail.css' %}"/>
 
+    {% if genome_markdown or organism_markdown %}
+        <!-- Markdown https://marked.js.org/ -->
+        <link rel="stylesheet" type="text/css" href="{% static 'global/css/ogb-markdown.css' %}"/>
+        <script src="{% static 'global/js/marked.min.js' %}"></script>
+    {% endif %}
+
     <!-- Plotly https://plot.ly/ -->
     <script src="{% static 'global/js/plotly-latest.min.js' %}"></script>
 
@@ -44,8 +50,6 @@
             </li>
         </ol>
     </nav>
-
-    <div class="body-push"></div>
 
     <section>
         <!-- title -->
@@ -114,17 +118,12 @@
             </div>
         {% endif %}
 
+        {% if genome.all_tags.count > 0 %}
+            <!-- tags -->
+            <div class="container">
+                <hr class="featurette-divider">
 
-        <!-- tags -->
-        <div class="container">
-
-            <hr class="featurette-divider">
-
-            <h3>Tags</h3>
-
-            {% if genome.all_tags.count == 0 %}
-                <p>No tags</p>
-            {% else %}
+                <h3>Tags</h3>
                 <div class="container flex-container">
                     {% for tag in genome.all_tags.all %}
                         <div class="card" style="width: 18rem; background-color:rgb({{ tag.color }})">
@@ -138,17 +137,44 @@
                         </div>
                     {% endfor %}
                 </div>
-            {% endif %}
-        </div>
+            </div>
+        {% endif %}
 
+        {% if organism_markdown %}
+            <!-- markdown -->
+            <div class="container">
+                <hr class="featurette-divider">
+
+                <div id="organism-markdown-content" style="display:none">{{ organism_markdown }}</div>
+
+                <div id="organism-markdown" class="ogb-markdown"></div>
+                <script>
+                    document.getElementById('organism-markdown').innerHTML =
+                        marked(document.getElementById('organism-markdown-content').textContent)
+                </script>
+            </div>
+        {% endif %}
+
+        {% if genome_markdown %}
+            <!-- markdown -->
+            <div class="container">
+                <hr class="featurette-divider">
+
+                <div id="genome-markdown-content" style="display:none">{{ genome_markdown }}</div>
+
+                <div id="genome-markdown" class="ogb-markdown"></div>
+                <script>
+                    document.getElementById('genome-markdown').innerHTML =
+                        marked(document.getElementById('genome-markdown-content').textContent)
+                </script>
+            </div>
+        {% endif %}
 
         <!-- tables -->
         <div class="container">
-
             <hr class="featurette-divider">
 
             <h3>Metadata</h3>
-
             <!-- key parameters -->
             <div data-toggle="collapse" href="#parameters-key-body" aria-expanded="true"
                  aria-controls="parameters-key-body">

@@ -1,0 +1,14 @@
+{% extends "admin/change_form.html" %}
+
+{% block body %}
+
+    <div class="form-row field-tag">
+        <div>
+            <label for="custom-markdown">Click here to edit the markdown:</label>
+            <a id="custom-markdown" href="/admin/markdown-editor/?genome={{ original.identifier }}">EDIT MARKDOWN</a>
+        </div>
+    </div>
+
+    {{ block.super }}
+
+{% endblock %}

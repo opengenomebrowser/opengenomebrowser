@@ -1,14 +1,128 @@
 from django.contrib import admin
-from .models import Organism, Genome, Tag, TagDescriptions
-from website.serializers import OrganismSerializer
-from website.serializers import GenomeSerializer
+from django.urls import path
 from django.db.models import JSONField
 from django.contrib import messages
-from django.core.exceptions import ValidationError
+from django.shortcuts import render
+from django.core.exceptions import ObjectDoesNotExist
+from django.http import JsonResponse
+from django.contrib.auth.models import User, Group
+from django.contrib.auth.admin import UserAdmin, GroupAdmin
+
+from website.models.helpers.backup_file import read_file_or_default, overwrite_with_backup
+from website.models import Organism, Genome, Tag, TagDescriptions
+from website.serializers import OrganismSerializer
+from website.serializers import GenomeSerializer
 from prettyjson import PrettyJSONWidget
 import json
 from dictdiffer import diff
 from datetime import date
+
+
+class MarkdownObject:
+    def __init__(self, type: str, name: str, file_path: str, featured_on: str):
+        self.type = type
+        self.name = name
+        self.file_path = file_path
+        self.featured_on = featured_on
+
+    @property
+    def markdown(self):
+        return read_file_or_default(file=f'database/{self.file_path}', default='')
+
+    def set_markdown(self, md: str, user: str):
+        self.obj.set_markdown(md=md, user=user)
+
+
+class MarkdownObjectOrganism(MarkdownObject):
+    def __init__(self, organism: Organism):
+        self.obj = organism
+        super().__init__(
+            type='organism', name=organism.name, file_path=organism.markdown_path(relative=True), featured_on=f'/organism/{organism.name}'
+        )
+
+
+class MarkdownObjectGenome(MarkdownObject):
+    def __init__(self, genome: Genome):
+        self.obj = genome
+        super().__init__(
+            type='organism', name=genome.identifier, file_path=genome.markdown_path(relative=True), featured_on=f'/genome/{genome.identifier}'
+        )
+
+
+class MarkdownObjectPage(MarkdownObject):
+    def __init__(self, page: str):
+        self.page = page
+        if page == 'index':
+            super().__init__(
+                type='page', name='index', file_path='/index.md', featured_on='/'
+            )
+        else:
+            raise KeyError(f'Error: page does not exist: {page}.')
+
+    def set_markdown(self, md: str, user: str):
+        from OpenGenomeBrowser.settings import GENOMIC_DATABASE
+        overwrite_with_backup(file=f'{GENOMIC_DATABASE}/{self.file_path}', content=md, user=user, delete_if_empty=True)
+
+
+class OgbAdmin(admin.AdminSite):
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path(r'markdown-editor/', self.admin_view(self.markdown_editor), name='markdown_editor'),
+            path(r'markdown-editor/submit/', self.admin_view(self.markdown_submit), name='markdown_editor')
+        ]
+        urls = custom_urls + urls
+        return urls
+
+    def markdown_editor(self, request):
+        context = dict(
+            title='Markdown Editor',
+            error_danger=[], error_warning=[], error_info=[],
+            genomes=[],
+            genome_to_species={}
+        )
+
+        try:
+            if 'page' in request.GET:
+                try:
+                    context['obj'] = MarkdownObjectPage(page=request.GET['page'])
+                except KeyError as e:
+                    context['error_danger'].append(str(e))
+            elif 'genome' in request.GET:
+                context['obj'] = MarkdownObjectGenome(genome=Genome.objects.get(identifier=request.GET['genome']))
+            elif 'organism' in request.GET:
+                context['obj'] = MarkdownObjectOrganism(organism=Organism.objects.get(name=request.GET['organism']))
+            else:
+                context['error_danger'].append('Error: no page, genome or organism specified.')
+        except ObjectDoesNotExist:
+            context['error_danger'].append('Error: could not find object in database.')
+
+        return render(request, 'admin/markdown-editor.html', context)
+
+    def markdown_submit(self, request):
+        type = request.POST['type']
+        name = request.POST['name']
+        markdown = request.POST['markdown']
+        user = request.user.username
+
+        if type == 'page':
+            obj = MarkdownObjectPage(page=name)
+        elif type == 'genome':
+            obj = MarkdownObjectGenome(Genome.objects.get(identifier=name))
+        elif type == 'organism':
+            obj = MarkdownObjectOrganism(Organism.objects.get(name=name))
+        else:
+            return JsonResponse(dict(message='Type not supported!'), status=400)
+
+        obj.set_markdown(md=markdown, user=user)
+
+        return JsonResponse(dict(success=True))
+
+
+ogb_admin = OgbAdmin()
+
+ogb_admin.register(User, UserAdmin)
+ogb_admin.register(Group, GroupAdmin)
 
 
 class TagAdmin(admin.ModelAdmin):
@@ -34,14 +148,15 @@ class TagAdmin(admin.ModelAdmin):
         except Exception as e:
             messages.add_message(request, messages.ERROR, f'Something went wrong: {str(e)}')
 
-
         Tag.create_tag_color_css()
 
 
-admin.site.register(Tag, TagAdmin)
+ogb_admin.register(Tag, TagAdmin)
 
 
 class OrganismAdmin(admin.ModelAdmin):
+    change_form_template = 'admin/change_form_organism.html'
+
     search_fields = ['name']
 
     readonly_fields = ['name']
@@ -101,10 +216,12 @@ class OrganismAdmin(admin.ModelAdmin):
         return False
 
 
-admin.site.register(Organism, OrganismAdmin)
+ogb_admin.register(Organism, OrganismAdmin)
 
 
 class GenomeAdmin(admin.ModelAdmin):
+    change_form_template = 'admin/change_form_genome.html'
+
     search_fields = ['identifier']
 
     readonly_fields = ['identifier',
@@ -115,8 +232,7 @@ class GenomeAdmin(admin.ModelAdmin):
                        'cds_tool_sqn_file',
                        'custom_annotations',
                        'assembly_fasta_file',
-                       'BUSCO',
-                       'BUSCO_percent_single'
+                       'BUSCO'
                        ]
 
     exclude = [
@@ -175,4 +291,4 @@ class GenomeAdmin(admin.ModelAdmin):
         return False
 
 
-admin.site.register(Genome, GenomeAdmin)
+ogb_admin.register(Genome, GenomeAdmin)

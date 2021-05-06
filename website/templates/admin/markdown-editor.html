@@ -1,0 +1,222 @@
+{% extends "global/base.html" %}
+{% load static %}
+{% block styles %}
+
+    <!-- Markdown https://marked.js.org/ -->
+    <link rel="stylesheet" type="text/css" href="{% static 'global/css/ogb-markdown.css' %}"/>
+    <script src="{% static 'global/js/marked.min.js' %}"></script>
+
+    <style>
+        #markdown-editor {
+            font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
+            font-size: 12px;
+            resize: none;
+            border-top-left-radius: .25rem;
+            border-style: solid;
+            border-color: #dee2e6;
+            border-width: 1px;
+            padding: 10px;
+        }
+
+        .markdown-viewbox {
+            height: 100%;
+            width: 100%;
+        }
+
+        #tab-container {
+            height: calc(100vh - 380px);
+            padding-bottom: 4px;
+        }
+
+        .markdown-container {
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+        }
+
+        #markdown-preview-container {
+            overflow: scroll;
+        }
+    </style>
+
+{% endblock %}
+
+{% block sidebar %}{% endblock %}
+
+{% block body %}
+
+    <!-- title -->
+    <div class="container black-links">
+
+        <h1>Markdown editor</h1>
+
+        {% if obj %}
+            <hr>
+
+            <span class="type-label">{{ obj.type }}:</span>
+            <span class="h1">{{ obj.name }}</span>
+
+            <br>
+            <span class="type-label">file: <a href="/files_html/{{ obj.file_path }}">{{ obj.file_path }}</a></span>
+            <br>
+            <span class="type-label">featured here: <a href="{{ obj.featured_on }}">{{ obj.featured_on }}</a></span>
+
+            <hr>
+
+            <div id="markdown-original" style="display:none">{{ obj.markdown }}</div>
+
+            <ul class="nav nav-tabs" id="myTab" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" id="markdown-tab" data-toggle="tab" href="#markdown-editor-container" role="tab"
+                       aria-controls="markdown-editor-container"
+                       aria-selected="true">Markdown</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="preview-tab" data-toggle="tab" href="#markdown-preview-container" role="tab"
+                       aria-controls="markdown-preview-container"
+                       aria-selected="false">Preview</a>
+                </li>
+                <li class="nav-item ml-auto">
+                    <a type="button" class="btn btn-info" href="https://www.markdownguide.org/cheat-sheet/" target="_blank" style="color: #fff;">
+                        Cheatsheet</a>
+                    <button type="button" class="btn btn-danger" onclick="resetMarkdown()">
+                        Reset</button>
+                </li>
+            </ul>
+
+            <div class="tab-content" id="tab-container">
+                <div class="tab-pane fade show active markdown-container" id="markdown-editor-container" role="tabpanel"
+                     aria-labelledby="markdown-tab">
+                    <textarea id="markdown-editor" class="markdown-viewbox">
+                        ...loading...
+                    </textarea>
+                </div>
+                <div class="tab-pane fade markdown-container ogb-markdown" id="markdown-preview-container" role="tabpanel"
+                     aria-labelledby="preview-tab">
+                    ...loading...
+                </div>
+            </div>
+
+
+            <button type="button" class="btn btn-success" onclick="submitFunction()">Save</button>
+
+        {% endif %}
+
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="alertModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header alert">
+                    <h5 class="modal-title" id="exampleModalLongTitle">Modal title</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">Modal message</div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block end %}
+
+    <script>
+        const objType = '{{ obj.type }}'
+        const objName = '{{ obj.name }}'
+
+        const markdown_editor = document.getElementById('markdown-editor')
+        const markdown_original = document.getElementById('markdown-original')
+        const markdown_preview = document.getElementById('markdown-preview-container')
+
+        const markdown_button = document.getElementById('markdown-tab')
+        const preview_button = document.getElementById('preview-tab')
+
+        const resetMarkdown = function () {
+            markdown_editor.value = markdown_original.textContent
+            if (preview_button.classList.contains('active')) {
+                loadPreview()
+            }
+        }
+
+        resetMarkdown()
+
+        const loadPreview = function () {
+            markdown_preview.innerHTML = marked(markdown_editor.value)
+        }
+
+
+        jQuery(document).ready(function () {
+
+                markdown_button.onclick = function (event) {
+                    // wait 150 ms (duration of the fading animation) to delete the content
+                    setTimeout(function () {
+                        markdown_preview.innerHTML = '...loading...'
+                    }, 160)
+
+                }
+
+                preview_button.onclick = function (event) {
+                    loadPreview()
+                }
+
+            }
+        )
+
+        const submitFunction = function () {
+            const md = markdown_editor.value
+
+            if (md === markdown_original.textContent) {
+                alertModal('warning', 'Message', 'No change was made.')
+                return
+            }
+
+            $.ajax({
+                url: "/admin/markdown-editor/submit/",
+                method: 'post',
+                data: {'type': objType, 'name': objName, 'markdown': md},
+                dataType: "json",
+
+                success: function (data, textStatus, xhr) {
+                    alertModal('success', 'Success', 'Your edit was successfully saved!')
+                    markdown_original.textContent = md
+                },
+
+                error: function (jqXHR, textStatus, errorThrown) {
+                    console.log('jqXHR:', jqXHR)
+                    console.log('textStatus:', textStatus)
+                    console.log('errorThrown:', errorThrown)
+                    alertModal('danger', 'Error', 'Failed to submit the data! Check console for more information.')
+                }
+            })
+
+        }
+
+        const alertModal = function (type, header, body) {
+            const types = ['primary', 'secondary', 'success', 'danger', 'warning', 'info', 'light', 'dark']
+
+            const modal = $('#alertModal')
+            const modalHeader = modal.find('.modal-header')
+            const modalTitle = modal.find('.modal-title')
+            const modalBody = modal.find('.modal-body')
+
+            assert(types.includes(type), `Type ${type} is not included in ${types}!`)
+
+            modalHeader.removeClass(types.map(function (t) {
+                return 'alert-' + t
+            }))
+            modalHeader.addClass('alert-' + type)
+
+            modalTitle.text(header)
+            modalBody.text(body)
+            modal.modal('show')
+        }
+
+    </script>
+
+{% endblock %}

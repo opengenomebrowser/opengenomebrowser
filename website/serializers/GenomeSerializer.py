@@ -1,7 +1,6 @@
-import os
-import shutil
 import json
 from website.models import Organism, Genome, Tag, TaxID, GenomeContent
+from website.models.helpers.backup_file import overwrite_with_backup
 from rest_framework import serializers
 from datetime import datetime, date
 
@@ -111,17 +110,11 @@ class GenomeSerializer(serializers.ModelSerializer):
         except json.JSONDecodeError as e:
             raise AssertionError(f'Could not save dictionary as json: {e}')
 
-        # create backup
-        bkp_dir = F'{os.path.dirname(genome.metadata_json)}/.bkp'
-        os.makedirs(bkp_dir, exist_ok=True)
-        bkp_file = F'{bkp_dir}/{date}_{who_did_it}_organism.json'
-        shutil.move(src=genome.metadata_json, dst=bkp_file)
-
-        # write new file
-        assert not os.path.isfile(genome.metadata_json)
-
-        with open(genome.metadata_json, 'w') as f:
-            json.dump(new_data, f, sort_keys=True, indent=4, cls=ComplexEncoder)
+        overwrite_with_backup(
+            file=genome.metadata_json,
+            content=json.dumps(new_data, sort_keys=True, indent=4, cls=ComplexEncoder),
+            user=who_did_it
+        )
 
 
 class ComplexEncoder(json.JSONEncoder):
