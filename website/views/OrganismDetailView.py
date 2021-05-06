@@ -15,6 +15,7 @@ class OrganismDetailView(DetailView):
         o: Organism = self.object
 
         context['admin_actions'] = [
+            dict(url=f'/admin/website/organism/{o.pk}/change/', action='Edit organism'),
             dict(url=f'/admin/markdown-editor/?organism={o.name}', action='Edit markdown')
         ]
 

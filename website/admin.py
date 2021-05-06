@@ -155,7 +155,7 @@ ogb_admin.register(Tag, TagAdmin)
 
 
 class OrganismAdmin(admin.ModelAdmin):
-    change_form_template = 'admin/change_form_organism.html'
+    change_form_template = 'admin/change_form_organism.html'  # todo: does not have an effect
 
     search_fields = ['name']
 
@@ -220,7 +220,7 @@ ogb_admin.register(Organism, OrganismAdmin)
 
 
 class GenomeAdmin(admin.ModelAdmin):
-    change_form_template = 'admin/change_form_genome.html'
+    change_form_template = 'admin/change_form_genome.html'  # todo: does not have an effect
 
     search_fields = ['identifier']
 

@@ -28,6 +28,7 @@ class GenomeDetailView(DetailView):
         g: Genome = self.object
 
         context['admin_actions'] = [
+            dict(url=f'/admin/website/genome/{g.pk}/change/', action='Edit genome'),
             dict(url=f'/admin/markdown-editor/?genome={g.identifier}', action='Edit genome markdown'),
             dict(url=f'/admin/markdown-editor/?organism={g.organism.name}', action='Edit organism markdown')
         ]
