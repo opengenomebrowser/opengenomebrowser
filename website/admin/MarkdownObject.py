@@ -1,3 +1,4 @@
+from OpenGenomeBrowser.settings import GENOMIC_DATABASE
 from website.models import Organism, Genome
 from website.models.helpers.backup_file import read_file_or_default, overwrite_with_backup
 
@@ -11,7 +12,7 @@ class MarkdownObject:
 
     @property
     def markdown(self):
-        return read_file_or_default(file=f'database/{self.file_path}', default='')
+        return read_file_or_default(file=f'{GENOMIC_DATABASE}/{self.file_path}', default='')
 
     def set_markdown(self, md: str, user: str):
         self.obj.set_markdown(md=md, user=user)
