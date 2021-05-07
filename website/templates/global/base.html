@@ -97,7 +97,7 @@
                href="{% url 'website:trees' %}">
                 Trees
             </a>
-            <a class="dropdown-item context-menu-icon context-menu-icon-dotplot {% if request.resolver_match.url_name == 'trees' %}active{% endif %}"
+            <a class="dropdown-item context-menu-icon context-menu-icon-dotplot {% if request.resolver_match.url_name == 'dotplot' %}active{% endif %}"
                href="{% url 'website:dotplot' %}">
                 Dotplot
             </a>

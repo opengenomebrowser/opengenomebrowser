@@ -177,7 +177,7 @@
             }
 
             $.ajax({
-                url: "/admin/markdown-editor/submit/",
+                url: "{% url 'admin:markdown-editor-submit' %}",
                 method: 'post',
                 data: {'type': objType, 'name': objName, 'markdown': md},
                 dataType: "json",

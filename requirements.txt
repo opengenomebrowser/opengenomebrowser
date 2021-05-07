@@ -10,10 +10,10 @@ chardet==4.0.0
 colorama==0.4.4
 colorspacious==1.1.2
 cycler==0.10.0
-Cython==0.29.22
+Cython==0.29.23
 decorator==4.4.2
 dictdiffer==0.8.1
-Django==3.2
+Django==3.2.2
 django-datatables-view==1.19.1
 django-invitations==1.9.3
 django-js-asset==1.2.2
@@ -24,7 +24,7 @@ dna-features-viewer==3.0.3
 fire==0.4.0
 glacier==0.3.0
 hdmedians==0.14.2
-huey==2.3.1
+huey==2.3.2
 ipython==7.21.0
 ipython-genutils==0.2.0
 jedi==0.18.0
@@ -39,7 +39,7 @@ msgpack==1.0.2
 natsort==7.1.1
 numpy==1.20.2
 packaging==20.9
-pandas==1.2.3
+pandas==1.2.4
 parso==0.8.1
 patsy==0.5.1
 pexpect==4.8.0
@@ -59,8 +59,8 @@ pytz==2021.1
 PyYAML==5.4.1
 requests==2.25.1
 scikit-bio==0.5.6
-scikit-learn==0.24.1
-scipy==1.6.2
+scikit-learn==0.24.2
+scipy==1.6.3
 shellingham==1.4.0
 six==1.15.0
 soupsieve==2.2

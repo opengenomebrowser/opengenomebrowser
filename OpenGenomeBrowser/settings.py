@@ -62,7 +62,8 @@ HUEY_WORKERS = int(os.environ.get('HUEY_WORKERS', 4))
 
 # Application definition
 INSTALLED_APPS = [
-    'django.contrib.admin',
+    # 'django.contrib.admin',
+    'OpenGenomeBrowser.apps.OgbAdminConfig',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',

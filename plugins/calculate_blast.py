@@ -4,7 +4,7 @@ from functools import lru_cache
 
 
 @lru_cache(maxsize=10)  # cache last 10 results
-def calculate_blast(fasta_string: str, db: [], mode):
+def calculate_blast(fasta_string: str, db: tuple, mode: str):
     blast = Blast(system_blast=True, outfmt=5)
     db = [f'{GENOMIC_DATABASE}/{f}' for f in db]
     blast_output = blast.blast(fasta_string=fasta_string, db=db, mode=mode)

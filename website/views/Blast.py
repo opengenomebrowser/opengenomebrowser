@@ -71,6 +71,9 @@ def blast_submit(request):
 
     fasta_files = [getattr(genome.genomecontent, file_type)(relative=True) for genome in genomes]
 
+    # make hashable for caching
+    fasta_files = tuple(sorted(set(fasta_files)))
+
     try:
         blast_output = calculate_blast(fasta_string=query, db=fasta_files, mode=blast_algorithm)
     except Exception as e:

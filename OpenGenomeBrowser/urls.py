@@ -20,7 +20,7 @@ from django.conf.urls.static import static
 from django.contrib.auth.views import LoginView
 from rest_framework import routers
 
-from website.admin import ogb_admin
+from website.admin.admin import ogb_admin_site
 
 from website.views.rest_api import *
 
@@ -46,7 +46,7 @@ class OgbLoginView(LoginView):
 
 
 urlpatterns = [
-                  path('admin/', ogb_admin.urls),
+                  path('admin/', ogb_admin_site.urls),
 
                   path('accounts/login/', OgbLoginView.as_view(), name='login'),
                   path('accounts/', include('django.contrib.auth.urls')),
