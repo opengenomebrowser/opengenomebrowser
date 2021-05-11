@@ -45,6 +45,7 @@ class ParameterField:
         self.genome = genome
         self.attr = attr
         self.value = getattr(genome, attr)
+        if self.value == []: self.value = None
 
     @property
     def verbose(self):

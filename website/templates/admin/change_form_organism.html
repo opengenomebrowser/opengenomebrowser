@@ -9,6 +9,13 @@
         </div>
     </div>
 
+    <div class="form-row field-tag">
+        <div>
+            <label for="custom-markdown">Click here to open the organism page:</label>
+            <a id="custom-markdown" href="/organism/{{ original.name }}">OPEN {{ original.name }}</a>
+        </div>
+    </div>
+
     {{ block.super }}
 
 {% endblock %}
