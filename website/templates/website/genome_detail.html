@@ -171,7 +171,7 @@
         {% endif %}
 
         <!-- tables -->
-        <div class="container">
+        <div class="container black-links">
             <hr class="featurette-divider">
 
             <h3>Metadata</h3>
@@ -193,30 +193,9 @@
                 <table class="table no-top-padding">
                     <tbody>
 
-                    {% for verbose, value in key_parameters %}{% if value != None %}
-                        <tr>
-                            <th scope="row">{{ verbose }}</th>
-                            <td>{{ value }}</td>
-                        </tr>
+                    {% for param in key_parameters %}{% if param.value != None %}
+                        {{ param.html }}
                     {% endif %}{% endfor %}
-
-                    {% if genome.env_broad_scale %}
-                        <tr>
-                            <th scope="row">env_broad_scale</th>
-                            <td>{% for env in genome.env_broad_scale %}{{ env }}{% endfor %}</td>
-                        </tr>{% endif %}
-
-                    {% if genome.env_local_scale %}
-                        <tr>
-                            <th scope="row">env_local_scale</th>
-                            <td>{% for env in genome.env_local_scale %}{{ env }}{% endfor %}</td>
-                        </tr>{% endif %}
-
-                    {% if genome.env_medium %}
-                        <tr>
-                            <th scope="row">env_medium</th>
-                            <td>{% for env in genome.env_medium %}{{ env }}{% endfor %}</td>
-                        </tr>{% endif %}
 
                     </tbody>
                 </table>
@@ -240,11 +219,8 @@
                 <table class="table no-top-padding">
                     <tbody>
 
-                    {% for verbose, value in seq_parameters %}{% if value != None %}
-                        <tr>
-                            <th scope="row">{{ verbose }}</th>
-                            <td>{{ value }}</td>
-                        </tr>
+                    {% for param in seq_parameters %}{% if param.value != None %}
+                        {{ param.html }}
                     {% endif %}{% endfor %}
 
                     </tbody>
@@ -269,11 +245,8 @@
                 <table class="table no-top-padding">
                     <tbody>
 
-                    {% for verbose, value in ass_parameters %}{% if value != None %}
-                        <tr>
-                            <th scope="row">{{ verbose }}</th>
-                            <td>{{ value }}</td>
-                        </tr>
+                    {% for param in ass_parameters %}{% if param.value != None %}
+                        {{ param.html }}
                     {% endif %}{% endfor %}
 
                     </tbody>
@@ -298,11 +271,8 @@
                 <table class="table no-top-padding">
                     <tbody>
 
-                    {% for verbose, value in ann_parameters %}{% if value != None %}
-                        <tr>
-                            <th scope="row">{{ verbose }}</th>
-                            <td>{{ value }}</td>
-                        </tr>
+                    {% for param in ann_parameters %}{% if param.value != None %}
+                        {{ param.html }}
                     {% endif %}{% endfor %}
 
                     </tbody>

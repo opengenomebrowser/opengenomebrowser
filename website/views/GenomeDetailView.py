@@ -1,6 +1,7 @@
 from website.models import Genome
 from website.models.TaxID import TaxID
 from django.views.generic import DetailView
+from django.template import engines
 from math import sqrt
 import numpy as np
 import pandas as pd
@@ -11,16 +12,69 @@ from lib.get_tax_info.get_tax_info import TaxID as RawTaxID
 RawTaxID.gti = GetTaxInfo()
 
 
+class ParameterField:
+    template = engines['django'].from_string('''
+<tr>
+    <th scope="row">{{ param.verbose }}</th>
+    {% if param.url %}
+        <td><a href="{{ param.url }}">{{ param.value }}</a></td>
+    {% else %}
+        <td>{{ param.value }}</td>
+    {% endif %}
+</tr>''')
+    env_template = engines['django'].from_string('''
+<tr>
+    <th scope="row">{{ param.verbose }}</th>
+    <td>
+    {% for value, url_value in param.list_values %}
+        <a class="badge badge-warning" href="https://www.ebi.ac.uk/ols/ontologies/envo/terms?iri=http%3A%2F%2Fpurl.obolibrary.org%2Fobo%2F{{ url_value }}">{{ value }}</a>
+    {% endfor %}
+    </td>
+</tr>''')
+    ref_template = engines['django'].from_string('''
+<tr>
+    <th scope="row">{{ param.verbose }}</th>
+    <td>
+    {% for ref in param.value %}
+        <a class="badge badge-info" href="{{ ref.url }}">{{ ref.name }}</a>
+    {% endfor %}
+    </td>
+</tr>''')
+
+    def __init__(self, genome: Genome, attr: str):
+        self.genome = genome
+        self.attr = attr
+        self.value = getattr(genome, attr)
+
+    @property
+    def verbose(self):
+        if self.attr == 'is_representative': return 'Representative?'
+        return Genome._meta.get_field(self.attr).verbose_name
+
+    @property
+    def url(self):
+        if self.attr == 'bioproject_accession': return f'https://www.ncbi.nlm.nih.gov/bioproject/?term={self.value}'
+        if self.attr == 'biosample_accession': return f'https://www.ncbi.nlm.nih.gov/biosample/?term={self.value}'
+        if self.attr == 'genome_accession': return f'https://www.ncbi.nlm.nih.gov/nuccore/{self.value}'
+        return None
+
+    def list_values(self):
+        return [(v, v.replace(':', '_')) for v in self.value]
+
+    def html(self):
+        if self.attr.startswith('env_'):
+            return self.env_template.render({'param': self})  # environment
+        if self.attr == 'literature_references':
+            return self.ref_template.render({'param': self})  # reference
+        else:
+            return self.template.render({'param': self})
+
+
 class GenomeDetailView(DetailView):
     model = Genome
     slug_field = 'identifier'
     template_name = 'website/genome_detail.html'
     context_object_name = 'genome'
-
-    @staticmethod
-    def __verbose(attr: str):
-        if attr == 'is_representative': return 'Representative?'
-        return Genome._meta.get_field(attr).verbose_name
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -41,18 +95,21 @@ class GenomeDetailView(DetailView):
         context['organism_markdown'] = g.organism.markdown()
 
         key_parameters = ['is_representative', 'contaminated', 'isolation_date', 'growth_condition',
-                          'geographical_coordinates', 'geographical_name']
-        context['key_parameters'] = [[self.__verbose(attr), getattr(g, attr)] for attr in key_parameters]
+                          'geographical_coordinates', 'geographical_name',
+                          'env_broad_scale', 'env_local_scale', 'env_medium',
+                          'bioproject_accession', 'biosample_accession', 'genome_accession',
+                          'literature_references']
+        context['key_parameters'] = [ParameterField(genome=g, attr=attr) for attr in key_parameters]
 
-        seq_parameters = ['sequencing_tech', 'sequencing_tech_version', 'sequencing_date', 'sequencing_coverage']
-        context['seq_parameters'] = [[self.__verbose(attr), getattr(g, attr)] for attr in seq_parameters]
+        seq_parameters = ['library_preparation', 'sequencing_tech', 'sequencing_tech_version', 'sequencing_date', 'sequencing_coverage']
+        context['seq_parameters'] = [ParameterField(genome=g, attr=attr) for attr in seq_parameters]
 
         ass_parameters = ['assembly_tool', 'assembly_version', 'assembly_date', 'assembly_gc', 'assembly_longest_scf', 'assembly_size',
                           'assembly_nr_scaffolds', 'assembly_n50', 'assembly_gaps', 'assembly_ncount', 'nr_replicons']
-        context['ass_parameters'] = [[self.__verbose(attr), getattr(g, attr)] for attr in ass_parameters]
+        context['ass_parameters'] = [ParameterField(genome=g, attr=attr) for attr in ass_parameters]
 
         ann_parameters = ['cds_tool', 'cds_tool_date', 'cds_tool_version']
-        context['ann_parameters'] = [[self.__verbose(attr), getattr(g, attr)] for attr in ann_parameters]
+        context['ann_parameters'] = [ParameterField(genome=g, attr=attr) for attr in ann_parameters]
 
         context['custom_tables'] = []
         if g.custom_tables:

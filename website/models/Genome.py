@@ -28,9 +28,9 @@ class Genome(models.Model):
 
     # information about isolation
     isolation_date = models.DateField('Isolation date', null=True, blank=True)
-    env_broad_scale = JSONField(default=list, blank=True, null=True)
-    env_local_scale = JSONField(default=list, blank=True, null=True)
-    env_medium = JSONField(default=list, blank=True, null=True)
+    env_broad_scale = JSONField('Broad isolation environment', default=list, blank=True, null=True)
+    env_local_scale = JSONField('Local isolation environment',default=list, blank=True, null=True)
+    env_medium = JSONField('Environment medium',default=list, blank=True, null=True)
     growth_condition = models.CharField('Growth condition', max_length=100, null=True, blank=True)
     geographical_coordinates = models.CharField('Geographical coordinates', max_length=200, null=True, blank=True)
     geographical_name = models.CharField('Geographical name', max_length=50, null=True, blank=True)
@@ -79,12 +79,12 @@ class Genome(models.Model):
     custom_annotations = JSONField(default=list, blank=True, null=True)  # [{"date": "2016-02-29", "file": "FAM19038.ko", "type": "KEGG"}]
 
     # accession numbers if the genome has been published
-    bioproject_accession = models.CharField(max_length=20, null=True, blank=True)
-    biosample_accession = models.CharField(max_length=20, null=True, blank=True)
-    genome_accession = models.CharField(max_length=20, null=True, blank=True)
+    bioproject_accession = models.CharField('Bioproject accession', max_length=20, null=True, blank=True)
+    biosample_accession = models.CharField('Biosample accession', max_length=20, null=True, blank=True)
+    genome_accession = models.CharField('Genome accession', max_length=20, null=True, blank=True)
 
     # literature references
-    literature_references = JSONField(default=list, blank=True, null=True)  # ["ref1", "ref2",]
+    literature_references = JSONField('Literature references', default=list, blank=True, null=True)
 
     def natural_key(self):
         return self.identifier

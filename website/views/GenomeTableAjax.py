@@ -14,18 +14,20 @@ class GenomeTableAjax(BaseDatatableView):
     max_display_length = 2000
 
     def render_column(self, row: Genome, column: str):
-        if column == 'genome_tags':
-            html = [F'<span data-tag="{tag}">{tag}</span>' for tag in row.genome_tags if tag]
-            return ' '.join(html)
-        if column == 'organism_tags':
-            html = [F'<span data-tag="{tag}">{tag}</span>' for tag in row.organism_tags if tag]
-            return ' '.join(html)
         if column == 'representative':
             return 'True' if row.is_representative else 'False'
+        if column == 'genome_tags':
+            return ' '.join(F'<span data-tag="{tag}">{tag}</span>' for tag in row.genome_tags if tag)
+        if column == 'organism_tags':
+            return ' '.join(F'<span data-tag="{tag}">{tag}</span>' for tag in row.organism_tags if tag)
+        if column == 'env_broad_scale':
+            return ' '.join(F'<span class="badge badge-warning">{env}</span>' for env in row.env_broad_scale if env)
+        if column == 'env_local_scale':
+            return ' '.join(F'<span class="badge badge-warning">{env}</span>' for env in row.env_local_scale if env)
+        if column == 'env_medium':
+            return ' '.join(F'<span class="badge badge-warning">{env}</span>' for env in row.env_medium if env)
         if column == 'literature_references':
-            return " ".join(row.literature_references)
-        elif column.startswith("env_"):
-            return " ".join(row.__getattribute__(column))
+            return ' '.join(F'<a class="badge badge-info">{ref.get("name", "no name")}</a>' for ref in row.literature_references if ref)
         else:
             return super(GenomeTableAjax, self).render_column(row, column)
 

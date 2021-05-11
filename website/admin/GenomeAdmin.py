@@ -53,7 +53,7 @@ class GenomeAdmin(ModelAdmin):
             assert genome_metadata_is_valid(data=json_data, path_to_genome=obj.base_path(relative=False),
                                             raise_exception=True), 'check_metadata raised an error'
         except Exception as e:
-            messages.add_message(request, messages.INFO, F'Something is wrong with your data: {str(e)}')
+            messages.add_message(request, messages.ERROR, F'Something is wrong with your data: {str(e)}')
             return
 
         # load current json, turn tags into set

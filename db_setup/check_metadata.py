@@ -25,18 +25,16 @@ def is_valid_env(envs) -> bool:
     return True
 
 
-def is_valid_reference(reference: str) -> bool:
-    """ :returns: true if valid PMID, DOI or URL """
+def is_valid_reference(reference: dict) -> bool:
+    """ :returns: true if reference contains name and url """
+    name: str = reference.get('name', None)
+    url: str = reference.get('url', None)
 
-    from urllib.parse import urlparse
-    isurl = urlparse(reference, scheme='http')
-    if all([isurl.scheme, isurl.netloc, isurl.path]):
-        return True  # is valid URL
+    if type(name) is not str or type(url) is not str:
+        print(f"references must contain 'name' and 'url' {reference=}")
+        return False
 
-    if re.match("(^[0-9]{8}$)|(^10.[0-9]{4,9}/[-._;()/:A-Za-z0-9]+$)", reference):
-        return True  # is valid PMID, DOI
-    print("Invalid reference in {}: '{}'. Is neither URL, PMID or DOI!".format(reference))
-    return False
+    return True
 
 
 def genome_metadata_is_valid(data: dict, path_to_genome: str, raise_exception=False):
