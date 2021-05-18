@@ -80,9 +80,11 @@ urlpatterns = [
     path('api/align/', Api.align, name='api-align'),
     path('api/get-gene/', Api.get_gene, name='api-get-gene'),
     path('api/get-tree/', Api.get_tree, name='api-get-tree'),
+    path('api/reload-orthofinder/', Api.reload_orthofinder, name='api-reload-orthofinder'),
     path('api/get-dotplot/', get_dotplot, name='api-get-dotplot'),
     path('api/get-dotplot-annotations/', get_dotplot_annotations, name='api-get-dotplot-annotations'),
     path('api/score-pathway-maps/', PathwayView.score_pathway_maps, name='api-score-pathway-maps'),
+    path('api/ogb-cache/', Api.ogb_cache, name='api-ogb-cache'),
 
     # ex /test-click-menu/
     path('test-click-menu/', ClickMenu.click_view, name='test-click-menu'),

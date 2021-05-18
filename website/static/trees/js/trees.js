@@ -32,6 +32,25 @@ function loadTree(genomes, method, target, newick_target, type, layout, mode, ca
                 $('#genome-distance-matrix').data('distance-matrix', data['distance-matrix'])
             }
 
+            if ('cache-file-path' in data) {
+                if (data['has-cache-file']) {
+                    $('#orthofinder-cached-output-download')
+                        .removeClass('disabled')
+                        .attr('href', '/api/ogb-cache/?file=' + data['cache-file-path'])
+                    $('#orthofinder-reload')
+                        .addClass('disabled')
+                        .prop("onclick", null).off("click")
+                } else {
+                    $('#orthofinder-cached-output-download')
+                        .addClass('disabled')
+                        .attr('href', '#')
+                    $('#orthofinder-reload')
+                        .removeClass('disabled')
+                        .prop("onclick", null).off("click")
+                        .click(forceReloadOrthofinder)
+                }
+            }
+
             $(target).height(600)
             $(target).empty()
 
@@ -158,11 +177,22 @@ let turnBranchLabels = function (tree) {
 }
 
 let addTreeSizeListener = function (tree, divId) {
-    addResizeListener(document.getElementById(divId), function () {
+    const div = document.getElementById(divId)
+
+    const resizefunction = function () {
+        console.log('triggered function')
         clearTimeout(ajax_timer)
         ajax_timer = setTimeout(function () {
             console.log('resizing')
             redrawTree(tree)
         }, 500)
-    })
+    }
+
+    if (div.hasOwnProperty('__resizeListeners__')) {
+        div.__resizeListeners__.length = 0  // remove all listeners
+        div.__resizeListeners__.push(resizefunction)
+    } else {
+        addResizeListener(div, resizefunction)
+    }
+
 }

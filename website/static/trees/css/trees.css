@@ -1,0 +1,26 @@
+.tree-div {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border: 1px solid;
+    padding: 5px;
+    resize: vertical;
+    overflow: auto;
+    min-height: 90px;
+}
+
+.error-message {
+    text-align: center;
+}
+
+.button-container {
+    display: flex;
+    justify-content: space-between;
+}
+
+.button-container button, a {
+    margin-top: 0.1rem;
+    margin-bottom: 0.1rem;
+}

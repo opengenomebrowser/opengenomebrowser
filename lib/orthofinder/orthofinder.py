@@ -36,6 +36,9 @@ class Orthofinder:
         self.orthofinder_bin = F'{settings.ORTHOFINDER_INSTALL_DIR}/orthofinder.py'
         assert is_installed(self.orthofinder_bin), F'OrthoFinder is not installed! Could not run "{self.orthofinder_bin}"'
 
+        for program in ['tar', 'pigz']:
+            assert is_installed(program), F'{program.capitalize()} is not installed! Could not run "{program}"'
+
     def version(self):
         subprocess = self.__run(['-h'])
         return subprocess.stdout.split(' Copyright (C) ')[0].split('version ')[1]
@@ -47,7 +50,20 @@ class Orthofinder:
         assert subprocess.returncode == 0, F'orthofinder command failed: {command},\n stdout: {subprocess.stdout},\n stderr: {subprocess.stderr}'
         return subprocess
 
-    def run_precomputed(self, identifiers: [str]):
+    def pigz(self, src_dir: str, dst: str, exclude: [str]):
+        command = ['tar']
+        for e in exclude:
+            command += [f'--exclude="{e}"']
+        command += ['--use-compress-program="pigz -k "', '-cf', dst, '.']
+
+        command = ' '.join(command)
+
+        # run Orthofinder
+        subprocess = run(command, shell=True, stdout=PIPE, stderr=PIPE, encoding='ascii', cwd=src_dir)
+
+        assert subprocess.returncode == 0, f'Failed to compress OrthoFinder output: cwd={src_dir}, {command=}\n\n{subprocess.stdout}\n\n{subprocess.stderr}'
+
+    def run_precomputed(self, identifiers: [str], cache_file: str = None) -> str:
         identifiers = set(identifiers)
 
         # Note: only one instance of OrthoFinder can run at the same time!
@@ -114,6 +130,11 @@ class Orthofinder:
         species_tree_file = F'{result_dir}/Species_Tree/SpeciesTree_rooted.txt'
         assert os.path.isfile(species_tree_file), F'{subprocess.stdout}\n\n{subprocess.stderr}\n\nCould not find species tree: {species_tree_file}'
         tree = open(species_tree_file).read().strip()
+
+        if cache_file is not None:
+            # compress output with pigz and save it to cache_file
+            os.makedirs(os.path.dirname(cache_file), exist_ok=True)  # make parent dir
+            self.pigz(src_dir=result_dir, dst=cache_file, exclude=['WorkingDirectory'])
 
         # cleanup
         shutil.rmtree(result_dir)

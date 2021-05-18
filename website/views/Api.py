@@ -1,13 +1,17 @@
-from django.shortcuts import HttpResponse
-from django.http import JsonResponse
+import os
 import json
 import itertools
 from collections import Counter
 
-from website.models import GenomeContent, Genome, PathwayMap, Gene, TaxID, GenomeSimilarity, Annotation, annotation_types
-from website.models.Tree import TaxIdTree, AniTree, OrthofinderTree, TreeNotDoneError, TreeFailedError
+from django.shortcuts import HttpResponse
+from django.http import JsonResponse
 from django.db.models.functions import Concat
 from django.db.models import CharField, Value as V
+from wsgiref.util import FileWrapper
+
+from OpenGenomeBrowser.settings import CACHE_DIR
+from website.models import GenomeContent, Genome, PathwayMap, Gene, TaxID, GenomeSimilarity, Annotation, annotation_types
+from website.models.Tree import TaxIdTree, AniTree, OrthofinderTree, TreeNotDoneError, TreeFailedError
 
 from lib.gene_loci_comparison.gene_loci_comparison import GraphicRecordLocus
 from bokeh.embed import components
@@ -464,4 +468,51 @@ class Api:
         if hasattr(tree, 'distance_matrix'):
             result['distance-matrix'] = tree.distance_matrix.to_csv()
 
+        if hasattr(tree, 'cache_file_path'):
+            result['cache-file-path'] = tree.cache_file_path
+            result['has-cache-file'] = tree.has_cache_file
+
+        print(result)
+
         return JsonResponse(result)
+
+    @staticmethod
+    def reload_orthofinder(request):
+        """
+        Trigger recalculation of OrthoFinder for specific genomes. This reloads the cache.
+
+        Query:
+            - genomes[]: list of genome identifiers
+        """
+        identifiers = set(request.POST.getlist('genomes[]'))
+        genomes = Genome.objects.filter(identifier__in=identifiers)
+        if not len(genomes) == len(identifiers):
+            found = set(genomes.values_list('identifier', flat=True))
+            print(F"Could not find these {type(genomes.first()).__name__}s: {identifiers.difference(found)}")
+            return err(F"Could not find these {type(genomes.first()).__name__}s: {identifiers.difference(found)}")
+
+        from website.models import CoreGenomeDendrogram
+        hash = CoreGenomeDendrogram.hash_genomes(genomes=genomes)
+        cgd = CoreGenomeDendrogram.objects.get(unique_id=hash)
+        if cgd.status != 'R' or 'force' in request.POST:
+            cgd.reload()
+            return JsonResponse(dict(success=True, message='triggered recalculation successfully'))
+        else:
+            return JsonResponse(dict(success=False, message='already running'))
+
+    @staticmethod
+    def ogb_cache(request):
+        """
+        ...
+
+        Query:
+            - file: file in the cache (settings.CACHE)
+        """
+        file = request.GET.get('file')
+        file = os.path.join(CACHE_DIR, file)
+        assert os.path.isfile(file), f'Cache file does not exist: {file}'
+        wrapper = FileWrapper(open(file, 'rb'))
+        response = HttpResponse(wrapper, content_type='text/plain')
+        response['Content-Disposition'] = f'attachment; filename={os.path.basename(file)}'
+        response['Content-Length'] = os.path.getsize(file)
+        return response

@@ -4,38 +4,20 @@
 {% block styles %}
     <script src="{% static 'global/js/d3.v5.min.js' %}"></script>
     <script src="{% static 'global/js/tidytree.min.js' %}"></script>
-    <script src="{% static 'global/js/phylogeneticTrees.js' %}"></script>
+    <script src="{% static 'trees/js/trees.js' %}"></script>
     <script src="{% static 'global/js/ResizeSensor.js' %}"></script>
     <script src="{% static 'global/js/query-groups.js' %}"></script>
 
     <link rel="stylesheet" type="text/css" href="{% static 'global/css/taxid_color.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'global/css/taxid_color_label.css' %}" id="taxid-color-stylesheet">
     <link rel="stylesheet" type="text/css" href="{% static 'global/css/tag_color.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'trees/css/trees.css' %}"/>
 
     <!-- autocomplete -->
     <link href="{% static 'global/css/jquery.tag-editor.css' %}" rel="stylesheet"/>
     <script src="{% static 'global/js/jquery.caret.min.js' %}"></script>
     <script src="{% static 'global/js/jquery.tag-editor.min.js' %}"></script>
 
-
-    <style>
-        .tree-div {
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            border: 1px solid;
-            padding: 5px;
-            resize: vertical;
-            overflow: auto;
-            min-height: 90px;
-        }
-
-        .error-message {
-            text-align: center;
-        }
-    </style>
 {% endblock %}
 
 {% block sidebar %}
@@ -95,7 +77,7 @@
 
             <form>
                 {% csrf_token %}
-                <div style="display: flex; justify-content: space-evenly;">
+                <div class="button-container" style="justify-content: space-evenly">
                     <button type="button" class="btn btn-primary" onclick="load_taxid_tree(allGenomes)">
                         Calculate Taxid-based tree
                     </button>
@@ -139,9 +121,11 @@
                    onclick="CopyToClipboard(this.value)" readonly>
 
             <label for="taxid-tree">Dendrogram</label>
-            <div id="taxid-tree" class="tree-div">
-                <div class="spinner-border text-dark" role="status">
-                    <span class="sr-only">Loading...</span>
+            <div id="taxid-tree-resize-trigger">
+                <div id="taxid-tree" class="tree-div">
+                    <div class="spinner-border text-dark" role="status">
+                        <span class="sr-only">Loading...</span>
+                    </div>
                 </div>
             </div>
             <br>
@@ -168,23 +152,25 @@
             <input class="form-control" type="text" id="genome-similarity-newick" placeholder="Loading..."
                    onclick="CopyToClipboard(this.value)" readonly>
 
-            <div id="genome-distance-matrix" style="display: flex; justify-content: space-between">
+            <div id="genome-distance-matrix" class="button-container">
                 Export distance matrix:
-                <button id="genome-distance-matrix" type="button" class="btn btn-secondary btn-sm" style="margin-top: 0.1rem; margin-bottom: 0.1rem"
-                        onclick="saveUriAs(uri='data:application/csv;charset=utf-8'+encodeURI($('#genome-distance-matrix').data('distance-matrix')), filename='distance-matrix.csv')"
+                <button type="button" class="btn btn-secondary btn-sm"
+                        onclick="saveUriAs(uri='data:application/csv;charset=utf-8,'+encodeURI($('#genome-distance-matrix').data('distance-matrix')), filename='distance-matrix.csv')"
                 >Download as CSV
                 </button>
 
-                <button id="genome-distance-matrix" type="button" class="btn btn-secondary btn-sm" style="margin-top: 0.1rem; margin-bottom: 0.1rem"
+                <button type="button" class="btn btn-secondary btn-sm"
                         onclick="CopyToClipboard(text=$('#genome-distance-matrix').data('distance-matrix'))"
                 >Copy to Clipboard
                 </button>
             </div>
 
             <label for="genome-similarity-tree">Dendrogram</label>
-            <div id="genome-similarity-tree" class="tree-div">
-                <div class="spinner-border text-dark" role="status">
-                    <span class="sr-only">Loading...</span>
+            <div id="genome-similarity-tree-resize-trigger">
+                <div id="genome-similarity-tree" class="tree-div">
+                    <div class="spinner-border text-dark" role="status">
+                        <span class="sr-only">Loading...</span>
+                    </div>
                 </div>
             </div>
             <br>
@@ -211,10 +197,23 @@
             <input class="form-control" type="text" id="orthofinder-newick" placeholder="Loading..."
                    onclick="CopyToClipboard(this.value)" readonly>
 
+            <div id="orthofinder-cached-output" class="button-container">
+                Full OrthoFinder output:
+                <a id="orthofinder-cached-output-download" role="button" class="btn btn-secondary btn-sm" href="#"
+                >Download as tar.gz
+                </a>
+
+                <button id="orthofinder-reload" type="button" class="btn btn-secondary btn-sm"
+                >Reload OrthoFinder
+                </button>
+            </div>
+
             <label for="orthofinder-tree">Dendrogram</label>
-            <div id="orthofinder-tree" class="tree-div">
-                <div class="spinner-border text-dark" role="status">
-                    <span class="sr-only">Loading...</span>
+            <div id="orthofinder-tree-resize-trigger">
+                <div id="orthofinder-tree" class="tree-div">
+                    <div class="spinner-border text-dark" role="status">
+                        <span class="sr-only">Loading...</span>
+                    </div>
                 </div>
             </div>
             <br>
@@ -280,7 +279,7 @@
                 $('#mode-selector').val(),
                 function (tree) {
                     taxid_tree = tree
-                    addTreeSizeListener(taxid_tree, 'taxid-tree')
+                    addTreeSizeListener(taxid_tree, 'taxid-tree-resize-trigger')
                 }
             )
         }
@@ -294,25 +293,33 @@
                 $('#mode-selector').val(),
                 function (tree) {
                     genome_similarity_tree = tree
-                    addTreeSizeListener(genome_similarity_tree, 'genome-similarity-tree')
+                    addTreeSizeListener(genome_similarity_tree, 'genome-similarity-tree-resize-trigger')
                 }
             )
         }
 
         function load_orthofinder_tree(genomes) {
             $('#orthofinder-tree-container').attr("hidden", false)
-            orthofinder_tree = loadTree(
+            loadTree(
                 genomes, 'orthofinder', '#orthofinder-tree', '#orthofinder-newick',
                 $('#type-selector-orthofinder').val(),
                 $('#layout-selector-orthofinder').val(),
                 $('#mode-selector').val(),
                 function (tree) {
                     orthofinder_tree = tree
-                    addTreeSizeListener(orthofinder_tree, 'orthofinder-tree')
+                    addTreeSizeListener(orthofinder_tree, 'orthofinder-tree-resize-trigger')
                 }
             )
         }
 
+        function forceReloadOrthofinder() {
+            $.post('/api/reload-orthofinder/', {'genomes': allGenomes}, function (data) {
+                console.log(data['message'])
+                if (data['success']) {
+                    load_orthofinder_tree(allGenomes)
+                }
+            }, "json")
+        }
 
     </script>
 

@@ -105,7 +105,7 @@ class AniTree(AbstractTree):
 
         if n_failed > 0:
             TreeFailedError('Similarity calculations failed. ' +
-                             F'Finished: {n_done}, running: {n_running}, failed: {n_failed}')
+                            F'Finished: {n_done}, running: {n_running}, failed: {n_failed}')
 
         if n_running > 0:
             raise TreeNotDoneError('Similarities are still being calculated. ' +
@@ -149,3 +149,11 @@ class OrthofinderTree(AbstractTree):
             raise TreeFailedError(f'Tree calculation failed. {self.__dendrogram.message}')
 
         raise AssertionError('Code should never end up here!')
+
+    @property
+    def has_cache_file(self):
+        return self.__dendrogram.has_cache_file
+
+    @property
+    def cache_file_path(self):
+        return self.__dendrogram.cache_file_path(relative=True)

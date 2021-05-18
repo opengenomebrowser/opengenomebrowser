@@ -1,9 +1,12 @@
-from django.db import models
-import hashlib
+import os.path
 
-from OpenGenomeBrowser.settings import ORTHOFINDER_ENABLED
+from django.db import models
+from hashlib import sha224
+
+from OpenGenomeBrowser.settings import ORTHOFINDER_ENABLED, CACHE_DIR, CACHE_MAXSIZE
 from plugins import calculate_core_genome_dendrogram
 from .GenomeContent import GenomeContent
+from lib.ogb_cache.ogb_cache import clear_cache
 
 
 class DendrogramManager(models.Manager):
@@ -21,11 +24,9 @@ class DendrogramManager(models.Manager):
         # create placeholder-genome_similarity in database, start huey job
         new_dendrogram = CoreGenomeDendrogram(unique_id=hash, newick='', status='R')
         new_dendrogram.save()
-
         new_dendrogram.genomes.set(genomes)
 
-        print('calculate!')
-        calculate_core_genome_dendrogram(genomes=genomes)
+        new_dendrogram.reload()
 
         return new_dendrogram, True
 
@@ -60,10 +61,29 @@ class CoreGenomeDendrogram(models.Model):
 
     message = models.TextField(default='')
 
+    def reload(self):
+        self.newick = ''
+        self.status = 'R'
+        self.message = ''
+        self.save()
+        calculate_core_genome_dendrogram(genomes=self.genomes.all(), cache_file=self.cache_file_path(relative=False))
+
     @staticmethod
     def hash_genomes(genomes) -> str:
         identifiers = sorted(set(g.identifier for g in genomes))
         identifier_string = ' '.join(identifiers)
-        hash = hashlib.sha224(identifier_string.encode('utf-8')).hexdigest()
+        hash = sha224(identifier_string.encode('utf-8')).hexdigest()
         assert len(hash) == 56
         return hash
+
+    def cache_file_path(self, relative=True) -> str:
+        relative_path = f'core-genome-dendrogram/{self.unique_id}.tar.gz'
+        return relative_path if relative else f'{CACHE_DIR}/{relative_path}'
+
+    @property
+    def has_cache_file(self) -> bool:
+        return os.path.isfile(self.cache_file_path(relative=False))
+
+    @staticmethod
+    def clean_cache():
+        clear_cache(cache_fn_dir=f'{CACHE_DIR}/core-genome-dendrogram', maxsize=CACHE_MAXSIZE)
