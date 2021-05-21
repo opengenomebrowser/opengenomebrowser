@@ -1,5 +1,5 @@
 from django.shortcuts import render, HttpResponse
-from website.views.helpers.magic_string import MagicQueryManager
+from website.views.helpers.magic_string import MagicQueryManager, MagicError
 from django.http import HttpResponseBadRequest
 from website.views.helpers.extract_requests import contains_data, extract_data
 from plugins import calculate_blast
@@ -41,7 +41,7 @@ def blast_view(request):
             magic_query_manager = MagicQueryManager(queries=qs)
             context['magic_query_manager'] = magic_query_manager
             context['genome_to_species'] = magic_query_manager.genome_to_species()
-        except ValueError as e:
+        except (ValueError, MagicError) as e:
             context['error_danger'].append(str(e))
 
     return render(request, 'website/blast.html', context)

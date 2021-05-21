@@ -35,8 +35,8 @@ DB_PASSWORD = os.environ.get('DB_PASSWORD', 'postgres')
 # GENOMIC_DATABASE must contain the folder 'organisms'
 GENOMIC_DATABASE = os.environ.get('GENOMIC_DATABASE', '/database')
 
-CACHE_DIR = os.environ.get('CACHE_DIR', '/tmp/ogb-file-cache')
-CACHE_MAXSIZE = int(os.environ.get('CACHE_MAXSIZE', 100))
+CACHE_DIR = os.environ.get('CACHE_DIR', '/tmp/ogb-cache')
+CACHE_MAXSIZE = int(os.environ.get('CACHE_MAXSIZE', 20))
 
 ORTHOFINDER_ENABLED = os.environ.get('ORTHOFINDER_ENABLED', 'false').lower() == 'true'
 

@@ -1,4 +1,3 @@
-from django.views.generic import RedirectView
 from django.urls import path, re_path, include
 
 from website.views import *
@@ -9,12 +8,10 @@ urlpatterns = [
     # ex: /
     path('', Home.home_view, name='index'),
 
-    # favicon.ico
-    path('favicon.ico', RedirectView.as_view(url='/static/global/customicons/ogb-circle.svg')),
-
     # ex: /files_html and /files_json
     re_path(r'files_html/.*$', Files.files_html, name='files-html'),
     re_path(r'files_json/.*$', Files.files_json, name='files-json'),
+    re_path(r'files_cache/.*$', Files.files_cache, name='files-cache'),
 
     # ex: /genomes
     path('genomes', GenomeTable.genome_list_view, name='genomes'),
@@ -60,8 +57,11 @@ urlpatterns = [
     # ex: /blast/?query={fasta}&genomes={organism1}+{organism2}
     path('blast/', Blast.blast_view, name='blast'),
     path('blast/submit', Blast.blast_submit, name='blast-submit'),
-    # path('api/autocomplete-genome/', Blast.GenomeAutocomplete.as_view(),
-    #      name='api-autocomplete-genome'),
+
+    # ex: /downloader
+    path('downloader/', Downloader.downloader_view, name='downloader'),
+    path('downloader/submit/', Downloader.downloader_submit, name='downloader-submit'),
+    path('downloader/is_loaded/', Downloader.downloader_is_loaded, name='downloader-is-loaded'),
 
     # ex: /api/{...}
     path('api/autocomplete-annotations/', Api.autocomplete_annotations, name='api-autocomplete-annotations'),
@@ -84,7 +84,6 @@ urlpatterns = [
     path('api/get-dotplot/', get_dotplot, name='api-get-dotplot'),
     path('api/get-dotplot-annotations/', get_dotplot_annotations, name='api-get-dotplot-annotations'),
     path('api/score-pathway-maps/', PathwayView.score_pathway_maps, name='api-score-pathway-maps'),
-    path('api/ogb-cache/', Api.ogb_cache, name='api-ogb-cache'),
 
     # ex /test-click-menu/
     path('test-click-menu/', ClickMenu.click_view, name='test-click-menu'),

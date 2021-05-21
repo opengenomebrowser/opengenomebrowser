@@ -205,7 +205,7 @@ class GenomeContent(models.Model):
         if file_dict['type'] == 'eggnog':
             self.load_eggnog_file(file_dict)
         else:
-            self.load_custom_file(file_dict)
+            self.load_regular_file(file_dict)
 
         self.custom_files.append(file_dict)
 
@@ -289,7 +289,7 @@ class GenomeContent(models.Model):
             while line:
                 line = line.split("\t")
                 if len(line) == 2:
-                    annotations = set(line[1].split(","))
+                    annotations = set(a.strip() for a in line[1].split(","))
                     for annotation in annotations:
                         assert regex.match(
                             annotation) is not None, F"Error: Annotation '{annotation}' does not match regex '{regex.pattern}'!"
@@ -299,7 +299,7 @@ class GenomeContent(models.Model):
                 line = f.readline().strip()
 
         # Create Annotation-Objects and many-to-many relationships
-        self.add_many_annotations(model=self, anno_type=anno_type.value, annos_to_add=all_annotations)
+        self.add_many_annotations(model=self, anno_type=anno_type, annos_to_add=all_annotations)
         objects = [Gene.annotations.through(gene_id=gene, annotation_id=anno) for gene, anno in
                    annotations_relationships]
         Gene.annotations.through.objects.bulk_create(objects, ignore_conflicts=True)

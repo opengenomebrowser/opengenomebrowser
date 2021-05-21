@@ -18,6 +18,7 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.auth.views import LoginView
+from django.views.generic import RedirectView
 from rest_framework import routers
 
 from website.admin.admin import ogb_admin_site
@@ -46,17 +47,22 @@ class OgbLoginView(LoginView):
 
 
 urlpatterns = [
-                  path('admin/', ogb_admin_site.urls),
+    # favicon.ico
+    path('favicon.ico', RedirectView.as_view(url='/static/global/customicons/ogb-circle.svg')),
 
-                  path('accounts/login/', OgbLoginView.as_view(), name='login'),
-                  path('accounts/', include('django.contrib.auth.urls')),
+    path('admin/', ogb_admin_site.urls),
 
-                  # django-rest-framework
-                  path('rest-auth/', include('rest_framework.urls', namespace='rest_framework')),
-                  path('rest/', include(router.urls)),
+    path('accounts/login/', OgbLoginView.as_view(), name='login'),
+    path('accounts/', include('django.contrib.auth.urls')),
 
-                  path('', include('website.urls')),
-              ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    # django-rest-framework
+    path('rest-auth/', include('rest_framework.urls', namespace='rest_framework')),
+    path('rest/', include(router.urls)),
+
+    path('', include('website.urls')),
+]
+
+urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 if settings.DEBUG:
     # Serving files uploaded by a user during development

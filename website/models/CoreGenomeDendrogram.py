@@ -6,6 +6,7 @@ from hashlib import sha224
 from OpenGenomeBrowser.settings import ORTHOFINDER_ENABLED, CACHE_DIR, CACHE_MAXSIZE
 from plugins import calculate_core_genome_dendrogram
 from .GenomeContent import GenomeContent
+from .Genome import Genome
 from lib.ogb_cache.ogb_cache import clear_cache
 
 
@@ -13,7 +14,7 @@ class DendrogramManager(models.Manager):
     def get_or_create(self, genomes, **kwargs):
         assert ORTHOFINDER_ENABLED, 'OrthoFinder is disabled!'
 
-        hash = CoreGenomeDendrogram.hash_genomes(genomes)
+        hash = Genome.hash_genomes(genomes)
 
         # return if exists
         try:
@@ -67,14 +68,6 @@ class CoreGenomeDendrogram(models.Model):
         self.message = ''
         self.save()
         calculate_core_genome_dendrogram(genomes=self.genomes.all(), cache_file=self.cache_file_path(relative=False))
-
-    @staticmethod
-    def hash_genomes(genomes) -> str:
-        identifiers = sorted(set(g.identifier for g in genomes))
-        identifier_string = ' '.join(identifiers)
-        hash = sha224(identifier_string.encode('utf-8')).hexdigest()
-        assert len(hash) == 56
-        return hash
 
     def cache_file_path(self, relative=True) -> str:
         relative_path = f'core-genome-dendrogram/{self.unique_id}.tar.gz'

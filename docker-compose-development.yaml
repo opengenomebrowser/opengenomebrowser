@@ -20,8 +20,9 @@ services:
       - development.env
     command: /opengenomebrowser/init.sh
     volumes:
-      - ./:/opengenomebrowser/
       - ./database:/database
+      - ./:/opengenomebrowser/
+      - ./ogb_container/cache:/tmp/ogb-cache
     ports:
       - "8000:8000"
     depends_on:

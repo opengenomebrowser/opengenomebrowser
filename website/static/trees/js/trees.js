@@ -17,7 +17,6 @@
  * Create Phylogenetic Tree.
  */
 function loadTree(genomes, method, target, newick_target, type, layout, mode, callback) {
-
     $.ajax({
         url: "/api/get-tree/",
         method: 'post',
@@ -28,28 +27,7 @@ function loadTree(genomes, method, target, newick_target, type, layout, mode, ca
 
             $(newick_target).val(data.newick)
 
-            if ('distance-matrix' in data) {
-                $('#genome-distance-matrix').data('distance-matrix', data['distance-matrix'])
-            }
-
-            if ('cache-file-path' in data) {
-                if (data['has-cache-file']) {
-                    $('#orthofinder-cached-output-download')
-                        .removeClass('disabled')
-                        .attr('href', '/api/ogb-cache/?file=' + data['cache-file-path'])
-                    $('#orthofinder-reload')
-                        .addClass('disabled')
-                        .prop("onclick", null).off("click")
-                } else {
-                    $('#orthofinder-cached-output-download')
-                        .addClass('disabled')
-                        .attr('href', '#')
-                    $('#orthofinder-reload')
-                        .removeClass('disabled')
-                        .prop("onclick", null).off("click")
-                        .click(forceReloadOrthofinder)
-                }
-            }
+            processTreeData(data, method)
 
             $(target).height(600)
             $(target).empty()
@@ -102,8 +80,6 @@ function loadTree(genomes, method, target, newick_target, type, layout, mode, ca
                     })
             })
 
-            console.log('DONE', tree)
-
             turnBranchLabels(tree)
 
             callback(tree)
@@ -113,6 +89,8 @@ function loadTree(genomes, method, target, newick_target, type, layout, mode, ca
             console.log('textStatus:', textStatus)
             console.log('errorThrown:', errorThrown)
             $(target).empty()
+
+            processTreeData(jqXHR.responseJSON, method)
 
             const status = jqXHR.responseJSON?.status || ''
             const message = jqXHR.responseJSON?.message || ''
@@ -145,7 +123,33 @@ function loadTree(genomes, method, target, newick_target, type, layout, mode, ca
 }
 
 
-let changeTree = function (tree, property, value) {
+const processTreeData = function (data, method) {
+    if (method === 'orthofinder') {
+        if ('cache-file-path' in data && data['has-cache-file']) {
+            $('#orthofinder-cached-output-download')
+                .removeClass('disabled')
+                .attr('href', `/files_cache/${data['cache-file-path']}`)
+            $('#orthofinder-reload')
+                .addClass('disabled')
+                .prop("onclick", null).off("click")
+        } else {
+            $('#orthofinder-cached-output-download')
+                .addClass('disabled')
+                .attr('href', '#')
+            $('#orthofinder-reload')
+                .removeClass('disabled')
+                .prop("onclick", null).off("click")
+                .click(forceReloadOrthofinder)
+        }
+    }
+
+    if ('distance-matrix' in data) {
+        $('#genome-distance-matrix').data('distance-matrix', data['distance-matrix'])
+    }
+
+}
+
+const changeTree = function (tree, property, value) {
     if (tree === undefined) {
         return  // means tree is not drawn yet
     }
@@ -161,12 +165,12 @@ let changeTree = function (tree, property, value) {
     redrawTree(tree)
 }
 
-let redrawTree = function (tree) {
+const redrawTree = function (tree) {
     tree.redraw()
     turnBranchLabels(tree)
 }
 
-let turnBranchLabels = function (tree) {
+const turnBranchLabels = function (tree) {
     console.log('turn branch labels')
     setTimeout(function () {
         const rotation = tree.layout === 'vertical' ? 0 : -90
@@ -176,7 +180,7 @@ let turnBranchLabels = function (tree) {
     }, 1000)
 }
 
-let addTreeSizeListener = function (tree, divId) {
+const addTreeSizeListener = function (tree, divId) {
     const div = document.getElementById(divId)
 
     const resizefunction = function () {
@@ -194,5 +198,4 @@ let addTreeSizeListener = function (tree, divId) {
     } else {
         addResizeListener(div, resizefunction)
     }
-
 }

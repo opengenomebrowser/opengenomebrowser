@@ -1,0 +1,214 @@
+{% extends 'global/base.html' %}
+{% load static %}
+
+{% block styles %}
+    <script src="{% static 'global/js/d3.v5.min.js' %}"></script>
+    <script src="{% static 'global/js/tidytree.min.js' %}"></script>
+    <script src="{% static 'trees/js/trees.js' %}"></script>
+    <script src="{% static 'global/js/ResizeSensor.js' %}"></script>
+    <script src="{% static 'global/js/query-groups.js' %}"></script>
+
+    <link rel="stylesheet" type="text/css" href="{% static 'global/css/taxid_color.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'global/css/taxid_color_label.css' %}" id="taxid-color-stylesheet">
+    <link rel="stylesheet" type="text/css" href="{% static 'global/css/tag_color.css' %}"/>
+
+    <!-- autocomplete -->
+    <link href="{% static 'global/css/jquery.tag-editor.css' %}" rel="stylesheet"/>
+    <script src="{% static 'global/js/jquery.caret.min.js' %}"></script>
+    <script src="{% static 'global/js/jquery.tag-editor.min.js' %}"></script>
+
+{% endblock %}
+
+{% block sidebar %}
+
+    <div class="sidebar-subcontent form-check form-check-inline">
+        <label class="form-check-label" for="colorize-tax-checkbox"><a>Colorize taxonomy?</a></label>
+        <input class="form-check-input" type="checkbox" id="colorize-tax-checkbox" onclick="toggle_colorize_tax()"
+               checked>
+    </div>
+
+{% endblock %}
+
+{% block body %}
+    <section>
+
+        <div class="container">
+            <form>
+                {% csrf_token %}
+                <div id="magic-query"></div>
+
+                <button type="button" class="btn btn-primary" onclick="submit_function()">Submit</button>
+            </form>
+
+
+            {% if magic_query_manager %}
+                <hr class="featurette-divider">
+
+                <button type="button" class="btn btn-light" data-toggle="collapse" href="#real-div" aria-expanded="false" aria-controls="real-div"
+                >Show query
+                </button>
+
+                <form id="real-div" class="collapse">
+                    <div class="form-group">
+                        <label for="real-genomes-1">Genomes:</label>
+                        <div class="read-only-div" id="real-genomes">
+                            {% for genome in magic_query_manager.all_genomes %}{{ genome.html|safe }}{% endfor %}
+                        </div>
+                    </div>
+
+                </form>
+            {% endif %}
+        </div>
+
+        {% if genomes_hash %}
+
+            <hr class="featurette-divider">
+
+            <div class="container">
+
+                {% for verbose, abbr, hash, is_cached, cache_path in files_to_download %}
+
+                    <div class="d-flex bd-highlight list-group-item list-group-item-action">
+
+                        <div class="p-2 flex-grow-1 d-flex align-items-center">
+                            <span>Download {{ verbose }}</span>
+                        </div>
+
+                        <div class="p-2 bd-highlight btn-group" role="group">
+                            <button type="button" class="btn btn-secondary" data-abbr="{{ abbr }}" data-hash="{{ hash }}"
+                                    onclick="generate(event, this)" {% if is_cached %}disabled{% endif %}>
+                                {% if is_cached %}
+                                    <img src="{% static 'global/ionicons/md-done-all.svg' %}" alt="done" style="height:20px" class="svg-invert">
+                                {% else %}
+                                    generate
+                                {% endif %}
+                            </button>
+                            <a role="button" href="/files_cache/{{ cache_path }}" class="btn btn-secondary {% if not is_cached %} disabled {% endif %}">
+                                download
+                            </a>
+                        </div>
+                    </div>
+
+
+                {% endfor %}
+
+            </div>
+
+        {% endif %}
+
+    </section>
+
+
+{% endblock %}
+
+{% block end %}
+    <script>
+        "use strict"
+
+        const magicQuery = [{% if magic_query_manager %} '{{ magic_query_manager.queries|join:"', '" }}' {% else %}{% endif %}]
+        const allGenomes = [{% if magic_query_manager %} '{{ magic_query_manager.all_genomes|join:"', '" }}' {% else %}{% endif %}]
+
+        const magicQueryDiv = $('#magic-query')
+
+        $(document).ready(function () {
+            addGenomesGroup(magicQueryDiv, magicQuery, false, false)
+
+            $('.ogb-tag.genome')
+                .ogbTooltip()
+                .click(function () {
+                    showGenomeClickMenu(event)
+                })
+
+        })
+
+        function submit_function() {
+            const target = magicQueryDiv.find('.get-genomes')[0]
+            const genomes = extractQuery(target)
+
+            $.when(validate_genomes(genomes)).done(function (genomes_valid) {
+                genomes_valid = genomes_valid['success']
+
+                if (genomes_valid) {
+                    $('.get-genomes').removeClass('is-invalid')
+                } else {
+                    $('.get-genomes').addClass('is-invalid')
+                }
+
+                if (genomes_valid) {
+                    goToPageWithData('/downloader', {'genomes': genomes})
+                }
+            })
+        }
+
+        const imgDone = '<img src="{% static 'global/ionicons/md-done-all.svg' %}" alt="done" style="height:20px" class="svg-invert">'
+        const imgSpin = '<span class="spinner-grow spinner-grow-sm" role="status"></span>'
+        const imgErr = '<img src="{% static 'global/ionicons/md-close-circle.svg' %}" alt="done" style="height:20px" class="svg-invert">'
+
+        function generate(event, element) {
+            const downloadButton = element.nextElementSibling
+            const downloadAbbr = element.getAttribute('data-abbr')
+            const downloadHash = element.getAttribute('data-hash')
+
+            element.innerHTML = imgSpin
+
+            console.log(event, element, downloadAbbr, downloadButton)
+
+
+            $.ajax({
+                url: "/downloader/submit/",
+                method: 'post',
+                data: {'genomes': allGenomes, 'abbr': downloadAbbr, 'hash': downloadHash},
+                dataType: "json",
+                success: function (data, textStatus, xhr) {
+                    console.log('generate:', data, textStatus, xhr)
+                    activateDownloadWhenLoaded(element, downloadAbbr, downloadHash, 1)
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    console.log('generate:jqXHR:', jqXHR)
+                    console.log('generate:textStatus:', textStatus)
+                    console.log('generate:errorThrown:', errorThrown)
+                    const status = jqXHR.responseJSON?.status || ''
+                    const message = jqXHR.responseJSON?.message || ''
+                    alert(`Failed to generate file. ${status} ${message}`)
+                }
+            })
+        }
+
+        function activateDownloadWhenLoaded(element, downloadAbbr, downloadHash, sleepTime) {
+            console.log('sleepy', sleepTime, sleepTime > 10 ? 10 * 1000 : sleepTime * 1000)
+            $.ajax({
+                url: "/downloader/is_loaded/",
+                method: 'post',
+                data: {'abbr': downloadAbbr, 'hash': downloadHash},
+                dataType: "json",
+                success: function (data, textStatus, xhr) {
+                    console.log('activateDownloadWhenLoaded:', data, textStatus, xhr)
+                    const downloadButton = element.nextElementSibling
+                    element.innerHTML = imgDone
+                    element.setAttribute('disabled', true)
+                    downloadButton.classList.remove('disabled')
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    if (jqXHR.status === 420) {
+                        // still calculating...
+                        console.log(jqXHR.responseJSON?.message)
+                        setTimeout(function () {
+                            activateDownloadWhenLoaded(element, downloadAbbr, downloadHash, sleepTime + 1)
+                        }, sleepTime < 8 ? sleepTime * 1000 : 8 * 1000)  // wait max 8 sec
+                    } else {
+                        console.log('activateDownloadWhenLoaded:jqXHR:', jqXHR)
+                        console.log('activateDownloadWhenLoaded:textStatus:', textStatus)
+                        console.log('activateDownloadWhenLoaded:errorThrown:', errorThrown)
+                        const status = jqXHR.responseJSON?.status || ''
+                        const message = jqXHR.responseJSON?.message || ''
+                        element.innerHTML = imgErr
+                        alert(`Failed to check if file has been created. ${status} ${message}`)
+                    }
+                }
+            })
+
+        }
+
+    </script>
+
+{% endblock %}

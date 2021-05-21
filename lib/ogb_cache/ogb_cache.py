@@ -74,8 +74,17 @@ def _hash(args, kwargs):
     return f'{args_hash}:{kwargs_hash}'
 
 
-def load_cache_or_run(cache_dir: str, wait_tolerance: timedelta, add_cache_dir_kwarg: bool, maxsize: int, func, args, kwargs):
-    cache_fn_dir = os.path.join(cache_dir, f'{func.__module__}.{func.__name__}')
+def load_cache_or_run(
+        cache_dir: str,
+        wait_tolerance: timedelta,
+        add_cache_dir_kwarg: bool,
+        maxsize: int,
+        func, args, kwargs,
+        cache_subdir: str = None
+):
+    if not cache_subdir:
+        cache_subdir = f'{func.__module__}.{func.__name__}'
+    cache_fn_dir = os.path.join(cache_dir, cache_subdir)
     hash = _hash(args, kwargs)
     cache_res_dir = os.path.join(cache_fn_dir, hash)
 
@@ -120,7 +129,8 @@ def ogb_cache(
         cache_root: str,
         maxsize: int,
         wait_tolerance: timedelta = WAIT_TOLERANCE,
-        add_cache_dir_kwarg: bool = False
+        add_cache_dir_kwarg: bool = False,
+        cache_subdir: str = None
 ):
     """
     This is a decorator function. Example usage:
@@ -133,6 +143,7 @@ def ogb_cache(
     :param maxsize: max entries in the cache
     :param wait_tolerance: if cache cannot be loaded, try again after wait_tolerance
     :param add_cache_dir_kwarg: if true, add kwarg to function: {cache_res_dir: /cache_root/function/hash}
+    :param cache_subdir: to specify a cache subdir instead of having the name automatically generated
     """
     cache_dir = os.path.expanduser(cache_root)
     os.makedirs(cache_dir, exist_ok=True)
@@ -141,7 +152,7 @@ def ogb_cache(
         def wrapper(*args, **kwargs):
             res = load_cache_or_run(
                 cache_dir=cache_dir, wait_tolerance=wait_tolerance, add_cache_dir_kwarg=add_cache_dir_kwarg, maxsize=maxsize,
-                func=func, args=args, kwargs=kwargs
+                func=func, args=args, kwargs=kwargs, cache_subdir=cache_subdir
             )
             return res
 

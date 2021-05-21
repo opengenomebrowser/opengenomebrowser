@@ -1,4 +1,5 @@
 import os
+from hashlib import sha224
 from django.db import models
 from django.db.models import JSONField
 from .Organism import Organism
@@ -29,8 +30,8 @@ class Genome(models.Model):
     # information about isolation
     isolation_date = models.DateField('Isolation date', null=True, blank=True)
     env_broad_scale = JSONField('Broad isolation environment', default=list, blank=True, null=True)
-    env_local_scale = JSONField('Local isolation environment',default=list, blank=True, null=True)
-    env_medium = JSONField('Environment medium',default=list, blank=True, null=True)
+    env_local_scale = JSONField('Local isolation environment', default=list, blank=True, null=True)
+    env_medium = JSONField('Environment medium', default=list, blank=True, null=True)
     growth_condition = models.CharField('Growth condition', max_length=100, null=True, blank=True)
     geographical_coordinates = models.CharField('Geographical coordinates', max_length=200, null=True, blank=True)
     geographical_name = models.CharField('Geographical name', max_length=50, null=True, blank=True)
@@ -76,7 +77,7 @@ class Genome(models.Model):
     # format(self.BUSCO['S'] / self.BUSCO['T'], ".1%")
 
     # information about annotation
-    custom_annotations = JSONField(default=list, blank=True, null=True)  # [{"date": "2016-02-29", "file": "FAM19038.ko", "type": "KEGG"}]
+    custom_annotations = JSONField(default=list, blank=True, null=True)  # [{"date": "2016-02-29", "file": "FAM19038.ko", "type": "KG"}]
 
     # accession numbers if the genome has been published
     bioproject_accession = models.CharField('Bioproject accession', max_length=20, null=True, blank=True)
@@ -85,6 +86,9 @@ class Genome(models.Model):
 
     # literature references
     literature_references = JSONField('Literature references', default=list, blank=True, null=True)
+
+    def __str__(self):
+        return self.identifier
 
     def natural_key(self):
         return self.identifier
@@ -176,8 +180,13 @@ class Genome(models.Model):
     def set_markdown(self, md: str, user: str = None):
         overwrite_with_backup(file=self.markdown_path(relative=False), content=md, user=user, delete_if_empty=True)
 
-    def __str__(self):
-        return self.identifier
+    @staticmethod
+    def hash_genomes(genomes) -> str:
+        identifiers = sorted(set(g.identifier for g in genomes))
+        identifier_string = ' '.join(identifiers)
+        hash = sha224(identifier_string.encode('utf-8')).hexdigest()
+        assert len(hash) == 56
+        return hash
 
     def invariant(self):
         from website.serializers import GenomeSerializer

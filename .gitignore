@@ -68,3 +68,4 @@ website/static/global/css/annotype_color.css
 
 /db_setup/.*
 /ogb_container
+/docker-compose-production.yaml

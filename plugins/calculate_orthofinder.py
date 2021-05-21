@@ -13,15 +13,16 @@ def calculate_orthofinder(genomes, cache_file: str) -> str:
         orthofinder_running = "orthofinder" in (p.name() for p in psutil.process_iter())
 
     from website.models.CoreGenomeDendrogram import CoreGenomeDendrogram
+    from website.models.Genome import Genome
     identifiers = sorted(set(g.identifier for g in genomes))
-    hash = CoreGenomeDendrogram.hash_genomes(genomes)
+    hash = Genome.hash_genomes(genomes)
 
     print(F'Start OrthoFinder with identifiers: {identifiers} ({hash})')
 
     try:
         newick = Orthofinder().run_precomputed(identifiers=identifiers, cache_file=cache_file)
     except Exception as e:
-        dendrogram_obj = CoreGenomeDendrogram.objects.get(unique_id=CoreGenomeDendrogram.hash_genomes(genomes))
+        dendrogram_obj = CoreGenomeDendrogram.objects.get(unique_id=Genome.hash_genomes(genomes))
         if dendrogram_obj.status == 'D':
             return
 
@@ -31,7 +32,7 @@ def calculate_orthofinder(genomes, cache_file: str) -> str:
         print(F'OrthoFinder failed: {identifiers}')
         raise e
 
-    dendrogram_obj = CoreGenomeDendrogram.objects.get(unique_id=CoreGenomeDendrogram.hash_genomes(genomes))
+    dendrogram_obj = CoreGenomeDendrogram.objects.get(unique_id=Genome.hash_genomes(genomes))
     dendrogram_obj.newick = newick
     dendrogram_obj.status = 'D'  # DONE
     dendrogram_obj.save()

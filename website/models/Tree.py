@@ -1,6 +1,6 @@
 import os
 from django.db import models
-from website.models import TaxID, GenomeSimilarity, Annotation, Genome, GenomeContent, Organism, CoreGenomeDendrogram
+from website.models import TaxID, GenomeSimilarity, CoreGenomeDendrogram
 import pandas as pd
 from biotite.sequence.phylo import upgma
 
