@@ -298,9 +298,11 @@ Open genomes on pathway map</a>
 <a href="/annotation-search/?genomes=${siblings_str}" class="dropdown-item many-genomes context-menu-icon context-menu-icon-annotations">
 Search for annotations in genomes</a>
 <a href="/gene-trait-matching/?g1=${siblings_str}" class="dropdown-item many-genomes context-menu-icon context-menu-icon-gene-trait-matching">
-Perform Gene trait matching with these genomes</a>
+Perform gene trait matching with these genomes</a>
 <a href="/blast/?genomes=${siblings_str}" class="dropdown-item many-genomes context-menu-icon context-menu-icon-blast">
 Blast genomes</a>
+<a href="/downloader/?genomes=${siblings_str}" class="dropdown-item many-genomes context-menu-icon context-menu-icon-downloader">
+Open downloader</a>
 </div>
 `
         if (annotations.length > 0) {

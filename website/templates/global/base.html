@@ -101,6 +101,10 @@
                href="{% url 'website:dotplot' %}">
                 Dotplot
             </a>
+            <a class="dropdown-item context-menu-icon context-menu-icon-downloader {% if request.resolver_match.url_name == 'downloader' %}active{% endif %}"
+               href="{% url 'website:downloader' %}">
+                Downloader
+            </a>
             <div class="dropdown-divider"></div>
             <a class="dropdown-item context-menu-icon context-menu-icon-help {% if no_help %}disabled{% endif %}"
                href="https://opengenomebrowser.github.io/opengenomebrowser/tutorials/{{ request.resolver_match.url_name }}.html">
