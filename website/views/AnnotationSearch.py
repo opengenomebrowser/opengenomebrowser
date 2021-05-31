@@ -14,6 +14,10 @@ from .GenomeDetailView import dataframe_to_bootstrap_html
 from .helpers.magic_string import MagicQueryManager
 
 
+# todo: make the queries more efficient. do not add genes to cell, do that with javascript later?
+#  maybe don't load gene count after n*n = 200 cells?
+#  maybe annotate Annotation queryset as opposed to Genome queryset?
+
 def annotation_view(request):
     context = dict(
         title='Annotation search',

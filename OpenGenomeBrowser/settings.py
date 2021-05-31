@@ -11,7 +11,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/dev/howto/deployment/checklist/
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG').lower() == 'true'
+DEBUG = str(os.environ.get('DEBUG')).lower() == 'true'
 CSRF_COOKIE_SECURE = not DEBUG
 
 # SECURITY WARNING: keep the secret key used in production secret!

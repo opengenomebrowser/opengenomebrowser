@@ -82,6 +82,7 @@ class GenomeContent(models.Model):
         # was one of the files removed or changed? if so -> reload everything
         for file_dict in self.custom_files:
             if file_dict not in self.genome.custom_annotations:
+                self.wipe_data(genes=True)
                 self.load_genome()
                 self.save()
                 return
@@ -262,9 +263,8 @@ class GenomeContent(models.Model):
                 line = f.readline()[:-1]
 
             # parse end of file
-            rest = f.readlines()
-            for line in rest:
-                assert h.startswith('#'), F'Error parsing file: {file_dict}'
+            for line in f.readlines():
+                assert line.startswith('#'), F'Error parsing file: {file_dict}'
 
         # Create Annotation-Objects and many-to-many relationships
         for all_annotations, annotations_relationships, anno_type in (go, ec, kg, kr, ep, eo, ed):
@@ -278,7 +278,7 @@ class GenomeContent(models.Model):
 
         anno_type = file_dict['type']
         assert anno_type in annotation_types, \
-            f'Error in annotation file:{file_dict}\nType {anno_type} is not defined in {settings.ANNOTATION_DESCRIPTIONS}.'
+            f'Error in annotation file:{file_dict}\nType {anno_type} is not defined in {settings.GENOMIC_DATABASE}/annotations.json.'
         regex = annotation_types[anno_type].regex
 
         all_annotations = set()  # {'anno1', 'anno2', ...}
