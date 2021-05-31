@@ -85,15 +85,12 @@ def matrix(request):
 class MatrixMaker:
     def __init__(self, genomes: [Genome], annotations: [Annotation]):
         self.genomes = list(genomes)
+        self.genome_identifiers = [g.identifier for g in genomes]
         self.annotations = list(annotations)
 
-        self.genome_to_html = {}  # cannot be done using list comprehension
-        for genome in genomes:
-            self.genome_to_html[genome.identifier] = genome.html
+        self.genome_to_html = {g.identifier: g.html for g in genomes}
 
-        self.annotation_to_html = {}  # cannot be done using list comprehension
-        for annotation in annotations:
-            self.annotation_to_html[annotation.name] = annotation.html
+        self.annotation_to_html = {a.name: a.html for a in annotations}
 
         self.coverage_matrix = self.__create_coverage_matrix()
 
@@ -104,33 +101,31 @@ class MatrixMaker:
         use Postgres subqueries to efficiently calculate matrix
         """
 
-        # create temporary column names without special symbols
-        temp_name_to_annotation = [(f'matrix_anno_{i}', a) for i, a in enumerate([a.name for a in self.annotations])]
-
         # design query
-        genomecontent_qs = GenomeContent.objects
-        for temp_name, a in temp_name_to_annotation:
-            genomecontent_qs = genomecontent_qs.annotate(**{temp_name: ArrayAgg('gene', filter=Q(gene__annotations__name=a))})
-        genomecontent_qs = genomecontent_qs.filter(identifier__in=[g.identifier for g in self.genomes])
+        annotations_qs = Annotation.objects
 
-        matrix_values = genomecontent_qs.values_list(*['identifier'] + [temp_name for temp_name, a in temp_name_to_annotation])
-        matrix = pd.DataFrame(matrix_values, columns=['identifier'] + [a for temp_name, a in temp_name_to_annotation])
-        matrix.set_index('identifier', inplace=True)
+        # annotate Annotations with genomes
+        for identifier in self.genome_identifiers:
+            annotations_qs = annotations_qs.annotate(**{identifier: ArrayAgg('gene', filter=Q(gene__genomecontent__identifier=identifier))})
 
-        matrix = self.__sort_coverage_matrix(matrix)
+        # filter Annotations with annotations
+        annotations_qs = annotations_qs.filter(name__in=[a.name for a in self.annotations])
 
-        return matrix.T
+        # create pd.DataFrame
+        matrix_values = annotations_qs.values_list(*['name'] + self.genome_identifiers)
+        matrix = pd.DataFrame(matrix_values, columns=['name'] + self.genome_identifiers)
+        matrix.set_index('name', inplace=True)
+
+        return self.__sort_coverage_matrix(matrix)
 
     def __sort_coverage_matrix(self, matrix):
         def sort_by_pattern(row_or_col):
             return pattern_to_rank[tuple([bool(rc) for rc in row_or_col.values])]
 
-        # sort by annotations by most prevalent
-        pattern_to_rank = self.__pattern_to_rank(matrix, axis=1)
-        matrix = matrix.reindex(matrix.apply(sort_by_pattern, axis=0).sort_values(ascending=False).index, axis=1)
-
-        pattern_to_rank = self.__pattern_to_rank(matrix, axis=0)
-        matrix = matrix.reindex(matrix.apply(sort_by_pattern, axis=1).sort_values(ascending=False).index, axis=0)
+        # sort so that highest numbers are top left
+        for axis in [0, 1]:
+            pattern_to_rank = self.__pattern_to_rank(matrix, axis=axis)
+            matrix = matrix.reindex(matrix.apply(sort_by_pattern, axis=0 if axis == 1 else 1).sort_values(ascending=False).index, axis=axis)
 
         return matrix
 
@@ -140,7 +135,7 @@ class MatrixMaker:
             patterns = list(set([tuple(row.values) for i, row in matrix.applymap(bool).iterrows()]))
         else:
             patterns = list(set([tuple(row.values) for i, row in matrix.applymap(bool).iteritems()]))
-        patterns.sort()
+        patterns = sorted(patterns, key=lambda x: sum(x))
         pattern_to_rank = {p: i for i, p in enumerate(patterns)}
         return pattern_to_rank
 
