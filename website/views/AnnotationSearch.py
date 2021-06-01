@@ -1,11 +1,11 @@
 from django.shortcuts import render, HttpResponse
-from django.db.models import Q, Count, Exists
+from django.db.models import Q
 from django.contrib.postgres.aggregates.general import ArrayAgg
 
 import pandas as pd
 import json
 
-from website.models import Genome, Gene, GenomeContent
+from website.models import Genome
 from website.models.Annotation import Annotation
 from website.views.helpers.extract_requests import contains_data, extract_data
 
@@ -13,10 +13,6 @@ from .GenomeDetailView import dataframe_to_bootstrap_html
 
 from .helpers.magic_string import MagicQueryManager
 
-
-# todo: make the queries more efficient. do not add genes to cell, do that with javascript later?
-#  maybe don't load gene count after n*n = 200 cells?
-#  maybe annotate Annotation queryset as opposed to Genome queryset?
 
 def annotation_view(request):
     context = dict(

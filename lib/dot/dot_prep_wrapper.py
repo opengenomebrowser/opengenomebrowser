@@ -5,6 +5,8 @@ import contextlib
 import tempfile
 from subprocess import call, run, PIPE
 from Bio import SeqIO
+from Bio.SeqFeature import SeqFeature
+from Bio.SeqRecord import SeqRecord
 from lib.dot.DotPrep import run as dotprep_run
 
 
@@ -189,17 +191,23 @@ class DotPrep:
             ref_or_query_start = 'query_start'
             ref_or_query_end = 'query_end'
 
-        with open(gbk) as input_handle:
-            result = [{
+        def extract_data(scf: SeqRecord, f: SeqFeature) -> dict:
+            loc = f.location.parts[0] if f.location_operator == 'join' else f.location
+            return {
                 ref_or_query: scf.id,
-                ref_or_query_start: f.location.nofuzzy_start,
-                ref_or_query_end: f.location.nofuzzy_end,
+                ref_or_query_start: loc.nofuzzy_start,
+                ref_or_query_end: loc.nofuzzy_end,
                 'name': f.qualifiers['locus_tag'][0],
                 'strand': '+' if f.strand else '-'
             }
+
+        with open(gbk) as input_handle:
+            result = [
+                extract_data(scf=scf, f=f)
                 for scf in SeqIO.parse(input_handle, "genbank")
                 for f in scf.features
-                if 'locus_tag' in f.qualifiers]
+                if 'locus_tag' in f.qualifiers
+            ]
 
         return result
 
