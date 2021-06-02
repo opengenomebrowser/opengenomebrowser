@@ -5,8 +5,7 @@ import contextlib
 import tempfile
 from subprocess import call, run, PIPE
 from Bio import SeqIO
-from Bio.SeqFeature import SeqFeature
-from Bio.SeqRecord import SeqRecord
+from Bio.SeqFeature import FeatureLocation
 from lib.dot.DotPrep import run as dotprep_run
 
 
@@ -118,10 +117,11 @@ class DotPrepArgs:
 
 class DotPrep:
     @classmethod
-    def run(cls, fasta_ref: str, fasta_qry: str, gbk1: str = None, mincluster: int = 65) -> (str, str):
+    def run(cls, fasta_ref: str, fasta_qry: str, mincluster: int = 65) -> (str, str):
         """
         :param fasta_ref: path to first assembly fasta
         :param fasta_qry: path to second assembly fasta
+        :param mincluster: sets the minimum length of a cluster of matches
         :return: coords, index
         """
         for fasta in [fasta_ref, fasta_qry]:
@@ -165,16 +165,14 @@ class DotPrep:
         else:
             result = 'query,query_start,query_end,name,strand\n'
 
-        with open(gbk) as input_handle:
-            for scf in SeqIO.parse(input_handle, "genbank"):
-                for f in scf.features:
-                    if 'locus_tag' in f.qualifiers:
-                        result += f"{scf.id},{f.location.nofuzzy_start},{f.location.nofuzzy_end},{f.qualifiers['locus_tag'][0]},{'+' if f.strand else '-'}\n"
+        for line in cls.gbk_to_annotation(gbk=gbk, is_ref=is_ref):
+            scf_id, start, end, locus_tag, strand = line.values()
+            result += f"{scf_id},{start},{end},{locus_tag},{strand}\n"
 
         return result
 
-    @classmethod
-    def gbk_to_annotation(cls, gbk: str, is_ref: bool) -> [dict]:
+    @staticmethod
+    def gbk_to_annotation(gbk: str, is_ref: bool) -> [dict]:
         """
         Turn gbk into Dot-compliant format.
 
@@ -186,37 +184,47 @@ class DotPrep:
             ref_or_query = 'ref'
             ref_or_query_start = 'ref_start'
             ref_or_query_end = 'ref_end'
+
+            def get_position(location: FeatureLocation) -> (int, int):
+                return location.nofuzzy_start, location.nofuzzy_end
         else:
             ref_or_query = 'query'
             ref_or_query_start = 'query_start'
             ref_or_query_end = 'query_end'
 
-        def extract_data(scf: SeqRecord, f: SeqFeature) -> dict:
-            loc = f.location.parts[0] if f.location_operator == 'join' else f.location
-            return {
-                ref_or_query: scf.id,
-                ref_or_query_start: loc.nofuzzy_start,
-                ref_or_query_end: loc.nofuzzy_end,
-                'name': f.qualifiers['locus_tag'][0],
-                'strand': '+' if f.strand else '-'
-            }
+            def get_position(location: FeatureLocation) -> (int, int):
+                return len_scf - location.nofuzzy_end, len_scf - location.nofuzzy_start
 
+        loci = set()  # {(1, 300), (444, 600), ...}
+
+        result = []
         with open(gbk) as input_handle:
-            result = [
-                extract_data(scf=scf, f=f)
-                for scf in SeqIO.parse(input_handle, "genbank")
-                for f in scf.features
-                if 'locus_tag' in f.qualifiers
-            ]
+            for scf in SeqIO.parse(input_handle, "genbank"):
+                len_scf = len(scf)
+                for f in scf.features:
+                    if 'locus_tag' not in f.qualifiers:
+                        continue
+                    start, end = get_position(location=f.location if f.location_operator != 'join' else f.location.parts[0])
+                    if (start, end) in loci:
+                        continue
 
+                    result.append({
+                        ref_or_query: scf.id,
+                        ref_or_query_start: start,
+                        ref_or_query_end: end,
+                        'name': f.qualifiers['locus_tag'][0],
+                        'strand': '+' if f.strand else '-'
+                    })
+
+                    loci.add((start, end))
         return result
 
 
 if __name__ == '__main__':
-    fasta_ref = 'database/organisms/FAM21789/genomes/FAM21789-i1-1.1/1_assembly/FAM21789-i1-1.fna'
-    gbk_ref = 'database/organisms/FAM21789/genomes/FAM21789-i1-1.1/2_cds/FAM21789-i1-1.1.gbk'
-    fasta_qry = 'database/organisms/FAM6135/genomes/FAM6135-i1-1.1/1_assembly/FAM6135-i1-1.fna'
-    gbk_qry = 'database/organisms/FAM6135/genomes/FAM6135-i1-1.1/2_cds/FAM6135-i1-1.1.gbk'
+    fasta_ref = 'database/organisms/FAM19036/genomes/FAM19036-p1-1.1/1_assembly/FAM19036-p1-1.fna'
+    gbk_ref = 'database/organisms/FAM19036/genomes/FAM19036-p1-1.1/2_cds/FAM19036-p1-1.1.gbk'
+    fasta_qry = 'database/organisms/FAM14217/genomes/FAM14217-p1-1.1/1_assembly/FAM14217-p1-1.fna'
+    gbk_qry = 'database/organisms/FAM14217/genomes/FAM14217-p1-1.1/2_cds/FAM14217-p1-1.1.gbk'
 
 
     def test_nucmer():
