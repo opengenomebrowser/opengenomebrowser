@@ -9,9 +9,8 @@ from website.models import Genome
 from website.models.Annotation import Annotation
 from website.views.helpers.extract_requests import contains_data, extract_data
 
-from .GenomeDetailView import dataframe_to_bootstrap_html
-
-from .helpers.magic_string import MagicQueryManager
+from website.views.GenomeDetailView import dataframe_to_bootstrap_html
+from website.views.helpers.magic_string import MagicQueryManager
 
 
 def annotation_view(request):

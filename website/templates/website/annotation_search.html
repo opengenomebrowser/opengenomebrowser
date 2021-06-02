@@ -184,10 +184,14 @@
 
             $('#gene-loci-spinner').attr('hidden', false)
 
-            await $('#annotation-matrix-container').load('{% url "website:annotation-search-matrix" %}', {
-                    annotations: annotations,
-                    genomes: genomes
-                }, function () {
+            $.ajax({
+                url: "{% url "website:annotation-search-matrix" %}",
+                method: 'post',
+                data: {annotations: annotations, genomes: genomes},
+                dataType: "html",
+                success: function (data, textStatus, xhr) {
+                    $('#annotation-matrix-container').html(data)
+
                     // activate tooltips in newly loaded container
                     $('#annotation-matrix-container .ogb-tag')
                         .ogbTooltip()
@@ -205,10 +209,20 @@
                                 this.setAttribute('onclick', `showGenesClickMenu(event, $(this).data('genes'), $($(event.target).closest('table').find('th')[$(event.target).parent().index()].firstChild).data('species'))`)
                             }
                         })
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    console.log('jqXHR:', jqXHR)
+                    console.log('textStatus:', textStatus)
+                    console.log('errorThrown:', errorThrown)
+                    console.log('this:', this)
+                    $('#gene-loci-spinner').attr('hidden', false)
+
+                    $('#annotation-matrix-container').html(`
+                            <div class="container alert alert-danger" role="alert">
+                                Failed to load matrix!
+                            </div>`)
                 }
-            )
-
-
+            })
         }
 
 

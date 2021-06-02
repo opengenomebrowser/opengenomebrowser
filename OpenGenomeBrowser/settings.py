@@ -25,6 +25,8 @@ else:
 
 ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS').split(',')
 
+DATA_UPLOAD_MAX_NUMBER_FIELDS = int(os.environ.get('DATA_UPLOAD_MAX_NUMBER_FIELDS', 1000))
+
 # database
 DB_HOST = os.environ.get('DB_HOST', 'db')
 DB_PORT = os.environ.get('DB_PORT', '5432')
