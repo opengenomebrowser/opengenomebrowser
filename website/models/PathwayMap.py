@@ -24,7 +24,7 @@ class PathwayMap(models.Model):
     annotations = models.ManyToManyField(Annotation)
 
     def __str__(self):
-        return f'<PathwayMap: {self.slug}>'
+        return f'{self.slug} : {self.title}'
 
     @property
     def svg(self):

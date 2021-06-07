@@ -60,7 +60,7 @@ class Tag(models.Model):
 
     @property
     def html(self):
-        return f'<div class="tag ogb-tag" data-tag="{self.obj.tag}" title="{self.description}">@tag:{self.tag}</div>'
+        return f'<span class="tag ogb-tag" data-tag="{self.obj.tag}" title="{self.description}">@tag:{self.tag}</span>'
 
     def get_html_badge(self):
         return f'<span class="ogb-tag" data-tag="{self.tag}">{self.tag}</span>'

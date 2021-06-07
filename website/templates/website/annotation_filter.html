@@ -1,0 +1,190 @@
+{% extends 'global/base.html' %}
+
+{% load static %}
+
+{% block styles %}
+    <!-- Site-specific css/js -->
+    <link rel="stylesheet" type="text/css" href="{% static 'annotation_search/css/annotation_search.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'global/css/annotype_color.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'global/css/tag_color.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'global/css/taxid_color.css' %}" id="taxid-color-stylesheet"/>
+
+    <script src="{% static 'global/js/query-groups.js' %}"></script>
+
+    <script src="{% static 'global/js/select2.min.js' %}"></script>
+    <link rel="stylesheet" type="text/css" href="{% static 'global/css/select2.min.css' %}"/>
+
+    <!-- autocomplete -->
+    <link href="{% static 'global/css/jquery.tag-editor.css' %}" rel="stylesheet"/>
+    <script src="{% static 'global/js/jquery.caret.min.js' %}"></script>
+    <script src="{% static 'global/js/jquery.tag-editor.min.js' %}"></script>
+
+    <link rel="stylesheet" type="text/css" href="{% static 'global/css/annotation_filter.css' %}"/>
+
+{% endblock %}
+
+
+{% block body %}
+
+    <div class="container">
+
+        <h1>Annotations</h1>
+
+        <div id="collapse-header" data-toggle="collapse" data-target="#collapseFilters" aria-expanded="false" aria-controls="collapseFilters"
+             onclick="activateDropdownSelect()">
+            <span>Expand filters</span>
+            <img src="{% static 'global/ionicons/ios-arrow-down.svg' %}" alt="expand">
+        </div>
+
+        <div class="collapse" id="collapseFilters">
+            <br>
+
+            <div id="magic-query"></div>
+
+            <form method="GET" id="form">
+
+                {% for field_id, filter_field in filter_fields.items %}
+                    <div class="input-group mb-3" id="form_{{ field_id }}" {% if filter_field.hidden %}hidden{% endif %}>
+                        <div class="input-group-prepend">
+                            <label class="input-group-text" id="label_{{ field_id }}"
+                                   for="id_{{ field_id }}">{{ filter_field.label }}</label>
+                        </div>
+                        {% if filter_field.choices %}
+                            <select class="custom-select" name="{{ field_id }}" id="id_{{ field_id }}">
+                                {% for choice, verbose in filter_field.choices %}
+                                    <option value="{{ choice }}"{% if choice == filter_field.data %}
+                                            selected{% endif %}>{{ verbose }}</option>{% endfor %}
+                            </select>
+                        {% else %}
+                            <input type="text" class="form-control" name="{{ field_id }}"
+                                   aria-label="{{ filter_field.label }}" aria-describedby="label_{{ field_id }}"
+                                   value="{{ filter_field.data }}">
+                        {% endif %}
+                    </div>
+                {% endfor %}
+
+                <div class="input-group mb-3" id="form_paginate_by">
+                    <div class="input-group-prepend">
+                        <label class="input-group-text" id="label_paginate_by"
+                               for="id_paginate_by">Page size</label>
+                    </div>
+
+                    <select class="custom-select" name="paginate_by" id="id_paginate_by">
+
+                        {% for option in pagination_options %}
+                            <option value="{{ option }}" {% if option == paginated_by %}selected{% endif %}>{{ option }}</option>
+                        {% endfor %}
+                    </select>
+
+                </div>
+
+            </form>
+            <button type="button" class="btn btn-primary" onclick="submitFunction()">Submit</button>
+
+
+
+
+            {% if magic_query_manager %}
+                <div class="">
+
+                    <hr class="featurette-divider">
+
+                    <button type="button" class="btn btn-light" data-toggle="collapse" href="#real-div" aria-expanded="false" aria-controls="real-div"
+                    >Show query
+                    </button>
+
+                    <form id="real-div" class="collapse">
+                        <div class="form-group">
+                            <label for="real-genomes-1">Genomes:</label>
+                            <div class="read-only-div" id="real-genomes">
+                                {% for genome in magic_query_manager.all_genomes %}{{ genome.html|safe }}{% endfor %}
+                            </div>
+                        </div>
+
+                    </form>
+                </div>
+
+            {% endif %}
+
+        </div>
+
+        {% include "global/pagination_snippet.html" %}
+
+
+        <ul id="annotation-list">
+            {% for object in object_list %}
+                <li>{{ object.html|safe }}{% if object.description != '' %}: {{ object.description }}{% endif %}</li>
+            {% endfor %}
+        </ul>
+
+
+        {% include "global/pagination_snippet.html" %}
+
+    </div>
+
+{% endblock %}
+
+{% block end %}
+    <script>
+        "use strict"
+
+        const genomesDiv = document.getElementById('form_genomes')
+        const genomesInput = genomesDiv.childNodes[3]
+
+        $(document).ready(function () {
+            addGenomesGroup($('#magic-query'), genomesInput.value.split(','), false, false)
+        })
+
+        $(document).ready(function () {
+            $('.ogb-tag.annotation')
+                .ogbTooltip()
+                .click(function (event) {
+                    showAnnotationClickMenu(event)
+                })
+            $('.ogb-tag.genome')
+                .ogbTooltip()
+                .click(function (event) {
+                    showGenomeClickMenu(event)
+                })
+
+        })
+
+        const activateDropdownSelect = function () {
+            setTimeout(function () {
+                {% for field_id, filter_field in filter_fields.items %}{% if filter_field.choices %}
+                $('#id_{{ field_id }}').select2()
+                {% endif %}{% endfor %}
+            }, 300)
+        }
+
+        const form = document.getElementById('form')
+
+        const submitFunction = function () {
+            console.log(`Form Submitted! Time stamp: ${event.timeStamp}`)
+
+            const genomes = extractQuery($('#magic-query'))
+            console.log(genomes)
+            genomesInput.value = genomes
+            console.log(genomesInput.value)
+
+            $.when(validate_genomes(genomes)).done(function (genomes_valid) {
+                genomes_valid = genomes_valid['success']
+
+                console.log('genomes_valid', genomes_valid)
+
+                if (genomes_valid) {
+                    $('.get-genomes').removeClass('is-invalid')
+                } else {
+                    $('.get-genomes').addClass('is-invalid')
+                }
+
+                if (genomes_valid) {
+                    form.submit()
+                } else {
+                    console.log('invalid')
+                }
+            })
+        }
+
+    </script>
+{% endblock %}

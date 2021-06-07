@@ -118,7 +118,7 @@ class Annotation(models.Model):
 
     @property
     def html(self):
-        return F'<div class="annotation ogb-tag" data-annotype="{self.anno_type}" title="{self.description}">{self.name}</div>'
+        return F'<span class="annotation ogb-tag" data-annotype="{self.anno_type}" title="{self.description}">{self.name}</span>'
 
     @staticmethod
     def invariant():

@@ -1,0 +1,72 @@
+{% load ogb_tags %}
+{% if page_obj %}
+    <div aria-label="Page navigation" style="display:flex; justify-content: center">
+
+        <ul class="pagination" style="width: min-content; margin-top: .75rem; margin-bottom: 0;">
+
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?{% param_replace page=1 %}" aria-label="First">
+                        <span aria-hidden="true">1</span>
+                    </a>
+                </li>
+            {% endif %}
+
+
+            {% if page_obj.number > 3 %}
+                <li class="page-item disabled">
+                    <p class="page-link" aria-label="Current">
+                        <span aria-disabled="true">...</span>
+                    </p>
+                </li>
+            {% endif %}
+
+
+            {% if page_obj.number > 2 %}
+                <li class="page-item">
+                    <a class="page-link" href="?{% param_replace page=page_obj.previous_page_number %}" aria-label="Previous">
+                        <span aria-hidden="true">{{ page_obj.previous_page_number }}</span>
+                    </a>
+                </li>
+            {% endif %}
+
+
+            <li class="page-item active">
+                <p class="page-link" aria-label="Current">
+                    <span aria-hidden="true">{{ page_obj.number }}</span>
+                </p>
+            </li>
+
+
+            {% cur_plus_n_st_last n=1 cur=page_obj.number last=paginator.num_pages as temp_ %}
+            {% if temp_ %}
+                <li class="page-item">
+                    <a class="page-link" href="?{% param_replace page=page_obj.next_page_number %}" aria-label="Next">
+                        <span aria-hidden="true">{{ page_obj.next_page_number }}</span>
+                    </a>
+                </li>
+            {% endif %}
+
+
+            {% cur_plus_n_st_last n=2 cur=page_obj.number last=paginator.num_pages as temp_ %}
+            {% if temp_ %}
+                <li class="page-item disabled">
+                    <p class="page-link" aria-label="Current">
+                        <span aria-disabled="true">...</span>
+                    </p>
+                </li>
+            {% endif %}
+
+
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?{% param_replace page=paginator.num_pages %}" aria-label="Last">
+                        <span aria-hidden="true">{{ paginator.num_pages }}</span>
+                    </a>
+                </li>
+            {% endif %}
+
+        </ul>
+
+    </div>
+{% endif %}

@@ -10,9 +10,12 @@ function openNav(event) {
     // add listener to close the menu
     if (!sidebarlisterner_running) {
         $(document).on('click', function (e) {
-            if (e.altKey || e.metaKey || $('#ogbSidenav').has(e.target).length == 1 || $('#ogbSidenav').is(e.target)) {
-                // ignore clicks with alt or meta keys
-                // ignore clicks on dropdown
+            if (
+                e.altKey || e.metaKey // ignore clicks with alt or meta keys
+                || $('#ogbSidenav').has(e.target).length > 0 || $('#ogbSidenav').is(e.target) // ignore clicks on dropdown
+                || $('.ui-menu').has(e.target).length > 0 // ignore clicks genome selects
+            ) {
+                // ignore such clicks
             } else {
                 // hide div
                 closeNav(event)

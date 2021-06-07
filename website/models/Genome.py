@@ -110,7 +110,7 @@ class Genome(models.Model):
 
     @property
     def html(self):
-        return F'<div class="genome ogb-tag" data-species="{self.taxid.taxscientificname}">{self.identifier}</div>'
+        return F'<span class="genome ogb-tag" data-species="{self.taxid.taxscientificname}">{self.identifier}</span>'
 
     @property
     def html_warning_stripes(self):

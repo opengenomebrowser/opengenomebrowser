@@ -335,46 +335,45 @@ function validate_annotations(annotations) {
     }, "json")
 }
 
-function create_read_only_genome_div(genome_array, genome_to_species, additional_classes = '', click_menu_annotation = 'auto') {
-    let read_only_genome_div = $('<div>', {
-        class: "read-only-div " + additional_classes,
-        onclick: `CopyToClipboard('${genome_array.join(', ')}')`
+function createReadOnlyGenomeDiv(genomeArray, genomeToSpecies, additionalClasses = '', clickMenuAnnotations = 'auto') {
+    let readOnlyDiv = $('<div>', {
+        class: "read-only-div " + additionalClasses,
+        onclick: `CopyToClipboard('${genomeArray.join(', ')}')`
     })
 
-    for (const genome of genome_array) {
-        if (!(genome in genome_to_species)) {
-            console.log(genome, 'not in genome_to_species!')
+    for (const genome of genomeArray) {
+        if (!(genome in genomeToSpecies)) {
+            console.log(genome, 'not in genomeToSpecies!')
         }
-        read_only_genome_div.append($('<div>', {
+        readOnlyDiv.append($('<span>', {
             text: genome,
             class: 'genome ogb-tag',
-            onclick: `showGenomeClickMenu(event, 'auto', 'auto', 'auto', '${click_menu_annotation}')`,
-            'data-species': genome_to_species[genome]['sciname']
+            onclick: `showGenomeClickMenu(event, 'auto', 'auto', 'auto', '${clickMenuAnnotations}')`,
+            'data-species': genomeToSpecies[genome]['sciname']
         }).ogbTooltip())
     }
 
-    return read_only_genome_div
+    return readOnlyDiv
 }
 
-function create_read_only_annotations_div(annotations_array, annotation_to_type) {
-    let read_only_annotations_div = $('<div>', {
+function createReadOnlyAnnotationsDiv(annotationsArray, annotationToType) {
+    let readOnlyDiv = $('<div>', {
         class: "read-only-div",
         css: {'display': 'flex', 'flex-wrap': 'wrap'},
-        onclick: `CopyToClipboard('${annotations_array.join(', ')}')`
+        onclick: `CopyToClipboard('${annotationsArray.join(', ')}')`
     })
 
-    for (let idx in annotations_array) {
-        read_only_annotations_div.append($('<div>', {
-            // class: "dropdown-clickprotect",
-            text: annotations_array[idx],
+    for (let idx in annotationsArray) {
+        readOnlyDiv.append($('<span>', {
+            text: annotationsArray[idx],
             class: 'annotation ogb-tag',
             onclick: `showAnnotationClickMenu(event, 'auto', 'auto', $(this).parent().parent().parent().parent() )`,
-            'data-annotype': annotation_to_type[annotations_array[idx]]['anno_type'],
-            'title': annotation_to_type[annotations_array[idx]]['description']
+            'data-annotype': annotationToType[annotationsArray[idx]]['anno_type'],
+            'title': annotationToType[annotationsArray[idx]]['description']
         }).ogbTooltip())
     }
 
-    return read_only_annotations_div
+    return readOnlyDiv
 }
 
 function init_autocomplete_annotations(div_name) {

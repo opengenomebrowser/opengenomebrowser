@@ -515,13 +515,13 @@
                     // covering genomes
                     if (covering > 0) {
                         el += `<h6 class="dropdown-header context-menu-header" style="padding-bottom: 0.1rem">Positive genomes ${groupId}</h6>`
-                        el += $("<div/>").append(create_read_only_genome_div(Array.from(genomes['covering']), local_genome_to_species, 'positive', '#map-context-menu')).html()
+                        el += $("<div/>").append(createReadOnlyGenomeDiv(Array.from(genomes['covering']), local_genome_to_species, 'positive', '#map-context-menu')).html()
                     }
 
                     // non-covering genomes
                     if (notCovering > 0) {
                         el += `<h6 class="dropdown-header context-menu-header" style="padding-bottom: 0.1rem">Negative genomes ${groupId}</h6>`
-                        el += $("<div/>").append(create_read_only_genome_div(Array.from(genomes['not-covering']), local_genome_to_species, 'positive', '#map-context-menu')).html()
+                        el += $("<div/>").append(createReadOnlyGenomeDiv(Array.from(genomes['not-covering']), local_genome_to_species, 'positive', '#map-context-menu')).html()
                     }
 
                     el += `</div>`
@@ -558,7 +558,7 @@
 
                         el += `
                         <h6 class="dropdown-header context-menu-header">Positive genomes ${groupId}</h6>
-                        <div class="read-only-div"> ${create_read_only_genome_div(Array.from(this['organisms'][groupId]['covering']), local_genome_to_species, 'positive', '#map-context-menu').html()} </div>`
+                        <div class="read-only-div"> ${createReadOnlyGenomeDiv(Array.from(this['organisms'][groupId]['covering']), local_genome_to_species, 'positive', '#map-context-menu').html()} </div>`
 
                     }
                 }
@@ -581,9 +581,9 @@
 
                 cm.appendElement(`
                 <h6 class="dropdown-header context-menu-header">Positive genomes</h6>
-                <div class="read-only-div"> ${create_read_only_genome_div(Array.from(allCovering), local_genome_to_species, 'positive', '#map-context-menu').html()} </div>
+                <div class="read-only-div"> ${createReadOnlyGenomeDiv(Array.from(allCovering), local_genome_to_species, 'positive', '#map-context-menu').html()} </div>
                 <h6 class="dropdown-header context-menu-header">Negative genomes</h6>
-                <div class="read-only-div"> ${create_read_only_genome_div(Array.from(allNotCovering), local_genome_to_species, 'negative', '#map-context-menu').html()} </div>`
+                <div class="read-only-div"> ${createReadOnlyGenomeDiv(Array.from(allNotCovering), local_genome_to_species, 'negative', '#map-context-menu').html()} </div>`
                 )
             }
 

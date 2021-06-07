@@ -47,7 +47,7 @@ class TaxID(MPTTModel):
 
     @property
     def html(self):
-        return F'<div class="taxid ogb-tag" data-species="{self.taxscientificname}">{self.taxscientificname}</div>'
+        return F'<span class="taxid ogb-tag" data-species="{self.taxscientificname}">{self.taxscientificname}</span>'
 
     def get_child_taxids(self) -> QuerySet:
         return TaxID.objects.get_queryset_descendants(TaxID.objects.filter(id=self.id), include_self=True)
@@ -170,11 +170,11 @@ class TaxID(MPTTModel):
         basepaths = [os.path.abspath(F'{settings.BASE_DIR}/website/static/global/css'),
                      os.path.abspath(F'{settings.BASE_DIR}/static_root/global/css')]
 
-        div_css = ''
+        span_css = ''
         svg_css = '[data-species-label] { stroke-width: 3px; paint-order: stroke; cursor: pointer; }\n'
 
         for taxid in all_taxids:
-            div_css += F'[data-species="{taxid.taxscientificname}"] {{' + \
+            span_css += F'[data-species="{taxid.taxscientificname}"] {{' + \
                        F'background-color: rgb({taxid.color}) !important; ' + \
                        F'color: {"white" if taxid.text_color_white else "black"} !important' + \
                        '}\n'
@@ -188,7 +188,7 @@ class TaxID(MPTTModel):
             # ensure parent exists
             file = F'{basepath}/taxid_color.css'
             os.makedirs(os.path.dirname(file), exist_ok=True)
-            open(file, 'w').write(div_css)
+            open(file, 'w').write(span_css)
 
             # ensure parent exists
             file = F'{basepath}/taxid_color_label.css'

@@ -39,7 +39,7 @@ class Organism(models.Model):
 
     @property
     def html(self):
-        return F'<div class="organism ogb-tag" data-species="{self.taxid.taxscientificname}">{self.name}</div>'
+        return F'<span class="organism ogb-tag" data-species="{self.taxid.taxscientificname}">{self.name}</span>'
 
     @property
     def get_tag_html(self) -> str:

@@ -1,0 +1,55 @@
+.select2-container--default .select2-selection--single {
+    height: 38px;
+    border: 1px solid #ced4da;
+    border-radius: 0 .25rem .25rem 0;
+    display: flex;
+    align-items: center;
+}
+
+.select2-container .select2-selection--single .select2-selection__rendered {
+    padding: .375rem 1.75rem .375rem 16px;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #495057;
+}
+
+#collapse-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    font-weight: bold;
+    color: #fff;
+    background-color: #343a40;
+
+    height: 49.5px;
+    padding: 0 .75rem 0 .75rem;
+    vertical-align: top;
+    border-top: 1px solid #dee2e6;
+    border-top-color: rgb(222, 226, 230);
+}
+
+#collapse-header img {
+    height: 2rem;
+    margin: -1rem 0;
+    filter: invert(1);
+}
+
+#annotation-list {
+    list-style: none;
+    padding-left: unset;
+    margin: .5rem
+}
+
+#annotation-list li {
+    margin: .3rem
+}
+
+#annotation-list li:nth-child(odd) {
+    background: #fbfbfb;
+}
+
+#annotation-list li:nth-child(even) {
+    background: #b3b3b330;
+}

@@ -1,4 +1,4 @@
-from website.models import Genome
+from website.models import Genome, Annotation, annotation_types
 from website.models.TaxID import TaxID
 from django.views.generic import DetailView
 from django.template import engines
@@ -111,6 +111,9 @@ class GenomeDetailView(DetailView):
 
         ann_parameters = ['cds_tool', 'cds_tool_date', 'cds_tool_version']
         context['ann_parameters'] = [ParameterField(genome=g, attr=attr) for attr in ann_parameters]
+
+        context['ann_parameters'] = {at: Annotation.objects.filter(genomecontent__in=[g.identifier], anno_type=abbr).count()
+                                     for abbr, at in annotation_types.items()}
 
         context['custom_tables'] = []
         if g.custom_tables:

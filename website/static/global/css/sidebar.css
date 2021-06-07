@@ -14,7 +14,7 @@
 }
 
 /* The navigation menu links */
-.sidenav a, .sidenav p, .sidenav span {
+.sidenav a, .sidenav p, .sidenav span :not(.prevent-style-change){
     padding: 4px 4px 4px 4px;
     text-decoration: none;
     font-size: 25px;

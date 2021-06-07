@@ -6,6 +6,7 @@
     <link rel="stylesheet" type="text/css" href="{% static 'global/css/taxid_color.css' %}" id="taxid-color-stylesheet"/>
     <link rel="stylesheet" type="text/css" href="{% static 'global/css/tag_color.css' %}"/>
     <link rel="stylesheet" type="text/css" href="{% static 'global/css/detail.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'global/css/annotype_color.css' %}">
 
     {% if genome_markdown or organism_markdown %}
         <!-- Markdown https://marked.js.org/ -->
@@ -274,6 +275,39 @@
                     {% for param in ann_parameters %}{% if param.value != None %}
                         {{ param.html }}
                     {% endif %}{% endfor %}
+
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- annotations by category -->
+            <div data-toggle="collapse" href="#annotations-by-category" aria-expanded="true"
+                 aria-controls="annotations-by-category">
+                <table class="table no-bottom-padding">
+                    <thead class="thead-dark">
+                    <tr>
+                        <th scope="col">Annotations by category</th>
+                        <th scope="col" class="expand-td"><img src="{% static 'global/ionicons/ios-arrow-down.svg' %}"></th>
+                        </th>
+                    </tr>
+                    </thead>
+                </table>
+            </div>
+
+            <div class="collapse" id="annotations-by-category">
+                <table class="table no-top-padding">
+                    <tbody>
+
+                    {% for at, n_annos in ann_parameters.items %}
+                        <tr>
+                            <th scope="row"><span class="ogb-tag" data-annotype="{{ at.anno_type }}"
+                                                  style="cursor: unset">{{ at.name }} ({{ at.anno_type }})</span></th>
+                            <td>{{ n_annos }}</td>
+                            <td>
+                                <a href="{% url "website:annotation-filter" %}?genomes={{ genome.identifier }}&anno_type={{ at.anno_type }}">browse</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
 
                     </tbody>
                 </table>

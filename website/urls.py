@@ -1,4 +1,4 @@
-from django.urls import path, re_path, include
+from django.urls import path, re_path
 
 from website.views import *
 
@@ -32,7 +32,12 @@ urlpatterns = [
     path('gene/<str:slug>/', GeneDetailView.as_view(), name='gene'),
 
     # ex: /annotation/{name}
+    path('annotations/', AnnotationFilter.filter_view, name='annotation-filter'),
     path('annotation/<str:slug>/', AnnotationDetailView.as_view(), name='annotation'),
+
+    # ex: /annotation-search/?annotations={K01626}+{EC:4.4.4.4}&genomes={organism1}+{organism2}
+    path('annotation-search/', AnnotationSearch.annotation_view, name='annotation-search'),
+    path('annotation-search-matrix/', AnnotationSearch.matrix, name='annotation-search-matrix'),
 
     # ex: /pathway/?map_slug={kegg-map-00400}&genomes={organism1}+{organism2}
     path('pathway/', PathwayView.pathway_view, name='pathway'),
@@ -46,11 +51,7 @@ urlpatterns = [
     # ex: /compare-genes/?genes={gene 1}+{gene 2}
     path('compare-genes/', CompareGenes.compare, name='compare-genes'),
 
-    # ex: /annotation-search/?annotations={K01626}+{EC:4.4.4.4}&genomes={organism1}+{organism2}
-    path('annotation-search/', AnnotationSearch.annotation_view, name='annotation-search'),
-    path('annotation-search-matrix/', AnnotationSearch.matrix, name='annotation-search-matrix'),
-
-    # ex: /annotation-search/?annotations={K01626}+{EC:4.4.4.4}&genomes={organism1}+{organism2}
+    # ex: /gene-trait-matching/?g1={organism1}+{organism2}&g2={organism3}+{organism4}
     path('gene-trait-matching/', GeneTraitMatching.gtm_view, name='gene-trait-matching'),
     path('gene-trait-matching-table/', GeneTraitMatching.gtm_table, name='gene-trait-matching-table'),
 

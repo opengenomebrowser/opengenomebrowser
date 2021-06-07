@@ -85,8 +85,6 @@ INSTALLED_APPS = [
     'website.apps.WebsiteConfig'
 ]
 
-# SITE_ID = 1  # required because of 'invitations'
-
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',

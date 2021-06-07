@@ -21,3 +21,13 @@ def extract_data(request, key: str, list: bool = False, sep: str = ' ', raise_er
         return [e.replace('!!!', ' ') for e in data.split(sep)]
     else:
         return data.replace('!!!', ' ')
+
+
+def get_or_none(request, key: str, list: bool = False, sep: str = ' '):
+    try:
+        data = extract_data(request=request, key=key, list=list, sep=sep, raise_errors=True)
+        if len(data) > 0:  # return only if there is something
+            return data
+    except:
+        pass
+    return None
