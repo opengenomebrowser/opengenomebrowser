@@ -389,13 +389,23 @@ def send_mail(to: str) -> None:
     """
     from django.core.mail import send_mail
 
-    send_mail(
-        subject='Test Mail from OpenGenomeBrowser',
-        message='Test Mail Content.',
-        from_email=settings.DEFAULT_FROM_EMAIL,
-        recipient_list=[to],
-        fail_silently=False,
-    )
+    try:
+        send_mail(
+            subject='Test Mail from OpenGenomeBrowser',
+            message='Test Mail Content.',
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[to],
+            fail_silently=False,
+        )
+    except Exception as e:
+        print(f'mail settings:\n', {
+            'EMAIL_HOST': settings.EMAIL_HOST,
+            'EMAIL_HOST_USER': settings.EMAIL_HOST_USER,
+            'DEFAULT_FROM_EMAIL': settings.DEFAULT_FROM_EMAIL,
+            'EMAIL_PORT': settings.EMAIL_PORT
+        })
+        raise e
+
     print('Mail sent!')
 
 

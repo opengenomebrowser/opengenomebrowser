@@ -94,7 +94,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware'
 ]
-if os.environ.get('LOGIN_REQUIRED', 'true') == 'true':
+if os.environ.get('LOGIN_REQUIRED', 'true').lower() == 'true':
     # require login unless LOGIN_REQUIRED is set to 'false'
     MIDDLEWARE.append('OpenGenomeBrowser.login_required_middleware.LoginRequiredMiddleware')
 else:
@@ -181,7 +181,11 @@ MEDIA_ROOT = 'dist/media'
 
 # Require login by default, see also OpenGenomeBrowser.login_required_middleware.LoginRequiredMiddleware
 # https://stackoverflow.com/questions/3214589/django-how-can-i-apply-the-login-required-decorator-to-my-entire-site-excludin/56579091#56579091
-AUTH_EXEMPT_ROUTES = ('login', 'index', 'logout', 'password_change', 'password_change_done', 'password_reset')
+AUTH_EXEMPT_ROUTES = (
+    'login', 'index', 'logout',
+    'password_change', 'password_change_done',
+    'password_reset_complete', 'password_reset', 'password_reset_confirm', 'password_reset_done'
+)
 AUTH_LOGIN_ROUTE = 'login'
 
 # Huey config
