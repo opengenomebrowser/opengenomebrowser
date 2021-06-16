@@ -110,7 +110,14 @@ class Genome(models.Model):
 
     @property
     def html(self):
-        return F'<span class="genome ogb-tag" data-species="{self.taxid.taxscientificname}">{self.identifier}</span>'
+        classes = ['genome', 'ogb-tag']
+        if not self.is_representative:
+            classes.append('no-representative')
+        if self.contaminated:
+            classes.append('contaminated')
+        if self.restricted:
+            classes.append('restricted')
+        return F'<span class="{" ".join(classes)}" data-species="{self.taxid.taxscientificname}">{self.identifier}</span>'
 
     @property
     def html_warning_stripes(self):
@@ -282,8 +289,8 @@ class Genome(models.Model):
         return True
 
     @staticmethod
-    def get_selector_to_description_dict():
-        selector_to_description_dict = {
+    def get_selector_to_description_dict() -> dict:
+        return {
             'organism.name': {'filter_type': 'text', 'description': 'Organism'},
             'identifier': {'filter_type': 'text', 'description': 'Identifier'},
             'old_identifier': {'filter_type': 'text', 'description': 'Old Identifier'},
@@ -336,4 +343,3 @@ class Genome(models.Model):
             'organism.taxid.taxscientificname': {'filter_type': 'multi_select', 'description': 'Taxonomy'},
             'organism.taxid.id': {'filter_type': 'multi_select', 'description': 'TaxID'}
         }
-        return selector_to_description_dict

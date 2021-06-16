@@ -1,0 +1,110 @@
+.select2-container--default .select2-selection--single,
+.select2-container--default .select2-selection--multiple {
+    min-height: 38px;
+    border: 1px solid #ced4da !important;
+    border-radius: 0 .25rem .25rem 0;
+    display: flex;
+    align-items: center;
+}
+
+.select2-container--default .select2-selection--multiple .select2-selection__choice {
+    margin: 3px;
+}
+
+.select2-container--default .select2-selection--multiple .select2-selection__rendered {
+    padding: 4px;
+}
+
+.select2-container .select2-selection__rendered {
+    padding: .375rem 1.75rem .375rem 16px;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #495057;
+}
+
+#collapse-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    font-weight: bold;
+    color: #fff;
+    background-color: #343a40;
+
+    height: 49.5px;
+    padding: 0 .75rem 0 .75rem;
+    vertical-align: top;
+    border-top: 1px solid #dee2e6;
+    border-top-color: rgb(222, 226, 230);
+}
+
+#collapse-header img {
+    height: 2rem;
+    margin: -1rem 0;
+    filter: invert(1);
+}
+
+#annotation-list {
+    list-style: none;
+    padding-left: unset;
+    margin: .5rem
+}
+
+#annotation-list li {
+    margin: .3rem
+}
+
+#annotation-list li:nth-child(odd) {
+    background: #fbfbfb;
+}
+
+#annotation-list li:nth-child(even) {
+    background: #b3b3b330;
+}
+
+#id_columns {
+    height: min-content;
+}
+
+.sortable.grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+
+.sortable {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    padding: 0;
+    background-color: #f3f3f3;
+    min-width: 480px;
+    min-height: 30px;
+    color: black;
+
+    border-radius: .25rem;
+    border: 1px solid #f9f9f9;
+}
+
+.sortable.grid li {
+    float: left;
+    min-width: 80px;
+    text-align: center;
+    margin: 5px;
+    list-style: none;
+    background-color: #e4e4e4;
+    border: 1px solid #aaa;
+    border-radius: 4px;
+    cursor: default;
+    padding: 0 5px;
+
+    color: #212529;
+}
+
+.sortable.grid li.selected {
+    background-color: #f9c7c8;
+    border: solid red 1px !important;
+    z-index: 1 !important;
+}

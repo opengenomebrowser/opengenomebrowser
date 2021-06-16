@@ -48,22 +48,8 @@ html {
     border: 1px solid red !important;
 }
 
-.ogb-tag {
-    width: min-content;
-    height: min-content;
-    white-space: nowrap;
-    margin: 3px 3px 3px 3px;
-    border-radius: .25rem;
-    padding: 0 6px;
-    cursor: pointer;
-}
-
 #context-menu .context-menu-icon-annotation {
     margin: 0 0 0 0;
-}
-
-#context-menu .ogb-tag {
-    margin: 3px 3px 3px 3px;
 }
 
 .black-links a {

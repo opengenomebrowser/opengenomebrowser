@@ -208,13 +208,16 @@ let showOrganismClickMenu = function (event, organism = 'auto', species = 'auto'
     // auto-discover siblings (nothing to do with them yet)
     // siblings = autoDiscoverSiblings(event, taxname, siblings, 'organism')
 
+    // warning tags
+    let warningTags = event.target.classList.contains('restricted') ? '<span class="ogb-tag mini restricted float-right" data-title="restricted">r</span>' : ''
+
     // initiate context menu
     let cm = new ClickMenu(event, 'organism-context-menu')
 
     // list of elements to click on
     cm.appendElement(`
 <h6 class="dropdown-header context-menu-header" data-species="${species}">
-${organism}</h6>
+${organism}${warningTags}</h6>
 <a href="/organism/${organism}" class="dropdown-item context-menu-icon context-menu-icon-organism">
 Open organism info</a>
 `)
@@ -240,10 +243,18 @@ let showGenomeClickMenu = function (event, genome = 'auto', species = 'auto', si
 
     let cm = new ClickMenu(event, 'genome-context-menu')
 
+    // warning tags
+    let warningTags = '';
+    ['restricted', 'no-representative', 'contaminated'].forEach(function (className) {
+        if (event.target.classList.contains(className)) {
+            warningTags += `<span class="ogb-tag mini ${className} float-right" data-title="${className}">${className.charAt(0)}</span>`
+        }
+    })
+
     // list of elements to click on
     let html = `
 <h6 class="dropdown-header context-menu-header" data-species="${species}">
-${genome}</h6>`
+${genome}${warningTags}</h6>`
 
     if (species) {
         html += `
@@ -319,6 +330,8 @@ Perform annotation search</a>
     cm.appendElement(html)
 
     cm.show()
+
+    $('.ogb-tag.mini').tooltip()
 }
 
 let showAnnotationClickMenu = function (event, annotation = 'auto', siblings = 'auto', genomes = 'none', annotype = 'auto') {

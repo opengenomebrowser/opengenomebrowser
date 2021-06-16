@@ -7,8 +7,8 @@ def click_view(request):
         title='Test Click Menu',
         taxids=TaxID.objects.all()[:5],
         annotations=Annotation.objects.all().distinct('anno_type'),
-        genomes=Genome.objects.all()[:5],
-        organisms=Organism.objects.all()[:5],
+        genomes=Genome.objects.order_by('-contaminated', '-representative', 'organism__restricted').all()[:5],
+        organisms=Organism.objects.order_by('-restricted').all()[:5],
         genes=Gene.objects.all()[:5]
     )
 

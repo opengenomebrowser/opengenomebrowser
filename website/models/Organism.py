@@ -39,7 +39,10 @@ class Organism(models.Model):
 
     @property
     def html(self):
-        return F'<span class="organism ogb-tag" data-species="{self.taxid.taxscientificname}">{self.name}</span>'
+        classes = ['organism', 'ogb-tag']
+        if self.restricted:
+            classes.append('restricted')
+        return F'<span class="{" ".join(classes)}" data-species="{self.taxid.taxscientificname}">{self.name}</span>'
 
     @property
     def get_tag_html(self) -> str:

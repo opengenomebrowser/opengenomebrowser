@@ -23,11 +23,11 @@ def extract_data(request, key: str, list: bool = False, sep: str = ' ', raise_er
         return data.replace('!!!', ' ')
 
 
-def get_or_none(request, key: str, list: bool = False, sep: str = ' '):
+def extract_data_or(request, key: str, list: bool = False, sep: str = ' ', default=None):
     try:
         data = extract_data(request=request, key=key, list=list, sep=sep, raise_errors=True)
-        if len(data) > 0:  # return only if there is something
+        if data is not None and len(data) > 0:  # return only if there is something
             return data
     except:
         pass
-    return None
+    return default

@@ -4,10 +4,7 @@ from plugins import calculate_genome_similarity
 
 def _sort(genome1, genome2):
     # return alphabetically "smaller" genome first
-    if genome1.identifier < genome2.identifier:
-        return genome1, genome2
-    else:
-        return genome2, genome1
+    return (genome1, genome2) if genome1.identifier < genome2.identifier else (genome2, genome1)
 
 
 class GenomeSimilarityQuerySet(models.query.QuerySet):

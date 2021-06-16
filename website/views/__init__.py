@@ -19,5 +19,6 @@ from .CompareGenes import CompareGenes
 from .GeneTraitMatching import gtm_view
 from .Downloader import downloader_view
 from website.views.AnnotationFilter import AnnotationFilter
+from website.views.GenomeFilter import GenomeFilter
 
 from .helpers.magic_string import MagicQueryManager

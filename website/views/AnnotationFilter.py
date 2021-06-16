@@ -5,90 +5,11 @@ from website.models import Annotation, PathwayMap
 from website.models.Annotation import annotation_types
 
 from website.views.helpers.magic_string import MagicQueryManager
-from website.views.helpers.extract_requests import extract_data, get_or_none
+from website.views.helpers.extract_requests import extract_data, extract_data_or
 
 
-# class FilteredListView(ListView):
-#     filterset_class = None
-#     pagination_options = [10, 20, 30, 50, 100, 500, 1000]
-#     paginate_by = 30
-#
-#     def get_queryset(self):
-#         # Get the queryset however you usually would.  For example:
-#         queryset = super().get_queryset()
-#         # Then use the query parameters and the queryset to
-#         # instantiate a filterset and save it as an attribute
-#         # on the view instance for later.
-#         self.filterset = self.filterset_class(self.request.GET, queryset=queryset)
-#         # Return the filtered queryset
-#         return self.filterset.qs.distinct()
-#
-#     def get_context_data(self, **kwargs):
-#         context = super().get_context_data(**kwargs)
-#         context['filterset'] = self.filterset
-#         context['paginated_by'] = self.paginate_by
-#         if self.paginate_by not in self.pagination_options:
-#             self.pagination_options.append(self.paginate_by)
-#         context['pagination_options'] = self.pagination_options
-#         return context
-#
-#     def get(self, request, *args, **kwargs):
-#         paginate_by = request.GET.get('paginate_by', '')
-#         if paginate_by == 'All':
-#             self.paginate_by = None
-#         elif paginate_by.isnumeric():
-#             self.paginate_by = int(paginate_by)
-#
-#         return super().get(request, *args, **kwargs)
-#
-#
-# class AnnotationFilterSet(FilterSet):
-#     class Meta:
-#         model = Annotation
-#         fields = []
-#
-#     name_starts_with = django_filters.CharFilter(field_name='name', lookup_expr='istartswith')
-#     name_contains = django_filters.CharFilter(field_name='name', lookup_expr='icontains')
-#     description_starts_with = django_filters.CharFilter(field_name='description', lookup_expr='istartswith')
-#     description_contains = django_filters.CharFilter(field_name='description', lookup_expr='icontains')
-#     genomes = django_filters.CharFilter(label='Genomes', method='filter_genomes')
-#     anno_type = django_filters.ChoiceFilter(field_name='anno_type', choices=[(abbr, f'{at.name} ({abbr})') for abbr, at in annotation_types.items()])
-#     pathwaymap = django_filters.filters.ModelChoiceFilter(label='Pathway map', queryset=PathwayMap.objects.all())
-#
-#     def filter_genomes(self, queryset, name, value):
-#         qs = [v.strip() for v in value.split(',')]
-#         magic_query_manager = MagicQueryManager(queries=qs)
-#
-#         for g in magic_query_manager.all_genomes:
-#             queryset = queryset.filter(genomecontent__in=[g.identifier])
-#         return queryset
-#
-#
-# class AnnotationListView(FilteredListView):
-#     template_name = 'website/annotation_filter.html'
-#     model = Annotation
-#     filterset_class = AnnotationFilterSet
-#
-#     def get_context_data(self, **kwargs):
-#         context = super().get_context_data(**kwargs)
-#
-#         if self.request.GET.get('genomes', False):
-#             qs = [v.strip() for v in self.request.GET['genomes'].split(',')]
-#
-#             try:
-#                 magic_query_manager = MagicQueryManager(queries=qs)
-#                 context['magic_query_manager'] = magic_query_manager
-#                 if len(magic_query_manager.all_genomes) == 0:
-#                     context['error_danger'].append('Query did not find any genomes.')
-#             except Exception as e:
-#                 context['error_danger'] = context.get('error_danger', [])
-#                 context['error_danger'].append(str(e))
-#
-#         return context
-#
-#
 def simple_filter(qs, lookup_expr, field_id, request, context):
-    query = get_or_none(request=request, key=field_id)
+    query = extract_data_or(request=request, key=field_id)
     if query:
         return qs.filter(**{lookup_expr: query}), context
     else:
@@ -96,7 +17,7 @@ def simple_filter(qs, lookup_expr, field_id, request, context):
 
 
 def genomes_filter(qs, lookup_expr, field_id, request, context):
-    genomes = get_or_none(request=request, key=field_id, list=True, sep=',')
+    genomes = extract_data_or(request=request, key=field_id, list=True, sep=',')
     if genomes:
         try:
             magic_query_manager = MagicQueryManager(queries=genomes)
@@ -136,7 +57,7 @@ class AnnotationFilter:
         filter_fields = cls.filter_fields.copy()
         for field_id, filter_field in filter_fields.items():
             filter_field['data'] = ''
-            data = get_or_none(request=request, key=field_id)
+            data = extract_data_or(request=request, key=field_id)
             if data:
                 filter_field['data'] = data
                 filter_function = filter_field['filter_function']

@@ -18,6 +18,8 @@ urlpatterns = [
     path('table-load-script/', LoadTableScript.render_script, name='genome-table-script'),
     path('table-ajax/', GenomeTableAjax.as_view(), name='genome-table-ajax'),
 
+    path('genome/', GenomeFilter.filter_view, name='genome-filter'),
+
     # ex: /organism/{identifier}
     path('organism/<slug:slug>/', OrganismDetailView.as_view(), name='organism'),
 

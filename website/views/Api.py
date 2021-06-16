@@ -469,8 +469,6 @@ class Api:
             result['cache-file-path'] = tree.cache_file_path
             result['has-cache-file'] = tree.has_cache_file
 
-        print(result)
-
         return JsonResponse(result)
 
     @staticmethod
