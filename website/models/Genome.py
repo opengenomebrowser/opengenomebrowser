@@ -2,6 +2,7 @@ import os
 from hashlib import sha224
 from django.db import models
 from django.db.models import JSONField
+from django.contrib.postgres.fields import ArrayField
 from .Organism import Organism
 from .TaxID import TaxID
 from .Tag import Tag
@@ -18,6 +19,13 @@ class Genome(models.Model):
     Imported from database/genomes/organism/genomes/*
     """
 
+    """
+    todo: ensure environments are imported
+    turn literature references into arrayfield
+    make blank/null false
+    make migrations prettier?
+    """
+
     # MANDATORY general information about the isolate
     identifier = models.CharField('Unique identifier', max_length=50, unique=True)
     organism = models.ForeignKey(Organism, on_delete=models.CASCADE, null=True, blank=True)
@@ -29,9 +37,10 @@ class Genome(models.Model):
 
     # information about isolation
     isolation_date = models.DateField('Isolation date', null=True, blank=True)
-    env_broad_scale = JSONField('Broad isolation environment', default=list, blank=True, null=True)
-    env_local_scale = JSONField('Local isolation environment', default=list, blank=True, null=True)
-    env_medium = JSONField('Environment medium', default=list, blank=True, null=True)
+    # env_broad_scale = JSONField('Broad isolation environment', default=list, blank=True, null=True)
+    env_broad_scale = ArrayField(models.TextField(), name='Broad isolation environment', default=list)
+    env_local_scale = ArrayField(models.TextField(), name='Local isolation environment', default=list)
+    env_medium = ArrayField(models.TextField(), name='Environment medium', default=list)
     growth_condition = models.CharField('Growth condition', max_length=100, null=True, blank=True)
     geographical_coordinates = models.CharField('Geographical coordinates', max_length=200, null=True, blank=True)
     geographical_name = models.CharField('Geographical name', max_length=50, null=True, blank=True)

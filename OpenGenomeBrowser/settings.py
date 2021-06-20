@@ -50,7 +50,7 @@ if 'DEFAULT_COLUMNS' in os.environ:
     DEFAULT_GENOMES_COLUMNS_new = os.environ.get('DEFAULT_COLUMNS').split(',')
 else:
     DEFAULT_GENOMES_COLUMNS = ["organism.name", "identifier", "organism.taxid.taxscientificname", "sequencing_tech"]
-    DEFAULT_GENOMES_COLUMNS_new = ["organism", "identifier", "taxscientificname", "sequencing_tech"]
+    DEFAULT_GENOMES_COLUMNS_new = ["organism", "identifier", "taxonomy", "sequencing_technology"]
 
 DEFAULT_GENOMES_PAGE_LENGTH = os.environ.get('DEFAULT_GENOMES_PAGE_LENGTH', 'All')
 

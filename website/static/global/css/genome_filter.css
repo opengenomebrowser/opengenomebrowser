@@ -80,7 +80,6 @@
     user-select: none;
     padding: 0;
     background-color: #f3f3f3;
-    min-width: 480px;
     min-height: 30px;
     color: black;
 
@@ -107,4 +106,66 @@
     background-color: #f9c7c8;
     border: solid red 1px !important;
     z-index: 1 !important;
+}
+
+.ui-slider {
+    width: 100%;
+}
+
+thead {
+    /*height: 4rem;*/
+    white-space: nowrap;
+}
+
+table tbody td {
+    padding: 0.1rem !important;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.table-container {
+    overflow: auto;
+    margin: 0 10px 0 10px;
+}
+
+.column-info {
+    color: #343a40
+}
+
+.active-filter {
+    width: 23px;
+    height: 23px;
+    line-height: 23px;
+    background-color: darkred;
+    color: lightcoral;
+    border-radius: 50%;
+}
+
+.sort-btn {
+    width: 11.5px;
+    background-color: darkgreen;
+    height: 23px;
+    line-height: 21px;
+    padding-left: 1px;
+    color: #508750;
+}
+
+.sort-btn.sort-desc {
+    border-top-right-radius: 11.5px;
+    border-bottom-right-radius: 11.5px;
+    text-align: left;
+}
+
+.sort-btn.sort-asc {
+    border-top-left-radius: 11.5px;
+    border-bottom-left-radius: 11.5px;
+    text-align: right;
+}
+
+.sort-btn:hover {
+    color: white;
+}
+
+.sort-btn.sort-asc.sorted, .sort-btn.sort-desc.sorted {
+    color: lightgreen;
 }

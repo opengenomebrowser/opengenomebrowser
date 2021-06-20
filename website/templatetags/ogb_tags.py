@@ -3,6 +3,24 @@ from django import template
 register = template.Library()
 
 
+@register.simple_tag
+def define(val=None):
+    return val
+
+
+@register.simple_tag(takes_context=False)
+def split_date(date: str):
+    return date.split(':')
+
+
+@register.simple_tag(takes_context=False)
+def get_item(dictionary: dict, *keys: str):
+    res = dictionary
+    for key in keys:
+        res = res[key]
+    return res
+
+
 @register.simple_tag(takes_context=True)
 def param_replace(context, **kwargs):
     """

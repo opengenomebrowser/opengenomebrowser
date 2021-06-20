@@ -1,5 +1,6 @@
 {% extends 'global/base.html' %}
 
+{% load ogb_tags %}
 {% load static %}
 
 {% block styles %}
@@ -21,6 +22,10 @@
 
     <!-- SortableJS - https://github.com/SortableJS/Sortable -->
     <script src="{% static 'global/js/Sortable.min.js' %}"></script>
+
+    <!-- JQuery-UI (without Widgets>Tooltip) -->
+    <script type="text/javascript" src="{% static 'global/js/jquery-ui.min.js' %}"></script>
+    <link href="{% static 'global/css/jquery-ui.min.css' %}" rel="stylesheet"/>
 
     <link rel="stylesheet" type="text/css" href="{% static 'global/css/genome_filter.css' %}"/>
 
@@ -46,57 +51,30 @@
 
                 <div class="input-group mb-3" id="form_columns">
                     <div class="input-group-prepend">
-                        <label class="input-group-text" id="label_columns"
-                               for="id_columns">Columns</label>
+                        <label class="input-group-text" id="label_columns" for="id_columns">Columns</label>
                     </div>
-                    <input name="columns" value="" hidden>
+                    <input name="columns" hidden>
                     <div class="form-control" id="id_columns">
-
                         <div>
                             <h6>Sort columns</h6>
                             <ul id="sortable-selected" class="sortable grid">
-                                {% for field_id, filter_field in filter_fields.items %}{% if field_id in columns %}
-                                    <li data-selector="{{ field_id }}">{{ filter_field.label }}{% endif %}{% endfor %}
+                                {% for column in active_columns.values %}
+                                    <li data-selector="{{ column.id }}">{{ column.label }}</li>{% endfor %}
                             </ul>
                         </div>
                         <div>
                             <h6>Available Columns</h6>
                             <ul id="sortable-available" class="sortable grid">
-                                {% for field_id, filter_field in filter_fields.items %}{% if field_id not in columns %}
-                                    <li data-selector="{{ field_id }}">{{ filter_field.label }}{% endif %}{% endfor %}
+                                {% for column_id, column in all_columns.items %}{% if column_id not in active_columns %}
+                                    <li data-selector="{{ column.id }}">{{ column.label }}</li>{% endif %}{% endfor %}
                             </ul>
                         </div>
 
                     </div>
                 </div>
 
-                {% for field_id, filter_field in filter_fields.items %}
-                    <div class="input-group mb-3" id="form_{{ field_id }}" {% if filter_field.hidden %}hidden{% endif %}>
-                        <div class="input-group-prepend">
-                            <label class="input-group-text" id="label_{{ field_id }}"
-                                   for="id_{{ field_id }}">{{ filter_field.label }}</label>
-                        </div>
-                        {% if filter_field.multiple %}
-                            <input name="{{ field_id }}" value="" hidden>
-                            <select class="custom-select" id="id_{{ field_id }}" multiple="multiple">
-                                {% for choice, verbose in filter_field.choices %}
-                                    <option value="{{ choice }}"
-                                            {% if choice in filter_field.data %} selected{% endif %}
-                                    >{{ verbose }}</option>{% endfor %}
-                            </select>
-                        {% elif filter_field.choices %}
-                            <select class="custom-select" name="{{ field_id }}" id="id_{{ field_id }}">
-                                {% for choice, verbose in filter_field.choices %}
-                                    <option value="{{ choice }}"
-                                            {% if choice == filter_field.data %} selected{% endif %}
-                                    >{{ verbose }}</option>{% endfor %}
-                            </select>
-                        {% else %}
-                            <input type="text" class="form-control" name="{{ field_id }}"
-                                   aria-label="{{ filter_field.label }}" aria-describedby="label_{{ field_id }}"
-                                   value="{{ filter_field.data }}">
-                        {% endif %}
-                    </div>
+                {% for filter in shown_filters.values %}
+                    {{ filter.html }}
                 {% endfor %}
 
                 <div class="input-group mb-3" id="form_paginate_by">
@@ -117,51 +95,42 @@
             </form>
             <button type="button" class="btn btn-primary" onclick="submitFunction()">Submit</button>
 
-
-            {% if magic_query_manager %}
-                <div class="">
-
-                    <hr class="featurette-divider">
-
-                    <button type="button" class="btn btn-light" data-toggle="collapse" href="#real-div" aria-expanded="false" aria-controls="real-div"
-                    >Show query
-                    </button>
-
-                    <form id="real-div" class="collapse">
-                        <div class="form-group">
-                            <label for="real-genomes-1">Genomes:</label>
-                            <div class="read-only-div" id="real-genomes">
-                                {% for genome in magic_query_manager.all_genomes %}{{ genome.html|safe }}{% endfor %}
-                            </div>
-                        </div>
-
-                    </form>
-                </div>
-
-            {% endif %}
-
         </div>
+    </div>
+    {% include "global/pagination_snippet.html" %}
 
-        {% include "global/pagination_snippet.html" %}
-
-
-        <table id="annotation-list">
+    <div class="table-container">
+        <table id="annotation-list" class="table table-sm table-striped">
+            <thead class="thead-dark">
             <tr>
-                {% for c, data in columns_data.items %}
-                    <th>{{ data.label }}</th>{% endfor %}
+                {% for column in active_columns.values %}
+
+                    <th data-column-id="{{ column.id }}">
+                        <div class="column-info d-flex bd-highlight">
+                            {% if column.query %}<span class="active-filter" title="A filter is active on this column.">f</span>{% endif %}
+                            <div class="flex-grow-1"></div>
+                            <a class="sort-btn sort-asc {% if column.sorted == 'asc' %}sorted{% endif %}" title="Sort ascending" href="?{% param_replace sort=column.id asc='True' %}">↑</a>
+                            <a class="sort-btn sort-desc {% if column.sorted == 'desc' %}sorted{% endif %}" title="Sort descending" href="?{% param_replace sort=column.id asc='False' %}">↓</a>
+                        </div>
+                        <br>
+                        <div class="column-label">{{ column.label }}</div>
+                    </th>{% endfor %}
             </tr>
+            </thead>
+            <tbody>
             {% for row in table %}
                 <tr>
                     {% for cell in row %}
                         <td>{{ cell|safe }}</td>{% endfor %}
                 </tr>
             {% endfor %}
+            </tbody>
         </table>
-
-
-        {% include "global/pagination_snippet.html" %}
-
     </div>
+    <div class="container">
+        {% include "global/pagination_snippet.html" %}
+    </div>
+
 
 {% endblock %}
 
@@ -189,6 +158,34 @@
         })
 
 
+        $("#annotation-list th").each(function (iColumn, column) {
+            const columnId = $(column).data('column-id')
+            if (columnId.startsWith('env')) {
+                $("#annotation-list tr").each(function (iRow, row) {
+                    if (iRow === 0) return
+                    const envField = row.children[iColumn]
+                    if (envField.textContent.length > 2) {
+                        const textContent = envField.textContent.slice(2, -2).split("', '")
+                        envField.innerHTML = textContent.map(x => `<span class="badge badge-warning">${x}</span>`).join('')
+                    } else {
+                        envField.innerHTML = ''
+                    }
+                })
+            } else if (columnId === 'literature_references') {
+                $("#annotation-list tr").each(function (iRow, row) {
+                    if (iRow === 0) return
+                    const envField = row.children[iColumn]
+                    if (envField.textContent.length > 2) {
+                        const textContent = JSON.parse(envField.textContent.replace(/\'/g, '\"'))
+                        console.log(textContent)
+                        envField.innerHTML = textContent.map(x => `<a class="badge badge-info" href="${x['url'] || ''}">${x['name'] || ''}</a>`).join('')
+                    } else {
+                        envField.innerHTML = ''
+                    }
+                })
+            }
+        })
+
         $(document).ready(function () {
             $('.ogb-tag.genome')
                 .ogbTooltip()
@@ -200,35 +197,51 @@
                 .click(function (event) {
                     showOrganismClickMenu(event)
                 })
+            $('.ogb-tag.ogb-tag')
+                .ogbTooltip()
+            $('.active-filter, .sort-asc, .sort-desc').tooltip()
         })
 
         const activateDropdownSelect = function () {
             setTimeout(function () {
-                {% for field_id, filter_field in filter_fields.items %}{% if filter_field.choices %}{% if filter_field.multiple %}
-                $('#id_{{ field_id }}').select2({multiple: true})
-                {% else %}
-                $('#id_{{ field_id }}').select2()
-                {% endif %}{% endif %}{% endfor %}
+                {% for js in activate_js %}
+                    {{ js|safe }}
+                {% endfor %}
             }, 10)
         }
 
 
-        $(form).submit(function () {
-            // copy content of multiples into new inputs, comma-separated
-            $(form).find('select[multiple]').each(function (i, select) {
-                const value = $(select).val().join(',')  // array
-                const name = select.id.substr(3)
-                const input = $(form).find('input[name=' + name + ']')
-                input.attr('value', value)
-            })
+        const subbie = function () {
+            // copy columns to input
+            const selectedColumns = $(form).find('#id_columns #sortable-selected li').map(function () {
+                return $(this).data('selector')
+            }).get()
+            $(form).find('input[name=columns]').attr('value', selectedColumns)
+
+
+            {% for js in submit_js %}
+                {{ js|safe }}
+            {% endfor %}
+
 
             // remove empty filters
-            $(form).find('input[type!="radio"][value=""],select:not(:has(option:selected[value!=""]))').attr('name', '')
+            $(form).find('input[name], select[name]').each(function () {
+                if (this.value === '') {
+                    this.name = ''
+                }
+            })
 
+            // print submitted stuff
+            console.log($(form).serialize().split('&'))
+        }
+
+        $(form).submit(function () {
+            subbie()
         })
 
         const submitFunction = function () {
             console.log(`Form Submitted! Time stamp: ${event.timeStamp}`)
+            {#subbie()#}
             $(form).submit()
         }
 

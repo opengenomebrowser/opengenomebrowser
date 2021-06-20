@@ -44,7 +44,7 @@
             <form method="GET" id="form">
 
                 {% for field_id, filter_field in filter_fields.items %}
-                    <div class="input-group mb-3" id="form_{{ field_id }}" {% if filter_field.hidden %}hidden{% endif %}>
+                    <div class="input-group mb-3" id="form_{{ field_id }}" {% if filter_field.data or filter_field.hidden %}hidden{% endif %}>
                         <div class="input-group-prepend">
                             <label class="input-group-text" id="label_{{ field_id }}"
                                    for="id_{{ field_id }}">{{ filter_field.label }}</label>
