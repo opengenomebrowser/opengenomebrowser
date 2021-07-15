@@ -1,8 +1,9 @@
+import os
+from time import sleep
+import tarfile
 from django.shortcuts import render, HttpResponse
 from django.http import JsonResponse
 
-import os
-from time import sleep
 from website.views.helpers.magic_string import MagicQueryManager
 from lib.ogb_cache.ogb_cache import clear_cache
 from website.views.helpers.extract_requests import contains_data, extract_data
@@ -73,17 +74,12 @@ def downloader_view(request):
                 for abbr, verbose in download_abbrs.items()
             ]
 
-            print(files_to_download)
-
             context['files_to_download'] = files_to_download
             context['genomes_hash'] = hash
         except Exception as e:
             context['error_danger'].append(str(e))
 
     return render(request, 'website/downloader.html', context)
-
-
-import tarfile
 
 
 def downloader_submit(request):
@@ -98,8 +94,6 @@ def downloader_submit(request):
         assert hash == Genome.hash_genomes(genomes), 'Hash does not match!'
     except Exception as e:
         return JsonResponse(dict(success='false', message=F'magic query is bad: {e}'), status=500)
-
-    print('request download:', abbr, genomes)
 
     tar_path = get_cache_path(hash, abbr, relative=False)
     os.makedirs(os.path.dirname(tar_path), exist_ok=True)
@@ -132,7 +126,7 @@ def downloader_submit(request):
             suffix = abbr_to_suffix[abbr]
             for g in genomes:
                 tar.add(name=f'{GENOMIC_DATABASE}/{getattr(g, abbr)(relative=True)}', arcname=f'{g.identifier}.{suffix}')
-            print(tar)
+
     except Exception as e:
         print(e)
         os.remove(tar_path)

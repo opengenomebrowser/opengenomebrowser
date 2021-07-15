@@ -1,4 +1,4 @@
-import os
+from django.db.models.manager import Manager
 from hashlib import sha224
 from django.db import models
 from django.db.models import JSONField
@@ -10,6 +10,7 @@ from .GenomeContent import GenomeContent
 from OpenGenomeBrowser import settings
 from functools import cached_property
 from website.models.helpers.backup_file import read_file_or_default, overwrite_with_backup
+from website.models.helpers import AnnotatedGenomeManager
 
 
 class Genome(models.Model):
@@ -20,11 +21,10 @@ class Genome(models.Model):
     """
 
     """
-    todo: ensure environments are imported
-    turn literature references into arrayfield
-    make blank/null false
-    make migrations prettier?
+    todo: ensure tags are imported, and saved to metadata if changed through admin
     """
+    objects = Manager()
+    annotated_objects = AnnotatedGenomeManager()
 
     # MANDATORY general information about the isolate
     identifier = models.CharField('Unique identifier', max_length=50, unique=True)
@@ -37,10 +37,9 @@ class Genome(models.Model):
 
     # information about isolation
     isolation_date = models.DateField('Isolation date', null=True, blank=True)
-    # env_broad_scale = JSONField('Broad isolation environment', default=list, blank=True, null=True)
-    env_broad_scale = ArrayField(models.TextField(), name='Broad isolation environment', default=list)
-    env_local_scale = ArrayField(models.TextField(), name='Local isolation environment', default=list)
-    env_medium = ArrayField(models.TextField(), name='Environment medium', default=list)
+    env_broad_scale = ArrayField(models.TextField(), verbose_name='Broad isolation environment', default=list, blank=True)
+    env_local_scale = ArrayField(models.TextField(), verbose_name='Local isolation environment', default=list, blank=True)
+    env_medium = ArrayField(models.TextField(), verbose_name='Environment medium', default=list, blank=True)
     growth_condition = models.CharField('Growth condition', max_length=100, null=True, blank=True)
     geographical_coordinates = models.CharField('Geographical coordinates', max_length=200, null=True, blank=True)
     geographical_name = models.CharField('Geographical name', max_length=50, null=True, blank=True)
@@ -296,59 +295,3 @@ class Genome(models.Model):
             print(F"Poorly formatted env: {env}")
             return False
         return True
-
-    @staticmethod
-    def get_selector_to_description_dict() -> dict:
-        return {
-            'organism.name': {'filter_type': 'text', 'description': 'Organism'},
-            'identifier': {'filter_type': 'text', 'description': 'Identifier'},
-            'old_identifier': {'filter_type': 'text', 'description': 'Old Identifier'},
-            'representative': {'filter_type': 'binary', 'description': 'Representative'},
-            'organism.restricted': {'filter_type': 'binary', 'description': 'Restricted'},
-            'contaminated': {'filter_type': 'binary', 'description': 'Contaminated'},
-            'genome_tags': {'filter_type': 'custom-tags', 'description': 'Genome-Tags'},
-            'organism_tags': {'filter_type': 'custom-tags', 'description': 'Organism-Tags'},
-            'isolation_date': {'filter_type': 'range_date', 'description': 'Isolation date'},
-            'env_broad_scale': {'filter_type': 'no-filter', 'description': 'Broad Isolation Environment'},
-            'env_local_scale': {'filter_type': 'no-filter', 'description': 'Local Isolation Environment'},
-            'env_medium': {'filter_type': 'no-filter', 'description': 'Environment Medium'},
-            'growth_condition': {'filter_type': 'no-filter', 'description': 'Growth Condition'},
-            'geographical_coordinates': {'filter_type': 'no-filter', 'description': 'Isolation Coordinates'},
-            'geographical_name': {'filter_type': 'no-filter', 'description': 'Geographical Name'},
-            'library_preparation': {'filter_type': 'multi_select', 'description': 'Library Preparation'},
-            'sequencing_tech': {'filter_type': 'multi_select', 'description': 'Sequencing Technology'},
-            'sequencing_tech_version': {'filter_type': 'no-filter', 'description': 'Sequencing Technology Version'},
-            'sequencing_date': {'filter_type': 'no-filter', 'description': 'Sequencing Date'},
-            'read_length': {'filter_type': 'no-filter', 'description': 'Read Length'},
-            'sequencing_coverage': {'filter_type': 'no-filter', 'description': 'Sequencing Coverage'},
-            'assembly_tool': {'filter_type': 'no-filter', 'description': 'Assembly Tool'},
-            'assembly_version': {'filter_type': 'no-filter', 'description': 'Assembly Tool Version'},
-            'assembly_date': {'filter_type': 'no-filter', 'description': 'Assembly Date'},
-            'assembly_gc': {'filter_type': 'no-filter', 'description': 'Assembly GC content [%]'},
-            'assembly_longest_scf': {'filter_type': 'no-filter', 'description': 'Assembly Longest Scf'},
-            'assembly_size': {'filter_type': 'no-filter', 'description': 'Assembly Size'},
-            'assembly_nr_scaffolds': {'filter_type': 'no-filter', 'description': 'Assembly #Scfs'},
-            'assembly_n50': {'filter_type': 'no-filter', 'description': 'Assembly N50'},
-            'assembly_gaps': {'filter_type': 'no-filter', 'description': 'Number of gaps'},
-            'assembly_ncount': {'filter_type': 'no-filter', 'description': 'Total Ns'},
-            'nr_replicons': {'filter_type': 'no-filter', 'description': 'Assembly #Replicons'},
-            'cds_tool': {'filter_type': 'no-filter', 'description': 'CDS Tool'},
-            'cds_tool_version': {'filter_type': 'no-filter', 'description': 'CDS Tool Version'},
-            'cds_tool_date': {'filter_type': 'no-filter', 'description': 'CDS Date'},
-            'genomecontent__n_genes': {'filter_type': 'no-filter', 'description': 'Number of genes'},
-            'BUSCO_percent_single': {'filter_type': 'no-filter', 'description': 'BUSCO [%S]'},
-            'bioproject_accession': {'filter_type': 'no-filter', 'description': 'Bioproject'},
-            'biosample_accession': {'filter_type': 'no-filter', 'description': 'Biosample'},
-            'genome_accession': {'filter_type': 'no-filter', 'description': 'Genome Accession'},
-            'literature_references': {'filter_type': 'no-filter', 'description': 'Literature References'},
-            'organism.taxid.taxsuperkingdom': {'filter_type': 'multi_select', 'description': 'Superkingdom'},
-            'organism.taxid.taxphylum': {'filter_type': 'multi_select', 'description': 'Phylum'},
-            'organism.taxid.taxclass': {'filter_type': 'multi_select', 'description': 'Class'},
-            'organism.taxid.taxorder': {'filter_type': 'multi_select', 'description': 'Order'},
-            'organism.taxid.taxfamily': {'filter_type': 'multi_select', 'description': 'Family'},
-            'organism.taxid.taxgenus': {'filter_type': 'multi_select', 'description': 'Genus'},
-            'organism.taxid.taxspecies': {'filter_type': 'multi_select', 'description': 'Species'},
-            'organism.taxid.taxsubspecies': {'filter_type': 'multi_select', 'description': 'Subspecies'},
-            'organism.taxid.taxscientificname': {'filter_type': 'multi_select', 'description': 'Taxonomy'},
-            'organism.taxid.id': {'filter_type': 'multi_select', 'description': 'TaxID'}
-        }

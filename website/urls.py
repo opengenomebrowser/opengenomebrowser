@@ -14,14 +14,10 @@ urlpatterns = [
     re_path(r'files_cache/.*$', Files.files_cache, name='files-cache'),
 
     # ex: /genomes
-    path('genomes', GenomeTable.genome_list_view, name='genomes'),
-    path('table-load-script/', LoadTableScript.render_script, name='genome-table-script'),
-    path('table-ajax/', GenomeTableAjax.as_view(), name='genome-table-ajax'),
-
-    path('genome/', GenomeFilter.filter_view, name='genome-filter'),
+    path('genomes/', GenomeFilter.filter_view, name='genomes'),
 
     # ex: /organism/{identifier}
-    path('organism/<slug:slug>/', OrganismDetailView.as_view(), name='organism'),
+    path('organism/<str:slug>/', OrganismDetailView.as_view(), name='organism'),
 
     # ex: /genome/{name}
     path('genome/<str:slug>/', GenomeDetailView.as_view(), name='genome'),

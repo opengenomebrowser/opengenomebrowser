@@ -1,126 +1,14 @@
 from django.core.paginator import Paginator
 from django.shortcuts import render
-from django.db.models import Case, When, F, Value, CharField, BooleanField, ExpressionWrapper, Q
 from django.db.models.manager import Manager
-from django.db.models.functions import Concat
-from django.contrib.postgres.aggregates import StringAgg
 
 from OpenGenomeBrowser import settings
 from website.models import Genome, TaxID, Tag
+from website.models.helpers import AnnotatedGenomeManager
 from website.views.helpers.extract_requests import extract_data, extract_data_or
 
-
-class RenderFunctions:
-    @staticmethod
-    def get_genome_html(qs: Manager):
-        return qs.annotate(
-            # F'<span class="genome ogb-tag" data-species="{taxscientificname}">{identifier}</span>'
-            identifier_html=Concat(
-                Value('<span class="genome ogb-tag'),
-                Case(
-                    When(
-                        representative__isnull=True,
-                        then=Value(' no-representative')
-                    )
-                ),
-                Case(
-                    When(
-                        contaminated=True,
-                        then=Value(' contaminated')
-                    )
-                ),
-                Case(
-                    When(
-                        organism__restricted=True,
-                        then=Value(' restricted')
-                    )
-                ),
-                Value('" data-species="'),
-                F('organism__taxid__taxscientificname'),
-                Value('">'),
-                F('identifier'),
-                Value('</span>'),
-                output_field=CharField()
-            )
-        )
-
-    @staticmethod
-    def get_organism_html(qs: Manager):
-        return qs.annotate(
-            # F'<span class="organism ogb-tag" data-species="{taxscientificname}">{name}</span>'
-            organism__name_html=Concat(
-                Value('<span class="organism ogb-tag'),
-                Case(
-                    When(
-                        organism__restricted=True,
-                        then=Value(' restricted')
-                    )
-                ),
-                Value('" data-species="'),
-                F('organism__taxid__taxscientificname'),
-                Value('">'),
-                F('organism__name'),
-                Value('</span>'),
-                output_field=CharField()
-            )
-        )
-
-    @staticmethod
-    def get_representative_html(qs: Manager):
-        return qs.annotate(
-            # 'True' or 'False'
-            representative__isnull_html=
-            ExpressionWrapper(
-                Q(representative__isnull=False),
-                output_field=BooleanField()
-            )
-        )
-
-    @staticmethod
-    def get_genome_tags_html(qs: Manager):
-        return qs.annotate(
-            # f'<span class="tag ogb-tag" data-tag="{tag}" title="{description}">{tag}</span>'
-            tags_html=StringAgg(
-                Case(
-                    When(
-                        tags__isnull=False,
-                        then=Concat(
-                            Value('<span class="tag ogb-tag" data-tag="'),
-                            F('tags__tag'), Value('" title="'),
-                            F('tags__description'),
-                            Value('">'),
-                            F('tags__tag'),
-                            Value('</span>'),
-                            output_field=CharField()
-                        )
-                    )
-                ),
-                delimiter=''
-            )
-        )
-
-    @staticmethod
-    def get_organism_tags_html(qs: Manager):
-        return qs.annotate(
-            # f'<span class="tag ogb-tag" data-tag="{tag}" title="{description}">{tag}</span>'
-            organism__tags_html=StringAgg(
-                Case(
-                    When(
-                        organism__tags__isnull=False,
-                        then=Concat(
-                            Value('<span class="tag ogb-tag" data-tag="'),
-                            F('organism__tags__tag'), Value('" title="'),
-                            F('organism__tags__description'),
-                            Value('">'),
-                            F('organism__tags__tag'),
-                            Value('</span>'),
-                            output_field=CharField()
-                        )
-                    )
-                ),
-                delimiter=''
-            )
-        )
+from website.views.helpers.Columns import \
+    Column, SimpleColumn, BinaryColumn, MultipleRelatedColumn, DateRangeColumn, RangeColumn, PercentageRangeColumn, TaxColumn, ListColumn
 
 
 class Choices:
@@ -133,28 +21,23 @@ class Choices:
         return [(t.tag, t.tag) for t in Tag.objects.filter(organism__isnull=False).distinct()]
 
 
-from website.views.helpers.Columns import \
-    Column, SimpleColumn, BinaryColumn, TagColumn, DateRangeColumn, RangeColumn, PercentageRangeColumn, TaxColumn, ListColumn
-
-
 class GenomeFilter:
-    column_classes = [SimpleColumn, BinaryColumn, TagColumn, DateRangeColumn, RangeColumn, PercentageRangeColumn, TaxColumn, ListColumn]
+    column_classes = [SimpleColumn, BinaryColumn, MultipleRelatedColumn, DateRangeColumn, RangeColumn, PercentageRangeColumn, TaxColumn, ListColumn]
 
     @staticmethod
     def __get_columns() -> dict[str, Column]:
         Columns = [
-            SimpleColumn('Organism', lookup_expr='organism__name', annotate_queryset_fn=RenderFunctions.get_organism_html),
-            SimpleColumn('Identifier', annotate_queryset_fn=RenderFunctions.get_genome_html),
+            SimpleColumn('Organism', lookup_expr='organism__name', render_expr='organism_html'),
+            SimpleColumn('Identifier', render_expr='genome_html'),
             SimpleColumn('Old Identifier'),
 
-            BinaryColumn('Representative', lookup_expr='representative__isnull', choices=[('', 'Both'), ('True', 'True'), ('False', 'False')],
-                         annotate_queryset_fn=RenderFunctions.get_representative_html),
+            BinaryColumn('Representative', lookup_expr='representative__isnull', render_expr='representative_html',
+                         choices=[('', 'Both'), ('True', 'True'), ('False', 'False')]),
             BinaryColumn('Restricted', lookup_expr='organism__restricted', choices=[('', 'Both'), ('True', 'True'), ('False', 'False')]),
             BinaryColumn('Contaminated', choices=[('', 'Both'), ('True', 'True'), ('False', 'False')]),
 
-            TagColumn('Genome Tags', lookup_expr='tags', choices=Choices.genome_tags, annotate_queryset_fn=RenderFunctions.get_genome_tags_html),
-            TagColumn('Organism Tags', lookup_expr='organism__tags', choices=Choices.organism_tags,
-                      annotate_queryset_fn=RenderFunctions.get_organism_tags_html),
+            MultipleRelatedColumn('Genome Tags', lookup_expr='tags', render_expr='tags_html', choices=Choices.genome_tags),
+            MultipleRelatedColumn('Organism Tags', lookup_expr='organism__tags', render_expr='organism_tags_html', choices=Choices.organism_tags),
 
             SimpleColumn('Growth Condition'),
             SimpleColumn('Geographical Coordinates'),
@@ -200,9 +83,9 @@ class GenomeFilter:
             TaxColumn('Taxonomy', lookup_expr='organism__taxid__taxscientificname'),
             TaxColumn('TaxID', lookup_expr='organism__taxid__id'),
 
-            ListColumn('Broad Isolation Environment', id='env_broad', lookup_expr='env_broad_scale'),
-            ListColumn('Local Isolation Environment', id='env_local', lookup_expr='env_local_scale'),
-            ListColumn('Environment Medium', lookup_expr='env_medium'),
+            ListColumn('Broad Isolation Environment', id='env_broad', lookup_expr='env_broad_scale', render_expr='env_broad_scale_html'),
+            ListColumn('Local Isolation Environment', id='env_local', lookup_expr='env_local_scale', render_expr='env_local_scale_html'),
+            ListColumn('Environment Medium', lookup_expr='env_medium', render_expr='env_medium_html'),
             ListColumn('Literature References'),
         ]
         return {f.id: f for f in Columns}
@@ -212,7 +95,7 @@ class GenomeFilter:
 
     @classmethod
     def filter_queryset(cls, request, context, active_filters) -> Manager:
-        qs = Genome.objects.prefetch_related('genomecontent', 'organism', 'organism__taxid')
+        qs = Genome.annotated_objects
 
         for filter in active_filters:
             try:
@@ -229,12 +112,13 @@ class GenomeFilter:
             error_danger=[], error_warning=[], error_info=[]
         )
 
+        context['total_unfiltered_count'] = Genome.objects.count()
         context['activate_js'] = [c.activate_js() for c in cls.column_classes]
         context['submit_js'] = [c.submit_js() for c in cls.column_classes]
 
         all_columns = cls.__get_columns()
 
-        active_columns = extract_data_or(request=request, key='columns', list=True, sep=',', default=settings.DEFAULT_GENOMES_COLUMNS_new)
+        active_columns = extract_data_or(request=request, key='columns', list=True, sep=',', default=settings.DEFAULT_GENOMES_TABLE_COLUMNS)
         active_filters = set(all_columns.keys()).intersection(set(request.GET.keys()).union(set(request.POST.keys())))
         shown_filters = active_columns + [f for f in active_filters if f not in active_columns]
 
@@ -252,7 +136,6 @@ class GenomeFilter:
         context['shown_filters'] = shown_filters
 
         qs = cls.filter_queryset(request, context, active_filters.values())
-        qs = cls.annotate_qs(qs=qs, columns=[f for f in all_columns.values() if f.id in active_columns or f.id in active_filters.values()])
         qs = cls.order_qs(qs=qs, request=request, columns=all_columns)
 
         paginate_by = extract_data(request, 'paginate_by')
@@ -271,16 +154,17 @@ class GenomeFilter:
             context['object_list'] = page_obj.object_list
             context['paginator'] = paginator
 
-        column_lookups = [f.lookup_expr
-                          if f.annotate_queryset is None
-                          else f.lookup_expr + '_html'
-                          for f in active_columns.values()]
+        column_lookups = [f.render_expr for f in active_columns.values()]
 
         for col in ['restricted', 'contaminated', 'representative']:
             if col not in active_columns and col in column_lookups:
                 column_lookups.remove(col)
 
-        context['table'] = context['object_list'].values_list(*column_lookups)
+        try:
+            context['table'] = context['object_list'].values_list(*column_lookups)
+        except Exception as e:
+            context['error_danger'].append(f'Failed to render columns: {column_lookups}: {str(e)}')
+            return render(request, 'website/genome_filter.html', context)
 
         context['paginated_by'] = paginate_by
         context['pagination_options'] = cls.pagination_options
@@ -288,13 +172,6 @@ class GenomeFilter:
             context['pagination_options'].append(paginate_by)
 
         return render(request, 'website/genome_filter.html', context)
-
-    @staticmethod
-    def annotate_qs(qs, columns: [Column]):
-        for column in columns:
-            if column.annotate_queryset is not None:
-                qs = column.annotate_queryset(qs)
-        return qs
 
     @staticmethod
     def order_qs(qs, request, columns: [Column]):

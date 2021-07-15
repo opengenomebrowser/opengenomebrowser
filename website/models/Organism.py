@@ -5,10 +5,6 @@ from OpenGenomeBrowser import settings
 from website.models.helpers.backup_file import read_file_or_default, overwrite_with_backup
 
 
-# class OrganismManager(models.Manager):
-#     def taxid(self):
-#         return self.filter()
-
 class Organism(models.Model):
     """
     Represents a biologically distinct entity.
@@ -16,7 +12,7 @@ class Organism(models.Model):
     Imported from the contents of database/genomes/*
     """
 
-    name = models.SlugField(max_length=40, unique=True)
+    name = models.CharField(max_length=40, unique=True)
     alternative_name = models.CharField(max_length=200, null=True, blank=True)
     taxid = models.ForeignKey(TaxID, on_delete=models.CASCADE)  # if unknown: 32644; mixture: 1427524
     restricted = models.BooleanField(default=False)

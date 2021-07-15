@@ -2,16 +2,15 @@ from django.shortcuts import render, HttpResponse
 from django.db.models import Q, Count
 from django.http import JsonResponse
 
-import numpy as np
 import pandas as pd
-from scipy.stats import fisher_exact
+from scipy.stats import fisher_exact, boschloo_exact
 from statsmodels.stats.multitest import multipletests
 
 from website.models import Genome, Gene, GenomeContent
 from website.models.Annotation import Annotation, annotation_types
 
-from .GenomeDetailView import dataframe_to_bootstrap_html
-from .helpers.magic_string import MagicQueryManager, MagicError
+from website.views.GenomeDetailView import dataframe_to_bootstrap_html
+from website.views.helpers.magic_string import MagicQueryManager, MagicError
 from website.views.helpers.extract_requests import contains_data, contains_all, extract_data
 
 multiple_testing_methods = {
@@ -66,9 +65,7 @@ def gtm_view(request):
 
         try:
             magic_query_manager_g1 = MagicQueryManager(queries=qs_g1)
-            genome_to_species_g1 = magic_query_manager_g1.genome_to_species()
             context['magic_query_manager_g1'] = magic_query_manager_g1
-            context['genome_to_species_g1'] = genome_to_species_g1
             genomes_g1_valid = True
         except Exception as e:
             context['error_danger'].append(str(e))
@@ -78,9 +75,7 @@ def gtm_view(request):
 
         try:
             magic_query_manager_g2 = MagicQueryManager(queries=qs_g2)
-            genome_to_species_g2 = magic_query_manager_g2.genome_to_species()
             context['magic_query_manager_g2'] = magic_query_manager_g2
-            context['genome_to_species_g2'] = genome_to_species_g2
             genomes_g2_valid = True
         except Exception as e:
             context['error_danger'].append(str(e))
@@ -135,71 +130,92 @@ def gtm_table(request):
     alpha = float(request.POST.get('alpha'))
     multiple_testing_method = request.POST.get('multiple_testing_method')
 
-    gtm_df = gtm(g1=magic_query_manager_g1.all_genomes, g2=magic_query_manager_g2.all_genomes,
-                 anno_type=anno_type, alpha=alpha, multiple_testing_method=multiple_testing_method)
+    try:
+        gtm_df = gtm(g1=magic_query_manager_g1.all_genomes, g2=magic_query_manager_g2.all_genomes,
+                     anno_type=anno_type, alpha=alpha, multiple_testing_method=multiple_testing_method)
+    except Exception as e:
+        return JsonResponse(dict(success='false', message=str(e)), status=500)
 
-    json_response = to_json(gtm_df=gtm_df, anno_type=anno_type)
+    json_response = to_json(gtm_df=gtm_df, anno_type=anno_type, method='boschloo')
 
     return JsonResponse(json_response)
 
 
-def gtm(g1: [Genome], g2: [Genome], anno_type='OL', alpha=0.25, multiple_testing_method='fdr_bh') -> pd.DataFrame:
+def gtm(
+        g1: [Genome],
+        g2: [Genome],
+        anno_type: str = 'OL',
+        method: str = 'boschloo',
+        alpha: float = 0.25,
+        multiple_testing_method: str = 'fdr_bh'
+) -> pd.DataFrame:
     """
     Calculate gene-trait-matching analysis. Find proteins hat are significantly over- or underrepresented in one group of genomes.
 
     :param g1: First group of genomes
     :param g2: Second group of genomes
     :param anno_type: Annotation type to be used to link proteins between genomes
+    :param method: test to be applied, either 'fisher' or 'boschloo'
     :param alpha: Alpha / FWER (family-wise error rate)
     :param multiple_testing_method: See https://www.statsmodels.org/dev/generated/statsmodels.stats.multitest.multipletests.html
     :return: Table of proteins that are significantly over- or underrepresented.
     """
     g1 = g1.values_list('identifier', flat=True)
     g2 = g2.values_list('identifier', flat=True)
-
     intersection = g1.intersection(g2)
-
-    assert len(intersection) == 0, F'The following genomes occur in both lists: {", ".join(intersection)}'
+    assert len(intersection) == 0, f'The following genomes occur in both lists: {", ".join(intersection)}'
     assert len(g1) > 0, 'Group 1 contains no genomes.'
     assert len(g2) > 0, 'Group 2 contains no genomes.'
 
-    annos_qs = Annotation.objects \
-        .annotate(g1=Count('genomecontent', filter=Q(genomecontent__in=g1))) \
-        .annotate(g2=Count('genomecontent', filter=Q(genomecontent__in=g2))) \
-        .filter(anno_type=anno_type)
+    if method == 'fisher':
+        test_fn = lambda r: fisher_exact([
+            [r.g1, r.not_g1],
+            [r.g2, r.not_g2]
+        ])[1]
+    elif method == 'boschloo':
+        test_fn = lambda r: boschloo_exact([
+            [r.g1, r.not_g1],
+            [r.g2, r.not_g2]
+        ]).pvalue
+    else:
+        raise AssertionError(f"method must be either 'fisher' or 'boschloo'. {method=}")
+
+    annos_qs = Annotation.objects.annotate(
+        g1=Count('genomecontent', filter=Q(genomecontent__in=g1)),
+        g2=Count('genomecontent', filter=Q(genomecontent__in=g2))
+    ).filter(
+        anno_type=anno_type
+    ).exclude(
+        Q(g1=0) & Q(g2=0)  # exclude non-covered annotations
+    ).exclude(
+        Q(g1=len(g1)) & Q(g2=len(g2))  # exclude fully covered annotations
+    )
 
     annos = annos_qs.all().values_list('name', 'description', 'g1', 'g2')
 
     annos = pd.DataFrame(list(annos), columns=['annotation', 'description', 'g1', 'g2'])
 
-    # only keep annotations which are covered
-    annos = annos.loc[np.where(annos['g1'] + annos['g2'] > 0)]
+    assert len(annos) > 0, f'No annotations found for anno_type={anno_type}'
 
     n_rows = len(annos)
 
-    # get unique combinations of g1 and g2 to calculate fewer fisher's tests:
-    fisher_df = annos.groupby(['g1', 'g2']).size().reset_index()
-    fisher_df.drop([0], axis=1, inplace=True)
-    fisher_df['not_g1'] = len(g1) - fisher_df['g1']
-    fisher_df['not_g2'] = len(g2) - fisher_df['g2']
-    fisher_df['p_fisher_exact'] = fisher_df.apply(
-        lambda r: fisher_exact([
-            [r.g1, r.not_g1],
-            [r.g2, r.not_g2]
-        ])[1],
-        axis=1
-    )
-    fisher_df.drop(['not_g1', 'not_g2'], axis=1, inplace=True)
+    # get unique combinations of g1 and g2 to calculate fewer tests:
+    test_df = annos.groupby(['g1', 'g2']).size().reset_index()
+    test_df.drop([0], axis=1, inplace=True)
+    test_df['not_g1'] = len(g1) - test_df['g1']
+    test_df['not_g2'] = len(g2) - test_df['g2']
+    test_df['pvalue'] = test_df.apply(test_fn, axis=1)
+    test_df.drop(['not_g1', 'not_g2'], axis=1, inplace=True)
 
     # perform left outer join
-    annos = pd.merge(annos, fisher_df, on=['g1', 'g2'], how='left')
+    annos = pd.merge(annos, test_df, on=['g1', 'g2'], how='left')
 
-    # sort by highest fisher's test
-    annos.sort_values(by='p_fisher_exact', inplace=True)
+    # sort by highest test's test
+    annos.sort_values(by='pvalue', inplace=True)
 
     # apply multiple testing correction
     reject, pvals_corrected, alphac_sidak, alphac_bonf = multipletests(
-        annos['p_fisher_exact'], is_sorted=True,
+        annos['pvalue'], is_sorted=True,
         alpha=alpha, method=multiple_testing_method
     )
     annos['p_corrected'] = pvals_corrected
@@ -212,8 +228,8 @@ def gtm(g1: [Genome], g2: [Genome], anno_type='OL', alpha=0.25, multiple_testing
     return annos
 
 
-def prettify(gtm_df: pd.DataFrame, anno_type: str) -> pd.DataFrame:
-    assert list(gtm_df.columns) == ['annotation', 'description', 'g1', 'g2', 'p_fisher_exact', 'p_corrected', 'reject']
+def prettify(gtm_df: pd.DataFrame, anno_type: str, method: str) -> pd.DataFrame:
+    assert list(gtm_df.columns) == ['annotation', 'description', 'g1', 'g2', 'pvalue', 'p_corrected', 'reject']
 
     def html(row):
         return F'<div class="annotation ogb-tag" data-annotype="{anno_type}" title="{row["description"]}">{row["annotation"]}</div>'
@@ -221,18 +237,18 @@ def prettify(gtm_df: pd.DataFrame, anno_type: str) -> pd.DataFrame:
     gtm_df['annotation'] = gtm_df.apply(lambda row: html(row), axis=1)
     gtm_df.drop('description', axis=1, inplace=True)
 
-    gtm_df.columns = ['Annotation', 'Group 1', 'Group 2', 'pvalue (Fisher\'s test)', 'qvalue (corrected)', 'reject H0']
+    gtm_df.columns = ['Annotation', 'Group 1', 'Group 2', f'pvalue ({method.capitalize()}\'s test)', 'qvalue (corrected)', 'reject H0']
 
     return gtm_df
 
 
-def to_html(gtm_df: pd.DataFrame, anno_type: str) -> str:
-    gtm_df = prettify(gtm_df, anno_type)
+def to_html(gtm_df: pd.DataFrame, anno_type: str, method: str) -> str:
+    gtm_df = prettify(gtm_df, anno_type, method)
     return dataframe_to_bootstrap_html(gtm_df, index=False, table_id='gene-trait-matching-table')
 
 
-def to_json(gtm_df: pd.DataFrame, anno_type: str) -> dict:
-    gtm_df = prettify(gtm_df, anno_type)
+def to_json(gtm_df: pd.DataFrame, anno_type: str, method: str) -> dict:
+    gtm_df = prettify(gtm_df, anno_type, method)
 
     json_response = dict(
         dataset=gtm_df.values.tolist(),

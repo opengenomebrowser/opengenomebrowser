@@ -32,6 +32,15 @@ def genomes_filter(qs, lookup_expr, field_id, request, context):
     return qs, context
 
 
+def get_pathways() -> list:
+    try:
+        return [(m.slug, str(m)) for m in PathwayMap.objects.all()]
+    except:
+        from logging import warning
+        warning('Could not get PathwayMap objects.')
+        return []
+
+
 class AnnotationFilter:
     filter_fields = dict(
         genomes=dict(
@@ -45,7 +54,7 @@ class AnnotationFilter:
             choices=[('', '-------')] + [(abbr, f'{at.name} ({abbr})') for abbr, at in annotation_types.items()]),
         pathway_map=dict(
             label='Pathway map', lookup_expr='pathwaymap', filter_function=simple_filter,
-            choices=[('', '-------')] + [(m.slug, str(m)) for m in PathwayMap.objects.all()])
+            choices=[('', '-------')] + get_pathways())
     )
 
     paginate_by = 30

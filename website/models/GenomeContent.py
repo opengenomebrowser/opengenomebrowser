@@ -57,7 +57,7 @@ class GenomeContent(models.Model):
 
     @property
     def html(self):
-        return F'<span class="genome ogb-tag" data-species="{self.genome.taxid.taxscientificname}">{self.identifier}</span>'
+        return self.genome.html
 
     @property
     def organism(self):
@@ -203,7 +203,7 @@ class GenomeContent(models.Model):
 
     def load_custom_file(self, file_dict):
         print("       add new file:", file_dict)
-        if file_dict['type'] == 'eggnog':
+        if file_dict['type'].startswith('eggnog'):
             self.load_eggnog_file(file_dict)
         else:
             self.load_regular_file(file_dict)
@@ -211,7 +211,8 @@ class GenomeContent(models.Model):
         self.custom_files.append(file_dict)
 
     def load_eggnog_file(self, file_dict):
-        assert file_dict['type'] == 'eggnog'
+        supported_versions = ['eggnog', 'eggnog-2.1.2']
+        assert file_dict['type'] in supported_versions
         from .Gene import Gene
 
         go = (set(), set(), annotation_types['GO'])  # gene ontology
@@ -225,46 +226,58 @@ class GenomeContent(models.Model):
         def add_anno(annotations: list, all_annotations, annotations_relationships, anno_type: AnnotationType):
             for annotation in annotations:
                 assert anno_type.regex.match(
-                    annotation) is not None, F"Error: Annotation '{annotation}' does not match regex '{anno_type.regex.pattern}'!"
+                    annotation) is not None, f"Error: Annotation '{annotation}' does not match regex '{anno_type.regex.pattern}'!"
                 all_annotations.update(annotations)
                 annotations_relationships.update([(locus_tag, anno) for anno in annotations])
             pass
 
-        with open(F"{self.genome.base_path(relative=False)}/{file_dict['file']}") as f:
-            # skip header
-            head = [next(f).rstrip() for x in range(4)]
-            for h in head:
-                assert h.startswith('#'), F'Error parsing file: {file_dict}'
+        if file_dict['type'] == 'eggnog':
+            expected_line_length = 22
 
-            # parse file
-            line = f.readline()[:-1]
-            while line:
-                line = line.split("\t")
-                if len(line) != 22:
-                    break
+            def line_parser(line: [str]):
+                if line[6] != '':
+                    add_anno(line[6].split(','), *go)
+                if line[7] != '':
+                    add_anno([f'EC:{l}' for l in line[7].split(',')], *ec)
+                if line[8] != '':
+                    add_anno([l[3:] for l in line[8].split(',')], *kg)
+                if line[11] != '':
+                    add_anno(line[11].split(','), *kr)
+                if line[5] != '':
+                    add_anno([f'EP:{line[5]}'], *ep)
+                if line[18] != '':
+                    add_anno([f'EO:{line[18].split("@", maxsplit=1)[0]}'], *eo)
+                if line[21] != '':
+                    add_anno([f"ED:{line[21].split(',', maxsplit=1)[0].split(';', maxsplit=1)[0]}"], *ed)
+        elif file_dict['type'] == 'eggnog-2.1.2':
+            expected_line_length = 21
+
+            def line_parser(line: [str]):
+                if line[9] != '-':
+                    add_anno(line[9].split(','), *go)
+                if line[10] != '-':
+                    add_anno([f'EC:{l}' for l in line[10].split(',')], *ec)
+                if line[11] != '-':
+                    add_anno([l[3:] for l in line[11].split(',')], *kg)
+                if line[14] != '-':
+                    add_anno(line[14].split(','), *kr)
+                if line[8] != '-':
+                    add_anno([f'EP:{line[8]}'], *ep)
+                if line[4] != '-':
+                    add_anno([f'EO:{line[4].split("@", maxsplit=1)[0]}'], *eo)
+                if line[7] != '-':
+                    add_anno([f"ED:{line[7].split(',', maxsplit=1)[0].split(';', maxsplit=1)[0]}"], *ed)
+        else:
+            raise AssertionError(f'Error parsing file. Eggnog version not supported: {self} {file_dict} {supported_versions=}')
+
+        with open(F"{self.genome.base_path(relative=False)}/{file_dict['file']}") as f:
+            for line in f:
+                if line.startswith('#'): continue
+                line = line.rstrip('\n').split("\t")
+                assert len(line) == expected_line_length, f'Error parsing file: {self} {file_dict} {len(line)=} {expected_line_length=} {line=}'
 
                 locus_tag = line[0].rsplit('|', maxsplit=1)[-1]
-
-                if line[6] != "":
-                    add_anno(line[6].split(','), *go)
-                if line[7] != "":
-                    add_anno([f'EC:{l}' for l in line[7].split(',')], *ec)
-                if line[8] != "":
-                    add_anno([l[3:] for l in line[8].split(',')], *kg)
-                if line[11] != "":
-                    add_anno(line[11].split(','), *kr)
-                if line[5] != "":
-                    add_anno([f'EP:{line[5]}'], *ep)
-                if line[18] != "":
-                    add_anno([f'EO:{line[18].split("@", maxsplit=1)[0]}'], *eo)
-                if line[21] != "":
-                    add_anno([f"ED:{line[21].split(',', maxsplit=1)[0].split(';', maxsplit=1)[0]}"], *ed)
-
-                line = f.readline()[:-1]
-
-            # parse end of file
-            for line in f.readlines():
-                assert line.startswith('#'), F'Error parsing file: {file_dict}'
+                line_parser(line)
 
         # Create Annotation-Objects and many-to-many relationships
         for all_annotations, annotations_relationships, anno_type in (go, ec, kg, kr, ep, eo, ed):

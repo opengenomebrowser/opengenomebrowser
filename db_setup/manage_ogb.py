@@ -70,13 +70,32 @@ def sanity_check_folder_structure(verbose=True) -> (int, int):
         if verbose:
             color_print(f'└── Checking {organism.name}', color=Fore.BLUE)
         organism.sanity_check()
+        try:
+            is_identical, differences = OrganismSerializer().json_matches_organism(
+                organism=Organism.objects.get(name=organism.name),
+                json_dict=organism.json
+            )
+            if not is_identical:
+                print(f'Difference between organism.json and postgres: {differences}')
+        except:
+            pass
         n_organisms += 1
+
         for genome in organism.genomes(skip_ignored=True, sanity_check=False):
             if verbose:
                 color_print(f'   └── Checking {genome.identifier}', color=Fore.GREEN)
             n_genomes += 1
             genome.sanity_check()
-
+            try:
+                is_identical, differences = GenomeSerializer().json_matches_genome(
+                    genome=Genome.objects.get(identifier=genome.identifier),
+                    json_dict=genome.json,
+                    organism_name=organism.name
+                )
+                if not is_identical:
+                    print(f'Difference between genome.json and postgres: {differences}')
+            except:
+                pass
     if verbose:
         print(f'\nSanity checks for {n_organisms} organisms and {n_genomes} genomes completed successfully!\n')
 

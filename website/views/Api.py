@@ -175,10 +175,10 @@ class Api:
         qs = set(request.POST.getlist('genomes[]'))
 
         try:
-            genome_to_species = MagicQueryManager(qs, raise_errors=False).genome_to_species()
+            genome_to_visualization = MagicQueryManager(qs, raise_errors=False).genome_to_visualization()
         except Exception as e:
             return err(F'magic query is bad: {e}')
-        return JsonResponse(genome_to_species)
+        return JsonResponse(genome_to_visualization)
 
     @staticmethod
     def validate_annotations(request):

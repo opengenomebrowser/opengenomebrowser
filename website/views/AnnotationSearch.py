@@ -25,7 +25,6 @@ def annotation_view(request):
         try:
             magic_query_manager = MagicQueryManager(queries=qs)
             context['magic_query_manager'] = magic_query_manager
-            context['genome_to_species'] = magic_query_manager.genome_to_species()
             if len(magic_query_manager.all_genomes) == 0:
                 context['error_danger'].append('Query did not find any genomes.')
         except Exception as e:

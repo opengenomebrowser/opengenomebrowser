@@ -145,7 +145,7 @@ class Annotation(models.Model):
                 print(f'Annotation-description file does not exist: {settings.ANNOTATION_DESCRIPTIONS}/{anno_type}.tsv')
 
     @staticmethod
-    def load_ortholog_annotations(batch_size: int = 5000):
+    def load_ortholog_annotations(batch_size: int = 1000):
         from website.models import GenomeContent, Gene
 
         assert os.path.isfile(settings.ORTHOLOG_ANNOTATIONS), F'File does not exist: {settings.ORTHOLOG_ANNOTATIONS}'

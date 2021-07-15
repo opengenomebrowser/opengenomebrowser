@@ -40,7 +40,6 @@ def blast_view(request):
         try:
             magic_query_manager = MagicQueryManager(queries=qs)
             context['magic_query_manager'] = magic_query_manager
-            context['genome_to_species'] = magic_query_manager.genome_to_species()
         except (ValueError, MagicError) as e:
             context['error_danger'].append(str(e))
 

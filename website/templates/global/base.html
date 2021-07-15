@@ -1,4 +1,4 @@
-{% load static %}
+{% load ogb_tags %}{% load static %}
 <!DOCTYPE html>
 <html lang="en-US">
 <head>
@@ -65,7 +65,8 @@
 
 
     <div class="navbar-nav ml-auto navbar-padding">
-        <a class="nav-link text-nowrap {% if request.resolver_match.url_name == 'genomes' %}active{% endif %}" href="{% url 'website:genomes' %}"
+        <a class="nav-link text-nowrap {% if request.resolver_match.url_name == 'genomes' %}active{% endif %}"
+           href="{% url 'website:genomes' %}{% default_genomes_table_url %}"
         >Genomes</a>
     </div>
 
@@ -205,18 +206,20 @@
             </div>
         </div>
     {% endfor %}
+</section>
+
+{% block body %}{% endblock %}
+
+<section>
     {% for error in error_info %}
         <!-- info -->
-        <div class="container black-links">
+        <div class="container black-links mt-3">
             <div class="alert alert-info" role="alert">
                 {{ error }}
             </div>
         </div>
     {% endfor %}
 </section>
-
-{% block body %}{% endblock %}
-
 
 </body>
 

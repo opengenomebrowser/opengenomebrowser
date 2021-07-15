@@ -24,11 +24,11 @@ class Column:
     query = None
     sorted = None
 
-    def __init__(self, label: str, lookup_expr: str = None, id: str = None, annotate_queryset_fn: Optional[Callable] = None):
+    def __init__(self, label: str, lookup_expr: str = None, render_expr: str = None, id: str = None):
         self.label = label
         self.id = id if id else label.lower().replace(' ', '_').replace('#', 'nr').replace(':', '')
         self.lookup_expr = lookup_expr if lookup_expr else self.id
-        self.annotate_queryset = annotate_queryset_fn
+        self.render_expr = self.lookup_expr if render_expr is None else render_expr
 
     def __repr__(self):
         return f'<{type(self).__name__}: {self.label}>'
@@ -105,7 +105,7 @@ class BinaryColumn(Column):
         </div>''').render(Context({'self': self}))
 
 
-class TagColumn(Column):
+class MultipleRelatedColumn(Column):
     def __init__(self, *args, choices: Callable, **kwargs):
         super().__init__(*args, **kwargs)
         self.choices = choices
@@ -199,6 +199,8 @@ class RangeColumn(Column):
             const queryEnd = rangeSlider.data('query-end') || rangeEnd
         
             rangeShow.text(`${queryStart}-${queryEnd}`)
+            
+            if (!Number.isInteger(rangeStart) || !Number.isInteger(rangeEnd) || !Number.isInteger(queryStart) || !Number.isInteger(queryEnd)) return
         
             $(rangeSlider).slider({
                 range: true, min: rangeStart, max: rangeEnd, values: [queryStart, queryEnd],
@@ -385,7 +387,7 @@ class ListColumn(Column):
         if self.id == 'literature_references':
             qs = qs.filter(**{f'{self.lookup_expr}__contains': [{'name': self.query}]})
         else:
-            qs = qs.filter(**{f'{self.lookup_expr}__contains': self.query})
+            qs = qs.filter(**{f'{self.lookup_expr}__contains': [self.query]})
         return qs
 
     def choices(self):

@@ -1,1 +1,2 @@
 from .KeyValueStore import KeyValueStore
+from .AnnotatedGenomeManager import AnnotatedGenomeManager

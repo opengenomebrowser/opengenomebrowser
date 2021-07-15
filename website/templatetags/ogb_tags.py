@@ -1,6 +1,12 @@
 from django import template
+from OpenGenomeBrowser.settings import DEFAULT_GENOMES_TABLE_URL
 
 register = template.Library()
+
+
+@register.simple_tag
+def default_genomes_table_url():
+    return DEFAULT_GENOMES_TABLE_URL
 
 
 @register.simple_tag

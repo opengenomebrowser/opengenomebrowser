@@ -17,7 +17,7 @@ def pathway_view(request):
 
     context['type_dict'] = type_dict
     context['PATHWAY_MAPS_RELATIVE'] = settings.PATHWAY_MAPS_RELATIVE
-    context['genome_to_species'] = '{}'
+    context['genome_to_visualization'] = '{}'
 
     if contains_data(request, key='map'):
         map_slug = extract_data(request, key='map')
@@ -29,7 +29,7 @@ def pathway_view(request):
             context['error_danger'].append(F'Could not find map by slug: {map_slug}.')
 
     magic_query_managers = []
-    genome_to_species = {}
+    genome_to_visualization = {}
 
     groups_of_genomes = {}
     i = 1
@@ -39,7 +39,7 @@ def pathway_view(request):
             qs = set(extract_data(request, key=group_id, list=True))
             magic_query_manager = MagicQueryManager(queries=qs)
             magic_query_managers.append(magic_query_manager)
-            genome_to_species.update(magic_query_manager.genome_to_species())
+            genome_to_visualization.update(magic_query_manager.genome_to_visualization())
 
             if map_is_valid:
                 organism_to_annotations = {
@@ -60,7 +60,7 @@ def pathway_view(request):
     context['magic_query_managers'] = magic_query_managers
     context['initial_queries'] = [list(m.queries) for m in magic_query_managers]
 
-    context['genome_to_species'] = genome_to_species
+    context['genome_to_visualization'] = genome_to_visualization
 
     return render(request, 'website/pathway.html', context)
 

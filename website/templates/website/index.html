@@ -1,5 +1,5 @@
 {% extends 'global/base.html' %}
-{% load static %}
+{% load ogb_tags %}{% load static %}
 
 {% block styles %}
     <!-- Site-specific css/js -->
@@ -36,14 +36,14 @@
 
         <!-- full logo -->
         <div class="container">
-            <a href="{% url 'website:genomes' %}">
+            <a href="{% url 'website:genomes' %}{% default_genomes_table_url %}">
                 <div class="logo-container">
                     <img src="{% static 'global/customicons/ogb-full.svg' %}" id="ogb-logo-full">
                 </div>
             </a>
 
             <div class=" logo-container black-links" style="padding-top:3rem">
-                <a href="{% url 'website:genomes' %}">
+                <a href="{% url 'website:genomes' %}{% default_genomes_table_url %}">
                     click here to start browsing genomes
                 </a>
             </div>

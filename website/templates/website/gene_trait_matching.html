@@ -215,35 +215,39 @@
                 'alpha': alpha,
                 'anno_type': anno_type,
                 'multiple_testing_method': multiple_testing_method
-            }, function (data) {
-                let table = $('#gene-trait-matching-table').DataTable({
-                    data: data['dataset'],
-                    columns: data['columns'],
-                    lengthMenu: [[-1, 10, 25, 50, 100], ["All", 10, 25, 50, 100]],
-                    pageLength: 25,
-                    order: [[3, 'asc']],
-                    "drawCallback": function (settings) {
-                        $(".ogb-tag.annotation").each(function (index) {
-                            // only add click event if there is none yet
-                            if (jQuery._data(this, 'events') === undefined) {
-                                $(this)
-                                    .ogbTooltip()
-                                    .on("click", function () {
-                                        showAnnotationClickMenu(event)
-                                    })
-                            }
-                        })
-                    },
-                    language: {
-                        "emptyTable": "No significant differences found. More genomes are probably required."
-                    }
-                })
-
-                let buttons = new $.fn.dataTable.Buttons(table, {
-                    buttons: ['csv']
-                }).container().appendTo($('#buttons'))
-
             }, "json")
+                .done(function (data, textStatus, jqXHR) {
+                    let table = $('#gene-trait-matching-table').DataTable({
+                        data: data['dataset'],
+                        columns: data['columns'],
+                        lengthMenu: [[-1, 10, 25, 50, 100], ["All", 10, 25, 50, 100]],
+                        pageLength: 25,
+                        order: [[3, 'asc']],
+                        "drawCallback": function (settings) {
+                            $(".ogb-tag.annotation").each(function (index) {
+                                // only add click event if there is none yet
+                                if (jQuery._data(this, 'events') === undefined) {
+                                    $(this)
+                                        .ogbTooltip()
+                                        .on("click", function () {
+                                            showAnnotationClickMenu(event)
+                                        })
+                                }
+                            })
+                        },
+                        language: {
+                            "emptyTable": "No significant differences found. More genomes are probably required."
+                        }
+                    })
+
+                    let buttons = new $.fn.dataTable.Buttons(table, {
+                        buttons: ['csv']
+                    }).container().appendTo($('#buttons'))
+                })
+                .fail(function (data, textStatus, jqXHR) {
+                    console.log('fail', data, textStatus, jqXHR)
+                    alert(data.responseJSON.message)
+                })
         }
 
         $(document).ready(function () {

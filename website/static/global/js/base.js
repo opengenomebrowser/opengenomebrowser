@@ -335,21 +335,27 @@ function validate_annotations(annotations) {
     }, "json")
 }
 
-function createReadOnlyGenomeDiv(genomeArray, genomeToSpecies, additionalClasses = '', clickMenuAnnotations = 'auto') {
+function createReadOnlyGenomeDiv(genomeArray, genomeToVisualization, additionalClasses = '', clickMenuAnnotations = 'auto') {
     let readOnlyDiv = $('<div>', {
         class: "read-only-div " + additionalClasses,
         onclick: `CopyToClipboard('${genomeArray.join(', ')}')`
     })
 
     for (const genome of genomeArray) {
-        if (!(genome in genomeToSpecies)) {
-            console.log(genome, 'not in genomeToSpecies!')
+        if (!(genome in genomeToVisualization)) {
+            console.log(genome, 'not in genomeToVisualization!')
         }
+        const dataGenome = genomeToVisualization[genome]
+        let classes = ['genome', 'ogb-tag']
+        if (dataGenome['restricted']) classes.push('restricted')
+        if (dataGenome['no_representative']) classes.push('no-representative')
+        if (dataGenome['contaminated']) classes.push('contaminated')
+
         readOnlyDiv.append($('<span>', {
             text: genome,
-            class: 'genome ogb-tag',
+            class: classes.join(' '),
             onclick: `showGenomeClickMenu(event, 'auto', 'auto', 'auto', '${clickMenuAnnotations}')`,
-            'data-species': genomeToSpecies[genome]['sciname']
+            'data-species': dataGenome['sciname'],
         }).ogbTooltip())
     }
 
@@ -474,6 +480,11 @@ function on_genomes_change(field, editor, tags) {
 
                 if (genome in data) {
                     let genome_data = data[genome]
+
+                    if (genome_data['restricted']) child_1.classList.add('restricted')
+                    if (genome_data['no_representative']) child_1.classList.add('no-representative')
+                    if (genome_data['contaminated']) child_1.classList.add('contaminated')
+
 
                     if (genome_data['type'] === 'taxid' || genome_data['type'] === 'genome') {
                         child_1.setAttribute('data-species', genome_data['sciname'])

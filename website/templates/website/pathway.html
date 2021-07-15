@@ -95,10 +95,12 @@
         <a>Download pathway map:</a>
     </div>
     <div class="sidebar-subcontent form-check form-check-inline">
-        <button type="button" class="btn btn-secondary" onclick="savePng(document.getElementById('pathway-map-container').firstChild, `${mapSlug}.png`)" style="margin-right: 1rem;">
+        <button type="button" class="btn btn-secondary"
+                onclick="savePng(document.getElementById('pathway-map-container').firstChild, `${mapSlug}.png`)" style="margin-right: 1rem;">
             Save as PNG
         </button>
-        <button type="button" class="btn btn-secondary" onclick="saveSvg(document.getElementById('pathway-map-container').firstChild, `${mapSlug}.svg`)">
+        <button type="button" class="btn btn-secondary"
+                onclick="saveSvg(document.getElementById('pathway-map-container').firstChild, `${mapSlug}.svg`)">
             Save as SVG
         </button>
     </div>
@@ -189,13 +191,15 @@
 {% endblock %}
 
 {% block end %}
+    {{ genome_to_visualization|json_script:"genome_to_visualization" }}
+
     <script>
         "use strict"
-        const local_genome_to_species = {{ genome_to_species|safe }};
+        const local_genome_to_visualization = JSON.parse(document.getElementById('genome_to_visualization').textContent)
 
-        const type_dict = {{ type_dict|safe }};
+        const type_dict = {{ type_dict|safe }}
 
-        const initialQueries = {{ initial_queries|safe }};
+        const initialQueries = {{ initial_queries|safe }}
 
         const initialGenomes = [{% for magic_query_manager in magic_query_managers %}[
             {% for genome in magic_query_manager.all_genomes %}"{{ genome.identifier }}", {% endfor %}],{% endfor %}]
@@ -515,13 +519,13 @@
                     // covering genomes
                     if (covering > 0) {
                         el += `<h6 class="dropdown-header context-menu-header" style="padding-bottom: 0.1rem">Positive genomes ${groupId}</h6>`
-                        el += $("<div/>").append(createReadOnlyGenomeDiv(Array.from(genomes['covering']), local_genome_to_species, 'positive', '#map-context-menu')).html()
+                        el += $("<div/>").append(createReadOnlyGenomeDiv(Array.from(genomes['covering']), local_genome_to_visualization, 'positive', '#map-context-menu')).html()
                     }
 
                     // non-covering genomes
                     if (notCovering > 0) {
                         el += `<h6 class="dropdown-header context-menu-header" style="padding-bottom: 0.1rem">Negative genomes ${groupId}</h6>`
-                        el += $("<div/>").append(createReadOnlyGenomeDiv(Array.from(genomes['not-covering']), local_genome_to_species, 'positive', '#map-context-menu')).html()
+                        el += $("<div/>").append(createReadOnlyGenomeDiv(Array.from(genomes['not-covering']), local_genome_to_visualization, 'positive', '#map-context-menu')).html()
                     }
 
                     el += `</div>`
@@ -558,7 +562,7 @@
 
                         el += `
                         <h6 class="dropdown-header context-menu-header">Positive genomes ${groupId}</h6>
-                        <div class="read-only-div"> ${createReadOnlyGenomeDiv(Array.from(this['organisms'][groupId]['covering']), local_genome_to_species, 'positive', '#map-context-menu').html()} </div>`
+                        <div class="read-only-div"> ${createReadOnlyGenomeDiv(Array.from(this['organisms'][groupId]['covering']), local_genome_to_visualization, 'positive', '#map-context-menu').html()} </div>`
 
                     }
                 }
@@ -581,9 +585,9 @@
 
                 cm.appendElement(`
                 <h6 class="dropdown-header context-menu-header">Positive genomes</h6>
-                <div class="read-only-div"> ${createReadOnlyGenomeDiv(Array.from(allCovering), local_genome_to_species, 'positive', '#map-context-menu').html()} </div>
+                <div class="read-only-div"> ${createReadOnlyGenomeDiv(Array.from(allCovering), local_genome_to_visualization, 'positive', '#map-context-menu').html()} </div>
                 <h6 class="dropdown-header context-menu-header">Negative genomes</h6>
-                <div class="read-only-div"> ${createReadOnlyGenomeDiv(Array.from(allNotCovering), local_genome_to_species, 'negative', '#map-context-menu').html()} </div>`
+                <div class="read-only-div"> ${createReadOnlyGenomeDiv(Array.from(allNotCovering), local_genome_to_visualization, 'negative', '#map-context-menu').html()} </div>`
                 )
             }
 

@@ -170,18 +170,18 @@ class MagicQueryManager:
             self._all_genomes = all_genomes.union(self.magic_genomes)
         return self._all_genomes
 
-    def genome_to_species(self, regular_genomes=True, magic_genomes=True, magic_objects=True):
-        genome_to_species = dict()
+    def genome_to_visualization(self, regular_genomes=True, magic_genomes=True, magic_objects=True):
+        genome_to_visualization = dict()
         if regular_genomes:
-            genome_to_species.update(self.__genomes_to_species(self.regular_genomes))
+            genome_to_visualization.update(self.__genome_to_visualization(self.regular_genomes))
         if magic_genomes:
-            genome_to_species.update(self.__genomes_to_species(self.magic_genomes))
+            genome_to_visualization.update(self.__genome_to_visualization(self.magic_genomes))
         if magic_objects:
-            genome_to_species.update(self.__magic_object_to_species(self.magic_objects))
+            genome_to_visualization.update(self.__magic_object_to_visualization(self.magic_objects))
 
-        return genome_to_species
+        return genome_to_visualization
 
-    def __magic_object_to_species(self, magic_objects: [MagicObject]):
+    def __magic_object_to_visualization(self, magic_objects: [MagicObject]):
         result = {}
         for magic_object in magic_objects:
             if type(magic_object.obj) is TaxID:
@@ -202,14 +202,19 @@ class MagicQueryManager:
         return result
 
     @staticmethod
-    def __genomes_to_species(genomes: QuerySet):
+    def __genome_to_visualization(genomes: QuerySet):
         return {
-            genome['identifier']: dict(
+            g['identifier']: dict(
                 type='genome',
-                taxid=genome['organism__taxid'],
-                sciname=genome['organism__taxid__taxscientificname']
+                taxid=g['organism__taxid'],
+                sciname=g['organism__taxid__taxscientificname'],
+                restricted=g['organism__restricted'],
+                no_representative=g['representative'] is None,
+                contaminated=g['contaminated'],
             )
-            for genome in genomes.values('identifier', 'organism__taxid', 'organism__taxid__taxscientificname')
+            for g in genomes.values(
+                'identifier', 'organism__taxid', 'organism__taxid__taxscientificname',
+                'organism__restricted', 'representative', 'contaminated')
         }
 
     @classmethod

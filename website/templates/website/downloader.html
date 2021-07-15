@@ -32,7 +32,7 @@
 {% block body %}
     <section>
 
-        <div class="container">
+        <div class="container mt-3">
             <form>
                 {% csrf_token %}
                 <div id="magic-query"></div>
@@ -62,9 +62,7 @@
 
         {% if genomes_hash %}
 
-            <hr class="featurette-divider">
-
-            <div class="container">
+            <div class="container mt-3">
 
                 {% for verbose, abbr, hash, is_cached, cache_path in files_to_download %}
 
@@ -83,7 +81,8 @@
                                     generate
                                 {% endif %}
                             </button>
-                            <a role="button" href="/files_cache/{{ cache_path }}" class="btn btn-secondary {% if not is_cached %} disabled {% endif %}">
+                            <a role="button" href="/files_cache/{{ cache_path }}"
+                               class="btn btn-secondary {% if not is_cached %} disabled {% endif %}">
                                 download
                             </a>
                         </div>
@@ -93,6 +92,16 @@
                 {% endfor %}
 
             </div>
+
+            <!-- info -->
+            <div class="container black-links mt-3">
+                <div class="alert alert-info" role="alert">
+                    Windows users: Use a tool like
+                    <a href="https://www.7-zip.org/">7-Zip</a> (recommended) or <a href="https://www.izarc.org/">IZArc</a>
+                    to decompress .tar.gz files!
+                </div>
+            </div>
+
 
         {% endif %}
 

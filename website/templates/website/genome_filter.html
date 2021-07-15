@@ -5,7 +5,6 @@
 
 {% block styles %}
     <!-- Site-specific css/js -->
-    <link rel="stylesheet" type="text/css" href="{% static 'annotation_search/css/annotation_search.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'global/css/annotype_color.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'global/css/tag_color.css' %}"/>
     <link rel="stylesheet" type="text/css" href="{% static 'global/css/taxid_color.css' %}" id="taxid-color-stylesheet"/>
@@ -28,6 +27,28 @@
     <link href="{% static 'global/css/jquery-ui.min.css' %}" rel="stylesheet"/>
 
     <link rel="stylesheet" type="text/css" href="{% static 'global/css/genome_filter.css' %}"/>
+
+{% endblock %}
+
+
+{% block sidebar %}
+
+    <div class="sidebar-subcontent form-check form-check-inline">
+        <label class="form-check-label" for="colorize-tax-checkbox"><a>Colorize taxonomy?</a></label>
+        <input class="form-check-input" type="checkbox" id="colorize-tax-checkbox" onclick="toggle_colorize_tax()"
+               checked>
+    </div>
+
+    <hr>
+
+    <div class="sidebar-subcontent form-check form-check-inline">
+        <a>Download Table</a>
+    </div>
+    <div class="sidebar-subcontent form-check form-check-inline">
+        <button type="button" class="btn btn-secondary" onclick="exportToTsv()">
+            genomes.tsv
+        </button>
+    </div>
 
 {% endblock %}
 
@@ -92,12 +113,41 @@
 
                 </div>
 
+                <button type="submit" class="btn btn-primary">Submit</button>
             </form>
-            <button type="button" class="btn btn-primary" onclick="submitFunction()">Submit</button>
 
         </div>
     </div>
-    {% include "global/pagination_snippet.html" %}
+
+    <div aria-label="Selector" class="container mt-3" style="display: flex; justify-content: space-between; align-items:center">
+        <span>
+            {% if page_obj %}
+                Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ paginator.count }} genomes
+            {% else %}
+                Showing {{ object_list.count }} genomes
+            {% endif %}
+            (filtered from {{ total_unfiltered_count }} total entries)
+            <span id="n-selected-rows"></span>
+        </span>
+
+        <div class="dropdown">
+            <button class="btn btn-outline-secondary" id="selectRows" data-toggle="dropdown" aria-haspopup="true">
+                <span class="visually-hidden">Select</span>
+                <img alt="select in table" src="{% static 'global/customicons/three-dots-vertical.svg' %}">
+
+            </button>
+
+            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="selectRows">
+                <a class="dropdown-item context-menu-icon context-menu-icon-select-all" href="#" onclick="toggleAll(true)">
+                    Select all
+                </a>
+                <a class="dropdown-item context-menu-icon context-menu-icon-select-none" href="#" onclick="toggleAll(false)">
+                    Select none
+                </a>
+            </div>
+        </div>
+
+    </div>
 
     <div class="table-container">
         <table id="annotation-list" class="table table-sm table-striped">
@@ -106,13 +156,15 @@
                 {% for column in active_columns.values %}
 
                     <th data-column-id="{{ column.id }}">
-                        <div class="column-info d-flex bd-highlight">
+                        <div class="column-info d-flex justify-content-around">
                             {% if column.query %}<span class="active-filter" title="A filter is active on this column.">f</span>{% endif %}
-                            <div class="flex-grow-1"></div>
-                            <a class="sort-btn sort-asc {% if column.sorted == 'asc' %}sorted{% endif %}" title="Sort ascending" href="?{% param_replace sort=column.id asc='True' %}">↑</a>
-                            <a class="sort-btn sort-desc {% if column.sorted == 'desc' %}sorted{% endif %}" title="Sort descending" href="?{% param_replace sort=column.id asc='False' %}">↓</a>
+                            <div class="d-flex">
+                                <a class="sort-btn sort-asc {% if column.sorted == 'asc' %}sorted{% endif %}" title="Sort ascending"
+                                   href="?{% param_replace sort=column.id asc='True' %}">↑</a>
+                                <a class="sort-btn sort-desc {% if column.sorted == 'desc' %}sorted{% endif %}" title="Sort descending"
+                                   href="?{% param_replace sort=column.id asc='False' %}">↓</a>
+                            </div>
                         </div>
-                        <br>
                         <div class="column-label">{{ column.label }}</div>
                     </th>{% endfor %}
             </tr>
@@ -127,10 +179,10 @@
             </tbody>
         </table>
     </div>
-    <div class="container">
+
+    <div aria-label="Page navigation" class="container d-flex justify-content-center">
         {% include "global/pagination_snippet.html" %}
     </div>
-
 
 {% endblock %}
 
@@ -157,27 +209,21 @@
             })
         })
 
+        const updateNumberSelectedRows = function () {
+            const nRows = $('tbody tr.selected').length
+            const nRowsText = nRows ? ` - ${nRows} selected` : ''
+            $('#n-selected-rows').text(nRowsText)
+        }
+
 
         $("#annotation-list th").each(function (iColumn, column) {
             const columnId = $(column).data('column-id')
-            if (columnId.startsWith('env')) {
-                $("#annotation-list tr").each(function (iRow, row) {
-                    if (iRow === 0) return
-                    const envField = row.children[iColumn]
-                    if (envField.textContent.length > 2) {
-                        const textContent = envField.textContent.slice(2, -2).split("', '")
-                        envField.innerHTML = textContent.map(x => `<span class="badge badge-warning">${x}</span>`).join('')
-                    } else {
-                        envField.innerHTML = ''
-                    }
-                })
-            } else if (columnId === 'literature_references') {
+            if (columnId === 'literature_references') {
                 $("#annotation-list tr").each(function (iRow, row) {
                     if (iRow === 0) return
                     const envField = row.children[iColumn]
                     if (envField.textContent.length > 2) {
                         const textContent = JSON.parse(envField.textContent.replace(/\'/g, '\"'))
-                        console.log(textContent)
                         envField.innerHTML = textContent.map(x => `<a class="badge badge-info" href="${x['url'] || ''}">${x['name'] || ''}</a>`).join('')
                     } else {
                         envField.innerHTML = ''
@@ -190,7 +236,7 @@
             $('.ogb-tag.genome')
                 .ogbTooltip()
                 .click(function (event) {
-                    showGenomeClickMenu(event)
+                    showGenomeClickMenu(event, 'auto', 'auto', 'tbody tr.selected')
                 })
             $('.ogb-tag.organism')
                 .ogbTooltip()
@@ -207,11 +253,54 @@
                 {% for js in activate_js %}
                     {{ js|safe }}
                 {% endfor %}
-            }, 10)
+            }, 500)
         }
 
+        let lastSelectedRow  // track which row was last clicked on (important to select multiple)
+        const trs = $('tbody tr')
+        const toggleAll = function (select = true) {
+            console.log(select)
+            if (select) {
+                trs.addClass('selected')
+            } else {
+                trs.removeClass('selected')
+            }
+            updateNumberSelectedRows()
+        }
 
-        const subbie = function () {
+        $(document).ready(function () {
+            $('tbody').on('mousedown', 'tr', function (data) {
+                if (data.altKey || data.which !== 1) return  // ignore clicks with alt key and non-left clicks
+
+                if (data.shiftKey && lastSelectedRow !== undefined) {
+                    // select multiple rows
+                    const rowRange = [this.rowIndex, lastSelectedRow].sort((a, b) => a - b)  // sort ascending
+                    for (let i = rowRange[0]; i <= rowRange[1]; i++) {
+                        if (data.ctrlKey) {
+                            $(trs[i - 1]).removeClass('selected')  // shiftKey + ctrlKey -> deselect multipe
+                        } else {
+                            $(trs[i - 1]).addClass('selected')  // shiftKey -> select multiple
+                        }
+                    }
+                } else {
+                    // select single rows
+                    if (data.target.classList.contains('genome')) {
+                        $(this).addClass('selected')  // if the target is a genome, always select the row
+                    } else {
+                        $(this).toggleClass('selected')  // simple click -> toggle one row
+                    }
+                }
+
+                lastSelectedRow = this.rowIndex
+                updateNumberSelectedRows()
+
+                data.preventDefault()  // otherwise, text is selected
+            })
+        })
+
+        $(form).submit(function () {
+            console.log(`Form Submitted! Time stamp: ${event.timeStamp}`)
+
             // copy columns to input
             const selectedColumns = $(form).find('#id_columns #sortable-selected li').map(function () {
                 return $(this).data('selector')
@@ -233,16 +322,27 @@
 
             // print submitted stuff
             console.log($(form).serialize().split('&'))
-        }
-
-        $(form).submit(function () {
-            subbie()
         })
 
-        const submitFunction = function () {
-            console.log(`Form Submitted! Time stamp: ${event.timeStamp}`)
-            {#subbie()#}
-            $(form).submit()
+
+        const exportToTsv = function () {
+            let tableAsTsv = 'data:text/csv;charset=utf-8,'
+
+            const header = $('table thead tr th').toArray().map(x => x.innerText.replace('#', 'Nr').split('\n').at(-1))
+            tableAsTsv += header.join('\t')
+            tableAsTsv += '\r\n'
+
+            const rows = document.querySelectorAll('table tbody tr')
+            for (const row of rows) {
+                const rowData = []
+                for (const [index, column] of row.querySelectorAll('th, td').entries()) {
+                    rowData.push(column.innerText)
+                }
+                tableAsTsv += rowData.join('\t')
+                tableAsTsv += '\r\n'
+            }
+
+            saveUriAs(encodeURI(tableAsTsv), 'genomes.tsv')
         }
 
     </script>

@@ -45,14 +45,11 @@ ORTHOFINDER_ENABLED = os.environ.get('ORTHOFINDER_ENABLED', 'false').lower() == 
 PROTEIN_FASTA_ENDINGS = os.environ.get('PROTEIN_FASTA_ENDINGS')
 
 # genomes table: default columns
-if 'DEFAULT_COLUMNS' in os.environ:
-    DEFAULT_GENOMES_COLUMNS = os.environ.get('DEFAULT_COLUMNS').split(',')
-    DEFAULT_GENOMES_COLUMNS_new = os.environ.get('DEFAULT_COLUMNS').split(',')
-else:
-    DEFAULT_GENOMES_COLUMNS = ["organism.name", "identifier", "organism.taxid.taxscientificname", "sequencing_tech"]
-    DEFAULT_GENOMES_COLUMNS_new = ["organism", "identifier", "taxonomy", "sequencing_technology"]
-
-DEFAULT_GENOMES_PAGE_LENGTH = os.environ.get('DEFAULT_GENOMES_PAGE_LENGTH', 'All')
+DEFAULT_GENOMES_TABLE_URL = os.environ.get(
+    'DEFAULT_GENOMES_TABLE_URL',
+    default='?columns=organism,identifier,taxonomy,sequencing_technology,genome_tags,organism_tags&restricted=False&contaminated=False&representative=True'
+)
+DEFAULT_GENOMES_TABLE_COLUMNS = DEFAULT_GENOMES_TABLE_URL.split('columns=', 1)[1].split('&', 1)[0].split(',')
 
 # Email settings
 if all([var in os.environ for var in ['EMAIL_HOST', 'EMAIL_HOST_USER', 'DEFAULT_FROM_EMAIL', 'EMAIL_PORT']]):
@@ -241,21 +238,17 @@ if ORTHOFINDER_ENABLED:
     )
 
     for folder in [ORTHOFINDER_FASTAS, ORTHOFINDER_LATEST_RUN]:
-        assert os.path.isdir(folder), F"The path in settings.py doesn't point to a folder: {folder}"
+        assert os.path.isdir(folder), f'The path in settings.py does not point to a folder: {folder}'
 
     for file in [ORTHOLOG_ANNOTATIONS]:
-        assert os.path.isfile(file), F"The path in settings.py doesn't point to a file: {file}"
+        assert os.path.isfile(file), f'The path in settings.py does not point to a file: {file}'
 
 
 else:
     ORTHOFINDER_LATEST_RUN = None
 
 for folder in [PATHWAY_MAPS, GENOMIC_DATABASE]:
-    assert os.path.isdir(folder), F"The path in settings.py doesn't point to a folder: {folder}"
+    assert os.path.isdir(folder), f'The path in settings.py does not point to a folder: {folder}'
 
 for file in [PATHWAY_MAPS_TYPE_DICT]:
-    assert os.path.isfile(file), F"The path in settings.py doesn't point to a file: {file}"
-
-if DEFAULT_GENOMES_PAGE_LENGTH.isnumeric():
-    DEFAULT_GENOMES_PAGE_LENGTH = int(DEFAULT_GENOMES_PAGE_LENGTH)
-assert DEFAULT_GENOMES_PAGE_LENGTH in ["All", 10, 25, 50, 100, 200, 400, 800, 1600]
+    assert os.path.isfile(file), f'The path in settings.py does not point to a file: {file}'
