@@ -250,10 +250,11 @@
 
         const activateDropdownSelect = function () {
             setTimeout(function () {
+                // timeout because jquery-ui requires visible elements
                 {% for js in activate_js %}
                     {{ js|safe }}
                 {% endfor %}
-            }, 500)
+            }, 10)
         }
 
         let lastSelectedRow  // track which row was last clicked on (important to select multiple)
@@ -277,7 +278,7 @@
                     const rowRange = [this.rowIndex, lastSelectedRow].sort((a, b) => a - b)  // sort ascending
                     for (let i = rowRange[0]; i <= rowRange[1]; i++) {
                         if (data.ctrlKey) {
-                            $(trs[i - 1]).removeClass('selected')  // shiftKey + ctrlKey -> deselect multipe
+                            $(trs[i - 1]).removeClass('selected')  // shiftKey + ctrlKey -> deselect multiple
                         } else {
                             $(trs[i - 1]).addClass('selected')  // shiftKey -> select multiple
                         }

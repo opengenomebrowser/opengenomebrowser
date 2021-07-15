@@ -95,7 +95,7 @@ class GenomeFilter:
 
     @classmethod
     def filter_queryset(cls, request, context, active_filters) -> Manager:
-        qs = Genome.annotated_objects
+        qs = Genome.objects
 
         for filter in active_filters:
             try:
@@ -118,7 +118,12 @@ class GenomeFilter:
 
         all_columns = cls.__get_columns()
 
-        active_columns = extract_data_or(request=request, key='columns', list=True, sep=',', default=settings.DEFAULT_GENOMES_TABLE_COLUMNS)
+        active_columns = extract_data_or(request=request, key='columns', list=True, sep=',',
+                                         default=[k for k in settings.DEFAULT_GENOMES_TABLE_COLUMNS if k in all_columns])
+
+        if 'identifier' not in active_columns:
+            active_columns = ['identifier'] + active_columns  # ensure that genome identifiers are always shown
+
         active_filters = set(all_columns.keys()).intersection(set(request.GET.keys()).union(set(request.POST.keys())))
         shown_filters = active_columns + [f for f in active_filters if f not in active_columns]
 
@@ -140,7 +145,7 @@ class GenomeFilter:
 
         paginate_by = extract_data(request, 'paginate_by')
         if paginate_by == 'All':
-            context['object_list'] = qs
+            object_list = qs
         else:
             paginate_by = int(paginate_by) if type(paginate_by) is str and paginate_by.isnumeric() else cls.paginate_by
             paginator = Paginator(qs, paginate_by)
@@ -151,8 +156,11 @@ class GenomeFilter:
 
             page_obj = paginator.page(page)
             context['page_obj'] = page_obj
-            context['object_list'] = page_obj.object_list
+            object_list = page_obj.object_list
             context['paginator'] = paginator
+
+        object_list = AnnotatedGenomeManager.annotate_all(object_list)
+        context['object_list'] = object_list
 
         column_lookups = [f.render_expr for f in active_columns.values()]
 
@@ -161,7 +169,13 @@ class GenomeFilter:
                 column_lookups.remove(col)
 
         try:
-            context['table'] = context['object_list'].values_list(*column_lookups)
+            context['table'] = object_list.values_list(*column_lookups)
+        except Exception as e:
+            context['error_danger'].append(f'Failed to render columns: {column_lookups}: {str(e)}')
+            return render(request, 'website/genome_filter.html', context)
+
+        try:
+            context['table'] = object_list.values_list(*column_lookups)
         except Exception as e:
             context['error_danger'].append(f'Failed to render columns: {column_lookups}: {str(e)}')
             return render(request, 'website/genome_filter.html', context)

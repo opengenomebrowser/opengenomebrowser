@@ -112,6 +112,7 @@ class MultipleRelatedColumn(Column):
 
     def filter(self, qs, request):
         self.query = extract_data(request=request, key=self.id, list=True, sep=',')
+
         qs = qs.filter(**{self.lookup_expr + '__in': self.query})
         return qs
 
