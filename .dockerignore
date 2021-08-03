@@ -57,6 +57,7 @@ website/static/global/css/annotype_color.css
 .gitmodules
 
 development.env
+docker*
 
 Dockerfile
 
