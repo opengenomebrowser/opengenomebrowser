@@ -58,7 +58,7 @@ class TaxID(MPTTModel):
         return Organism.objects.filter(taxid__in=list(taxid_qs.values_list(flat=True)))
 
     def get_child_genomes(self, representative=None, contaminated=None, restricted=None) -> QuerySet:
-        from .Genome import Genome
+        from website.models.Genome import Genome
         qs = Genome.objects.filter(organism__in=self.get_child_organisms())
 
         if representative is not None:
@@ -67,6 +67,8 @@ class TaxID(MPTTModel):
             qs = qs.filter(contaminated=contaminated)
         if restricted is not None:
             qs = qs.filter(organism__restricted=restricted)
+
+        qs = qs.prefetch_related('organism__taxid')
 
         return qs.distinct()
 
@@ -175,9 +177,9 @@ class TaxID(MPTTModel):
 
         for taxid in all_taxids:
             span_css += F'[data-species="{taxid.taxscientificname}"] {{' + \
-                       F'background-color: rgb({taxid.color}) !important; ' + \
-                       F'color: {"white" if taxid.text_color_white else "black"} !important' + \
-                       '}\n'
+                        F'background-color: rgb({taxid.color}) !important; ' + \
+                        F'color: {"white" if taxid.text_color_white else "black"} !important' + \
+                        '}\n'
             svg_css += F'[data-species-label="{taxid.taxscientificname}"] {{' + \
                        F'stroke: rgb({taxid.color}); ' + \
                        F'fill: {"white" if taxid.text_color_white else "black"} !important' + \
@@ -202,4 +204,3 @@ class TaxIdColors(KeyValueStore):
     _key = 'id'
     _key_isint = True
     _value = 'color'
-

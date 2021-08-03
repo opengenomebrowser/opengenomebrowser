@@ -6,7 +6,6 @@
     <link rel="stylesheet" type="text/css" href="{% static 'global/css/taxid_color.css' %}" id="taxid-color-stylesheet"/>
     <link rel="stylesheet" type="text/css" href="{% static 'global/css/tag_color.css' %}"/>
     <link rel="stylesheet" type="text/css" href="{% static 'global/css/detail.css' %}"/>
-    <link rel="stylesheet" type="text/css" href="{% static 'global/css/warning-stripes.css' %}"/>
 {% endblock %}
 
 {% block sidebar %}
@@ -38,12 +37,12 @@
         <div class="container black-links">
             <!-- species name -->
             <span class="type-label">name:</span>
-            <span class="h1" onclick="showTaxidClickMenu(event, '{{ taxid }}')">
+            <span class="h1" onclick="showTaxidClickMenu(event, '{{ taxid }}', 'tax{{ taxid.rank }}')">
                 {{ taxid }} </span>
 
             <!-- species taxid -->
             <span class="type-label">taxid:</span>
-            <span class="h1" style="{{ taxid.html_style }}" onclick="showTaxidClickMenu(event, '{{ taxid }}')">
+            <span class="h1" style="{{ taxid.html_style }}" onclick="showTaxidClickMenu(event, '{{ taxid }}', 'tax{{ taxid.rank }}')">
                 {{ taxid.id }} </span>
 
             <!-- species rank --><br>
@@ -53,12 +52,12 @@
             {% if taxid.parent %}<br>
                 <!-- parent name -->
                 <span class="type-label">parent:</span>
-                <span class="h1" onclick="showTaxidClickMenu(event, '{{ taxid.parent }}')">
+                <span class="h1" onclick="showTaxidClickMenu(event, '{{ taxid.parent }}', 'tax{{ taxid.parent.rank }}')">
                     {{ taxid.parent }} </span>
 
                 <!-- parent taxid -->
                 <span class="type-label">taxid:</span>
-                <span class="h1" style="{{ taxid.parent.html_style }}" onclick="showTaxidClickMenu(event, '{{ taxid.parent }}')">
+                <span class="h1" style="{{ taxid.parent.html_style }}" onclick="showTaxidClickMenu(event, '{{ taxid.parent }}', 'tax{{ taxid.parent.rank }}')">
                     {{ taxid.parent.id }} </span>
             {% endif %}
             <hr class="featurette-divider">
@@ -67,22 +66,12 @@
 
         <!-- organisms and genomes -->
         <div class="container black-links">
-            <ul>
-                {% for organism in taxid.get_child_organisms %}
-                    <li><span>organism: </span><span data-toggle="tooltip" data-species="{{ organism.taxid }}"
-                                                   onclick="showOrganismClickMenu(event)">{{ organism }}</span></li>
-                    <ul>
-                        {% for genome in organism.genome_set.all %}
-
-                            <li><span>genome: </span><span class="{{ genome.html_warning_stripes }}"
-                                                           onclick="showGenomeClickMenu(event, 'auto', '{{ organism.taxid }}')">{{ genome }}</span></li>
-
-                        {% endfor %}
-                    </ul>
-
-                {% endfor %}
+            <ul>{% for organism in taxid.get_child_organisms %}
+                <li><span>organism: {{ organism.html|safe }}</li>
+                <ul>{% for genome in organism.genome_set.all %}
+                    <li>{{ genome.html|safe }}</li>{% endfor %}
+                </ul>{% endfor %}
             </ul>
-
 
         </div>
 
@@ -93,7 +82,18 @@
     <script>
 
         $(document).ready(function () {
-            $('.ogb-tag').ogbTooltip();
+            $('.ogb-tag.genome')
+                .ogbTooltip()
+                .click(function (event) {
+                    showGenomeClickMenu(event)
+                })
+
+            $('.ogb-tag.organism')
+                .ogbTooltip()
+                .click(function (event) {
+                    showOrganismClickMenu(event)
+                })
+
         });
 
     </script>

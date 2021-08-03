@@ -176,4 +176,57 @@ def home_view(request):
         admin_actions=admin_actions
     )
 
+    try:
+        sunburst_html, sunburst_js = sunburst()
+        context['sunburst_html'] = sunburst_html
+        context['sunburst_js'] = sunburst_js
+    except AssertionError as e:
+        context['error_warning'] = [str(e)]
+    except Exception as e:
+        context['error_danger'] = [f'Failed to load sunburst plot: {e}']
+
     return render(request, 'website/index.html', context)
+
+
+def load_starburst_data():
+    import pandas as pd
+    from website.models import Organism, TaxID
+
+    columns = ['taxsuperkingdom', 'taxphylum', 'taxclass', 'taxorder', 'taxfamily', 'taxgenus', 'taxspecies', 'taxsubspecies',
+               'color', 'text_color_white']
+    df = pd.DataFrame(Organism.objects.all().prefetch_related('taxid').values_list(*[f'taxid__{c}' for c in columns]), columns=columns)
+    assert len(df) > 0, 'There are currently no organisms in the database.'
+    df.fillna('-', inplace=True)
+    colormap = {t: [c, w] for t, c, w in TaxID.objects.values_list('taxscientificname', 'color', 'text_color_white')}
+
+    return df, columns[:-2], colormap
+
+
+def sunburst():
+    import json
+    from io import StringIO
+    import plotly.express as px
+
+    df, columns, colormap = load_starburst_data()
+
+    fig = px.sunburst(
+        df,
+        path=columns,
+        color='color',
+        color_discrete_map={c: f'rgb({c})' for t, (c, w) in colormap.items()}
+    )
+    fig.update_layout(autosize=False, uniformtext=dict(minsize=10, mode='hide'))
+    fig.update_traces(hovertemplate="Superkingdom<br>%{label} (%{value})<extra></extra>")
+
+    html = StringIO()
+    fig.write_html(html, include_plotlyjs=False, full_html=False)
+    html = html.getvalue()
+
+    sunburst_id = html.split('<div id="', 1)[1].split('"', 1)[0]
+
+    js = f'''
+    const taxToCol = {json.dumps(colormap)};
+    const sunburstId = {json.dumps(sunburst_id)};
+    const sunburstColumns = {json.dumps(columns)};
+    '''
+    return html, js

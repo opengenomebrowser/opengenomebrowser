@@ -4,6 +4,12 @@
 {% block styles %}
     <!-- Site-specific css/js -->
     <link rel="stylesheet" type="text/css" href="{% static 'index/css/index.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'global/css/taxid_color.css' %}"/>
+
+    {% if sunburst_html %}
+        <!-- Plotly -->
+        <script src="{% static 'global/js/plotly-latest.min.js' %}"></script>
+    {% endif %}
 
     {% if home_markdown %}
         <!-- Markdown https://marked.js.org/ -->
@@ -18,6 +24,8 @@
 {% endblock %}
 
 {% block body %}
+
+    <div id="myDiv"></div>
 
     {% if home_markdown %}
 
@@ -49,6 +57,15 @@
             </div>
         </div>
 
+    {% endif %}
+
+
+    {% if sunburst_html %}
+        <div class="container" id="sunburst-container">
+            <hr class="featurette-divider">
+            <h3>Available genomes</h3>
+            {{ sunburst_html|safe }}
+        </div>
     {% endif %}
 
     <div class="container">
@@ -98,6 +115,92 @@
 
 {% endblock %}
 
-{% block end %}
+{% block end %}{% if sunburst_html %}
 
-{% endblock %}
+    <script type="application/javascript">
+        {{ sunburst_js|safe }}
+
+        const applySunburstColors = function () {
+            $('.main-svg .surface').each(function () {
+                const label = this.nextElementSibling.textContent
+                if (label === '-') {
+                    this.style.fill = 'transparent'
+                    this.nextElementSibling.textContent = ''
+                } else {
+                    const color = taxToCol[label][0]
+                    const textColorWhite = taxToCol[label][1]
+                    this.style.fill = 'rgb(' + color + ')'
+                    this.nextElementSibling.firstChild.style.fill = textColorWhite ? 'white' : 'black'
+                }
+            })
+        }
+
+        const suburstContainer = document.getElementById('sunburst-container')
+        let sunburstPlotSize
+        let resizeTimer
+
+        const redrawSunburst = function () {
+            sunburstPlotSize = suburstContainer.offsetWidth
+            Plotly.relayout(sunburstId, {
+                width: sunburstPlotSize,
+                height: sunburstPlotSize
+            }).then(() => {
+                    applySunburstColors()
+                }
+            )
+        }
+
+        redrawSunburst()
+
+        $(window).on('resize', function (e) {
+            if (sunburstPlotSize === suburstContainer.offsetWidth) return
+            if (typeof resizeTimer !== 'undefined') {
+                clearTimeout(resizeTimer)
+            }
+            resizeTimer = setTimeout(function () {
+                redrawSunburst()
+            }, 250)    // Timer value for checking resize event start/stop
+        })
+
+
+        const extractFromPointData = function (data) {
+            const label = data.label
+            const depth = (data.currentPath.slice(1).match(/\//g) || []).length
+            const taxRank = sunburstColumns[depth]
+            const rank = taxRank.charAt(3).toUpperCase() + taxRank.slice(4)
+            const selector = `@${taxRank}:${label}`
+            const magicString = '@' + taxRank + ':' + data.label
+            const colorData = taxToCol[label] || [undefined, undefined]
+            const color = colorData[0]
+            const textColorWhite = colorData[1]
+            return {label, depth, taxRank, rank, selector, magicString, color, textColorWhite}
+        }
+
+        document.getElementsByClassName('plotly-graph-div')[0].on('plotly_sunburstclick', function (evt) {
+            if (evt.points.length === 1) {
+                data = extractFromPointData(evt.points[0])
+                showTaxidClickMenu(evt.event, data.label, data.taxRank)
+            }
+            return false
+        })
+            .on('plotly_hover', function (evt) {
+                const tooltip = document.getElementsByClassName('main-svg')[2]
+                const hoverText = tooltip.getElementsByClassName('hovertext')[0]
+                const pathElement = hoverText.children[0]
+                const textElement = hoverText.children[1]
+
+                if (evt.points.length === 1) {
+                    data = extractFromPointData(evt.points[0])
+                    if (data.label === '-') {
+                        tooltip.style.opacity = '0'
+                    } else {
+                        pathElement.style.fill = 'rgb(' + data.color + ')'
+                        textElement.style.fill = data.textColorWhite ? 'white' : 'black'
+                        textElement.textContent = textElement.textContent.replace('Superkingdom', data.rank + '\n')
+                        tooltip.style.opacity = '1'
+                    }
+                }
+            })
+    </script>
+
+{% endif %}{% endblock %}

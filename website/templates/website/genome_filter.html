@@ -61,7 +61,7 @@
 
         <div id="collapse-header" data-toggle="collapse" data-target="#collapseFilters" aria-expanded="false" aria-controls="collapseFilters"
              onclick="activateDropdownSelect()">
-            <span>Expand filters</span>
+            <span>Show columns and filters</span>
             <img src="{% static 'global/ionicons/ios-arrow-down.svg' %}" alt="expand">
         </div>
 
@@ -130,21 +130,11 @@
             <span id="n-selected-rows"></span>
         </span>
 
-        <div class="dropdown">
-            <button class="btn btn-outline-secondary" id="selectRows" data-toggle="dropdown" aria-haspopup="true">
-                <span class="visually-hidden">Select</span>
-                <img alt="select in table" src="{% static 'global/customicons/three-dots-vertical.svg' %}">
-
-            </button>
-
-            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="selectRows">
-                <a class="dropdown-item context-menu-icon context-menu-icon-select-all" href="#" onclick="toggleAll(true)">
-                    Select all
-                </a>
-                <a class="dropdown-item context-menu-icon context-menu-icon-select-none" href="#" onclick="toggleAll(false)">
-                    Select none
-                </a>
-            </div>
+        <div class="form-check">
+            <label class="form-check-label" for="selectRows">
+                Select all
+            </label>
+            <input type="checkbox" value="" id="selectRows" onclick="toggleAll(this.checked)">
         </div>
 
     </div>
@@ -154,7 +144,6 @@
             <thead class="thead-dark">
             <tr>
                 {% for column in active_columns.values %}
-
                     <th data-column-id="{{ column.id }}">
                         <div class="column-info d-flex justify-content-around">
                             {% if column.query %}<span class="active-filter" title="A filter is active on this column.">f</span>{% endif %}
@@ -170,6 +159,10 @@
             </tr>
             </thead>
             <tbody>
+            {% if not table %}
+                <tr>
+                    <td colSpan="{{ active_columns|length }}">no matching genomes found</td>
+                </tr>{% endif %}
             {% for row in table %}
                 <tr>
                     {% for cell in row %}
@@ -243,8 +236,11 @@
                 .click(function (event) {
                     showOrganismClickMenu(event)
                 })
-            $('.ogb-tag.ogb-tag')
+            $('.ogb-tag.tag')
                 .ogbTooltip()
+                .click(function (event) {
+                    showTagClickMenu(event)
+                })
             $('.active-filter, .sort-asc, .sort-desc').tooltip()
         })
 

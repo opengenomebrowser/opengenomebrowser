@@ -524,14 +524,15 @@ Annotations</h6>
     cm.show()
 }
 
-let showTaxidClickMenu = function (event, taxname = 'auto', siblings = 'auto') {
-    console.log('showTaxidClickMenu event:', event, 'taxname', taxname, 'siblings', siblings)
+let showTaxidClickMenu = function (event, taxname = 'auto', taxRank = 'auto') {
+    console.log('showTaxidClickMenu event:', event, 'taxname', taxname, 'taxRank', taxRank)
 
     // auto-discover annotation
     taxname = autoDiscoverSelf(event, taxname)
 
-    // auto-discover siblings (nothing to do with them yet)
-    // siblings = autoDiscoverSiblings(event, taxname, siblings, 'taxid')
+    const selector = `@${taxRank === 'auto' ? 'tax' : taxRank}:${taxname}`
+
+    const genomeTablesLink = `/genomes/?columns=organism,identifier,taxonomy,taxid,taxsuperkingdom,taxphylum,taxclass,taxorder,taxfamily,taxgenus,taxspecies,taxsubspecies&${taxRank === 'auto' ? 'taxonomy' : taxRank}=${taxname}`
 
     // initiate context menu
     let cm = new ClickMenu(event, 'taxid-context-menu')
@@ -542,6 +543,50 @@ let showTaxidClickMenu = function (event, taxname = 'auto', siblings = 'auto') {
 ${taxname}</h6>
 <a href="/taxname/${taxname}" class="dropdown-item context-menu-icon context-menu-icon-taxid">
 Open taxid info</a>
+<a href="${genomeTablesLink}" class="dropdown-item context-menu-icon context-menu-icon-table">
+Show genomes</a>
+<a onclick="CopyToClipboard('${selector}')" class="dropdown-item context-menu-icon context-menu-icon-copy">
+Copy selector (${selector})</a>
+`)
+
+    cm.show()
+}
+
+
+let autoDiscoverDescription = function (event) {
+    for (const attr of ['description', 'title', 'original-title']) {
+        const description = $(event.target).data(attr)
+        if (description && description.length) {
+            return description
+        }
+    }
+    return '-'
+}
+
+
+let showTagClickMenu = function (event, tag = 'auto', description = 'auto') {
+    console.log('showTagClickMenu event:', event, 'tag', tag, 'description', description)
+
+    // auto-discover annotation
+    tag = autoDiscoverSelf(event, tag)
+
+    const backgroundColor = $(event.target).css('background-color')
+    const textColor = $(event.target).css('color')
+
+    // auto-discover description (nothing to do with them yet)
+    description = autoDiscoverDescription(event)
+
+    // initiate context menu
+    let cm = new ClickMenu(event, 'tag-context-menu')
+
+    // list of elements to click on
+    cm.appendElement(`
+<h6 class="dropdown-header context-menu-header" style="color:${textColor}; background-color: ${backgroundColor}">
+${tag}</h6>
+<h6 class="dropdown-header context-menu-header">
+${description}</h6>
+<a onclick="CopyToClipboard('@tag:${tag}')" class="dropdown-item context-menu-icon context-menu-icon-copy">
+Copy selector (@tag:${tag})</a>
 `)
 
     cm.show()

@@ -112,6 +112,8 @@
 
 
         <ul id="annotation-list">
+            {% if not object_list %}
+                <li>no matching annotations found</li>{% endif %}
             {% for object in object_list %}
                 <li>{{ object.html|safe }}{% if object.description != '' %}: {{ object.description }}{% endif %}</li>
             {% endfor %}

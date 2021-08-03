@@ -8,21 +8,7 @@ jQuery.fn.extend({
                 console.log('do not append multiple events!')
                 return  // ensure not two events are appended
             }
-            if (this.matches('.genome')) {
-                $(this).tooltip({
-                    boundary: 'window',
-                    title: function () {
-                        return $(this).attr('data-species')
-                    }
-                })
-            } else if (this.matches('.gene')) {
-                $(this).tooltip({
-                    boundary: 'window',
-                    title: function () {
-                        return $(this).attr('data-species')
-                    }
-                })
-            } else if (this.matches('.taxid')) {
+            if (this.matches('.genome') || this.matches('.gene') || this.matches('.taxid') || this.matches('.organism')) {
                 $(this).tooltip({
                     boundary: 'window',
                     title: function () {

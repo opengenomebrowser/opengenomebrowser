@@ -59,3 +59,12 @@
 .list-group li {
     padding: 0.2rem 1.25rem
 }
+
+.plot-container.plotly {
+    display: flex;
+    justify-content: center;
+}
+
+.modebar-container{
+    display: none !important;
+}

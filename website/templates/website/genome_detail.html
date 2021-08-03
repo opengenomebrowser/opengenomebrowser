@@ -298,7 +298,7 @@
                 <table class="table no-top-padding">
                     <tbody>
 
-                    {% for at, n_annos in ann_parameters.items %}
+                    {% for at, n_annos in ann_per_annotype.items %}
                         <tr>
                             <th scope="row"><span class="ogb-tag" data-annotype="{{ at.anno_type }}"
                                                   style="cursor: unset">{{ at.name }} ({{ at.anno_type }})</span></th>

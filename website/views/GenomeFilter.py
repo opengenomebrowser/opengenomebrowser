@@ -90,8 +90,8 @@ class GenomeFilter:
         ]
         return {f.id: f for f in Columns}
 
-    paginate_by = 30
-    pagination_options = ['All', 10, 20, 30, 50, 100, 500, 1000]
+    default_paginate_by = 30
+    default_pagination_options = ['All', 10, 20, 30, 50, 100, 500, 1000]
 
     @classmethod
     def filter_queryset(cls, request, context, active_filters) -> Manager:
@@ -111,6 +111,10 @@ class GenomeFilter:
             title='Genome table',
             error_danger=[], error_warning=[], error_info=[]
         )
+
+        context['error_info'].append('Use Ctrl and Shift to select multiple genomes.')
+        context['error_info'].append('Click on genome tags to open the context menu.')
+        context['error_info'].append('Click on "Show columns and filters" to show additional columns and use filters')
 
         context['total_unfiltered_count'] = Genome.objects.count()
         context['activate_js'] = [c.activate_js() for c in cls.column_classes]
@@ -147,13 +151,17 @@ class GenomeFilter:
         if paginate_by == 'All':
             object_list = qs
         else:
-            paginate_by = int(paginate_by) if type(paginate_by) is str and paginate_by.isnumeric() else cls.paginate_by
-            paginator = Paginator(qs, paginate_by)
+            try:
+                paginate_by = int(paginate_by)
+            except:
+                paginate_by = cls.default_paginate_by
+
             try:
                 page = int(extract_data(request, 'page'))
             except:
                 page = 1
 
+            paginator = Paginator(qs, paginate_by)
             page_obj = paginator.page(page)
             context['page_obj'] = page_obj
             object_list = page_obj.object_list
@@ -181,8 +189,8 @@ class GenomeFilter:
             return render(request, 'website/genome_filter.html', context)
 
         context['paginated_by'] = paginate_by
-        context['pagination_options'] = cls.pagination_options
-        if paginate_by not in cls.pagination_options:
+        context['pagination_options'] = cls.default_pagination_options
+        if paginate_by not in cls.default_pagination_options:
             context['pagination_options'].append(paginate_by)
 
         return render(request, 'website/genome_filter.html', context)

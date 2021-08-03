@@ -83,6 +83,11 @@ html {
 inspired by "2019 answer": https://stackoverflow.com/questions/22252472/change-svg-color
 convert hex (e.g. #2980b9) to filter: https://codepen.io/sosuke/pen/Pjoqqp
  */
+.context-menu-icon-table::before {
+    background-image: url("/static/global/ionicons/md-list-box.svg");
+    filter: invert(39%) sepia(80%) saturate(459%) hue-rotate(160deg) brightness(96%) contrast(93%); /* #2980b9 */
+}
+
 .context-menu-icon-copy::before {
     background-image: url("/static/global/ionicons/md-copy.svg");
     filter: invert(39%) sepia(80%) saturate(459%) hue-rotate(160deg) brightness(96%) contrast(93%); /* #2980b9 */

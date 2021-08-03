@@ -112,7 +112,7 @@ class GenomeDetailView(DetailView):
         ann_parameters = ['cds_tool', 'cds_tool_date', 'cds_tool_version']
         context['ann_parameters'] = [ParameterField(genome=g, attr=attr) for attr in ann_parameters]
 
-        context['ann_parameters'] = {at: Annotation.objects.filter(genomecontent__in=[g.identifier], anno_type=abbr).count()
+        context['ann_per_annotype'] = {at: Annotation.objects.filter(genomecontent__in=[g.identifier], anno_type=abbr).count()
                                      for abbr, at in annotation_types.items()}
 
         context['custom_tables'] = []

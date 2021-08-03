@@ -6,7 +6,12 @@
     flex-direction: column;
     max-width: 400px;
     min-width: 250px;
+}
 
+.ogb-click-menu .dropdown-item {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .context-menu-header {
