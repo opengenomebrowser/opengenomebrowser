@@ -119,7 +119,7 @@
         </div>
     </div>
 
-    <div aria-label="Selector" class="container mt-3" style="display: flex; justify-content: space-between; align-items:center">
+    <div aria-label="Table info" class="container mt-3" style="display: flex; justify-content: space-between; align-items:center">
         <span>
             {% if page_obj %}
                 Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ paginator.count }} genomes
@@ -266,34 +266,50 @@
         }
 
         $(document).ready(function () {
-            $('tbody').on('mousedown', 'tr', function (data) {
-                if (data.altKey || data.which !== 1) return  // ignore clicks with alt key and non-left clicks
+            $('tbody')
+                .on('mousedown', 'tr', function (data) {
+                    // ignore clicks with alt key or right click
+                    if (data.altKey || data.which === 3) return
 
-                if (data.shiftKey && lastSelectedRow !== undefined) {
-                    // select multiple rows
-                    const rowRange = [this.rowIndex, lastSelectedRow].sort((a, b) => a - b)  // sort ascending
-                    for (let i = rowRange[0]; i <= rowRange[1]; i++) {
-                        if (data.ctrlKey) {
-                            $(trs[i - 1]).removeClass('selected')  // shiftKey + ctrlKey -> deselect multiple
+                    if (data.shiftKey && lastSelectedRow !== undefined) {
+                        // select multiple rows
+                        const rowRange = [this.rowIndex, lastSelectedRow].sort((a, b) => a - b)  // sort ascending
+                        for (let i = rowRange[0]; i <= rowRange[1]; i++) {
+                            if (data.ctrlKey) {
+                                $(trs[i - 1]).removeClass('selected')  // shiftKey + ctrlKey -> deselect multiple
+                            } else {
+                                $(trs[i - 1]).addClass('selected')  // shiftKey -> select multiple
+                            }
+                        }
+                    } else {
+                        // select single rows
+                        if (data.target.classList.contains('genome')) {
+                            $(this).addClass('selected')  // if the target is a genome, always select the row
                         } else {
-                            $(trs[i - 1]).addClass('selected')  // shiftKey -> select multiple
+                            $(this).toggleClass('selected')  // simple click -> toggle one row
                         }
                     }
-                } else {
-                    // select single rows
-                    if (data.target.classList.contains('genome')) {
-                        $(this).addClass('selected')  // if the target is a genome, always select the row
-                    } else {
-                        $(this).toggleClass('selected')  // simple click -> toggle one row
+
+                    lastSelectedRow = this.rowIndex
+                    updateNumberSelectedRows()
+
+                    data.preventDefault()  // otherwise, text is selected
+                })
+                .contextmenu(function (data) {
+                    // if any key pressed, open default context menu
+                    if (data.altKey || data.shiftKey || data.ctrlKey) return
+
+                    // select target row and showGenomeClickMenu
+                    const targetTr = $(data.target.parentElement)
+                    const childGenomes = targetTr.find('.genome')
+                    if (childGenomes.length === 1) {
+                        targetTr.addClass('selected')
+                        data.originalEvent.preventDefault()
+                        childGenomes.click()
                     }
-                }
-
-                lastSelectedRow = this.rowIndex
-                updateNumberSelectedRows()
-
-                data.preventDefault()  // otherwise, text is selected
-            })
+                })
         })
+
 
         $(form).submit(function () {
             console.log(`Form Submitted! Time stamp: ${event.timeStamp}`)

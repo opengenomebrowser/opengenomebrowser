@@ -32,7 +32,7 @@
 
         <div id="collapse-header" data-toggle="collapse" data-target="#collapseFilters" aria-expanded="false" aria-controls="collapseFilters"
              onclick="activateDropdownSelect()">
-            <span>Expand filters</span>
+            <span>Show filters</span>
             <img src="{% static 'global/ionicons/ios-arrow-down.svg' %}" alt="expand">
         </div>
 
@@ -108,7 +108,15 @@
 
         </div>
 
-        {% include "global/pagination_snippet.html" %}
+        <div aria-label="Table info" class="container mt-3" style="display: flex; justify-content: space-between; align-items:center">
+        <span>
+            {% if page_obj %}
+                Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ paginator.count }} annotations
+            {% else %}
+                Showing {{ object_list.count }} annotations
+            {% endif %}
+        </span>
+        </div>
 
 
         <ul id="annotation-list">
@@ -120,7 +128,9 @@
         </ul>
 
 
-        {% include "global/pagination_snippet.html" %}
+        <div aria-label="Page navigation" class="container d-flex justify-content-center">
+            {% include "global/pagination_snippet.html" %}
+        </div>
 
     </div>
 
