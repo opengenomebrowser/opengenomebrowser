@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from website.models.helpers.backup_file import read_file_or_default
-from OpenGenomeBrowser.settings import GENOMIC_DATABASE
+from lib.ogb_cache.ogb_cache import ogb_cache, timedelta
+from OpenGenomeBrowser.settings import LOGIN_REQUIRED, GENOMIC_DATABASE, CACHE_DIR, CACHE_MAXSIZE
 
 
 def home_view(request):
@@ -176,14 +177,15 @@ def home_view(request):
         admin_actions=admin_actions
     )
 
-    try:
-        sunburst_html, sunburst_js = sunburst()
-        context['sunburst_html'] = sunburst_html
-        context['sunburst_js'] = sunburst_js
-    except AssertionError as e:
-        context['error_warning'] = [str(e)]
-    except Exception as e:
-        context['error_danger'] = [f'Failed to load sunburst plot: {e}']
+    if request.user.is_authenticated or not LOGIN_REQUIRED:
+        try:
+            sunburst_html, sunburst_js = sunburst()
+            context['sunburst_html'] = sunburst_html
+            context['sunburst_js'] = sunburst_js
+        except AssertionError as e:
+            context['error_warning'] = [str(e)]
+        except Exception as e:
+            context['error_danger'] = [f'Failed to load sunburst plot: {e}']
 
     return render(request, 'website/index.html', context)
 
@@ -202,6 +204,7 @@ def load_starburst_data():
     return df, columns[:-2], colormap
 
 
+@ogb_cache(cache_root=CACHE_DIR, maxsize=CACHE_MAXSIZE, wait_tolerance=timedelta(seconds=10), invalid_after=timedelta(hours=6))
 def sunburst():
     import json
     from io import StringIO

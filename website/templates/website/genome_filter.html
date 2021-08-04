@@ -310,6 +310,12 @@
                 })
         })
 
+        $(document).keyup(function (e) {
+            if (e.key === "Escape") { // escape key maps to keycode `27`
+                console.log('Escape pressed: deselect all rows.')
+                toggleAll(false)
+            }
+        });
 
         $(form).submit(function () {
             console.log(`Form Submitted! Time stamp: ${event.timeStamp}`)

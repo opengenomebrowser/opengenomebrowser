@@ -27,6 +27,8 @@ ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS').split(',')
 
 DATA_UPLOAD_MAX_NUMBER_FIELDS = int(os.environ.get('DATA_UPLOAD_MAX_NUMBER_FIELDS', 1000))
 
+LOGIN_REQUIRED = os.environ.get('LOGIN_REQUIRED', 'true').lower() == 'true'
+
 # database
 DB_HOST = os.environ.get('DB_HOST', 'db')
 DB_PORT = os.environ.get('DB_PORT', '5432')
@@ -93,7 +95,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware'
 ]
-if os.environ.get('LOGIN_REQUIRED', 'true').lower() == 'true':
+if LOGIN_REQUIRED:
     # require login unless LOGIN_REQUIRED is set to 'false'
     MIDDLEWARE.append('OpenGenomeBrowser.login_required_middleware.LoginRequiredMiddleware')
 else:

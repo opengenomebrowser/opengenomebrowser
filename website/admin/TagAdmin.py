@@ -2,6 +2,7 @@ from django.contrib.admin import ModelAdmin
 from django.contrib import messages
 
 from website.models import Tag, TagDescriptions
+from django.http import HttpResponseRedirect
 
 
 class TagAdmin(ModelAdmin):
@@ -12,8 +13,7 @@ class TagAdmin(ModelAdmin):
     def save_model(self, request, obj: Tag, form, change):
         # to change the tag name, the change would have to be propagated to all metadata json files!
         if 'tag' in form.initial and form.initial['tag'] != form.cleaned_data['tag']:
-            messages.warning(request, messages.INFO, F'Changing tag names is currently not supported.')
-            return
+            raise AssertionError(F'Changing tag names is currently not supported.')
 
         try:
             tag_obj = Tag.objects.get(pk=obj.pk)
@@ -24,7 +24,12 @@ class TagAdmin(ModelAdmin):
         except Tag.DoesNotExist:
             tag_obj = Tag.objects.create(tag=obj.tag, description=obj.description)
             messages.add_message(request, messages.INFO, 'Created new tag.')
-        except Exception as e:
-            messages.add_message(request, messages.ERROR, f'Something went wrong: {str(e)}')
 
         Tag.create_tag_color_css()
+
+    def changeform_view(self, request, *args, **kwargs):
+        try:
+            return super().changeform_view(request, *args, **kwargs)
+        except Exception as e:
+            messages.add_message(request, messages.ERROR, f'Something went wrong: {str(e)}')
+            return HttpResponseRedirect(request.path)

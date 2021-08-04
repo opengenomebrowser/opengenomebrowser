@@ -1,0 +1,20 @@
+{% extends "admin/change_list.html" %}
+
+{% block content %}
+
+    <div class="form-row field-tag">
+        <div>
+            <label for="custom-markdown">Click here to download the
+                <a href="ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz">latest NCBI TaxID database</a>:</label>
+            <a id="custom-markdown" href="/admin/download-taxdump/">DOWNLOAD TAXDUMP</a>
+        </div>
+
+        <div>
+            <label for="custom-markdown">Click here to reload the TaxIDS:</label>
+            <a id="custom-markdown" href="/admin/reload-taxids/">RELOAD TAXIDS</a>
+        </div>
+    </div>
+
+    {{ block.super }}
+
+{% endblock %}

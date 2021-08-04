@@ -77,6 +77,7 @@ def _hash(args, kwargs):
 def load_cache_or_run(
         cache_dir: str,
         wait_tolerance: timedelta,
+        invalid_after: timedelta,
         add_cache_dir_kwarg: bool,
         maxsize: int,
         func, args, kwargs,
@@ -88,7 +89,16 @@ def load_cache_or_run(
     hash = _hash(args, kwargs)
     cache_res_dir = os.path.join(cache_fn_dir, hash)
 
-    if os.path.isdir(cache_res_dir):
+    dir_exists = os.path.isdir(cache_res_dir)
+
+    if invalid_after is not None and dir_exists:
+        cache_age = datetime.now() - datetime.fromtimestamp(os.path.getctime(cache_res_dir))
+        if cache_age > invalid_after:
+            print(f'----- ogb cache : invalidate ----- {cache_fn_dir}/{hash}')
+            shutil.rmtree(cache_res_dir)
+            dir_exists = False
+
+    if dir_exists:
         print(f'----- ogb cache : load ----- {cache_fn_dir}/{hash}')
         try:
             res = _load_res(cache_res_dir)
@@ -130,7 +140,8 @@ def ogb_cache(
         maxsize: int,
         wait_tolerance: timedelta = WAIT_TOLERANCE,
         add_cache_dir_kwarg: bool = False,
-        cache_subdir: str = None
+        cache_subdir: str = None,
+        invalid_after: timedelta = None
 ):
     """
     This is a decorator function. Example usage:
@@ -151,8 +162,8 @@ def ogb_cache(
     def inner(func):
         def wrapper(*args, **kwargs):
             res = load_cache_or_run(
-                cache_dir=cache_dir, wait_tolerance=wait_tolerance, add_cache_dir_kwarg=add_cache_dir_kwarg, maxsize=maxsize,
-                func=func, args=args, kwargs=kwargs, cache_subdir=cache_subdir
+                cache_dir=cache_dir, wait_tolerance=wait_tolerance, invalid_after=invalid_after, add_cache_dir_kwarg=add_cache_dir_kwarg,
+                maxsize=maxsize, func=func, args=args, kwargs=kwargs, cache_subdir=cache_subdir
             )
             return res
 

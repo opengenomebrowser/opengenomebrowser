@@ -43,15 +43,14 @@ class MarkdownObjectGenome(MarkdownObject):
 class MarkdownObjectPage(MarkdownObject):
     def __init__(self, page: str):
         self.page = page
-        if page == 'index':
-            super().__init__(
-                type='page',
-                name='index',
-                file_path='/index.md',
-                featured_on='/'
-            )
-        else:
+        if not page == 'index':
             raise KeyError(f'Error: page does not exist: {page}.')
+        super().__init__(
+            type='page',
+            name='index',
+            file_path='index.md',
+            featured_on='/'
+        )
 
     def set_markdown(self, md: str, user: str):
         from OpenGenomeBrowser.settings import GENOMIC_DATABASE
