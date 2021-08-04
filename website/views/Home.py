@@ -204,7 +204,7 @@ def load_starburst_data():
     return df, columns[:-2], colormap
 
 
-@ogb_cache(cache_root=CACHE_DIR, maxsize=CACHE_MAXSIZE, wait_tolerance=timedelta(seconds=10), invalid_after=timedelta(hours=6))
+@ogb_cache(cache_root=CACHE_DIR, maxsize=CACHE_MAXSIZE, wait_tolerance=timedelta(seconds=10), invalid_after=timedelta(hours=24))
 def sunburst():
     import json
     from io import StringIO
