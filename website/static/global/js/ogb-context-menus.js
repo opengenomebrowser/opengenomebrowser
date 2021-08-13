@@ -246,7 +246,7 @@ let showGenomeClickMenu = function (event, genome = 'auto', species = 'auto', si
     // warning tags
     let warningTags = '';
     ['restricted', 'no-representative', 'contaminated'].forEach(function (className) {
-        if (event.target.classList.contains(className)) {
+        if (event.target?.classList?.contains(className)) {
             warningTags += `<span class="ogb-tag mini ${className} float-right" data-title="${className}">${className.charAt(0)}</span>`
         }
     })

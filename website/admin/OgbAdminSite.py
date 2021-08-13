@@ -13,6 +13,7 @@ class OgbAdminSite(admin.AdminSite):
         custom_urls = [
             path(r'download-taxdump/', self.admin_view(self.download_taxdump), name='download-taxdump'),
             path(r'reload-taxids/', self.admin_view(self.reload_taxids), name='reload-taxids'),
+            path(r'reload-css/', self.admin_view(self.reload_css), name='reload-css'),
             path(r'delete-sunburst-cache/', self.admin_view(self.delete_sunburst_cache), name='delete-sunburst-cache'),
             path(r'markdown-editor/', self.admin_view(self.markdown_editor), name='markdown-editor'),
             path(r'markdown-editor/submit/', self.admin_view(self.markdown_submit), name='markdown-editor-submit')
@@ -37,6 +38,16 @@ class OgbAdminSite(admin.AdminSite):
         except Exception as e:
             messages.add_message(request, messages.ERROR, f'Something went wrong: {str(e)}')
         return HttpResponseRedirect('/admin/website/taxid/')
+
+    def reload_css(self, request):
+        from db_setup.manage_ogb import reload_color_css
+        try:
+            reload_color_css()
+            messages.add_message(request, messages.SUCCESS, f'Reloaded the css files, use Ctrl+F5 to reload them!')
+        except Exception as e:
+            messages.add_message(request, messages.ERROR, f'Something went wrong: {str(e)}')
+        return HttpResponseRedirect('/admin/website/taxid/')
+
 
     def delete_sunburst_cache(self, request):
         import os, shutil

@@ -268,8 +268,8 @@
         $(document).ready(function () {
             $('tbody')
                 .on('mousedown', 'tr', function (data) {
-                    // ignore clicks with alt key or right click
-                    if (data.altKey || data.which === 3) return
+                    // ignore clicks with alt key or middle or right click
+                    if (data.altKey || data.which === 2 || data.which === 3) return
 
                     if (data.shiftKey && lastSelectedRow !== undefined) {
                         // select multiple rows
