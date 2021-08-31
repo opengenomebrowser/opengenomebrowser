@@ -197,17 +197,17 @@
                     console.log('BLAST FAILED!', serialized_query, data)
                     alert('BLAST FAILED!')
                 }
-            }).done(function () {
-                // append click listener
-                waitForElement('#blast-alignments-table .alignment-table-description', function () {
-                    $('#blast-alignments-table .alignment-table-description').click(function () {
-                        const description = this.alignment.description
-                        const gene_locus_tag = description.split(' ')[1].split('|').slice(-1)[0]
-                        showGeneClickMenu(event, gene_locus_tag)
-                    })
-                })
             })
         }
+
+        // whenever a new blasterjs result is displayed, enable GeneClickMenu on resulting lines
+        onChangeElement('#blast-alignments-table', function () {
+            $('#blast-alignments-table .alignment-table-description').click(function () {
+                const description = this.alignment.description
+                const gene_locus_tag = description.split(' ')[1].split('|').slice(-1)[0]
+                showGeneClickMenu(event, gene_locus_tag)
+            })
+        })
 
     </script>
 

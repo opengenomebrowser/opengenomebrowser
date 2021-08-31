@@ -185,22 +185,19 @@ class DotPrep:
             ref_or_query_start = 'ref_start'
             ref_or_query_end = 'ref_end'
 
-            def get_position(location: FeatureLocation) -> (int, int):
-                return location.nofuzzy_start, location.nofuzzy_end
         else:
             ref_or_query = 'query'
             ref_or_query_start = 'query_start'
             ref_or_query_end = 'query_end'
 
-            def get_position(location: FeatureLocation) -> (int, int):
-                return len_scf - location.nofuzzy_end, len_scf - location.nofuzzy_start
+        def get_position(location: FeatureLocation) -> (int, int):
+            return location.nofuzzy_start, location.nofuzzy_end
 
         loci = set()  # {(1, 300), (444, 600), ...}
 
         result = []
         with open(gbk) as input_handle:
             for scf in SeqIO.parse(input_handle, "genbank"):
-                len_scf = len(scf)
                 for f in scf.features:
                     if 'locus_tag' not in f.qualifiers:
                         continue
@@ -217,6 +214,7 @@ class DotPrep:
                     })
 
                     loci.add((start, end))
+
         return result
 
 

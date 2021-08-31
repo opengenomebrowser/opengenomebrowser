@@ -216,6 +216,32 @@ let waitForElement = function (selector, callback, timeout = 200) {
     }
 }
 
+
+/*
+ * Execute callback function when element changes
+ *
+ * Usage:
+ * onChangeElement(selector, function() {
+ *    // work the magic
+ * })
+ */
+const onChangeElement = (selector, callback) => {
+    const targetNode = document.querySelector(selector);
+    if (targetNode) {
+        // Options for the observer (which mutations to observe)
+        const config = {attributes: true, childList: true, subtree: true};
+
+        // Create an observer instance linked to the callback function
+        const observer = new MutationObserver(callback);
+
+        // Start observing the target node for configured mutations
+        observer.observe(targetNode, config);
+    } else {
+        console.error("onChangeElement: Invalid Selector")
+    }
+}
+
+
 /*
 * Takes decimal like 0.2222 and returns 22.2  (rounded to one decimal)
 */

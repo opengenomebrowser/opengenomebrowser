@@ -33,6 +33,11 @@ class GeneDetailView(DetailView):
 
         context['annotations'] = annotations
 
+        # get location GO terms
+        if 'GO' in annotations:
+            context['taxid'] = g.genomecontent.taxid.id
+            context['gos'] = ','.join(a.name.removeprefix('GO:').lstrip('0') for a in annotations['GO'])
+
         # get scaffold id
         context['scaffold_id'] = g.get_gbk_seqrecord().scf_id
 

@@ -176,6 +176,50 @@
 
     </section>
 
+    {% if False and taxid and gos %}
+        <section>
+            {# TODO: THIS!!!!!!!!!!!!!!!!!!! #} %}
+            {#            <script type="module" src="{% static 'global/js/swissbiopics.js' %}"></script>#}
+            <script type="module" src="https://www.swissbiopics.org/static/swissbiopics.js"></script>
+
+            <script defer>
+                if (!window.customElements.get("sib-swissbiopics-sl"))
+                    window.customElements.define("sib-swissbiopics-sl", SwissBioPicsSL);
+            </script>
+
+            <template id="sibSwissBioPicsStyle">
+                <style>
+                    ul > li > a {
+                        font-style: oblique;
+                    }
+
+                    ul.notpresent li > .subcell_description {
+                        display: none;
+                    }
+                </style>
+            </template>
+            <template id="sibSwissBioPicsSlLiItem">
+                <li class="subcellular_location">
+                    <a class="subcell_name"></a>               <!-- the class name is required and textContent will be set on it -->
+                    <span class="subcell_description"></span>  <!-- the class name is required and textContent will be set on it -->
+                </li>
+            </template>
+
+            <h2>real test</h2>
+            <sib-swissbiopics-sl taxid="{{ taxid }}" gos="{{ gos }}"></sib-swissbiopics-sl>
+
+            {#            <h2>GG-test like on uniprot</h2>#}
+            {#            <sib-swissbiopics-sl taxid="1233100" gos="16021"></sib-swissbiopics-sl>#}
+
+            <h2>Example e-coli SLS</h2>
+            <sib-swissbiopics-sl taxid="83333" sls="SL0365,SL0091"></sib-swissbiopics-sl>
+
+            <h2>Example e-coli GO</h2>
+            <sib-swissbiopics-sl taxid="83333" gos="43594,5829"></sib-swissbiopics-sl>
+
+        </section>
+    {% endif %}
+
 {% endblock %}
 
 {% block end %}
