@@ -93,7 +93,7 @@ def downloader_submit(request):
         assert len(genomes) > 0, f'no genomes found'
         assert hash == Genome.hash_genomes(genomes), 'Hash does not match!'
     except Exception as e:
-        return JsonResponse(dict(success='false', message=F'magic query is bad: {e}'), status=500)
+        return JsonResponse(dict(success='false', message=f'magic query is bad: {e}'), status=500)
 
     tar_path = get_cache_path(hash, abbr, relative=False)
     os.makedirs(os.path.dirname(tar_path), exist_ok=True)

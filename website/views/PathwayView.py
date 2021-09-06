@@ -26,7 +26,7 @@ def pathway_view(request):
             context['map'] = map
             map_is_valid = True
         except PathwayMap.DoesNotExist:
-            context['error_danger'].append(F'Could not find map by slug: {map_slug}.')
+            context['error_danger'].append(f'Could not find map by slug: {map_slug}.')
 
     magic_query_managers = []
     genome_to_visualization = {}
@@ -51,7 +51,7 @@ def pathway_view(request):
 
             i += 1
         except Exception:
-            context['error_danger'].append(F'Failed to extract genomes from group {i}.')
+            context['error_danger'].append(f'Failed to extract genomes from group {i}.')
             groups_of_genomes = {}
             break
 

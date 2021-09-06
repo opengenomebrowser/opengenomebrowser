@@ -125,7 +125,7 @@ class Genome(models.Model):
             classes.append('contaminated')
         if self.restricted:
             classes.append('restricted')
-        return F'<span class="{" ".join(classes)}" data-species="{self.taxid.taxscientificname}">{self.identifier}</span>'
+        return f'<span class="{" ".join(classes)}" data-species="{self.taxid.taxscientificname}">{self.identifier}</span>'
 
     @property
     def html_warning_stripes(self):
@@ -184,7 +184,7 @@ class Genome(models.Model):
 
     @property
     def metadata_json(self) -> str:
-        return F'{settings.GENOMIC_DATABASE}/organisms/{self.organism.name}/genomes/{self.identifier}/genome.json'
+        return f'{settings.GENOMIC_DATABASE}/organisms/{self.organism.name}/genomes/{self.identifier}/genome.json'
 
     def markdown_path(self, relative=True) -> str:
         return F"{self.base_path(relative)}/genome.md"
@@ -219,7 +219,7 @@ class Genome(models.Model):
         m_o = MockOrganism(path=self.organism.base_path(relative=False))
         m_g = MockGenome(path=self.base_path(relative=False), organism=m_o)
         matches, differences = GenomeSerializer.json_matches_genome(genome=self, json_dict=m_g.json, organism_name=self.organism.name)
-        assert matches, F'json and database do not match. organism: {self.identifier} differences: {differences}'
+        assert matches, f'json and database do not match. organism: {self.identifier} differences: {differences}'
 
         return True
 

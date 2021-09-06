@@ -86,7 +86,7 @@ def gtm_view(request):
 
         intersection = g1_identifiers.intersection(g2_identifiers)
         if len(intersection) > 0:
-            context['error_warning'].append(F'The following genomes occur in both lists: {", ".join(intersection)}')
+            context['error_warning'].append(f'The following genomes occur in both lists: {", ".join(intersection)}')
         if len(g1_identifiers) == 0:
             context['error_warning'].append('Group 1 contains no genomes!')
         if len(g2_identifiers) == 0:
@@ -118,13 +118,13 @@ def gtm_table(request):
     try:
         magic_query_manager_g1 = MagicQueryManager(qs_g1)
     except Exception as e:
-        return HttpResponse(F'Request failed: g1[] incorrect. {e}')
+        return HttpResponse(f'Request failed: g1[] incorrect. {e}')
 
     qs_g2 = set(request.POST.getlist('g2[]'))
     try:
         magic_query_manager_g2 = MagicQueryManager(qs_g2)
     except Exception as e:
-        return HttpResponse(F'Request failed: g2[] incorrect. {e}')
+        return HttpResponse(f'Request failed: g2[] incorrect. {e}')
 
     anno_type = request.POST.get('anno_type')
     alpha = float(request.POST.get('alpha'))
@@ -220,7 +220,7 @@ def gtm(
     )
     annos['p_corrected'] = pvals_corrected
     annos['reject'] = reject
-    assert len(annos) == n_rows, F'wtf?{n_rows} -> {len(annos)}'
+    assert len(annos) == n_rows, f'wtf?{n_rows} -> {len(annos)}'
 
     # remove rows where corrected p-value is 1
     annos = annos[annos['p_corrected'] < 1]
@@ -232,7 +232,7 @@ def prettify(gtm_df: pd.DataFrame, anno_type: str, method: str) -> pd.DataFrame:
     assert list(gtm_df.columns) == ['annotation', 'description', 'g1', 'g2', 'pvalue', 'p_corrected', 'reject']
 
     def html(row):
-        return F'<div class="annotation ogb-tag" data-annotype="{anno_type}" title="{row["description"]}">{row["annotation"]}</div>'
+        return f'<div class="annotation ogb-tag" data-annotype="{anno_type}" title="{row["description"]}">{row["annotation"]}</div>'
 
     gtm_df['annotation'] = gtm_df.apply(lambda row: html(row), axis=1)
     gtm_df.drop('description', axis=1, inplace=True)

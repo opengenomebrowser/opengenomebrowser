@@ -28,7 +28,7 @@ class PathwayMap(models.Model):
 
     @property
     def svg(self):
-        return open(F'{settings.PATHWAY_MAPS}/{self.filename}').read()
+        return open(f'{settings.PATHWAY_MAPS}/{self.filename}').read()
 
     @staticmethod
     def _get_type_dict():
@@ -53,7 +53,7 @@ class PathwayMap(models.Model):
         # load maps, their names and their annotations
         maps = [file for file in os.listdir(settings.PATHWAY_MAPS) if file.endswith('.svg')]
         for file in progressbar(maps, max_value=len(maps), redirect_stdout=True):
-            print(F'Loading {file}')
+            print(f'Loading {file}')
             PathwayMap.load_map(
                 filename=file,
                 type_dict=type_dict
@@ -62,7 +62,7 @@ class PathwayMap(models.Model):
     @staticmethod
     def load_map(filename: str, type_dict: dict):
         slug = slugify(filename.rstrip('.svg'))
-        path = F'{settings.PATHWAY_MAPS}/{filename}'
+        path = f'{settings.PATHWAY_MAPS}/{filename}'
 
         soup = bs4.BeautifulSoup(open(path).read(), 'xml')
         title = soup.svg['title']
@@ -74,14 +74,14 @@ class PathwayMap(models.Model):
             except Exception as e:
                 print(f'Error in map: {filename} - shape: {shape}.')
                 raise e
-            assert type(shape_annotations) is list, F'Map {filename} contains a shape with an invalid shape: {shape}'
+            assert type(shape_annotations) is list, f'Map {filename} contains a shape with an invalid shape: {shape}'
             annotations.extend(shape_annotations)
 
         anno_objects = {anno_type: set() for anno_type in type_dict.values() if anno_type != 'ignore'}
 
         for annotation in annotations:
             assert annotation['type'] in type_dict, \
-                F'Map {filename} contains an annotation ({annotation}) that has an unknown type {annotation["type"]}. \
+                f'Map {filename} contains an annotation ({annotation}) that has an unknown type {annotation["type"]}. \
                 Please add it to type_dictionary.json.'
             anno_type = type_dict[annotation['type']]
             if anno_type == 'ignore':

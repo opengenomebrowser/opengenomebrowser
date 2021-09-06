@@ -120,7 +120,7 @@ class GenomeDetailView(DetailView):
             context['custom_tables'] = [
                 (
                     title,
-                    create_table(data, table_id=F'custom_table_{title}'),
+                    create_table(data, table_id=f'custom_table_{title}'),
                     data.get('pie_chart_col', None)
                 )
                 for title, data in g.custom_tables.items()]
@@ -154,7 +154,7 @@ def dataframe_to_bootstrap_html(df: pd.DataFrame, table_id: str, index=False) ->
 
     html = html \
         .replace('border="1" class="dataframe"',
-                 F'class="table table-bordered table-sm white-links"', 1) \
+                 f'class="table table-bordered table-sm white-links"', 1) \
         .replace('<thead>', '<thead class="thead-dark">', 1) \
         .replace('<th>g', '<th scope="col">g', len(df.columns)) \
         .replace('<tr style="text-align: right;">', '<tr>', 1)

@@ -511,7 +511,7 @@
                     let el = `
                     <div class="dropdown-item" style="background-color: ${color}" data-toggle="collapse" href="#collapse-strains-${groupId}" role="button" aria-expanded="false" aria-controls="collapse-strains-${groupId}">
                         ${groupId}: ${percentage} % (${covering} out of ${total})
-                        <img src="/static/global/ionicons/ios-arrow-down.svg" style="height: 1.5rem" class="float-right">
+                        <img src="{% static 'global/ionicons/ios-arrow-down.svg' %}" style="height: 1.5rem" class="float-right">
                     </div>
                     <div class="collapse" id="collapse-strains-${groupId}" style="margin: 0 0.2rem 1rem 0.2rem">
 `

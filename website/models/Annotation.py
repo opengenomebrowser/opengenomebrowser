@@ -118,7 +118,7 @@ class Annotation(models.Model):
 
     @property
     def html(self):
-        return F'<span class="annotation ogb-tag" data-annotype="{self.anno_type}" title="{self.description}">{self.name}</span>'
+        return f'<span class="annotation ogb-tag" data-annotype="{self.anno_type}" title="{self.description}">{self.name}</span>'
 
     @staticmethod
     def invariant():
@@ -148,12 +148,12 @@ class Annotation(models.Model):
     def load_ortholog_annotations(batch_size: int = 1000):
         from website.models import GenomeContent, Gene
 
-        assert os.path.isfile(settings.ORTHOLOG_ANNOTATIONS), F'File does not exist: {settings.ORTHOLOG_ANNOTATIONS}'
+        assert os.path.isfile(settings.ORTHOLOG_ANNOTATIONS), f'File does not exist: {settings.ORTHOLOG_ANNOTATIONS}'
 
-        print(F'Step 1: Deleting all ortholog-annotations.')
+        print(f'Step 1: Deleting all ortholog-annotations.')
         Annotation.objects.filter(anno_type='OL').delete()
 
-        print(F'Step 2: Importing ortholog-annotations from {settings.ORTHOLOG_ANNOTATIONS}.')
+        print(f'Step 2: Importing ortholog-annotations from {settings.ORTHOLOG_ANNOTATIONS}.')
 
         all_genomecontent_ids = set(GenomeContent.objects.all().values_list('identifier', flat=True))
         all_genes = set(Gene.objects.all().values_list('identifier', flat=True))
@@ -171,16 +171,16 @@ class Annotation(models.Model):
                 return '-'
 
         def load():
-            print(F'Step 3, batch {line_nr // batch_size}:', end=' ', flush=True)
+            print(f'Step 3, batch {line_nr // batch_size}:', end=' ', flush=True)
             # Create Annotation-Objects
-            print(F'+{len(orthogroups)} orthogroups', end=' ', flush=True)
+            print(f'+{len(orthogroups)} orthogroups', end=' ', flush=True)
             Annotation.objects.bulk_create(orthogroups)
 
             # Create many-to-many relationships
-            print(F'+{len(genomecontent_to_ortholog_links)} orthogroups-to-genomes.', end=' ', flush=True)
+            print(f'+{len(genomecontent_to_ortholog_links)} orthogroups-to-genomes.', end=' ', flush=True)
             GenomeContent.annotations.through.objects.bulk_create(genomecontent_to_ortholog_links)
 
-            print(F'+{len(gene_to_ortholog_links)} orthogroups-to-genes.')
+            print(f'+{len(gene_to_ortholog_links)} orthogroups-to-genes.')
             Gene.annotations.through.objects.bulk_create(gene_to_ortholog_links)
 
         with open(settings.ORTHOLOG_ANNOTATIONS) as f:
@@ -221,8 +221,8 @@ class Annotation(models.Model):
     @staticmethod
     def get_annotype_css_paths():
         files = [
-            os.path.abspath(F'{settings.BASE_DIR}/website/static/global/css/annotype_color.css'),
-            os.path.abspath(F'{settings.BASE_DIR}/static_root/global/css/annotype_color.css')
+            os.path.abspath(f'{settings.BASE_DIR}/website/static/global/css/annotype_color.css'),
+            os.path.abspath(f'{settings.BASE_DIR}/static_root/global/css/annotype_color.css')
         ]
         for file in files:
             # ensure parent folder exists

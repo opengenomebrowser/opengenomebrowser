@@ -23,7 +23,7 @@ class AnnotatedGenomeManager(Manager):
 
     @staticmethod
     def annotate_genome_html(qs: Manager, *args, **kwargs) -> Manager:
-        # F'<span class="genome ogb-tag" data-species="{taxscientificname}">{identifier}</span>'
+        # f'<span class="genome ogb-tag" data-species="{taxscientificname}">{identifier}</span>'
         return qs.annotate(
             genome_html=Concat(
                 Value('<span class="genome ogb-tag'),
@@ -56,7 +56,7 @@ class AnnotatedGenomeManager(Manager):
 
     @staticmethod
     def annotate_organism_html(qs: Manager, *args, **kwargs) -> Manager:
-        # F'<span class="organism ogb-tag" data-species="{taxscientificname}">{name}</span>'
+        # f'<span class="organism ogb-tag" data-species="{taxscientificname}">{name}</span>'
         return qs.annotate(
             organism_html=Concat(
                 Value('<span class="organism ogb-tag'),

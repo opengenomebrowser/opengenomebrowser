@@ -28,7 +28,7 @@ class OrganismSerializer(serializers.ModelSerializer):
         organism = data['name']
         representative = self.initial_data['representative']
         if not representative.startswith(organism):
-            raise serializers.ValidationError(F'Name of representative ({representative}) must start with name of organism ({organism})')
+            raise serializers.ValidationError(f'Name of representative ({representative}) must start with name of organism ({organism})')
         return data
 
     class Meta:

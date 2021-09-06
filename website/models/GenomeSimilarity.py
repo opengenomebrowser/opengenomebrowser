@@ -82,4 +82,4 @@ class GenomeSimilarity(models.Model):
     def invariant():
         for ani in GenomeSimilarity.objects.all():
             assert ani.from_genome.identifier <= ani.to_genome.identifier, \
-                F'ERROR: from_genome {ani.from_genome.identifier} must be <= to_genome {ani.to_genome.identifier}'
+                f'ERROR: from_genome {ani.from_genome.identifier} must be <= to_genome {ani.to_genome.identifier}'

@@ -38,7 +38,7 @@ class Organism(models.Model):
         classes = ['organism', 'ogb-tag']
         if self.restricted:
             classes.append('restricted')
-        return F'<span class="{" ".join(classes)}" data-species="{self.taxid.taxscientificname}">{self.name}</span>'
+        return f'<span class="{" ".join(classes)}" data-species="{self.taxid.taxscientificname}">{self.name}</span>'
 
     @property
     def get_tag_html(self) -> str:
@@ -58,7 +58,7 @@ class Organism(models.Model):
 
     @property
     def metadata_json(self):
-        return F'{settings.GENOMIC_DATABASE}/organisms/{self.name}/organism.json'
+        return f'{settings.GENOMIC_DATABASE}/organisms/{self.name}/organism.json'
 
     def markdown_path(self, relative=True) -> str:
         return F"{self.base_path(relative)}/organism.md"
@@ -80,8 +80,8 @@ class Organism(models.Model):
         # ensure metadata matches organism
         import json
         from website.serializers import OrganismSerializer
-        im_dict = json.loads(open(F'{settings.GENOMIC_DATABASE}/organisms/{self.name}/organism.json').read())
+        im_dict = json.loads(open(f'{settings.GENOMIC_DATABASE}/organisms/{self.name}/organism.json').read())
         matches, differences = OrganismSerializer.json_matches_organism(organism=self, json_dict=im_dict)
-        assert matches, F'json and database do not match. organism: {self.name} differences: {differences}'
+        assert matches, f'json and database do not match. organism: {self.name} differences: {differences}'
 
         return True

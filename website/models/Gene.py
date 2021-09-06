@@ -31,13 +31,13 @@ class Gene(models.Model):
     @property
     def html(self):
         tsi = self.genomecontent.genome.taxscientificname
-        return F'<span class="gene ogb-tag" data-species="{tsi}">{self.identifier}</span>'
+        return f'<span class="gene ogb-tag" data-species="{tsi}">{self.identifier}</span>'
 
     def gc_content(self) -> float:
         return GC(self.nucleotide_sequence())
 
     def fasta_nucleotide(self) -> str:
-        return F'>{self.identifier}\n{self.nucleotide_sequence()}'
+        return f'>{self.identifier}\n{self.nucleotide_sequence()}'
 
     def nucleotide_sequence(self) -> str:
         self.__load_gbk_seqrecord()
@@ -46,8 +46,8 @@ class Gene(models.Model):
     def fasta_protein(self):
         sequence = self.protein_sequence()
         if sequence is None:
-            raise KeyError(F'The gene {self.identifier} is not protein-coding.')
-        return F'>{self.identifier}\n{self.protein_sequence()}'
+            raise KeyError(f'The gene {self.identifier} is not protein-coding.')
+        return f'>{self.identifier}\n{self.protein_sequence()}'
 
     def protein_sequence(self):
         self.__load_gbk_seqrecord()
@@ -87,7 +87,7 @@ class Gene(models.Model):
                     seqrecord = feature.extract(scf)
                     seqrecord.scf_id = scf.id
                     return seqrecord
-        raise KeyError(F'Could not find locus_tag {identifier} in {file}')
+        raise KeyError(f'Could not find locus_tag {identifier} in {file}')
 
     @staticmethod
     def __get_seq_from_fasta(file: str, identifier: str) -> str:
@@ -96,4 +96,4 @@ class Gene(models.Model):
         for seq in faa_records:
             if seq.id.endswith(identifier):
                 return str(seq.seq)
-        raise KeyError(F'Could not find locus_tag {identifier} in {file}')
+        raise KeyError(f'Could not find locus_tag {identifier} in {file}')

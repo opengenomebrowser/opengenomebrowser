@@ -455,12 +455,12 @@ def download_kegg_data(n_parallel=4) -> None:
             if response.status_code != 200:
                 print("FAILURE::{0}".format(url))
 
-            print(F'downloaded {url}')
+            print(f'downloaded {url}')
 
             with open(save_path, mode) as out:
                 out.write(data)
 
-            print(F'wrote {save_path}')
+            print(f'wrote {save_path}')
 
             return data
 
@@ -482,7 +482,7 @@ def download_kegg_data(n_parallel=4) -> None:
     # files = ['path', 'rn', 'ko', 'compound', 'drug', 'glycan', 'dgroup', 'enzyme']
     files = [('rn', 'KR.tsv'), ('ko', 'KG.tsv'), ('compound', 'CP.tsv'), ('enzyme', 'EC-unsorted.tsv')]
     url_fn_raw_list = [
-        (F'http://rest.kegg.jp/list/{type}', F'{settings.ANNOTATION_DESCRIPTIONS}/{filename}', False)
+        (f'http://rest.kegg.jp/list/{type}', f'{settings.ANNOTATION_DESCRIPTIONS}/{filename}', False)
         for type, filename in files
     ]
 

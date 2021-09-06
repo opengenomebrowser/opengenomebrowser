@@ -43,11 +43,11 @@ class TaxID(MPTTModel):
     @property
     def html_style(self):
         text_color = 'white' if self.text_color_white else 'black'
-        return F'background-color:rgb({self.color});color:{text_color}'
+        return f'background-color:rgb({self.color});color:{text_color}'
 
     @property
     def html(self):
-        return F'<span class="taxid ogb-tag" data-species="{self.taxscientificname}">{self.taxscientificname}</span>'
+        return f'<span class="taxid ogb-tag" data-species="{self.taxscientificname}">{self.taxscientificname}</span>'
 
     def get_child_taxids(self) -> QuerySet:
         return TaxID.objects.get_queryset_descendants(TaxID.objects.filter(id=self.id), include_self=True)
@@ -169,37 +169,37 @@ class TaxID(MPTTModel):
     def create_taxid_color_css():
         all_taxids = TaxID.objects.all()
 
-        basepaths = [os.path.abspath(F'{settings.BASE_DIR}/website/static/global/css'),
-                     os.path.abspath(F'{settings.BASE_DIR}/static_root/global/css')]
+        basepaths = [os.path.abspath(f'{settings.BASE_DIR}/website/static/global/css'),
+                     os.path.abspath(f'{settings.BASE_DIR}/static_root/global/css')]
 
         span_css = ''
         svg_css = '[data-species-label] { stroke-width: 3px; paint-order: stroke; cursor: pointer; }\n'
 
         for taxid in all_taxids:
-            span_css += F'[data-species="{taxid.taxscientificname}"] {{' + \
-                        F'background-color: rgb({taxid.color}) !important; ' + \
-                        F'color: {"white" if taxid.text_color_white else "black"} !important' + \
+            span_css += f'[data-species="{taxid.taxscientificname}"] {{' + \
+                        f'background-color: rgb({taxid.color}) !important; ' + \
+                        f'color: {"white" if taxid.text_color_white else "black"} !important' + \
                         '}\n'
-            svg_css += F'[data-species-label="{taxid.taxscientificname}"] {{' + \
-                       F'stroke: rgb({taxid.color}); ' + \
-                       F'fill: {"white" if taxid.text_color_white else "black"} !important' + \
+            svg_css += f'[data-species-label="{taxid.taxscientificname}"] {{' + \
+                       f'stroke: rgb({taxid.color}); ' + \
+                       f'fill: {"white" if taxid.text_color_white else "black"} !important' + \
                        '}\n'
-            # F'text-shadow: 1px 0 3px rgb({taxid.color}), -1px 0 3px rgb({taxid.color}), 0 1px 3px rgb({taxid.color}), 0 -1px 3px rgb({taxid.color}); ' + \
+            # f'text-shadow: 1px 0 3px rgb({taxid.color}), -1px 0 3px rgb({taxid.color}), 0 1px 3px rgb({taxid.color}), 0 -1px 3px rgb({taxid.color}); ' + \
 
         for basepath in basepaths:
             # ensure parent exists
-            file = F'{basepath}/taxid_color.css'
+            file = f'{basepath}/taxid_color.css'
             os.makedirs(os.path.dirname(file), exist_ok=True)
             open(file, 'w').write(span_css)
 
             # ensure parent exists
-            file = F'{basepath}/taxid_color_label.css'
+            file = f'{basepath}/taxid_color_label.css'
             os.makedirs(os.path.dirname(file), exist_ok=True)
             open(file, 'w').write(svg_css)
 
 
 class TaxIdColors(KeyValueStore):
-    _file = F'{settings.GENOMIC_DATABASE}/taxid_color_dict.json'
+    _file = f'{settings.GENOMIC_DATABASE}/taxid_color_dict.json'
     _model = TaxID
     _key = 'id'
     _key_isint = True

@@ -64,9 +64,9 @@ class BaseEntity:
         date = datetime.now().strftime("%Y_%b_%d_%H_%M_%S")
 
         # create backup
-        bkp_dir = F'{self.path}/.bkp'
+        bkp_dir = f'{self.path}/.bkp'
         os.makedirs(bkp_dir, exist_ok=True)
-        bkp_file = F'{bkp_dir}/{date}_folderlooper_organism.json'
+        bkp_file = f'{bkp_dir}/{date}_folderlooper_organism.json'
         shutil.move(src=self.json_path, dst=bkp_file)
 
         # write new file

@@ -37,7 +37,7 @@ def annotation_view(request):
         found_annotations = set(annotations.values_list('name', flat=True))
         if not len(annotation_name_list) == len(found_annotations):
             context['error_danger'].append(
-                F'Could not interpret these annotations: {set(annotation_name_list).symmetric_difference(found_annotations)}')
+                f'Could not interpret these annotations: {set(annotation_name_list).symmetric_difference(found_annotations)}')
 
     return render(request, 'website/annotation_search.html', context)
 
@@ -52,7 +52,7 @@ def matrix(request):
     try:
         magic_query_manager = MagicQueryManager(qs)
     except Exception as e:
-        return HttpResponse(F'Request failed: genomes[] incorrect. {e}')
+        return HttpResponse(f'Request failed: genomes[] incorrect. {e}')
 
     annotations = set(request.POST.getlist('annotations[]'))
     if len(annotations) == 0:

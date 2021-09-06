@@ -29,7 +29,7 @@ class CompareGenes:
         # If annotations and genomes in query: find genes and union queryset
         if contains_data(request, 'annotations') or contains_data(request, 'genomes'):
             if not contains_data(request, 'annotations') and contains_data(request, 'genomes'):
-                return HttpResponse(F'annotations and genomes only work together. Got: {request.GET.keys()}', status=400)
+                return HttpResponse(f'annotations and genomes only work together. Got: {request.GET.keys()}', status=400)
             annotations = extract_data(request, 'annotations', list=True)
             genomes = extract_data(request, 'genomes', list=True)
 
@@ -45,6 +45,6 @@ class CompareGenes:
         context['n_genes'] = n_genes
 
         if n_genes > 20:
-            context['error_warning'].append(F'Queries with {n_genes} genes may be slow - consider comparing fewer.')
+            context['error_warning'].append(f'Queries with {n_genes} genes may be slow - consider comparing fewer.')
 
         return render(request, 'website/compare_genes.html', context)

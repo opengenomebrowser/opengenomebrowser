@@ -46,7 +46,7 @@ def genome_metadata_is_valid(data: dict, path_to_genome: str, raise_exception=Fa
 
     try:
         identifier = get_attr('identifier')
-        assert identifier is not None, F'metadata contains no identifier'
+        assert identifier is not None, f'metadata contains no identifier'
 
         # Check if mandatory files exist:
         for file in ['cds_tool_faa_file', 'cds_tool_gbk_file', 'cds_tool_gff_file', 'assembly_fasta_file']:

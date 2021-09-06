@@ -33,7 +33,7 @@
 
 {% endblock %}
 
-{% block body %}
+{% block breadcrum %}
     <!-- Breadcrumb -->
     <div class="breadcrumb-push"></div>
     <nav aria-label="breadcrumb" class="breadcrumb-fixed">
@@ -57,6 +57,9 @@
             </li>
         </ol>
     </nav>
+{% endblock %}
+
+{% block body %}
 
     <section>
         <!-- title -->
@@ -82,6 +85,8 @@
 
         </div>
 
+    </section>
+    <section>
 
         <!-- Annotations -->
         <div class="container">
@@ -116,6 +121,9 @@
             </div>
         </div>
 
+    </section>
+    <section>
+
         <!-- Sequences -->
         <div class="container">
             <hr class="featurette-divider">
@@ -129,6 +137,9 @@
             <div class="sequence-div sequence-protein">{{ fasta_protein|safe }}</div>
         </div>
 
+    </section>
+    <section>
+
         <!-- GenBank info -->
         <div class="container">
             <hr class="featurette-divider">
@@ -138,6 +149,9 @@
                 {{ key }} - {{ value|join:" --AND-- " }}<br>
             {% endfor %}
         </div>
+
+    </section>
+    <section>
 
         <!-- Gene Locus -->
         <div class="container">
@@ -152,6 +166,63 @@
             <hr class="featurette-divider">
         </div>
 
+    </section>
+
+
+    {% if sls_ids %}
+
+        <section>
+            <script type="module" src="{% static 'global/js/swissbiopics.js' %}"></script>
+
+            <template id="sibSwissBioPicsStyle">
+                <style>
+                    #swissbiopic {
+                        display: flex !important;
+                        flex-direction: column-reverse !important;
+                    }
+
+                    .subcell_description, svg .subcell_name {
+                        display: none;
+                    }
+
+                    ul > li > a {
+                        font-style: oblique;
+                    }
+                </style>
+            </template>
+
+            <template id="sibSwissBioPicsSlLiItem">
+                <li class="subcellular_location">
+                    <a class="subcell_name"></a>
+                    <span class="subcell_description"></span>
+                </li>
+            </template>
+
+            <div class="container">
+                <h3 class="d-flex h-100" data-toggle="collapse" href="#locusterms" aria-controls="locusterms" aria-expanded="true">
+                    Cellular location
+                    <img src="{% static 'global/ionicons/ios-arrow-down.svg' %}" class="expand-white-img align-self-center ml-auto" alt="expand">
+                </h3>
+
+                <div class="collapse" id="locusterms">
+                    Responsible annotations: <br>
+                    {% for sl_id, annotation in sls %}
+                        <a href="https://www.nextprot.org/term/SL-{{ sl_id }}/">SL-{{ sl_id }}</a>: {{ annotation.html|safe }}
+                        <span>{{ annotation.description }}</span>
+                        <br>
+                    {% endfor %}
+                </div>
+
+                <sib-swissbiopics-sl taxid="{{ taxid }}" sls="{{ sls_ids|join:',' }}"></sib-swissbiopics-sl>
+
+                <hr class="featurette-divider">
+            </div>
+
+        </section>
+
+    {% endif %}
+
+    <section>
 
         <!-- Go to prev / next Gene -->
         <div class="container" style="display: flex; justify-content: space-between">
@@ -176,49 +247,6 @@
 
     </section>
 
-    {% if False and taxid and gos %}
-        <section>
-            {# TODO: THIS!!!!!!!!!!!!!!!!!!! #} %}
-            {#            <script type="module" src="{% static 'global/js/swissbiopics.js' %}"></script>#}
-            <script type="module" src="https://www.swissbiopics.org/static/swissbiopics.js"></script>
-
-            <script defer>
-                if (!window.customElements.get("sib-swissbiopics-sl"))
-                    window.customElements.define("sib-swissbiopics-sl", SwissBioPicsSL);
-            </script>
-
-            <template id="sibSwissBioPicsStyle">
-                <style>
-                    ul > li > a {
-                        font-style: oblique;
-                    }
-
-                    ul.notpresent li > .subcell_description {
-                        display: none;
-                    }
-                </style>
-            </template>
-            <template id="sibSwissBioPicsSlLiItem">
-                <li class="subcellular_location">
-                    <a class="subcell_name"></a>               <!-- the class name is required and textContent will be set on it -->
-                    <span class="subcell_description"></span>  <!-- the class name is required and textContent will be set on it -->
-                </li>
-            </template>
-
-            <h2>real test</h2>
-            <sib-swissbiopics-sl taxid="{{ taxid }}" gos="{{ gos }}"></sib-swissbiopics-sl>
-
-            {#            <h2>GG-test like on uniprot</h2>#}
-            {#            <sib-swissbiopics-sl taxid="1233100" gos="16021"></sib-swissbiopics-sl>#}
-
-            <h2>Example e-coli SLS</h2>
-            <sib-swissbiopics-sl taxid="83333" sls="SL0365,SL0091"></sib-swissbiopics-sl>
-
-            <h2>Example e-coli GO</h2>
-            <sib-swissbiopics-sl taxid="83333" gos="43594,5829"></sib-swissbiopics-sl>
-
-        </section>
-    {% endif %}
 
 {% endblock %}
 

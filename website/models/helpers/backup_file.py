@@ -34,13 +34,13 @@ def backup_file(file: str, user: str = None) -> str:
     assert user.isalnum(), f'File does not exist: {file}'
     dirname = path.dirname(file)
     basename = path.basename(file)
-    bkp_dir = F'{dirname}/.bkp'
+    bkp_dir = f'{dirname}/.bkp'
 
     # create backup dir
     makedirs(bkp_dir, exist_ok=True)
 
     # path to backup file
-    bkp_file = F'{bkp_dir}/{datetime.now().strftime("%Y_%b_%d_%H_%M_%S")}_{user}_{basename}'
+    bkp_file = f'{bkp_dir}/{datetime.now().strftime("%Y_%b_%d_%H_%M_%S")}_{user}_{basename}'
 
     # move file
     move(src=file, dst=bkp_file)

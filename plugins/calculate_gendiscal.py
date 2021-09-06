@@ -10,7 +10,7 @@ def calculate_gendiscal(g1, g2):
     g2: GenomeContent
     # The multiprocessing function must be at the top level of the module for it to work with Django.
     # https://stackoverflow.com/questions/48046862/
-    print(F'start GenomeSimilarity calc {g1.identifier} :: {g2.identifier}')
+    print(f'start GenomeSimilarity calc {g1.identifier} :: {g2.identifier}')
 
     try:
         sim_score = GenDisCal().calculate_similarity(
@@ -23,7 +23,7 @@ def calculate_gendiscal(g1, g2):
         if sim_obj.status in ['R', 'F']:
             sim_obj.status = 'F'  # FAILED
             sim_obj.save()
-        print(F'ANI failed: {g1.identifier} :: {g2.identifier}')
+        print(f'ANI failed: {g1.identifier} :: {g2.identifier}')
         raise e
 
     sim_obj = GenomeSimilarity.objects.get(from_genome=g1, to_genome=g2)
@@ -31,4 +31,4 @@ def calculate_gendiscal(g1, g2):
     sim_obj.similarity = sim_score
     sim_obj.status = 'D'  # DONE
     sim_obj.save()
-    print(F'completed GenomeSimilarity: {g1.identifier} :: {g2.identifier} :: {sim_score}')
+    print(f'completed GenomeSimilarity: {g1.identifier} :: {g2.identifier} :: {sim_score}')

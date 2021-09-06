@@ -177,7 +177,7 @@ class Api:
         try:
             genome_to_visualization = MagicQueryManager(qs, raise_errors=False).genome_to_visualization()
         except Exception as e:
-            return err(F'magic query is bad: {e}')
+            return err(f'magic query is bad: {e}')
         return JsonResponse(genome_to_visualization)
 
     @staticmethod
@@ -306,7 +306,7 @@ class Api:
 
         plot_div = ""
         for gene, species, plot in zip(gene_divs, species_divs, plot_divs):
-            plot_div += F'''
+            plot_div += f'''
 <div class='locus-plot'>
     <div class='locus-plot-header'>
         <div class='handle-div'>

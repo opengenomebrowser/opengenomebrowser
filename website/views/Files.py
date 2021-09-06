@@ -80,7 +80,7 @@ def _return_content_debug(abs_path: str):
     if os.path.isdir(abs_path):
         def jsonify_files(bn):
             """creates a dict of the content of every folder, mimicking nginx json output"""
-            path = F'{abs_path}/{bn}'
+            path = f'{abs_path}/{bn}'
             stat = os.stat(path)
             if os.path.isfile(path):
                 return dict(name=bn, type='file', mtime=datetime.fromtimestamp(stat.st_mtime).strftime('%Y-%m-%d-%H:%M'), size=stat.st_size)
@@ -109,7 +109,7 @@ def _x_accel_redirect(abs_path: str, redirect_path: str, filename: str):
     response['X-Accel-Redirect'] = redirect_path
 
     if os.path.isfile(abs_path):
-        response['Content-Disposition'] = F'attachment; filename="{filename}"'
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
         content_type, content_encoding = guess_type(abs_path)
         response['Content-Type'] = f'{content_type}; charset={content_encoding}'
     else:

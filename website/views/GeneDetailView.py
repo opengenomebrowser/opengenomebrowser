@@ -1,6 +1,10 @@
-from website.models import Gene, Annotation, annotation_types
-from django.views.generic import DetailView
 import re
+from django.views.generic import DetailView
+from lib.subcellular_locations.go_to_sl import get_locusterms, LocationTerm
+from website.models import Gene, Annotation, annotation_types
+
+_locusterms = get_locusterms()
+go_to_locusterm = {lt.go: lt.sl_id for lt in _locusterms}
 
 
 class GeneDetailView(DetailView):
@@ -15,12 +19,14 @@ class GeneDetailView(DetailView):
         g: Gene = self.object
 
         context['title'] = g.identifier
+        context['error_danger'] = []
+        context['taxid'] = g.genomecontent.taxid.id
 
         # Convert sequences to HTML for colorization. See also stylesheet 'sequence-viewer.css'
-        context['fasta_nucleotide'] = ''.join([F'<b class="{x}">{x}</b>' for x in g.nucleotide_sequence()])
+        context['fasta_nucleotide'] = ''.join([f'<b class="{x}">{x}</b>' for x in g.nucleotide_sequence()])
 
         if g.protein_sequence():
-            context['fasta_protein'] = ''.join([F'<b class="{x}">{x}</b>' for x in g.protein_sequence()])
+            context['fasta_protein'] = ''.join([f'<b class="{x}">{x}</b>' for x in g.protein_sequence()])
         else:
             context['fasta_protein'] = '-- no protein sequence --'
 
@@ -33,10 +39,16 @@ class GeneDetailView(DetailView):
 
         context['annotations'] = annotations
 
-        # get location GO terms
+        # get uniprot subcellular location ids from GO-terms and SL-annotations
+        sls: [(str, Annotation)] = []
         if 'GO' in annotations:
-            context['taxid'] = g.genomecontent.taxid.id
-            context['gos'] = ','.join(a.name.removeprefix('GO:').lstrip('0') for a in annotations['GO'])
+            locus_gos = annotations['GO'].filter(name__in=go_to_locusterm.keys())
+            sls += [(go_to_locusterm[go.name], go) for go in locus_gos]
+        if 'SL' in annotations:
+            sls += [(sl.name[-4:], sl) for sl in annotations['SL']]
+        if sls:
+            context['sls'] = sls
+            context['sls_ids'] = {sl for sl, anno in sls}
 
         # get scaffold id
         context['scaffold_id'] = g.get_gbk_seqrecord().scf_id
@@ -46,18 +58,17 @@ class GeneDetailView(DetailView):
         if match:
             current_str = match.group(0)
             current = int(current_str)
-            next = current + 1
+            next_ = current + 1
             previous = current - 1
 
             prefix = g.identifier[0:-len(current_str)]
             formatter = '{:0' + str(len(current_str)) + 'd}'
 
-            next = prefix + formatter.format(next)
+            next_ = prefix + formatter.format(next_)
             prev = prefix + formatter.format(previous)
 
-            print(next, prev)
-            if Gene.objects.filter(identifier=next).exists():
-                context['next_gene'] = next
+            if Gene.objects.filter(identifier=next_).exists():
+                context['next_gene'] = next_
             if Gene.objects.filter(identifier=prev).exists():
                 context['prev_gene'] = prev
 

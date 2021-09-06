@@ -84,3 +84,8 @@
     margin: -1rem 0;
     filter: invert(1);;
 }
+
+.expand-white-img {
+    height: 2rem;
+    margin: -1rem 0;
+}

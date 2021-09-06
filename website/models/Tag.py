@@ -93,8 +93,8 @@ class Tag(models.Model):
     @staticmethod
     def get_tag_css_paths():
         files = [
-            os.path.abspath(F'{settings.BASE_DIR}/website/static/global/css/tag_color.css'),
-            os.path.abspath(F'{settings.BASE_DIR}/static_root/global/css/tag_color.css')
+            os.path.abspath(f'{settings.BASE_DIR}/website/static/global/css/tag_color.css'),
+            os.path.abspath(f'{settings.BASE_DIR}/static_root/global/css/tag_color.css')
         ]
         for file in files:
             # ensure parent folder exists
@@ -117,14 +117,14 @@ class Tag(models.Model):
 
 
 class TagDescriptions(KeyValueStore):
-    _file = F'{settings.GENOMIC_DATABASE}/tag_to_description.json'
+    _file = f'{settings.GENOMIC_DATABASE}/tag_to_description.json'
     _model = Tag
     _key = 'tag'
     _value = 'description'
 
 
 class TagColors(KeyValueStore):
-    _file = F'{settings.GENOMIC_DATABASE}/tag_to_color.json'
+    _file = f'{settings.GENOMIC_DATABASE}/tag_to_color.json'
     _model = Tag
     _key = 'tag'
     _value = 'color'

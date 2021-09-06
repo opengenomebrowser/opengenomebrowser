@@ -41,6 +41,7 @@ class OgbLoginView(LoginView):
     def get_context_data(self, **kwargs):
         from OpenGenomeBrowser import settings
         context = super().get_context_data(**kwargs)
+        context['no_help'] = True
         if hasattr(settings, 'LOGIN_MESSAGE'):
             context['login_message'] = settings.LOGIN_MESSAGE
         return context

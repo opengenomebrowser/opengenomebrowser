@@ -56,7 +56,7 @@ class OrthoANI:
 
         tempdir.cleanup()
 
-        error_message = F'ANI-error occurred with fasta1={fasta1} and fasta2={fasta2}; stdout={subprocess.stdout}; stderr={subprocess.stderr}'
+        error_message = f'ANI-error occurred with fasta1={fasta1} and fasta2={fasta2}; stdout={subprocess.stdout}; stderr={subprocess.stderr}'
 
         assert subprocess.returncode == 0, error_message
 

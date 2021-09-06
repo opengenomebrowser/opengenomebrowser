@@ -74,7 +74,7 @@ class Nucmer:
             cwd=work_dir,
             stdout=PIPE, stderr=PIPE, encoding='ascii')
 
-        error_message = F'Nucmer occurred with fasta_ref={fasta_ref} and fasta_qry={fasta_qry}; stdout={subprocess.stdout}; stderr={subprocess.stderr}'
+        error_message = f'Nucmer occurred with fasta_ref={fasta_ref} and fasta_qry={fasta_qry}; stdout={subprocess.stdout}; stderr={subprocess.stderr}'
 
         assert subprocess.returncode == 0, error_message
         assert os.path.isfile(result_path), error_message

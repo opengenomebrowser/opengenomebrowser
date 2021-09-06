@@ -39,10 +39,10 @@ class OrganismAdmin(ModelAdmin):
             r = Genome.objects.get(identifier=json_data['representative'])
             assert r.organism.name == obj.name
         except Genome.DoesNotExist:
-            messages.add_message(request, messages.INFO, F'Representative ({json_data["representative"]}) does not exist!')
+            messages.add_message(request, messages.INFO, f'Representative ({json_data["representative"]}) does not exist!')
             return
         except AssertionError:
-            messages.add_message(request, messages.INFO, F'Representative ({json_data["representative"]}) does not belong to this organism!')
+            messages.add_message(request, messages.INFO, f'Representative ({json_data["representative"]}) does not belong to this organism!')
             return
 
         # load current json, turn tags into set
@@ -56,7 +56,7 @@ class OrganismAdmin(ModelAdmin):
         if match:
             messages.add_message(request, messages.INFO, 'No difference!')
         else:
-            messages.add_message(request, messages.INFO, F'Saving the following change: {difference}')
+            messages.add_message(request, messages.INFO, f'Saving the following change: {difference}')
             super().save_model(request, obj, form, change)
 
             try:

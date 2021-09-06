@@ -21,7 +21,7 @@ class GeneOntology:
             for line in entry:
                 if line.startswith('name: '):
                     return line.rstrip()[6:]
-            raise TypeError(F'The go.obo file seems to have a wrong format! broken entry: {entry}')
+            raise TypeError(f'The go.obo file seems to have a wrong format! broken entry: {entry}')
 
         def get_go(entry: list):
             entry = entry[1]
@@ -33,13 +33,13 @@ class GeneOntology:
 
         # skip first entry
         file_head = next(gos)
-        assert not file_head[0].startswith('[Term]'), F'The go.obo file seems to have a wrong format! file_head looks wrong: {file_head}'
+        assert not file_head[0].startswith('[Term]'), f'The go.obo file seems to have a wrong format! file_head looks wrong: {file_head}'
 
         for entry in gos:
             go = get_go(entry)
             name = get_name(entry)
             print(go, name)
-            target_file.write(F'{go}\t{name}\n')
+            target_file.write(f'{go}\t{name}\n')
 
         source_file.close()
         target_file.close()

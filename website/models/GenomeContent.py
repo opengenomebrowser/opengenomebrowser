@@ -1,4 +1,5 @@
 import os
+import logging
 from django.db import models
 from django.db.models import JSONField
 from website.models.Annotation import Annotation, AnnotationDescriptionFile, AnnotationType, annotation_types
@@ -38,16 +39,16 @@ class GenomeContent(models.Model):
         return self.taxid.taxscientificname
 
     def blast_dbs_path(self, relative=True):
-        return F'{self.genome.base_path(relative=relative)}/.blast_dbs'
+        return f'{self.genome.base_path(relative=relative)}/.blast_dbs'
 
     def blast_db_fna(self, relative=True):
-        return F'{self.blast_dbs_path(relative=relative)}/fna/{self.identifier}.fna'
+        return f'{self.blast_dbs_path(relative=relative)}/fna/{self.identifier}.fna'
 
     def blast_db_faa(self, relative=True):
-        return F'{self.blast_dbs_path(relative=relative)}/faa/{self.identifier}.faa'
+        return f'{self.blast_dbs_path(relative=relative)}/faa/{self.identifier}.faa'
 
     def blast_db_ffn(self, relative=True):
-        return F'{self.blast_dbs_path(relative=relative)}/ffn/{self.identifier}.ffn'
+        return f'{self.blast_dbs_path(relative=relative)}/ffn/{self.identifier}.ffn'
 
     def __str__(self):
         return self.identifier
@@ -308,7 +309,8 @@ class GenomeContent(models.Model):
                             annotation) is not None, F"Error: Annotation '{annotation}' does not match regex '{regex.pattern}'!"
                     all_annotations.update(annotations)
                     annotations_relationships.update([(line[0], anno) for anno in annotations])
-
+                else:
+                    logging.warning(f"'Error in file{file_dict['file']}': all lines must contain exactly one tab character. {line=}")
                 line = f.readline().strip()
 
         # Create Annotation-Objects and many-to-many relationships

@@ -33,11 +33,11 @@ class OrthofinderError(Exception):
 
 class Orthofinder:
     def __init__(self):
-        self.orthofinder_bin = F'{settings.ORTHOFINDER_INSTALL_DIR}/orthofinder.py'
-        assert is_installed(self.orthofinder_bin), F'OrthoFinder is not installed! Could not run "{self.orthofinder_bin}"'
+        self.orthofinder_bin = f'{settings.ORTHOFINDER_INSTALL_DIR}/orthofinder.py'
+        assert is_installed(self.orthofinder_bin), f'OrthoFinder is not installed! Could not run "{self.orthofinder_bin}"'
 
         for program in ['tar', 'pigz']:
-            assert is_installed(program), F'{program.capitalize()} is not installed! Could not run "{program}"'
+            assert is_installed(program), f'{program.capitalize()} is not installed! Could not run "{program}"'
 
     def version(self):
         subprocess = self.__run(['-h'])
@@ -47,7 +47,7 @@ class Orthofinder:
         command = [self.orthofinder_bin]
         command.extend(arguments)
         subprocess = run(command, stdout=PIPE, stderr=PIPE, encoding='ascii')
-        assert subprocess.returncode == 0, F'orthofinder command failed: {command},\n stdout: {subprocess.stdout},\n stderr: {subprocess.stderr}'
+        assert subprocess.returncode == 0, f'orthofinder command failed: {command},\n stdout: {subprocess.stdout},\n stderr: {subprocess.stderr}'
         return subprocess
 
     def pigz(self, src_dir: str, dst: str, exclude: [str]):

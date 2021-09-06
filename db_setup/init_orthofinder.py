@@ -17,7 +17,7 @@ folder_looper = FolderLooper(settings.GENOMIC_DATABASE)
 
 if __name__ == "__main__":
     FASTA_PATH = settings.ORTHOFINDER_FASTAS
-    assert not os.path.isdir(FASTA_PATH), F'Folder already exists! {FASTA_PATH}'
+    assert not os.path.isdir(FASTA_PATH), f'Folder already exists! {FASTA_PATH}'
     os.mkdir(FASTA_PATH)
 
     print('getting links to faas')
@@ -34,9 +34,9 @@ if __name__ == "__main__":
     container_cmd = F"-it --rm -v {os.path.abspath(settings.GENOMIC_DATABASE)}:/input:Z davidemms/orthofinder {cmd}"
 
     p_cmd = F"podman run --ulimit=host {container_cmd}"
-    print(F'run this command if you use podman:')
-    print(F'run this command: {p_cmd}')
+    print(f'run this command if you use podman:')
+    print(f'run this command: {p_cmd}')
 
     d_cmd = F"docker run --ulimit nofile=1000000:1000000 {container_cmd}"
-    print(F'run this command if you use docker:')
+    print(f'run this command if you use docker:')
     print(F'run this command: {d_cmd}')

@@ -23,4 +23,4 @@ class TaxIDDetailView(DetailView):
     def redirect_taxname(request, slug):
         t = TaxID.objects.get(taxscientificname=slug)
 
-        return redirect(F'/taxid/{t.id}')
+        return redirect(f'/taxid/{t.id}')
