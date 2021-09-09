@@ -2,17 +2,25 @@
 
 {% block content %}
 
+    <style>
+        code {
+            color: darkred;
+        }
+    </style>
+
     <div class="form-row field-tag">
         <div>
             <label for="custom-markdown">Click here to edit the markdown:</label>
-            <a id="custom-markdown" href="/admin/markdown-editor/?genome={{ original.identifier }}">EDIT MARKDOWN</a>
+            {% if 'website.change_genome' not in perms  or 'website.change_organism' not in perms %}
+                (requires <code>change_genome</code> and <code>change_organism</code> permission ){% endif %}
+            <a id="custom-markdown" href="{% url 'admin:markdown-editor' %}?genome={{ original.identifier }}">EDIT MARKDOWN</a>
         </div>
     </div>
 
     <div class="form-row field-tag">
         <div>
             <label for="custom-markdown">Click here to open the genome page:</label>
-            <a id="custom-markdown" href="/genome/{{ original.identifier }}">OPEN {{ original.identifier }}</a>
+            <a id="custom-markdown" href="{% url 'website:genome' original.identifier %}">OPEN {{ original.identifier }}</a>
         </div>
     </div>
 

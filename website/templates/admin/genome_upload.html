@@ -1,0 +1,38 @@
+{% extends "global/base.html" %}
+{% load static %}
+{% block styles %}
+
+    <link rel="stylesheet" type="text/css" href="{% static 'global/css/ogb-markdown.css' %}"/>
+
+    <style>
+
+    </style>
+
+{% endblock %}
+
+{% block sidebar %}{% endblock %}
+
+{% block body %}
+
+    <!-- title -->
+    <div class="container black-links">
+
+        <h1>Genome upload</h1>
+
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <input type="submit" value="Submit">
+        </form>
+
+    </div>
+
+{% endblock %}
+
+{% block end %}
+
+    <script>
+
+    </script>
+
+{% endblock %}

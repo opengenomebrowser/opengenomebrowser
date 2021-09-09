@@ -1,0 +1,43 @@
+{% extends "admin/index.html" %}
+{% block sidebar %}
+    {{ block.super }}
+
+    <div id="content-custom">
+        <div class="app-auth module">
+            <style>
+                #content-custom span {
+                    color: var(--link-hover-color);
+                }
+
+                #content-custom span code {
+                    color: darkred;
+                }
+
+            </style>
+            <table>
+                <caption>
+                    <a href="/admin/auth/" class="section" title="Custom Actions">Custom Actions</a>
+                </caption>
+                <tbody>
+
+                <tr class="model-group">
+                    <th scope="row"><span>Delete sunburst plot cache
+                        {% if 'website.add_genome' not in perms %} (requires <code>add_genome</code> permission ){% endif %}
+                    </span>
+                    </th>
+                    <td></td>
+                    <td><a href="{% url 'admin:delete-sunburst-cache' %}" class="deletelink">Delete</a></td>
+                </tr>
+
+                <tr class="model-group">
+                    <th scope="row"><span>Reload color css</span></th>
+                    <td></td>
+                    <td><a href="{% url 'admin:reload-css' %}" class="changelink">Reload</a></td>
+                </tr>
+
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+{% endblock %}

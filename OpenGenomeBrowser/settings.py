@@ -29,7 +29,7 @@ DATA_UPLOAD_MAX_NUMBER_FIELDS = int(os.environ.get('DATA_UPLOAD_MAX_NUMBER_FIELD
 
 LOGIN_REQUIRED = os.environ.get('LOGIN_REQUIRED', 'true').lower() == 'true'
 
-# database
+# database settings
 DB_HOST = os.environ.get('DB_HOST', 'db')
 DB_PORT = os.environ.get('DB_PORT', '5432')
 DB_NAME = os.environ.get('DB_NAME', 'opengenomebrowser_db')

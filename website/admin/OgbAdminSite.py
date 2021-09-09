@@ -1,105 +1,40 @@
-from django.contrib import admin, messages
+from django.contrib import admin
 from django.urls import path
-from django.shortcuts import render
-from django.core.exceptions import ObjectDoesNotExist
-from django.http import JsonResponse, HttpResponseRedirect
+from django.utils.translation import ugettext_lazy as _
+from django.contrib.auth.decorators import permission_required
 
-from website.admin.MarkdownObject import MarkdownObjectPage, MarkdownObjectOrganism, MarkdownObjectGenome
+from website.admin.MarkdownEditor import markdown_editor_view, markdown_editor_submit
+from website.admin.GenomeUpload import GenomeUploadView
+from website.admin.AdminActions import download_taxdump, reload_taxids, reload_css, delete_sunburst_cache
 
 
 class OgbAdminSite(admin.AdminSite):
+    site_title = _('OpenGenomeBrowser Admin')
+    index_template = 'admin/index.html'
+
     def get_urls(self):
         urls = super().get_urls()
         custom_urls = [
-            path(r'download-taxdump/', self.admin_view(self.download_taxdump), name='download-taxdump'),
-            path(r'reload-taxids/', self.admin_view(self.reload_taxids), name='reload-taxids'),
-            path(r'reload-css/', self.admin_view(self.reload_css), name='reload-css'),
-            path(r'delete-sunburst-cache/', self.admin_view(self.delete_sunburst_cache), name='delete-sunburst-cache'),
-            path(r'markdown-editor/', self.admin_view(self.markdown_editor), name='markdown-editor'),
-            path(r'markdown-editor/submit/', self.admin_view(self.markdown_submit), name='markdown-editor-submit')
+            path(route=r'download-taxdump/',
+                 view=permission_required('website.add_taxid')(self.admin_view(download_taxdump)),
+                 name='download-taxdump'),
+            path(route=r'reload-taxids/',
+                 view=permission_required('website.add_taxid')(self.admin_view(reload_taxids)),
+                 name='reload-taxids'),
+            path(route=r'reload-css/',
+                 view=self.admin_view(reload_css), name='reload-css'),
+            path(route=r'delete-sunburst-cache/',
+                 view=permission_required('website.add_genome')(self.admin_view(delete_sunburst_cache)),
+                 name='delete-sunburst-cache'),
+            path(route=r'markdown-editor/',
+                 view=permission_required(['website.change_genome', 'website.change_organism'])(self.admin_view(markdown_editor_view)),
+                 name='markdown-editor'),
+            path(route=r'markdown-editor/submit/',
+                 view=permission_required(['website.change_genome', 'website.change_organism'])(self.admin_view(markdown_editor_submit)),
+                 name='markdown-editor-submit'),
+            # path(route=r'add-genome/',
+            #      view=permission_required(['website.add_genome', 'website.add_organism'])(self.admin_view(GenomeUploadView.as_view())),
+            #      name='add-genome'),
         ]
         urls = custom_urls + urls
         return urls
-
-    def download_taxdump(self, request):
-        try:
-            from lib.get_tax_info.get_tax_info import GetTaxInfo
-            GetTaxInfo().update_ncbi_taxonomy_from_web()
-            messages.add_message(request, messages.SUCCESS, f'Downloaded the latest NCBI taxdump!')
-        except Exception as e:
-            messages.add_message(request, messages.ERROR, f'Something went wrong: {str(e)}')
-        return HttpResponseRedirect('/admin/website/taxid/')
-
-    def reload_taxids(self, request):
-        from db_setup.manage_ogb import update_taxids
-        try:
-            update_taxids(download_taxdump=False)
-            messages.add_message(request, messages.SUCCESS, f'Reloaded the taxids!')
-        except Exception as e:
-            messages.add_message(request, messages.ERROR, f'Something went wrong: {str(e)}')
-        return HttpResponseRedirect('/admin/website/taxid/')
-
-    def reload_css(self, request):
-        from db_setup.manage_ogb import reload_color_css
-        try:
-            reload_color_css()
-            messages.add_message(request, messages.SUCCESS, f'Reloaded the css files, use Ctrl+F5 to reload them!')
-        except Exception as e:
-            messages.add_message(request, messages.ERROR, f'Something went wrong: {str(e)}')
-        return HttpResponseRedirect('/admin/website/taxid/')
-
-
-    def delete_sunburst_cache(self, request):
-        import os, shutil
-        from OpenGenomeBrowser.settings import CACHE_DIR
-        sunburst_cache_dir = f'{CACHE_DIR}/website.views.Home.sunburst'
-        if os.path.isdir(sunburst_cache_dir):
-            shutil.rmtree(sunburst_cache_dir)
-            messages.add_message(request, messages.SUCCESS, f'Deleted sunburst cache!')
-        else:
-            messages.add_message(request, messages.ERROR, f'No cache found.')
-        return HttpResponseRedirect('/admin/website/taxid/')
-
-    def markdown_editor(self, request):
-        context = dict(
-            title='Markdown Editor',
-            error_danger=[], error_warning=[], error_info=[],
-            genomes=[],
-            genome_to_species={}
-        )
-
-        try:
-            if 'page' in request.GET:
-                try:
-                    context['obj'] = MarkdownObjectPage(page=request.GET['page'])
-                except KeyError as e:
-                    context['error_danger'].append(str(e))
-            elif 'genome' in request.GET:
-                context['obj'] = MarkdownObjectGenome(genome=request.GET['genome'])
-            elif 'organism' in request.GET:
-                context['obj'] = MarkdownObjectOrganism(organism=request.GET['organism'])
-            else:
-                context['error_danger'].append('Error: no page, genome or organism specified.')
-        except ObjectDoesNotExist:
-            context['error_danger'].append('Error: could not find object in database.')
-
-        return render(request, 'admin/markdown-editor.html', context)
-
-    def markdown_submit(self, request):
-        type = request.POST['type']
-        name = request.POST['name']
-        markdown = request.POST['markdown']
-        user = request.user.username
-
-        if type == 'page':
-            obj = MarkdownObjectPage(page=name)
-        elif type == 'genome':
-            obj = MarkdownObjectGenome(genome=name)
-        elif type == 'organism':
-            obj = MarkdownObjectOrganism(organism=name)
-        else:
-            return JsonResponse(dict(message='Type not supported!'), status=400)
-
-        obj.set_markdown(md=markdown, user=user)
-
-        return JsonResponse(dict(success=True))

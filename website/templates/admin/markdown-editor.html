@@ -58,9 +58,11 @@
 
             <br>
             <span class="type-label">file: <a href="/files_html/{{ obj.file_path }}">{{ obj.file_path }}</a></span>
-            <br>
-            <span class="type-label">featured here: <a href="{{ obj.featured_on }}">{{ obj.featured_on }}</a></span>
 
+            {% for featured_on in obj.featured_on %}
+                <br>
+                <span class="type-label">featured here: <a href="{{ featured_on }}">{{ featured_on }}</a></span>
+            {% endfor %}
             <hr>
 
             <div id="markdown-original" style="display:none">{{ obj.markdown }}</div>
@@ -82,7 +84,8 @@
                     <a type="button" class="btn btn-info" href="https://tableconvert.com/" target="_blank" style="color: #fff;">
                         tableconvert.com</a>
                     <button type="button" class="btn btn-danger" onclick="resetMarkdown()">
-                        Reset</button>
+                        Reset
+                    </button>
                 </li>
             </ul>
 

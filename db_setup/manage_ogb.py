@@ -1,22 +1,17 @@
 import sys
 import os
 import json
-from progressbar import progressbar  # pip install progressbar2
+from progressbar import progressbar
 from colorama import Fore
 from django.db import transaction
 
+# import django environment to manipulate the Organism and Genome classes
 OGB_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(OGB_DIR)
-
-# import django environment to manipulate the Organism and Genome classes
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "OpenGenomeBrowser.settings")
-from django.core.wsgi import get_wsgi_application
-from django.conf import settings
-
-application = get_wsgi_application()
+import OpenGenomeBrowser.wsgi
+from OpenGenomeBrowser import settings
 
 from db_setup.FolderLooper import FolderLooper, MockGenome, MockOrganism
-
 from website.serializers import GenomeSerializer, OrganismSerializer
 from website.models import Organism, Genome, Tag, TaxID, GenomeContent, Gene, PathwayMap, Annotation
 
