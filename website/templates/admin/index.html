@@ -21,8 +21,21 @@
                 <tbody>
 
                 <tr class="model-group">
+                    <th scope="row"><span>Upload genome
+                        {% if 'website.add_genome' not in perms or 'website.add_organism' not in perms %}
+                            (requires <code>add_genome</code> permission )
+                        {% endif %}
+                    </span>
+                    </th>
+                    <td></td>
+                    <td><a href="{% url 'admin:upload-genome' %}" class="addlink">Add</a></td>
+                </tr>
+
+                <tr class="model-group">
                     <th scope="row"><span>Delete sunburst plot cache
-                        {% if 'website.add_genome' not in perms %} (requires <code>add_genome</code> permission ){% endif %}
+                        {% if 'website.add_genome' not in perms %}
+                            (requires <code>add_genome</code> permission )
+                        {% endif %}
                     </span>
                     </th>
                     <td></td>

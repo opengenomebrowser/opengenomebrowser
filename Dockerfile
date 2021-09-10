@@ -9,7 +9,7 @@ RUN apt-get update -y
 WORKDIR /tmp
 
 # install packages via apt
-RUN apt-get install -y sudo ncbi-blast+ clustalo mafft muscle netcat pigz && apt-get clean
+RUN apt-get install -y sudo ncbi-blast+ clustalo mafft muscle netcat pigz tree && apt-get clean
 
 # install OrthoFinder
 RUN wget --quiet https://github.com/davidemms/OrthoFinder/releases/download/2.5.4/OrthoFinder_source.tar.gz && \

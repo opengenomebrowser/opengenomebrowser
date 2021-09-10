@@ -5,10 +5,12 @@ from progressbar import progressbar
 from colorama import Fore
 from django.db import transaction
 
-# import django environment to manipulate the Organism and Genome classes
-OGB_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.append(OGB_DIR)
-import OpenGenomeBrowser.wsgi
+if __name__ == "__main__":
+    # import django environment to manipulate the Organism and Genome classes
+    OGB_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    sys.path.append(OGB_DIR)
+    import OpenGenomeBrowser.wsgi
+
 from OpenGenomeBrowser import settings
 
 from db_setup.FolderLooper import FolderLooper, MockGenome, MockOrganism

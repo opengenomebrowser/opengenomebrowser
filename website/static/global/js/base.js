@@ -74,6 +74,42 @@ function goToPageWithData(location, data) {
 
 }
 
+const alertModal = function (type, header, body) {
+    const types = ['primary', 'secondary', 'success', 'danger', 'warning', 'info', 'light', 'dark']
+
+    const modal = $(`
+<div class="modal fade" id="alertModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header alert">
+                <h5 class="modal-title" id="exampleModalLongTitle">Modal title</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">Modal message</div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>`)
+    const modalHeader = modal.find('.modal-header')
+    const modalTitle = modal.find('.modal-title')
+    const modalBody = modal.find('.modal-body')
+
+    assert(types.includes(type), `Type ${type} is not included in ${types}!`)
+
+    modalHeader.removeClass(types.map(function (t) {
+        return 'alert-' + t
+    }))
+    modalHeader.addClass('alert-' + type)
+
+    modalTitle.text(header)
+    modalBody.html(body)
+    modal.modal('show')
+}
+
 function redirect(location, data, target = '_self') {
     let form = ''
     $.each(data, function (key, value) {

@@ -1,0 +1,82 @@
+{% extends "global/base.html" %}
+{% load static %}
+{% block styles %}
+
+    <style>
+        #tree {
+            white-space: pre;
+        }
+    </style>
+
+{% endblock %}
+
+{% block sidebar %}{% endblock %}
+
+{% block body %}
+
+    <div class="container">
+
+        <h1>Genome import</h1>
+
+        {% if organism_folder_exists %}
+
+            <p>These are the files of organism {{ organism }} are in the folder structure:</p>
+
+            <code id="tree">{{ tree }}</code>
+
+            <br>
+
+            <p>Click <a href="/files_html/{{ organism_folder_rel }}">here</a>
+                to explore the files.</p>
+
+            <p>Click <a href="#" onclick="importGenome('{{ organism }}')">here</a>
+                to {% if organism_in_database %}re-{% endif %}import the organism and the genome from the folder structure into OpenGenomeBrowser.</p>
+
+        {% endif %}
+        {% if organism_folder_exists or organism_in_database %}
+
+            <p>Click <a href="#" onclick="removeGenome('{{ organism }}')">here</a>
+                to remove the organism from the database and DELETE these files. THIS CANNOT BE UNDONE!</p>
+
+        {% else %}
+
+            <p>No possible actions. This organism neither in the folder structure nor in the database.</p>
+
+        {% endif %}
+
+    </div>
+
+{% endblock %}
+
+{% block end %}
+
+    <script>
+        "use strict"
+
+        const importGenome = function (organismName) {
+            $.post('/admin/genome-import-submit/', {'organism': organismName}, "json")
+                .done(function (data, textStatus, jqXHR) {
+                    console.log('done', data, textStatus, jqXHR)
+                    alertModal('success', 'Success', data?.message || '(no message)')
+                })
+                .fail(function (data, textStatus, jqXHR) {
+                    console.log('fail', data, textStatus, jqXHR)
+                    alertModal('danger', 'Error', data?.responseJSON?.message || '(no message)')
+                })
+        }
+
+        const removeGenome = function (organismName) {
+            $.post('/admin/remove-genome/', {'organism': organismName}, "json")
+                .done(function (data, textStatus, jqXHR) {
+                    console.log('done', data, textStatus, jqXHR)
+                    alertModal('success', 'Success', data?.message || '(no message)')
+                })
+                .fail(function (data, textStatus, jqXHR) {
+                    console.log('fail', data, textStatus, jqXHR)
+                    alertModal('danger', 'Error', data?.responseJSON?.message || '(no message)')
+                })
+        }
+
+    </script>
+
+{% endblock %}

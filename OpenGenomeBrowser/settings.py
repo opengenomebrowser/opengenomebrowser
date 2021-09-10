@@ -39,6 +39,8 @@ DB_PASSWORD = os.environ.get('DB_PASSWORD', 'postgres')
 # GENOMIC_DATABASE must contain the folder 'organisms'
 GENOMIC_DATABASE = os.environ.get('GENOMIC_DATABASE', '/database')
 
+FILE_UPLOAD_HANDLERS = ['django.core.files.uploadhandler.TemporaryFileUploadHandler']
+
 CACHE_DIR = os.environ.get('CACHE_DIR', '/tmp/ogb-cache')
 CACHE_MAXSIZE = int(os.environ.get('CACHE_MAXSIZE', 20))
 
