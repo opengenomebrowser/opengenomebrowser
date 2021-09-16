@@ -14,6 +14,11 @@ class OgbAdminSite(admin.AdminSite):
 
     def get_urls(self):
         urls = super().get_urls()
+
+        change_permissions = ['website.change_genome', 'website.change_organism']
+        add_permissions = ['website.add_genome', 'website.add_organism']
+        delete_permissions = ['website.delete_genome', 'website.delete_organism']
+
         custom_urls = [
             path(
                 route=r'download-taxdump/',
@@ -41,37 +46,37 @@ class OgbAdminSite(admin.AdminSite):
 
             path(
                 route=r'markdown-editor/',
-                view=permission_required(['website.change_genome', 'website.change_organism'])(self.admin_view(markdown_editor_view)),
+                view=permission_required(change_permissions)(self.admin_view(markdown_editor_view)),
                 name='markdown-editor'
             ),
 
             path(
                 route=r'markdown-editor/submit/',
-                view=permission_required(['website.change_genome', 'website.change_organism'])(self.admin_view(markdown_editor_submit)),
+                view=permission_required(change_permissions)(self.admin_view(markdown_editor_submit)),
                 name='markdown-editor-submit'
             ),
 
             path(
-                route=r'upload-genome/',
-                view=permission_required(['website.add_genome', 'website.add_organism'])(self.admin_view(GenomeUploadView.as_view())),
-                name='upload-genome'
+                route=r'genome-upload/',
+                view=permission_required(add_permissions)(self.admin_view(GenomeUploadView.as_view())),
+                name='genome-upload'
             ),
 
             path(
                 route=r'genome-import/<str:slug>/',
-                view=permission_required(['website.add_genome', 'website.add_organism'])(self.admin_view(genome_import_view)),
+                view=permission_required(add_permissions)(self.admin_view(genome_import_view)),
                 name='genome-import'
             ),
 
             path(
                 route=r'genome-import-submit/',
-                view=permission_required(['website.add_genome', 'website.add_organism'])(genome_import_submit),
+                view=permission_required(add_permissions)(genome_import_submit),
                 name='genome-import-submit'
             ),
 
             path(
                 route=r'remove-genome/',
-                view=permission_required(['website.add_genome', 'website.add_organism'])(remove_genome),
+                view=permission_required(delete_permissions)(remove_genome),
                 name='remove-genome'
             ),
         ]

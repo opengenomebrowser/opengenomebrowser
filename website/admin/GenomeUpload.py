@@ -22,10 +22,7 @@ class GenomeUploadForm(forms.Form):
     organism_name = forms.CharField(label='Desired organism name', max_length=40)
     genome_identifier = forms.CharField(label='Desired genome identifier', max_length=50)
     rename = forms.BooleanField(label='Must the files be renamed?', initial=False, required=False)
-    gbk = forms.FileField(label='GenBank file')
-    gff = forms.FileField(label='Gff3 file')
-    fna = forms.FileField(label='Assembly fasta')
-    additional_files = forms.FileField(
+    genome_files = forms.FileField(
         label='Additional files (i.e. including custom annotation files)',
         widget=forms.ClearableFileInput(attrs={'multiple': True}),
         required=False
@@ -73,18 +70,12 @@ class GenomeUploadView(FormView):
         genome_identifier = form.cleaned_data['genome_identifier']
         rename = form.cleaned_data['rename']
         assert type(rename) is bool, str(type(rename))
-        gbk = request.FILES['gbk'].file.name
-        gff = request.FILES['gff'].file.name
-        fna = request.FILES['fna'].file.name
-        additional_files = request.FILES.getlist('additional_files')
+        genome_files = request.FILES.getlist('genome_files')
 
         print(f'Submission of new genomes: {organism_name} :: {genome_identifier}')
         with TemporaryDirectory() as tempdir:
-            os.symlink(src=gbk, dst=f'{tempdir}/{genome_identifier}.gbk')
-            os.symlink(src=gff, dst=f'{tempdir}/{genome_identifier}.gff')
-            os.symlink(src=fna, dst=f'{tempdir}/{genome_identifier}.fna')
             key_files = [f'{genome_identifier}.{suffix}' for suffix in ('gbk', 'gff', 'fna')]
-            for file in additional_files:
+            for file in genome_files:
                 assert file.name not in key_files, f'Error: Two files with same name: {file.name}'
                 os.symlink(src=file.file.name, dst=f'{tempdir}/{file.name}')
             try:
@@ -135,7 +126,7 @@ def genome_import_view(request, slug: str):
     if Organism.objects.filter(name=organism_name).exists():
         context['error_warning'].append(f'Warning: Organism with name={organism_name} has already been imported into the database.')
 
-    return render(request, 'admin/import_genome.html', context=context)
+    return render(request, 'admin/genome_import.html', context=context)
 
 
 def genome_import_submit(request):

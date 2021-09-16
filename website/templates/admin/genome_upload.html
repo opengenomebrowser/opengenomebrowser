@@ -4,6 +4,84 @@
 
     <style>
 
+        .file-upload-content {
+            display: none;
+            text-align: center;
+        }
+
+        .file-upload-input {
+            position: absolute;
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            outline: none;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .image-upload-wrap {
+            margin-top: 20px;
+            border: 4px dashed #1FB264;
+            position: relative;
+        }
+
+        .image-dropping,
+        .image-upload-wrap:hover {
+            background-color: #1FB264;
+            border: 4px dashed #ffffff;
+        }
+
+        .image-title-wrap {
+            padding: 0 15px 15px 15px;
+            color: #222;
+        }
+
+        .drag-text {
+            text-align: center;
+        }
+
+        .drag-text h3 {
+            font-weight: 100;
+            text-transform: uppercase;
+            color: #15824B;
+            padding: 60px 0;
+        }
+
+        .file-upload-image {
+            max-height: 200px;
+            max-width: 200px;
+            margin: auto;
+            padding: 20px;
+        }
+
+        .remove-image {
+            width: 200px;
+            margin: 0;
+            color: #fff;
+            background: #cd4535;
+            border: none;
+            padding: 10px;
+            border-radius: 4px;
+            border-bottom: 4px solid #b02818;
+            transition: all .2s ease;
+            outline: none;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .remove-image:hover {
+            background: #c13b2a;
+            color: #ffffff;
+            transition: all .2s ease;
+            cursor: pointer;
+        }
+
+        .remove-image:active {
+            border: 0;
+            transition: all .2s ease;
+        }
+
     </style>
 
 {% endblock %}
@@ -19,6 +97,13 @@
         <form method="POST" enctype="multipart/form-data">
             {% csrf_token %}
             {{ form.as_p }}
+
+            <div id="files-list-container" hidden>
+                <label for="files-list">Selected files:</label>
+                <ul id="files-list" class="">
+                </ul>
+            </div>
+
             <input type="submit" value="Submit">
         </form>
 
@@ -29,6 +114,30 @@
 {% block end %}
 
     <script>
+
+        const showFiles = function () {
+            const input = document.getElementById('id_genome_files')
+
+            const filesListContainer = $("#files-list-container")
+            const filesList = $("#files-list")
+
+            filesList.empty()
+
+            const hasFiles = Boolean(input.files.length)
+
+            filesListContainer.attr('hidden', !hasFiles)
+
+            for (var i = 0; i < input.files.length; ++i) {
+                const fileName = input.files.item(i).name
+                filesList.append(`<li>${fileName}</li>`)
+            }
+
+        }
+
+        showFiles()
+        $('#id_genome_files').change(showFiles)
+
+
     </script>
 
 {% endblock %}
