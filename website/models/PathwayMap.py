@@ -27,8 +27,9 @@ class PathwayMap(models.Model):
         return f'{self.slug} : {self.title}'
 
     @property
-    def svg(self):
-        return open(f'{settings.PATHWAY_MAPS}/{self.filename}').read()
+    def svg(self) -> str:
+        with open(f'{settings.PATHWAY_MAPS}/{self.filename}') as f:
+            return f.read()
 
     @staticmethod
     def _get_type_dict():

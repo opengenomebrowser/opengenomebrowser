@@ -45,7 +45,7 @@
         <a>Download Table</a>
     </div>
     <div class="sidebar-subcontent form-check form-check-inline">
-        <button type="button" class="btn btn-secondary" onclick="exportToTsv()">
+        <button type="button" class="btn btn-secondary" onclick="tableToTsv('#genome-table', 'genomes.tsv')">
             genomes.tsv
         </button>
     </div>
@@ -140,7 +140,7 @@
     </div>
 
     <div class="table-container">
-        <table id="annotation-list" class="table table-sm table-striped">
+        <table id="genome-table" class="table table-sm table-striped">
             <thead class="thead-dark">
             <tr>
                 {% for column in active_columns.values %}
@@ -209,10 +209,10 @@
         }
 
 
-        $("#annotation-list th").each(function (iColumn, column) {
+        $("#genome-table th").each(function (iColumn, column) {
             const columnId = $(column).data('column-id')
             if (columnId === 'literature_references') {
-                $("#annotation-list tr").each(function (iRow, row) {
+                $("#genome-table tr").each(function (iRow, row) {
                     if (iRow === 0) return
                     const envField = row.children[iColumn]
                     if (envField.textContent.length > 2) {
@@ -342,27 +342,6 @@
             // print submitted stuff
             console.log($(form).serialize().split('&'))
         })
-
-
-        const exportToTsv = function () {
-            let tableAsTsv = 'data:text/csv;charset=utf-8,'
-
-            const header = $('table thead tr th').toArray().map(x => x.innerText.replace('#', 'Nr').split('\n').at(-1))
-            tableAsTsv += header.join('\t')
-            tableAsTsv += '\r\n'
-
-            const rows = document.querySelectorAll('table tbody tr')
-            for (const row of rows) {
-                const rowData = []
-                for (const [index, column] of row.querySelectorAll('th, td').entries()) {
-                    rowData.push(column.innerText)
-                }
-                tableAsTsv += rowData.join('\t')
-                tableAsTsv += '\r\n'
-            }
-
-            saveUriAs(encodeURI(tableAsTsv), 'genomes.tsv')
-        }
 
     </script>
 {% endblock %}

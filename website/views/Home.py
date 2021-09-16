@@ -30,6 +30,14 @@ def home_view(request):
                 did=['Support', 'Ideas', 'Test data']
             ),
             dict(
+                name='Noam Shani',
+                img='/static/index/images/Noam.jpg',
+                img_cls='circle',
+                role='Agroscope Culture Collection',
+                href='https://ira.agroscope.ch/en-US/Page/Mitarbeiter?agroscopeId=4823',
+                did=['Support']
+            ),
+            dict(
                 name='Rémy Bruggmann',
                 img='/static/index/images/Remy.jpg',
                 img_cls='circle',
@@ -62,7 +70,7 @@ def home_view(request):
                 img_cls='square',
                 role='Swiss center for agricultural research',
                 href='https://www.agroscope.admin.ch/',
-                did=['Infrastructure']
+                did=['Funding']
             ),
             dict(
                 name='Gebert Rüf Stiftung',
@@ -76,11 +84,19 @@ def home_view(request):
 
         Contact=[
             dict(
+                name='GitHub Pages',
+                img='/static/index/images/GitHubPages.jpg',
+                img_cls='circle',
+                role='Tutorials and Documentation',
+                href='https://opengenomebrowser.github.io/opengenomebrowser/',
+                did=[]
+            ),
+            dict(
                 name='GitHub',
                 img='/static/index/images/GitHub.svg',
                 img_cls='square',
                 role='Code repository',
-                href='https://opengenomebrowser.github.io/opengenomebrowser/',
+                href='https://github.com/opengenomebrowser/opengenomebrowser/',
                 did=[]
             ),
             dict(
@@ -111,6 +127,30 @@ def home_view(request):
                 did=['Calculation of pairwise assembly similarity']
             ),
             dict(
+                name='DNA Features Viewer',
+                img='/static/index/images/dna-features-viewer.png',
+                img_cls='square',
+                role='Edinburgh Genome Foundry',
+                href='https://edinburgh-genome-foundry.github.io/DnaFeaturesViewer/',
+                did=['Visualize gene loci']
+            ),
+            dict(
+                name='Dot',
+                img='/static/index/images/Dot.png',
+                img_cls='square',
+                role='Maria Nattestad',
+                href='https://github.com/marianattestad/dot',
+                did=['Dot plots']
+            ),
+            dict(
+                name='TidyTree',
+                img='/static/index/images/TidyTree.png',
+                img_cls='circle',
+                role='CDCgov',
+                href='https://cdcgov.github.io/TidyTree/',
+                did=['Visualisation of dendrograms']
+            ),
+            dict(
                 name='National Center for Biotechnology Information',
                 img='/static/index/images/ncbi.png',
                 img_cls='circle',
@@ -125,22 +165,6 @@ def home_view(request):
                 role='SING Group, University of Vigo',
                 href='http://www.sing-group.org/blasterjs/',
                 did=['Visualize BLAST results']
-            ),
-            dict(
-                name='DNA Features Viewer',
-                img='/static/index/images/dna-features-viewer.png',
-                img_cls='square',
-                role='Edinburgh Genome Foundry',
-                href='https://edinburgh-genome-foundry.github.io/DnaFeaturesViewer/',
-                did=['Visualize gene loci']
-            ),
-            dict(
-                name='TidyTree',
-                img='/static/index/images/TidyTree.png',
-                img_cls='circle',
-                role='CDCgov',
-                href='https://cdcgov.github.io/TidyTree/',
-                did=['Visualisation of dendrograms']
             ),
             dict(
                 name='BioPython',

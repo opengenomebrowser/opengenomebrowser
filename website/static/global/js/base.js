@@ -610,3 +610,24 @@ function on_genes_change(field, editor, tags) {
         }
     })
 }
+
+
+const tableToTsv = function (tableElement, fileName) {
+    let tsv = 'data:text/csv;charset=utf-8,'
+
+    const header = $(tableElement).find('thead tr th').toArray().map(x => x.innerText.replace('#', 'Nr').split('\n').at(-1))
+    tsv += header.join('\t')
+    tsv += '\r\n'
+
+    const rows = document.querySelectorAll('table tbody tr')
+    for (const row of rows) {
+        const rowData = []
+        for (const [index, column] of row.querySelectorAll('th, td').entries()) {
+            rowData.push(column.innerText)
+        }
+        tsv += rowData.join('\t')
+        tsv += '\r\n'
+    }
+
+    saveUriAs(encodeURI(tsv), fileName)
+}

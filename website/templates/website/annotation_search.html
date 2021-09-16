@@ -24,6 +24,17 @@
                checked>
     </div>
 
+    <hr>
+
+    <div class="sidebar-subcontent form-check form-check-inline">
+        <a>Download Table</a>
+    </div>
+    <div class="sidebar-subcontent form-check form-check-inline">
+        <button type="button" class="btn btn-secondary" onclick="tableToTsv('#coverage-matrix', 'coverage-matrix.tsv')">
+            coverage-matrix.tsv
+        </button>
+    </div>
+
 {% endblock %}
 
 {% block body %}

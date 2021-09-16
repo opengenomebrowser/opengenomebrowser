@@ -45,7 +45,7 @@
     filter: invert(1);
 }
 
-#annotation-list {
+#genome-table {
     list-style: none;
     padding-left: unset;
     margin: .5rem;
@@ -54,27 +54,27 @@
     margin-right: auto;
 }
 
-#annotation-list li {
+#genome-table li {
     margin: .3rem
 }
 
-#annotation-list tbody li:nth-child(odd) {
+#genome-table tbody li:nth-child(odd) {
     background: #fbfbfb;
 }
 
-#annotation-list tbody tr:nth-child(odd).selected {
+#genome-table tbody tr:nth-child(odd).selected {
     background-color: #a7a7a7;
 }
 
-#annotation-list tbody li:nth-child(even) {
+#genome-table tbody li:nth-child(even) {
     background: #b3b3b330;
 }
 
-#annotation-list tbody tr:nth-child(even).selected {
+#genome-table tbody tr:nth-child(even).selected {
     background-color: #939393;
 }
 
-#annotation-list.table td, #annotation-list.table th {
+#genome-table.table td, #genome-table.table th {
     vertical-align: middle;
 }
 
