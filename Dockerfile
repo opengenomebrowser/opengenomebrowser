@@ -3,6 +3,8 @@ MAINTAINER Thomas Roder
 
 ENV PYTHONPATH=/usr/local/bin/python:.
 ENV PYTHONUNBUFFERED 1
+ENV PATH="/root/.local/bin:${PATH}"
+ENV GENOMIC_DATABASE=/database
 
 RUN apt-get update -y
 

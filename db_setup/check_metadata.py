@@ -72,7 +72,7 @@ def genome_metadata_is_valid(data: dict, path_to_genome: str, raise_exception=Fa
                     assert type(table['columns']) is list, table['columns']
 
         if get_attr('BUSCO'):
-            for char in ['C', 'D', 'F', 'M', 'S', 'T']:
+            for char in 'CDFMST':
                 assert isinstance(get_attr('BUSCO')[char], int), f"{identifier} :: error in BUSCO :: {char}"
 
         if get_attr('custom_annotations'):

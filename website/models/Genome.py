@@ -82,7 +82,8 @@ class Genome(models.Model):
 
     BUSCO = JSONField(default=dict)  # {C:2,D:2,F:2,M:2,S:2,T:2]}  +  {dataset: firmicutes_odb9}  +  {dataset_creation_date: "2000-01-31"}
     BUSCO_percent_single = models.DecimalField(max_digits=4, decimal_places=1, null=True, blank=True)
-    # format(self.BUSCO['S'] / self.BUSCO['T'], ".1%")
+
+    COG = JSONField(default=dict)  # {'J': 152.5, 'A': 2, 'K': 29.333, ... }
 
     # information about annotation
     custom_annotations = JSONField(default=list, blank=True, null=True)  # [{"date": "2016-02-29", "file": "FAM19038.ko", "type": "KG"}]
