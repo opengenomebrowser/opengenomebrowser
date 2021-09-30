@@ -189,7 +189,7 @@ python-versions = "*"
 
 [[package]]
 name = "django-mptt"
-version = "0.13.3"
+version = "0.13.4"
 description = "Utilities for implementing Modified Preorder Tree Traversal with your Django Models and working with trees of Model instances."
 category = "main"
 optional = false
@@ -394,7 +394,7 @@ termcolor = "*"
 type = "git"
 url = "https://github.com/opengenomebrowser/opengenomebrowser-tools.git"
 reference = "master"
-resolved_reference = "6967d95f249fdd03ddd8cf19b4797b2f33ba0c13"
+resolved_reference = "6b73fb1ddab07a5e324e8e4e9607ca84c26f783c"
 
 [[package]]
 name = "packaging"
@@ -425,7 +425,7 @@ test = ["hypothesis (>=3.58)", "pytest (>=6.0)", "pytest-xdist"]
 
 [[package]]
 name = "patsy"
-version = "0.5.1"
+version = "0.5.2"
 description = "A Python package for describing statistical models and for building design matrices."
 category = "main"
 optional = false
@@ -434,6 +434,9 @@ python-versions = "*"
 [package.dependencies]
 numpy = ">=1.4"
 six = "*"
+
+[package.extras]
+test = ["pytest", "pytest-cov", "scipy"]
 
 [[package]]
 name = "pillow"
@@ -800,8 +803,8 @@ django-js-asset = [
     {file = "django_js_asset-1.2.2-py2.py3-none-any.whl", hash = "sha256:8ec12017f26eec524cab436c64ae73033368a372970af4cf42d9354fcb166bdd"},
 ]
 django-mptt = [
-    {file = "django-mptt-0.13.3.tar.gz", hash = "sha256:87ece195c846fb579e302abbf157d80d61d8cb2d08032cc1859c06abc27c60b8"},
-    {file = "django_mptt-0.13.3-py3-none-any.whl", hash = "sha256:305ffc633a54621feb1c10c4ca8a7f6717021a24d6eaff590ea586222a31f1d4"},
+    {file = "django-mptt-0.13.4.tar.gz", hash = "sha256:80c9fb34df7796a4e5af0cb6b8ade3697555b1aa438bd07a01f32b3ab5202b63"},
+    {file = "django_mptt-0.13.4-py3-none-any.whl", hash = "sha256:75745b621ae31d97957ed924155a750dfa8cacd9543799ada2d713fd6bc3f5c7"},
 ]
 django-prettyjson = [
     {file = "django-prettyjson-0.4.1.tar.gz", hash = "sha256:b758a5f3c073db93e17485b4eb9cb19e9838f6e5d6cb91096d795e015e28d3bd"},
@@ -1103,8 +1106,8 @@ pandas = [
     {file = "pandas-1.3.3.tar.gz", hash = "sha256:272c8cb14aa9793eada6b1ebe81994616e647b5892a370c7135efb2924b701df"},
 ]
 patsy = [
-    {file = "patsy-0.5.1-py2.py3-none-any.whl", hash = "sha256:5465be1c0e670c3a965355ec09e9a502bf2c4cbe4875e8528b0221190a8a5d40"},
-    {file = "patsy-0.5.1.tar.gz", hash = "sha256:f115cec4201e1465cd58b9866b0b0e7b941caafec129869057405bfe5b5e3991"},
+    {file = "patsy-0.5.2-py2.py3-none-any.whl", hash = "sha256:cc80955ae8c13a7e7c4051eda7b277c8f909f50bc7d73e124bc38e2ee3d95041"},
+    {file = "patsy-0.5.2.tar.gz", hash = "sha256:5053de7804676aba62783dbb0f23a2b3d74e35e5bfa238b88b7cbf148a38b69d"},
 ]
 pillow = [
     {file = "Pillow-8.3.2-cp310-cp310-macosx_10_10_universal2.whl", hash = "sha256:c691b26283c3a31594683217d746f1dad59a7ae1d4cfc24626d7a064a11197d4"},

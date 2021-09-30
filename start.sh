@@ -3,14 +3,23 @@
 echo "RUNNING AS $(whoami) $(id -u) $(id -g) IN $PWD"
 
 set -e
+# wait until postgres is up
 python db_setup/wait_for_postgres.py
+
+# wait until folder structure version matches OpenGenomeBrowser version
+python db_setup/wait_for_version_match.py
 set +e
 
+# apply database migrations
 python manage.py migrate
+
+# collect django static files
 python manage.py collectstatic --no-input
 
+# run huey task queue
 python manage.py run_huey &
 
+# run OpenGenomeBrowser
 if [ "$DEBUG" == "true" ]; then
 
   echo "DEBUG MODE"

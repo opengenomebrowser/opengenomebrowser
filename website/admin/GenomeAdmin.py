@@ -23,7 +23,8 @@ class GenomeAdmin(ModelAdmin):
                        'cds_tool_sqn_file',
                        'custom_annotations',
                        'assembly_fasta_file',
-                       'BUSCO'
+                       'BUSCO',
+                       'COG'
                        ]
 
     exclude = [
