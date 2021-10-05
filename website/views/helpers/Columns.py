@@ -343,12 +343,12 @@ class TaxColumn(Column):
 
     def choices(self):
         if self.id == 'taxonomy':
-            return [(t.taxscientificname, t.taxscientificname) for t in TaxID.objects.filter(organism__isnull=False).all()]
+            return [(t.taxscientificname, t.taxscientificname) for t in TaxID.objects.filter(organism__isnull=False).distinct()]
         if self.id == 'taxid':
-            return [(t.id, f'{t.id} ({t.taxscientificname})') for t in TaxID.objects.filter(organism__isnull=False).all()]
+            return [(t.id, f'{t.id} ({t.taxscientificname})') for t in TaxID.objects.filter(organism__isnull=False).distinct()]
         else:
             rank = self.id.removeprefix('tax')
-            return [(t.taxscientificname, t.taxscientificname) for t in TaxID.objects.filter(rank=rank).all()]
+            return [(t.taxscientificname, t.taxscientificname) for t in TaxID.objects.filter(rank=rank).distinct()]
 
     def filter(self, qs, request):
         self.query = extract_data(request=request, key=self.id, list=True, sep=',')

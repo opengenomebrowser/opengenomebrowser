@@ -631,3 +631,27 @@ const tableToTsv = function (tableElement, fileName) {
 
     saveUriAs(encodeURI(tsv), fileName)
 }
+
+const tableJsonListToTsv = function (tableElement, attribute, fileName) {
+    let tsv = 'data:text/csv;charset=utf-8,'
+
+    const header = $(tableElement).find('thead tr th').toArray().map(x => x.innerText.replace('#', 'Nr').split('\n').at(-1))
+    tsv += header.join('\t')
+    tsv += '\r\n'
+
+    const rows = document.querySelectorAll('table tbody tr')
+    for (const row of rows) {
+        const rowData = []
+        for (const [index, column] of row.querySelectorAll('th, td').entries()) {
+            if (index === 0) {
+                rowData.push(column.innerText)
+            } else {
+                rowData.push(JSON.parse(column.firstChild.getAttribute(attribute)).join(','))
+            }
+        }
+        tsv += rowData.join('\t')
+        tsv += '\r\n'
+    }
+
+    saveUriAs(encodeURI(tsv), fileName)
+}
