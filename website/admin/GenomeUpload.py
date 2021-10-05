@@ -23,7 +23,7 @@ class GenomeUploadForm(forms.Form):
     genome_identifier = forms.CharField(label='Desired genome identifier', max_length=50)
     rename = forms.BooleanField(label='Must the files be renamed?', initial=False, required=False)
     genome_files = forms.FileField(
-        label='Additional files (i.e. including custom annotation files)',
+        label='Genomic files (at least .ffn, .gbk, .gff)',
         widget=forms.ClearableFileInput(attrs={'multiple': True}),
         required=False
     )
