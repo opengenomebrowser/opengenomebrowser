@@ -1,6 +1,8 @@
 import os
 from time import sleep
-import tarfile
+import zipfile
+from typing import Callable
+
 from django.shortcuts import render, HttpResponse
 from django.http import JsonResponse
 
@@ -35,9 +37,9 @@ abbr_to_suffix = {
 
 def get_cache_path(genomes_hash: str, abbr: str, relative: bool) -> str:
     if relative:
-        return os.path.join(cache_subdir, f'{genomes_hash}:{abbr}.tar.gz')
+        return os.path.join(cache_subdir, f'{genomes_hash}:{abbr}.zip')
     else:
-        return os.path.join(CACHE_DIR, cache_subdir, f'{genomes_hash}:{abbr}.tar.gz')
+        return os.path.join(CACHE_DIR, cache_subdir, f'{genomes_hash}:{abbr}.zip')
 
 
 def is_cached(genomes_hash: str, abbr: str) -> bool:
@@ -50,6 +52,17 @@ def is_changing(genomes_hash: str, abbr: str) -> bool:
     sleep(0.2)
     s2 = os.path.getsize(file)
     return s1 != s2
+
+
+def zip_dir(zip_handler: zipfile.ZipFile, name: str, arcname: str, filter: Callable):
+    for root, dirs, files in os.walk(name):
+        files = [f for f in files if filter(f)]
+        dirs[:] = [d for d in dirs if filter(d)]
+        for file in files:
+            zip_handler.write(
+                filename=os.path.join(root, file),
+                arcname=os.path.join(arcname, os.path.relpath(os.path.join(root, file), name))
+            )
 
 
 def downloader_view(request):
@@ -95,41 +108,40 @@ def downloader_submit(request):
     except Exception as e:
         return JsonResponse(dict(success='false', message=f'magic query is bad: {e}'), status=500)
 
-    tar_path = get_cache_path(hash, abbr, relative=False)
-    os.makedirs(os.path.dirname(tar_path), exist_ok=True)
+    zip_path = get_cache_path(hash, abbr, relative=False)
+    os.makedirs(os.path.dirname(zip_path), exist_ok=True)
     try:
-        tar = tarfile.open(tar_path, 'w:gz', compresslevel=4)
+        with zipfile.ZipFile(zip_path, 'w', compression=zipfile.ZIP_DEFLATED) as zip:
 
-        # ORGANISM
-        if abbr == 'organism':
-            organisms = Organism.objects.filter(genome__identifier__in=[g.identifier for g in genomes])
-            organisms = organisms.distinct()
+            # ORGANISM
+            if abbr == 'organism':
+                organisms = Organism.objects.filter(genome__identifier__in=[g.identifier for g in genomes])
+                organisms = organisms.distinct()
 
-            def filterfn(tarinfo):
-                return None if os.path.basename(tarinfo.name).startswith('.') else tarinfo
+                for o in organisms:
+                    o: Organism
+                    zip_dir(
+                        zip_handler=zip,
+                        name=o.base_path(relative=False),
+                        arcname=o.name,
+                        filter=lambda f: not os.path.basename(f).startswith('.')  # ignore hidden files
+                    )
 
-            for o in organisms:
-                o: Organism
-                tar.add(
-                    name=o.base_path(relative=False), arcname=o.name, recursive=True,
-                    filter=lambda f: None if os.path.basename(f.name).startswith('.') else f  # ignore hidden files
-                )
+            # CUSTOM ANNOTATIONS
+            elif abbr == 'custom_annotations':
+                for g in genomes:
+                    for cf in getattr(g, abbr):
+                        zip.write(filename=f'{g.base_path(relative=False)}/{cf["file"]}', arcname=f'{g.identifier}/{cf["file"]}')
 
-        # CUSTOM ANNOTATIONS
-        elif abbr == 'custom_annotations':
-            for g in genomes:
-                for cf in getattr(g, abbr):
-                    tar.add(name=f'{g.base_path(relative=False)}/{cf["file"]}', arcname=f'{g.identifier}/{cf["file"]}')
-
-        # REQUIRED FILES
-        else:
-            suffix = abbr_to_suffix[abbr]
-            for g in genomes:
-                tar.add(name=f'{GENOMIC_DATABASE}/{getattr(g, abbr)(relative=True)}', arcname=f'{g.identifier}.{suffix}')
+            # REQUIRED FILES
+            else:
+                suffix = abbr_to_suffix[abbr]
+                for g in genomes:
+                    zip.write(filename=f'{GENOMIC_DATABASE}/{getattr(g, abbr)(relative=True)}', arcname=f'{g.identifier}.{suffix}')
 
     except Exception as e:
         print(e)
-        os.remove(tar_path)
+        os.remove(zip_path)
 
     clear_cache(cache_fn_dir=f'{CACHE_DIR}/downloader', maxsize=CACHE_MAXSIZE)
 
