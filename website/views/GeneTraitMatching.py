@@ -169,22 +169,23 @@ def gtm(
 
     if method == 'fisher':
         test_fn = lambda r: fisher_exact([
-            [r.g1, r.not_g1],
-            [r.g2, r.not_g2]
+            [r.g1, r.g2],
+            [r.not_g1, r.not_g2]
         ])[1]
     elif method == 'boschloo':
+        # column sums must be fixed!
         test_fn = lambda r: boschloo_exact([
-            [r.g1, r.not_g1],
-            [r.g2, r.not_g2]
+            [r.g1, r.g2],
+            [r.not_g1, r.not_g2]
         ]).pvalue
     else:
         raise AssertionError(f"method must be either 'fisher' or 'boschloo'. {method=}")
 
-    annos_qs = Annotation.objects.annotate(
+    annos_qs = Annotation.objects.filter(
+        anno_type=anno_type
+    ).annotate(
         g1=Count('genomecontent', filter=Q(genomecontent__in=g1)),
         g2=Count('genomecontent', filter=Q(genomecontent__in=g2))
-    ).filter(
-        anno_type=anno_type
     ).exclude(
         Q(g1=0) & Q(g2=0)  # exclude non-covered annotations
     ).exclude(
