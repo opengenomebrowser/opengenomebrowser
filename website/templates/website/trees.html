@@ -24,18 +24,41 @@
 
     <div class="sidebar-subcontent form-check form-check-inline">
         <label class="form-check-label" for="colorize-tax-checkbox"><a>Colorize taxonomy?</a></label>
-        <input class="form-check-input" type="checkbox" id="colorize-tax-checkbox" onclick="toggle_colorize_tax()"
+        <input class="form-check-input" type="checkbox" id="colorize-tax-checkbox" onclick="toggleColorizeTax()"
                checked>
     </div>
 
     <div class="sidebar-subcontent form-check form-check-inline">
-        <label for="mode-selector"><a>Mode</a></label>
+        <label for="mode-selector"><a>Mode:</a></label>
         <select class="form-control" id="mode-selector"
                 onchange="[taxid_tree, genome_similarity_tree, orthofinder_tree].forEach(t=>changeTree(t, 'mode', this.value))">
             <option>smooth</option>
             <option>square</option>
             <option>straight</option>
         </select>
+    </div>
+
+    <div class="sidebar-subcontent form-check form-check-inline">
+        <label for="fill-query"><a>Color genomes:</a></label>
+
+        <div class="container">
+            <div id="fill-query"></div>
+
+            <div class="apply-colors-div">
+                <div>
+                    <label class="form-check-label" for="font-color"><a>Font:</a></label>
+                    <input class="form-check-input" type="color" id="font-color" value="#000000">  <!-- black -->
+                </div>
+                <div>
+                    <label class="form-check-label" for="stroke-color"><a>Stroke:</a></label>
+                    <input class="form-check-input" type="color" id="stroke-color" value="#FFFF00">  <!-- yellow -->
+                </div>
+                <button type="button" class="btn btn-primary" onclick="applyColor()">Apply color</button>
+            </div>
+            <div class="d-flex justify-content-center">
+                <button type="button" class="btn btn-danger" onclick="resetColor()">Reset</button>
+            </div>
+        </div>
     </div>
 
 {% endblock %}
@@ -48,7 +71,7 @@
                 {% csrf_token %}
                 <div id="magic-query"></div>
 
-                <button type="button" class="btn btn-primary" onclick="submit_function()">Submit</button>
+                <button type="button" class="btn btn-primary" onclick="submitFunction()">Submit</button>
             </form>
 
 
@@ -78,14 +101,14 @@
             <form>
                 {% csrf_token %}
                 <div class="button-container" style="justify-content: space-evenly">
-                    <button type="button" class="btn btn-primary" onclick="load_taxid_tree(allGenomes)">
+                    <button type="button" class="btn btn-primary" onclick="loadTaxidTree(allGenomes)">
                         Calculate Taxid-based tree
                     </button>
-                    <button type="button" class="btn btn-success" onclick="load_genome_similarity_tree(allGenomes)">
+                    <button type="button" class="btn btn-success" onclick="loadGenomeSimilarityTree(allGenomes)">
                         Calculate Genome-similarity-based tree
                     </button>
                     <button type="button" class="btn btn-info"
-                            {% if ORTHOFINDER_ENABLED %} onclick="load_orthofinder_tree(allGenomes)"
+                            {% if ORTHOFINDER_ENABLED %} onclick="loadOrthofinderTree(allGenomes)"
                             {% else %} aria-disabled="true" disabled
                             {% endif %}>
                         Calculate Orthofinder-based tree
@@ -233,6 +256,8 @@
 
         const magicQueryDiv = $('#magic-query')
 
+        const fillQueryDiv = $('#fill-query')
+
         $(document).ready(function () {
             addGenomesGroup(magicQueryDiv, magicQuery, false, false)
 
@@ -242,6 +267,7 @@
                     showGenomeClickMenu(event)
                 })
 
+            addGenomesGroup(fillQueryDiv, [], false, false)
         })
 
         let taxid_tree
@@ -250,27 +276,27 @@
 
         let ajax_timer
 
-        function submit_function() {
+        function submitFunction() {
             const target = magicQueryDiv.find('.get-genomes')[0]
             const genomes = extractQuery(target)
 
-            $.when(validate_genomes(genomes)).done(function (genomes_valid) {
-                genomes_valid = genomes_valid['success']
+            $.when(validateGenomes(genomes)).done(function (genomesValid) {
+                genomesValid = genomesValid['success']
 
-                if (genomes_valid) {
-                    $('.get-genomes').removeClass('is-invalid')
+                if (genomesValid) {
+                    $('#magic-query .get-genomes').removeClass('is-invalid')
                 } else {
-                    $('.get-genomes').addClass('is-invalid')
+                    $('#magic-query .get-genomes').addClass('is-invalid')
                 }
 
-                if (genomes_valid) {
+                if (genomesValid) {
                     goToPageWithData('/trees', {'genomes': genomes})
                 }
             })
         }
 
 
-        function load_taxid_tree(genomes) {
+        function loadTaxidTree(genomes) {
             $('#taxid-tree-container').attr("hidden", false)
             loadTree(
                 genomes, 'taxid', '#taxid-tree', '#taxid-newick',
@@ -284,7 +310,7 @@
             )
         }
 
-        function load_genome_similarity_tree(genomes) {
+        function loadGenomeSimilarityTree(genomes) {
             $('#genome-similarity-tree-container').attr("hidden", false)
             loadTree(
                 genomes, 'genome-similarity', '#genome-similarity-tree', '#genome-similarity-newick',
@@ -298,7 +324,7 @@
             )
         }
 
-        function load_orthofinder_tree(genomes) {
+        function loadOrthofinderTree(genomes) {
             $('#orthofinder-tree-container').attr("hidden", false)
             loadTree(
                 genomes, 'orthofinder', '#orthofinder-tree', '#orthofinder-newick',
@@ -316,9 +342,59 @@
             $.post('/api/reload-orthofinder/', {'genomes': allGenomes}, function (data) {
                 console.log(data['message'])
                 if (data['success']) {
-                    load_orthofinder_tree(allGenomes)
+                    loadOrthofinderTree(allGenomes)
                 }
             }, "json")
+        }
+
+        function applyColor() {
+            const target = fillQueryDiv.find('.get-genomes')[0]
+            const genomes = extractQuery(target)
+            const fontColor = $('#font-color').val()
+            const strokeColor = $('#stroke-color').val()
+
+            console.log(fontColor, strokeColor, genomes)
+
+            $.when(getGenomeIdentifiers(genomes)).done(function (data) {
+                const genomesValid = data['success']
+
+                if (genomesValid) {
+
+                    $('#fill-query .get-genomes').removeClass('is-invalid')
+                } else {
+                    $('#fill-query .get-genomes').addClass('is-invalid')
+                }
+
+                if (genomesValid) {
+                    console.log('dATA', data)
+                    const identifers = data['identifiers']
+                    colorGenomes(identifers, fontColor, strokeColor)
+                }
+            })
+
+        }
+
+        function colorGenomes(genomes, fontColor, strokeColor) {
+            console.log(genomes, fontColor, strokeColor)
+            $('.tree-div text').each(function () {
+                const toHighlight = new Set(genomes)
+
+                if ($(this).css('opacity') !== '0') {
+                    if (toHighlight.has(this.textContent)) {
+                        this.style.setProperty('fill', fontColor, 'important')
+                        this.style.setProperty('stroke', strokeColor, 'important')
+                    }
+                }
+            })
+        }
+
+        function resetColor() {
+            $('.tree-div text').each(function () {
+                if ($(this).css('opacity') !== '0') {
+                    this.style.removeProperty('fill')
+                    this.style.removeProperty('stroke')
+                }
+            })
         }
 
     </script>

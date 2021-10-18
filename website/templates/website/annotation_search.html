@@ -20,7 +20,7 @@
 
     <div class="sidebar-subcontent form-check form-check-inline">
         <label class="form-check-label" for="colorize-tax-checkbox"><a>Colorize taxonomy?</a></label>
-        <input class="form-check-input" type="checkbox" id="colorize-tax-checkbox" onclick="toggle_colorize_tax()"
+        <input class="form-check-input" type="checkbox" id="colorize-tax-checkbox" onclick="toggleColorizeTax()"
                checked>
     </div>
 
@@ -66,7 +66,7 @@
                     <div id="query-genomes">
                         <!--- to be filled using addGenomesGroup function --->
                     </div>
-                    <button type="button" class="btn btn-primary" onclick="submit_function()">Submit</button>
+                    <button type="button" class="btn btn-primary" onclick="submitFunction()">Submit</button>
                 </div>
             </form>
 
@@ -141,7 +141,7 @@
         let genomes = [{% if magic_query_manager %} '{{ magic_query_manager.all_genomes|join:"', '" }}' {% else %}{% endif %}]
 
         $(document).ready(function () {
-            init_autocomplete_annotations("#get-annotations")
+            initAutocompleteAnnotations("#get-annotations")
 
             const target = $(queryGenomes.find('.get-genomes')[0])
 
@@ -154,7 +154,7 @@
             loadTable(annotations, genomes, true)
         })
 
-        function submit_function() {
+        function submitFunction() {
             const annotations = extractQuery('#query-annotations')
 
             const target = $(queryGenomes.find('.get-genomes')[0])
@@ -162,7 +162,7 @@
 
             console.log(annotations)
 
-            $.when(validate_annotations(annotations), validate_genomes(genomes)).done(function (annotations_valid, genomes_valid) {
+            $.when(validateAnnotations(annotations), validateGenomes(genomes)).done(function (annotations_valid, genomes_valid) {
                 annotations_valid = annotations_valid[2].responseJSON['success']
                 genomes_valid = genomes_valid[2].responseJSON['success']
 

@@ -23,7 +23,7 @@
 
     <div class="sidebar-subcontent form-check form-check-inline">
         <label class="form-check-label" for="colorize-tax-checkbox"><a>Colorize taxonomy?</a></label>
-        <input class="form-check-input" type="checkbox" id="colorize-tax-checkbox" onclick="toggle_colorize_tax()" checked>
+        <input class="form-check-input" type="checkbox" id="colorize-tax-checkbox" onclick="toggleColorizeTax()" checked>
     </div>
 
     <div class="sidebar-subcontent">
@@ -80,7 +80,7 @@
                 {% csrf_token %}
                 <div id="query-genomes"></div>
 
-                <button id="gene-trait-matching-submit-button" type="button" class="btn btn-primary" onclick="submit_function()">Submit</button>
+                <button id="gene-trait-matching-submit-button" type="button" class="btn btn-primary" onclick="submitFunction()">Submit</button>
             </form>
 
             {% if magic_query_manager_g1 and magic_query_manager_g2 %}
@@ -122,6 +122,16 @@
 
     </section>
 
+    <section style="padding-top: 1rem">
+        <div id="annotation-matrix-container">
+            <div style="display:flex; justify-content: center;">
+                <div id="gene-loci-spinner" class="spinner-border text-dark" role="status" hidden>
+                    <span class="sr-only">Loading...</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <section id="gene-trait-matching-container" style="padding-top: 1rem">
         <div class="container">
             <table id="gene-trait-matching-table" class="table table-striped table-bordered" style="width:100%"></table>
@@ -158,7 +168,7 @@
             {% endif %}
         })
 
-        function submit_function() {
+        function submitFunction() {
             const getQueries = queryGenomes.find('.get-genomes')
 
             const genomes_g1 = extractQuery(getQueries[0])
@@ -168,7 +178,7 @@
             const anno_type = $('#gene-trait-matching-anno-type').val()
             const multiple_testing_method = $('#gene-trait-matching-multiple-testing-method').val()
 
-            $.when(validate_genomes(genomes_g1), validate_genomes(genomes_g2)).done(function (genomes_g1_valid, genomes_g2_valid) {
+            $.when(validateGenomes(genomes_g1), validateGenomes(genomes_g2)).done(function (genomes_g1_valid, genomes_g2_valid) {
                 genomes_g1_valid = genomes_g1_valid[2].responseJSON['success']
                 genomes_g2_valid = genomes_g2_valid[2].responseJSON['success']
 
@@ -208,6 +218,7 @@
                 return
             }
 
+            $('#gene-loci-spinner').attr('hidden', false)
 
             $.post('{% url "website:gene-trait-matching-table" %}', {
                 'g1[]': genomes_g1,
@@ -247,6 +258,9 @@
                 .fail(function (data, textStatus, jqXHR) {
                     console.log('fail', data, textStatus, jqXHR)
                     alert(data.responseJSON.message)
+                })
+                .always(function () {
+                    $('#gene-loci-spinner').attr('hidden', true)
                 })
         }
 

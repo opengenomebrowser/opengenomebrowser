@@ -67,7 +67,6 @@ urlpatterns = [
     path('api/autocomplete-pathway/', Api.autocomplete_pathway, name='api-autocomplete-pathway'),
     path('api/autocomplete-genomes/', Api.autocomplete_genomes, name='api-autocomplete-genomes'),
     path('api/autocomplete-genes/', Api.autocomplete_genes, name='api-autocomplete-genes'),
-    path('api/autocomplete-genes/', Api.autocomplete_genes, name='api-autocomplete-genes'),
     path('api/validate-pathwaymap/', Api.validate_pathwaymap, name='api-validate-pathwaymap'),
     path('api/validate-genomes/', Api.validate_genomes, name='api-validate-genomes'),
     path('api/validate-genes/', Api.validate_genes, name='api-validate-genes'),

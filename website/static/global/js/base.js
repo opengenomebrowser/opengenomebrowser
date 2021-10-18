@@ -30,7 +30,7 @@ jQuery.fn.extend({
  *
  * https://stackoverflow.com/questions/11344531/pure-javascript-store-object-in-cookie/11344672
  */
-function write_cookie(name, value, expires_minutes = 120) {
+function writeCookie(name, value, expires_minutes = 120) {
     let expires = new Date()
     expires.setTime(expires.getTime() + (expires_minutes * 60 * 1000))
 
@@ -42,13 +42,13 @@ function write_cookie(name, value, expires_minutes = 120) {
     document.cookie = cookie
 }
 
-function read_cookie(name) {
+function readCookie(name) {
     let result = document.cookie.match(new RegExp(name + '=([^;]+)'))
     result && (result = JSON.parse(result[1]))
     return result
 }
 
-function delete_cookie(name) {
+function deleteCookie(name) {
     let cookie = `${name}=; expires=Thu, 01-Jan-1970 00:00:01 GMT; path=/;`
     if (!window.location.host.startsWith('127.0.0.1')) {
         // cannot save cookies to localhost
@@ -133,14 +133,14 @@ function calcUrl(location, data) {
 /**
  * Read annotations.json from cookie
  */
-let annotations_json
+let annotationsJson
 jQuery(document).ready(function () {
-    annotations_json = read_cookie('annotations_json')
-    if (annotations_json === null) {
+    annotationsJson = readCookie('annotationsJson')
+    if (annotationsJson === null) {
         $.getJSON("/files_html/annotations.json", function (data) {
-            console.log('reload annotations_json!')
-            annotations_json = data
-            write_cookie('annotations_json', data, 120)
+            console.log('reload annotationsJson!')
+            annotationsJson = data
+            writeCookie('annotationsJson', data, 120)
         })
     }
 })
@@ -148,7 +148,7 @@ jQuery(document).ready(function () {
 /**
  * Toggle the taxonomy-stylesheet.
  */
-function toggle_colorize_tax() {
+function toggleColorizeTax() {
     let colorize_tax_checkbox = document.getElementById('colorize-tax-checkbox')
     let taxid_color_stylesheet = document.getElementById('taxid-color-stylesheet')
 
@@ -158,7 +158,7 @@ function toggle_colorize_tax() {
 /**
  * Toggle the sequence-viewer-stylesheet.
  */
-function toggle_colorize_sequence() {
+function toggleColorizeSequence() {
     let colorize_sequence_checkbox = document.getElementById('colorize-sequence-checkbox')
     let sequence_stylesheet = document.getElementById('sequence-stylesheet')
 
@@ -363,22 +363,27 @@ function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms))
 }
 
-function validate_genomes(genomes) {
+function validateGenomes(genomes) {
     return $.post('/api/validate-genomes/', {'genomes': genomes}, function (data) {
     }, "json")
 }
 
-function validate_genes(genes) {
+function getGenomeIdentifiers(genomes) {
+    return $.post('/api/validate-genomes/', {'genomes': genomes, 'get_identifiers': true}, function (data) {
+    }, "json")
+}
+
+function validateGenes(genes) {
     return $.post('/api/validate-genes/', {'genes': genes}, function (data) {
     }, "json")
 }
 
-function validate_pathwaymap(slug) {
+function validatePathwaymap(slug) {
     return $.post('/api/validate-pathwaymap/', {'slug': slug}, function (data) {
     }, "json")
 }
 
-function validate_annotations(annotations) {
+function validateAnnotations(annotations) {
     return $.post('/api/validate-annotations/', {'annotations': annotations}, function (data) {
     }, "json")
 }
@@ -430,7 +435,7 @@ function createReadOnlyAnnotationsDiv(annotationsArray, annotationToType) {
     return readOnlyDiv
 }
 
-function init_autocomplete_annotations(div_name) {
+function initAutocompleteAnnotations(div_name) {
     // https://goodies.pixabay.com/jquery/tag-editor/demo.html
     $(div_name).tagEditor({
         autocomplete: {
@@ -438,22 +443,22 @@ function init_autocomplete_annotations(div_name) {
             minLength: 1
         },
         forceLowercase: false,
-        onChange: on_annotations_change
+        onChange: onAnnotationsChange
     })
 
     let tag_editor_objects = $(div_name).tagEditor('getTags')[0]
-    on_annotations_change(tag_editor_objects.field, tag_editor_objects.editor, tag_editor_objects.tags)
+    onAnnotationsChange(tag_editor_objects.field, tag_editor_objects.editor, tag_editor_objects.tags)
 
     // fix bug: sometimes, after pasting data, the on_change event was not triggered
     $(tag_editor_objects.editor).bind("paste", function (e) {
         setTimeout(function () {
             let tag_editor_objects = $(div_name).tagEditor('getTags')[0]
-            on_annotations_change(tag_editor_objects.field, tag_editor_objects.editor, tag_editor_objects.tags)
+            onAnnotationsChange(tag_editor_objects.field, tag_editor_objects.editor, tag_editor_objects.tags)
         }, 100)
     })
 }
 
-function on_annotations_change(field, editor, tags) {
+function onAnnotationsChange(field, editor, tags) {
     $.ajax({
         dataType: "json",
         url: '/api/annotation-to-type/',
@@ -484,7 +489,7 @@ function on_annotations_change(field, editor, tags) {
     })
 }
 
-function init_autocomplete_genomes(div_name, maxTags) {
+function initAutocompleteGenomes(div_name, maxTags) {
     // https://goodies.pixabay.com/jquery/tag-editor/demo.html
     $(div_name).tagEditor({
         autocomplete: {
@@ -493,22 +498,22 @@ function init_autocomplete_genomes(div_name, maxTags) {
         },
         forceLowercase: false,
         maxTags: maxTags ? maxTags : null,
-        onChange: on_genomes_change
+        onChange: onGenomesChange
     })
 
     let tag_editor_objects = $(div_name).tagEditor('getTags')[0]
-    on_genomes_change(tag_editor_objects.field, tag_editor_objects.editor, tag_editor_objects.tags)
+    onGenomesChange(tag_editor_objects.field, tag_editor_objects.editor, tag_editor_objects.tags)
 
     // fix bug: sometimes, after pasting data, the on_change event was not triggered
     $(tag_editor_objects.editor).bind("paste", function (e) {
         setTimeout(function () {
             let tag_editor_objects = $(div_name).tagEditor('getTags')[0]
-            on_genomes_change(tag_editor_objects.field, tag_editor_objects.editor, tag_editor_objects.tags)
+            onGenomesChange(tag_editor_objects.field, tag_editor_objects.editor, tag_editor_objects.tags)
         }, 100)
     })
 }
 
-function on_genomes_change(field, editor, tags) {
+function onGenomesChange(field, editor, tags) {
     $.ajax({
         dataType: "json",
         url: '/api/genome-identifier-to-species/',
@@ -541,7 +546,7 @@ function on_genomes_change(field, editor, tags) {
                         child_1.setAttribute('data-tag', genome_data['tag'])
                         child_2.setAttribute('data-tag', genome_data['tag'])
                     } else {
-                        console.log('ERROR in on_genomes_change!', genome, genome_data, li)
+                        console.log('ERROR in onGenomesChange!', genome, genome_data, li)
                     }
 
                     child_1.classList.add('genome')
@@ -552,7 +557,7 @@ function on_genomes_change(field, editor, tags) {
     })
 }
 
-function init_autocomplete_genes(div_name) {
+function initAutocompleteGenes(div_name) {
     // https://goodies.pixabay.com/jquery/tag-editor/demo.html
     $(div_name).tagEditor({
         autocomplete: {
@@ -560,23 +565,23 @@ function init_autocomplete_genes(div_name) {
             minLength: 1
         },
         forceLowercase: false,
-        onChange: on_genes_change
+        onChange: onGenesChange
     })
 
     let tag_editor_objects = $(div_name).tagEditor('getTags')[0]
 
-    on_genes_change(tag_editor_objects.field, tag_editor_objects.editor, tag_editor_objects.tags)
+    onGenesChange(tag_editor_objects.field, tag_editor_objects.editor, tag_editor_objects.tags)
 
     // fix bug: sometimes, after pasting data, the on_change event was not triggered
     $(tag_editor_objects.editor).bind("paste", function (e) {
         setTimeout(function () {
             let tag_editor_objects = $(div_name).tagEditor('getTags')[0]
-            on_genes_change(tag_editor_objects.field, tag_editor_objects.editor, tag_editor_objects.tags)
+            onGenesChange(tag_editor_objects.field, tag_editor_objects.editor, tag_editor_objects.tags)
         }, 100)
     })
 }
 
-function on_genes_change(field, editor, tags) {
+function onGenesChange(field, editor, tags) {
     const genomes = Array.from(new Set(tags.map(function (gene) {
         return gene.rsplit('_', 1)[0]
     })))

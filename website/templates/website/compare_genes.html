@@ -103,7 +103,7 @@
                     <input type="text" class="form-control" id="get-genes" value="{{ genes|join:", " }}">
                 </div>
 
-                <button type="button" class="btn btn-primary" onclick="submit_function()">Submit</button>
+                <button type="button" class="btn btn-primary" onclick="submitFunction()">Submit</button>
             </form>
         </div>
 
@@ -186,7 +186,7 @@
         let alignment  // will contain the MSA (not currently used)
 
         $(document).ready(function () {
-            init_autocomplete_genes("#get-genes")
+            initAutocompleteGenes("#get-genes")
 
             $('#real-genes .gene')
                 .ogbTooltip()
@@ -195,10 +195,10 @@
                 })
         })
 
-        function submit_function() {
+        function submitFunction() {
             const genes = extractQuery('#query-genes')
 
-            $.when(validate_genes(genes)).done(function (genes_valid) {
+            $.when(validateGenes(genes)).done(function (genes_valid) {
 
                 genes_valid = genes_valid.success && genes.length > 0
 

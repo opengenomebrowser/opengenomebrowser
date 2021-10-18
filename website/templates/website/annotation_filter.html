@@ -179,7 +179,7 @@
             genomesInput.value = genomes
             console.log(genomesInput.value)
 
-            $.when(validate_genomes(genomes)).done(function (genomes_valid) {
+            $.when(validateGenomes(genomes)).done(function (genomes_valid) {
                 genomes_valid = genomes_valid['success']
 
                 console.log('genomes_valid', genomes_valid)

@@ -25,7 +25,7 @@
 
     <div class="sidebar-subcontent form-check form-check-inline">
         <label class="form-check-label" for="colorize-tax-checkbox"><a>Colorize taxonomy?</a></label>
-        <input class="form-check-input" type="checkbox" id="colorize-tax-checkbox" onclick="toggle_colorize_tax()"
+        <input class="form-check-input" type="checkbox" id="colorize-tax-checkbox" onclick="toggleColorizeTax()"
                checked>
     </div>
 
@@ -140,7 +140,7 @@
 
                 <div id="query-genomes"></div>
 
-                <button type="button" class="btn btn-primary" onclick="submit_function()">Submit</button>
+                <button type="button" class="btn btn-primary" onclick="submitFunction()">Submit</button>
 
                 <button type="button" class="btn-sm btn-success float-right" onclick="addGenomesGroup(queryGenomes)" title=""
                         data-original-title="Add group">Add group
@@ -251,7 +251,7 @@
 
         function readColors() {
             // return cookie-colors (or default colors)
-            const cookieColors = read_cookie('pathway-colors')
+            const cookieColors = readCookie('pathway-colors')
             return Object.assign({}, defaultColors, cookieColors)  // overwrite missing values with default values
         }
 
@@ -266,7 +266,7 @@
             }
 
             // write to cookie
-            write_cookie('pathway-colors', colors, 14400)  // 10 days
+            writeCookie('pathway-colors', colors, 14400)  // 10 days
             // apply colors to pathway map
             colorPathway()
         }
@@ -432,7 +432,7 @@
             }, "json")
         }
 
-        function submit_function() {
+        function submitFunction() {
             const map_slug = $('#get-map').val().split(' : ')[0]
             let groupsOfGenomes = []
             let allGenomes = new Set()
@@ -443,7 +443,7 @@
             })
             allGenomes = Array.from(allGenomes)
 
-            $.when(validate_pathwaymap(map_slug), validate_genomes(allGenomes)).done(function (map_valid, genomes_valid) {
+            $.when(validatePathwaymap(map_slug), validateGenomes(allGenomes)).done(function (map_valid, genomes_valid) {
                 map_valid = map_valid[2].responseJSON['success']
                 genomes_valid = genomes_valid[2].responseJSON['success']
 

@@ -70,7 +70,7 @@
                            value="{{ mincluster }}" min="0" max="10000" oninput="$('#mincluster-value').val(Math.round(Math.exp(this.value/1000)))">
                 </div>
 
-                <button type="button" class="btn btn-primary" onclick="submit_function()">Submit</button>
+                <button type="button" class="btn btn-primary" onclick="submitFunction()">Submit</button>
             </form>
 
             {% if genome_ref or genome_query %}
@@ -143,7 +143,7 @@
             console.log('no genome_ref and genome_query -> cannot load dotplot')
         {% endif %}
 
-        function submit_function() {
+        function submitFunction() {
             const ref = $('#reference-genome-value').val()
             const query = $('#query-genome-value').val()
             const mincluster = $('#mincluster-value').val()
@@ -151,7 +151,7 @@
 
             const minclusterValid = /^[0-9]+$/.test(mincluster)
 
-            $.when(validate_genomes([ref]), validate_genomes([query])).done(function (refValid, queryValid) {
+            $.when(validateGenomes([ref]), validateGenomes([query])).done(function (refValid, queryValid) {
                 refValid = refValid[0]['success']
                 queryValid = queryValid[0]['success']
 
@@ -215,8 +215,8 @@
                     showGenomeClickMenu(event)
                 })
 
-            init_autocomplete_genomes($('#query-genome-value'), 1)
-            init_autocomplete_genomes($('#reference-genome-value'), 1)
+            initAutocompleteGenomes($('#query-genome-value'), 1)
+            initAutocompleteGenomes($('#reference-genome-value'), 1)
 
             {% if genome_ref and genome_query %}
                 loadDotPlot('{{genome_ref}}', '{{genome_query}}', {{mincluster}})

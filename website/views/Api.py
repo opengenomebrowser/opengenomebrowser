@@ -5,7 +5,7 @@ from collections import Counter
 from django.shortcuts import HttpResponse
 from django.http import JsonResponse
 from django.db.models.functions import Concat
-from django.db.models import CharField, Value as V
+from django.db.models import Max, Q, CharField, Value as V
 
 from website.models import GenomeContent, Genome, PathwayMap, Gene, TaxID, GenomeSimilarity, Annotation, annotation_types
 from website.models.Tree import TaxIdTree, AniTree, OrthofinderTree, TreeNotDoneError, TreeFailedError
@@ -88,23 +88,6 @@ class Api:
         return HttpResponse(data, mimetype)
 
     @staticmethod
-    def autocomplete_genes(request):
-        q = request.GET.get('term')
-        results = []
-
-        genes = Gene.objects.filter(identifier__icontains=q)[:20]
-        genes.prefetch_related('genomecontent__genome__organism__taxid')
-        for gene in genes:
-            results.append({
-                'label': F"{gene.identifier} ({gene.genomecontent.genome.organism.taxid.taxscientificname})",
-                'value': gene.identifier
-            })
-
-        data = json.dumps(results)
-        mimetype = 'application/json'
-        return HttpResponse(data, mimetype)
-
-    @staticmethod
     def annotation_to_type(request):
         annotations = request.POST.getlist('annotations[]')
 
@@ -144,16 +127,25 @@ class Api:
         """
         Test if genomes exist in the database.
 
-        Queries may also be "magic words"
+        Queries may also be "magic words".
+
+        If get_identifiers, return list of identifiers.
         """
         qs = set(request.POST.getlist('genomes[]'))
 
+        get_identifiers = bool(request.POST.get('get_identifiers', False))
+
         try:
-            MagicQueryManager(queries=qs)
+            mqm = MagicQueryManager(queries=qs)
         except Exception as e:
             return JsonResponse(dict(success=False, message=str(e)))
 
-        return JsonResponse(dict(success=True))
+        result = dict(success=True)
+
+        if get_identifiers:
+            result['identifiers'] = list(mqm.all_genomes.values_list('identifier', flat=True))
+
+        return JsonResponse(result)
 
     @staticmethod
     def validate_genes(request):
@@ -268,33 +260,35 @@ class Api:
             span=span
         )
 
-        locus_tags = set()
-        for graphic_record in graphic_records:
-            locus_tags = locus_tags.union(graphic_record.get_locus_tags())
+        if colorize_by == '--':
+            # color selected genes in blue
+            for graphic_record in graphic_records:
+                graphic_record.colorize_graphic_record({graphic_record.locus_tag: '#1984ff'})
+        else:
+            all_genes = [lt for gr in graphic_records for lt in gr.get_locus_tags()]
 
-        genes = Gene.objects.filter(identifier__in=locus_tags)
+            genes = Gene.objects \
+                .filter(identifier__in=set(all_genes)) \
+                .annotate(anno=Max('annotations__name', filter=Q(annotations__anno_type=colorize_by)))
 
-        def get_ortholog(gene):
-            o = gene.annotations.filter(anno_type=colorize_by).first()
-            if o is not None:
-                return o.name
+            gene_to_anno = {g: a for g, a in genes.values_list('identifier', 'anno') if a is not None}
 
-        locus_tag_to_ortholog = {gene.identifier: get_ortholog(gene) for gene in genes}
-        # only color orthologs that occur more than once
-        orthologs = [ortholog for ortholog, counts in Counter(locus_tag_to_ortholog.values()).items() if counts > 1]
-        # assign random colors to orthologs
-        orthologs_to_color = {o: c for o, c in zip(orthologs, itertools.cycle(UNIQUE_COLORS_HEX))}
+            # count annotations
+            anno_count = Counter(gene_to_anno[g] for g in all_genes if g in gene_to_anno)
 
-        locus_tag_to_color = {identifier: orthologs_to_color[ortholog]
-                              for identifier, ortholog in locus_tag_to_ortholog.items()
-                              if ortholog in orthologs_to_color and ortholog is not None}
+            # only keep reoccurring annotations
+            annos = set(anno for anno, count in anno_count.items() if count >= 2)
 
-        # color selected genes in blue:
-        for gbk, id, id_ in loci_of_interest:
-            locus_tag_to_color[id] = '#1984ff'
+            # assign random colors to annos
+            annos_to_color = {o: c for o, c in zip(annos, itertools.cycle(UNIQUE_COLORS_HEX))}
 
-        for graphic_record in graphic_records:
-            graphic_record.colorize_graphic_record(locus_tag_to_color)
+            gene_to_color = {identifier: annos_to_color[anno]
+                             for identifier, anno in gene_to_anno.items()
+                             if anno in annos_to_color}
+
+            # color genes according to annotations:
+            for graphic_record in graphic_records:
+                graphic_record.colorize_graphic_record(gene_to_color)
 
         plots = GraphicRecordLocus.plot_multiple_bokeh(graphic_records, viewspan=3000, auto_reverse=True)
 

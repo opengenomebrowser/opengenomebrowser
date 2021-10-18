@@ -375,7 +375,7 @@ Copy annotation</a>
     // show hyperlinks
     let hyperlinks
     try {
-        hyperlinks = annotations_json[annotype]['hyperlinks']
+        hyperlinks = annotationsJson[annotype]['hyperlinks']
     } catch (e) {
         console.log('showAnnotationClickMenu: Failed to read hyperlinks for', annotype, annotation)
         hyperlinks = []

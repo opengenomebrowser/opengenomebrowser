@@ -115,6 +115,15 @@ class ColorGenerator:
         return [cls.color_to_int(color) for color in colors]
 
     @staticmethod
+    def color_to_hex(rgb: tuple[float, float, float]) -> str:
+        r, g, b = rgb
+        return f'#{int(r * 255):02x}{int(g * 255):02x}{int(b * 255):02x}'
+
+    @classmethod
+    def colors_to_hex(cls, colors: [tuple[float, float, float]]) -> [str]:
+        return [cls.color_to_hex(color) for color in colors]
+
+    @staticmethod
     def colors_to_cmap(colors: [tuple[float, float, float]]):
         from matplotlib.colors import LinearSegmentedColormap
         return LinearSegmentedColormap.from_list('new_map', colors, N=len(colors))
@@ -147,50 +156,3 @@ class ColorGenerator:
         r, g, b = color_int
         luminance = sqrt(0.299 * (r ** 2) + 0.587 * (g ** 2) + 0.114 * (b ** 2))
         return luminance < threshold
-
-
-if __name__ == '__main__':
-    # basic function
-    colors = [(1, 1, 1)]
-    # # add bright
-    colors = ColorGenerator.get_random_colors(existing_colors=colors, n_colors=100, brightness=2)
-
-    print("Your colors:", colors)
-    print("In int format:", ColorGenerator.colors_to_int(colors))
-
-    print("Dark?", [ColorGenerator.is_dark(c, is_float=True) for c in colors])
-
-    print(ColorGenerator.import_string('3,4,5'))
-
-    ColorGenerator.show_colors(colors)
-
-
-    exit(0)
-
-    # basic function
-    colors = ColorGenerator.get_random_colors(n_colors=n_colors)
-    colors.append((1, 1, 1))
-    # add red
-    colors = ColorGenerator.get_random_colors(existing_colors=colors, n_colors=n_colors, b_end=0.2, g_end=0.2)
-    colors.append((1, 1, 1))
-    # add green
-    colors = ColorGenerator.get_random_colors(existing_colors=colors, n_colors=n_colors, b_end=0.2, r_end=0.2)
-    colors.append((1, 1, 1))
-    # add blue
-    colors = ColorGenerator.get_random_colors(existing_colors=colors, n_colors=n_colors, g_end=0.2, r_end=0.2)
-    colors.append((1, 1, 1))
-    # add dark
-    colors = ColorGenerator.get_random_colors(existing_colors=colors, n_colors=n_colors, darkness=2.5)
-    colors.append((1, 1, 1))
-    # # add bright
-    colors = ColorGenerator.get_random_colors(existing_colors=colors, n_colors=n_colors, brightness=2.5)
-    colors.append((1, 1, 1))
-
-    print("Your colors:", colors)
-    print("In int format:", ColorGenerator.colors_to_int(colors))
-
-    print("Dark?", [ColorGenerator.is_dark(c, is_float=True) for c in colors])
-
-    print(ColorGenerator.import_string('3,4,5'))
-
-    ColorGenerator.show_colors(colors)

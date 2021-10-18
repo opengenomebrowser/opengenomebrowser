@@ -36,7 +36,7 @@ function addGenomesGroup(target, genomes = [], deleteButton = true, groupId = tr
         </div>
         `
     target.append(el)
-    init_autocomplete_genomes('#' + uniqueId)
+    initAutocompleteGenomes('#' + uniqueId)
 }
 
 function removeGenomesQuery(target) {
