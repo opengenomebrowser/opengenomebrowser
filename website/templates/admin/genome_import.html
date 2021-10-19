@@ -57,11 +57,11 @@
             $.post('/admin/genome-import-submit/', {'organism': organismName}, "json")
                 .done(function (data, textStatus, jqXHR) {
                     console.log('done', data, textStatus, jqXHR)
-                    alertModal('success', 'Success', data?.message || '(no message)')
+                    alertModal('success', 'Success', data?.message || `(no message) ${data?.status} ${data?.statusText}`)
                 })
                 .fail(function (data, textStatus, jqXHR) {
                     console.log('fail', data, textStatus, jqXHR)
-                    alertModal('danger', 'Error', data?.responseJSON?.message || '(no message)')
+                    alertModal('danger', 'Error', data?.responseJSON?.message || `(no message) ${data?.status} ${data?.statusText}`)
                 })
         }
 
@@ -69,11 +69,11 @@
             $.post('/admin/remove-genome/', {'organism': organismName}, "json")
                 .done(function (data, textStatus, jqXHR) {
                     console.log('done', data, textStatus, jqXHR)
-                    alertModal('success', 'Success', data?.message || '(no message)')
+                    alertModal('success', 'Success', data?.message || `(no message) ${data?.status} ${data?.statusText}`)
                 })
                 .fail(function (data, textStatus, jqXHR) {
                     console.log('fail', data, textStatus, jqXHR)
-                    alertModal('danger', 'Error', data?.responseJSON?.message || '(no message)')
+                    alertModal('danger', 'Error', data?.responseJSON?.message || `(no message) ${data?.status} ${data?.statusText}`)
                 })
         }
 

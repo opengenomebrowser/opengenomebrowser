@@ -194,8 +194,8 @@
                     })
                 },
                 error: function (data) {
-                    console.log('BLAST FAILED!', serialized_query, data)
-                    alert('BLAST FAILED!')
+                    console.log('BLAST FAILED:', serialized_query, data)
+                    alertModal('danger', 'Error', data?.responseJSON?.message || `(no message) ${data?.status} ${data?.statusText}`)
                 }
             })
         }

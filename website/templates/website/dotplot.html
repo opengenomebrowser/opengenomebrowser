@@ -179,7 +179,7 @@
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
                     console.log('jqXHR:', jqXHR, 'textStatus:', textStatus, 'errorThrown:', errorThrown)
-                    alert('Failed to load dotplot annotations! Check console for more information.')
+                    alertModal('danger', 'Error', jqXHR?.responseJSON?.message || `Failed to load dotplot annotations! ${jqXHR?.status} ${errorThrown}`)
                 }
             })
         }
@@ -201,7 +201,7 @@
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
                     console.log('jqXHR:', jqXHR, 'textStatus:', textStatus, 'errorThrown:', errorThrown)
-                    alert('Failed to load dotplot! Check console for more information.')
+                    alertModal('danger', 'Error', jqXHR?.responseJSON?.message || `(no message) ${jqXHR?.status} ${errorThrown}`)
                 }
             })
 

@@ -257,7 +257,7 @@
                 })
                 .fail(function (data, textStatus, jqXHR) {
                     console.log('fail', data, textStatus, jqXHR)
-                    alert(data.responseJSON.message)
+                    alertModal('danger', 'Error', data?.responseJSON?.message || `(no message) ${data?.status} ${data?.statusText}`)
                 })
                 .always(function () {
                     $('#gene-loci-spinner').attr('hidden', true)

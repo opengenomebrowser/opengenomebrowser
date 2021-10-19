@@ -166,9 +166,7 @@
                     console.log('generate:jqXHR:', jqXHR)
                     console.log('generate:textStatus:', textStatus)
                     console.log('generate:errorThrown:', errorThrown)
-                    const status = jqXHR.responseJSON?.status || ''
-                    const message = jqXHR.responseJSON?.message || ''
-                    alert(`Failed to generate file. ${status} ${message}`)
+                    alertModal('danger', 'Error', jqXHR?.responseJSON?.message || `Failed to generate file! ${jqXHR?.status} ${errorThrown}`)
                 }
             })
         }
@@ -198,10 +196,8 @@
                         console.log('activateDownloadWhenLoaded:jqXHR:', jqXHR)
                         console.log('activateDownloadWhenLoaded:textStatus:', textStatus)
                         console.log('activateDownloadWhenLoaded:errorThrown:', errorThrown)
-                        const status = jqXHR.responseJSON?.status || ''
-                        const message = jqXHR.responseJSON?.message || ''
                         element.innerHTML = imgErr
-                        alert(`Failed to check if file has been created. ${status} ${message}`)
+                        alertModal('danger', 'Error', jqXHR?.responseJSON?.message || `Failed to check if file has been created! ${jqXHR?.status} ${errorThrown}`)
                     }
                 }
             })
