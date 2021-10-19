@@ -136,6 +136,9 @@ def gtm_table(request):
     except Exception as e:
         return JsonResponse(dict(success='false', message=str(e)), status=500)
 
+    if len(gtm_df) == 0:
+        return JsonResponse(dict(success='false', message='Found no significantly different annotations.'), status=409)
+
     json_response = to_json(gtm_df=gtm_df, anno_type=anno_type, method='boschloo')
 
     return JsonResponse(json_response)

@@ -256,8 +256,13 @@
                     }).container().appendTo($('#buttons'))
                 })
                 .fail(function (data, textStatus, jqXHR) {
-                    console.log('fail', data, textStatus, jqXHR)
-                    alertModal('danger', 'Error', data?.responseJSON?.message || `(no message) ${data?.status} ${data?.statusText}`)
+                    if (data?.status === 409) {
+                        console.log('empty df', data, textStatus, jqXHR)
+                        alertModal('info', 'Info', data?.responseJSON?.message)
+                    } else {
+                        console.log('fail', data, textStatus, jqXHR)
+                        alertModal('danger', 'Error', data?.responseJSON?.message || `(no message) ${data?.status} ${data?.statusText}`)
+                    }
                 })
                 .always(function () {
                     $('#gene-loci-spinner').attr('hidden', true)
