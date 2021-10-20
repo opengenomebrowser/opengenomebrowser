@@ -45,6 +45,7 @@ else
     --socket=/socket/ogb.sock \
     --processes=5 \
     --harakiri="${HARAKIRI:-60}" \
+    --worker-reload-mercy="${HARAKIRI:-60}" \
     --max-requests=5000 \
     --buffer-size=65535 \
     --vacuum
