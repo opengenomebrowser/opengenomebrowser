@@ -28,13 +28,7 @@ if [ "$DEBUG" == "true" ]; then
 
 else
 
-  re='^[0-9]+$'
-  if ! [[ $UWSGI_WORKERS =~ $re ]]; then
-    echo "Error: Environment variable UWSGI_WORKERS is ill-defined!" >&2
-    exit 1
-  fi
-
-  echo "PRODUCTION MODE with $UWSGI_WORKERS"
+  echo "PRODUCTION MODE with UWSGI_WORKERS=${$UWSGI_WORKERS:-5} and HARAKIRI=${HARAKIRI:-60}"
 
   uwsgi \
     --chmod-socket=666 \
@@ -43,7 +37,7 @@ else
     --env DJANGO_SETTINGS_MODULE=OpenGenomeBrowser.settings \
     --master --pidfile=/tmp/opengenomebrowser-master.pid \
     --socket=/socket/ogb.sock \
-    --processes=5 \
+    --processes="${$UWSGI_WORKERS:-5}" \
     --harakiri="${HARAKIRI:-60}" \
     --worker-reload-mercy="${HARAKIRI:-60}" \
     --max-requests=5000 \
