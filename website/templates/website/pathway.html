@@ -156,11 +156,12 @@
                 </button>
 
                 <form id="real-div" class="form-group collapse">
-                    <div class="form-group row">
+                    <div>
                         <label for="real-map" class="col-sm-2 col-form-label" style="white-space: nowrap">Pathway Map:</label>
-                        <div class="col-sm-10">
-                            <input type="text" class="form-control" id="real-map" value="{{ map.slug }} : {{ map.title }}" readonly>
+                        <div class="read-only-div" id="real-map" style="overflow: unset; justify-content: unset">
+                            {{ map.html|safe }}: {{ map.title }}
                         </div>
+
                     </div>
 
                     {% for magic_query_manager in magic_query_managers %}
@@ -197,9 +198,11 @@
         "use strict"
         const local_genome_to_visualization = JSON.parse(document.getElementById('genome_to_visualization').textContent)
 
-        const type_dict = {{ type_dict|safe }}
+        const type_dict =
+        {{ type_dict|safe }}
 
-        const initialQueries = {{ initial_queries|safe }}
+        const initialQueries =
+        {{ initial_queries|safe }}
 
         const initialGenomes = [{% for magic_query_manager in magic_query_managers %}[
             {% for genome in magic_query_manager.all_genomes %}"{{ genome.identifier }}", {% endfor %}],{% endfor %}]
@@ -296,11 +299,18 @@
                 minLength: 2,
             })
 
-            $('.ogb-tag')
+            $('.ogb-tag.genome')
                 .ogbTooltip()
                 .click(function () {
                     showGenomeClickMenu(event)
                 })
+
+            $(".ogb-tag.pathway")
+                .ogbTooltip()
+                .on("click", function () {
+                    showPathwayClickMenu(event, 'none')
+                })
+
 
             {% if map %}
                 $('#pathway-map-container').load(`/files_html/{{ PATHWAY_MAPS_RELATIVE }}/{{ map.filename }}`.replace(/\s/g, '%20'), function () {
@@ -446,8 +456,6 @@
             $.when(validatePathwaymap(map_slug), validateGenomes(allGenomes)).done(function (map_valid, genomes_valid) {
                 map_valid = map_valid[2].responseJSON['success']
                 genomes_valid = genomes_valid[2].responseJSON['success']
-
-                console.log(map_valid, genomes_valid)
 
                 if (map_valid) {
                     $('#get-map').removeClass('is-invalid')

@@ -95,31 +95,67 @@
             <h3>Annotations</h3>
             <!-- Annotations: Table -->
             <div style="max-height: 30rem;overflow-y: auto">
-                <table class="table no-bottom-padding">
+                <table id="annotations-list" class="table no-bottom-padding">
                     <thead class="thead-dark">
                     <tr>
                         <th scope="col">Type</th>
                         <th scope="col">Name</th>
                         <th scope="col">Description</th>
+                        <th scope="col">Pathways</th>
                     </tr>
                     </thead>
                     <tbody>
-                    {% for anno_type, annos in annotations.items %}
-                        {% for anno in annos %}
-                            <tr>
-                                <th scope="row">
-                                    <div class="annotation"
-                                         data-annotype="{{ anno.anno_type }}">{{ anno.anno_type_verbose }}</div>
-                                </th>
-                                <td>{{ anno.html|safe }}</td>
-                                <td>{{ anno.description }}</td>
-                            </tr>
-                        {% endfor %}
+                    {% for anno in annotations %}
+                        <tr>
+                            <th scope="row">
+                                <div class="annotation"
+                                     data-annotype="{{ anno.anno_type }}">{{ anno.anno_type_verbose }}</div>
+                            </th>
+                            <td>{{ anno.html|safe }}</td>
+                            <td>{{ anno.description }}</td>
+                            <td>{% for pathway in anno.pathwaymap_set.all %}{{ pathway.html|safe }}{% endfor %}</td>
+                        </tr>
                     {% endfor %}
                     </tbody>
                 </table>
             </div>
         </div>
+
+    </section>
+    <section>
+
+        {% if pathways %}
+            <!-- Pathways -->
+            <div class="container">
+
+                <hr class="featurette-divider">
+
+                <h3>Occurs in the following pathway maps:</h3>
+                <!-- Annotations: Table -->
+                <div style="max-height: 30rem;overflow-y: auto">
+                    <table id="annotations-list" class="table no-bottom-padding table-sm">
+                        <thead class="thead-dark">
+                        <tr>
+                            <th scope="col">Pathway</th>
+                            <th scope="col">Description</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for pathway in pathways %}
+                            <tr>
+                                <th scope="row">
+                                    {{ pathway.html|safe }}
+                                </th>
+                                <td>{{ pathway.title }}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+
+        {% endif %}
 
     </section>
     <section>
@@ -206,8 +242,8 @@
 
                 <div class="collapse" id="locusterms">
                     Responsible annotations: <br>
-                    {% for sl_id, annotation in sls %}
-                        <a href="https://www.nextprot.org/term/SL-{{ sl_id }}/">SL-{{ sl_id }}</a>: {{ annotation.html|safe }}
+                    {% for sl_id, annotation in location_annotations %}
+                        <a href="https://www.nextprot.org/term/{{ sl_id }}/">{{ sl_id }}</a>: {{ annotation.html|safe }}
                         <span>{{ annotation.description }}</span>
                         <br>
                     {% endfor %}
@@ -259,13 +295,17 @@
         $(document).ready(function () {
             load_dfvm()
 
-            $(".ogb-tag.annotation").each(function (index) {
-                $(this)
-                    .ogbTooltip()
-                    .on("click", function () {
-                        showAnnotationClickMenu(event)
-                    })
-            })
+            $(".ogb-tag.annotation")
+                .ogbTooltip()
+                .on("click", function () {
+                    showAnnotationClickMenu(event)
+                })
+
+            $(".ogb-tag.pathway")
+                .ogbTooltip()
+                .on("click", function () {
+                    showPathwayClickMenu(event, ['{{ gene.genomecontent }}'])
+                })
 
         })
 

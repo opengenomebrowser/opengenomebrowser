@@ -160,8 +160,6 @@
             const target = $(queryGenomes.find('.get-genomes')[0])
             const genomes = extractQuery(target)
 
-            console.log(annotations)
-
             $.when(validateAnnotations(annotations), validateGenomes(genomes)).done(function (annotations_valid, genomes_valid) {
                 annotations_valid = annotations_valid[2].responseJSON['success']
                 genomes_valid = genomes_valid[2].responseJSON['success']

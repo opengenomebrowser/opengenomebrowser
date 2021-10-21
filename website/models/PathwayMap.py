@@ -30,6 +30,9 @@ class PathwayMap(models.Model):
     def svg(self) -> str:
         with open(f'{settings.PATHWAY_MAPS}/{self.filename}') as f:
             return f.read()
+    @property
+    def html(self):
+        return f'<span class="ogb-tag pathway" title="{self.title}">{self.slug}</span>'
 
     @staticmethod
     def _get_type_dict():

@@ -340,7 +340,6 @@
 
         function forceReloadOrthofinder() {
             $.post('/api/reload-orthofinder/', {'genomes': allGenomes}, function (data) {
-                console.log(data['message'])
                 if (data['success']) {
                     loadOrthofinderTree(allGenomes)
                 }
@@ -353,8 +352,6 @@
             const fontColor = $('#font-color').val()
             const strokeColor = $('#stroke-color').val()
 
-            console.log(fontColor, strokeColor, genomes)
-
             $.when(getGenomeIdentifiers(genomes)).done(function (data) {
                 const genomesValid = data['success']
 
@@ -366,7 +363,6 @@
                 }
 
                 if (genomesValid) {
-                    console.log('dATA', data)
                     const identifers = data['identifiers']
                     colorGenomes(identifers, fontColor, strokeColor)
                 }
@@ -375,7 +371,6 @@
         }
 
         function colorGenomes(genomes, fontColor, strokeColor) {
-            console.log(genomes, fontColor, strokeColor)
             $('.tree-div text').each(function () {
                 const toHighlight = new Set(genomes)
 

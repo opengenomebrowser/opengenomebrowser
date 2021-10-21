@@ -1,7 +1,7 @@
 import re
 from django.views.generic import DetailView
-from lib.subcellular_locations.go_to_sl import get_locusterms, LocationTerm
-from website.models import Gene, Annotation, annotation_types
+from lib.subcellular_locations.go_to_sl import get_locusterms
+from website.models import Gene, PathwayMap, Annotation, annotation_types
 
 _locusterms = get_locusterms()
 go_to_locusterm = {lt.go: lt.sl_id for lt in _locusterms}
@@ -30,25 +30,22 @@ class GeneDetailView(DetailView):
         else:
             context['fasta_protein'] = '-- no protein sequence --'
 
-        annotations = g.annotations.order_by('name').reverse()  # reverse because interesting GO-terms tend to have high values
+        # find annoations; reverse because interesting GO-terms tend to have high values
+        context['annotations'] = g.annotations.order_by('-name', 'anno_type').prefetch_related('pathwaymap_set').all()
 
-        annotations = {at.anno_type: annotations.filter(anno_type=at.anno_type) for at in annotation_types.values()}
-
-        # remove empty categories
-        annotations = {anno_type: annos for anno_type, annos in annotations.items() if len(annos) > 0}
-
-        context['annotations'] = annotations
+        # find relevant pathways
+        context['pathways'] = PathwayMap.objects.filter(annotations__in=g.annotations.all()).distinct().order_by('slug')
 
         # get uniprot subcellular location ids from GO-terms and SL-annotations
-        sls: [(str, Annotation)] = []
-        if 'GO' in annotations:
-            locus_gos = annotations['GO'].filter(name__in=go_to_locusterm.keys())
-            sls += [(go_to_locusterm[go.name], go) for go in locus_gos]
-        if 'SL' in annotations:
-            sls += [(sl.name[-4:], sl) for sl in annotations['SL']]
-        if sls:
-            context['sls'] = sls
-            context['sls_ids'] = {sl for sl, anno in sls}
+        gos = g.annotations.filter(anno_type='GO', name__in=go_to_locusterm.keys())
+        sls = g.annotations.filter(anno_type='SL')
+        location_annotations = []
+        if gos.exists():
+            location_annotations += [('SL-' + go_to_locusterm[go.name], go) for go in gos]
+        if sls.exists():
+            location_annotations += [(sl.name, sl) for sl in sls]
+        context['location_annotations'] = location_annotations
+        context['sls_ids'] = {sl[-4:] for sl, anno in location_annotations}
 
         # get scaffold id
         context['scaffold_id'] = g.get_gbk_seqrecord().scf_id

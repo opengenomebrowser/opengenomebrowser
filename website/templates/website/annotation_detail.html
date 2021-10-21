@@ -43,16 +43,35 @@
             <h3>Description</h3>
             <p>{{ annotation.description }}</p>
 
-            <hr class="featurette-divider">
+            {% if annotation.pathwaymap_set.exists %}
+                <!-- Pathways -->
+                <hr class="featurette-divider">
 
-            {% if annotation.pathwaymap_set.count %}
                 <h3>Occurs in the following pathway maps:</h3>
-                <div class="black-links">
-                    {% for pathway in annotation.pathwaymap_set.all %}
-                        <p><a href="/pathway/?map={{ pathway.slug }}">{{ pathway.slug }} : {{ pathway.title }}</a></p>
-                    {% endfor %}
+                <div style="max-height: 30rem;overflow-y: auto">
+                    <table id="annotations-list" class="table no-bottom-padding">
+                        <thead class="thead-dark">
+                        <tr>
+                            <th scope="col">Pathway</th>
+                            <th scope="col">Description</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for pathway in annotation.pathwaymap_set.all %}
+                            <tr>
+                                <th scope="row">
+                                    {{ pathway.html|safe }}
+                                </th>
+                                <td>{{ pathway.title }}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
+
             {% endif %}
+
+            <hr class="featurette-divider">
 
             <h3>Genomes that cover the annotation</h3>
             <table class="table table-bordered table-sm white-links">
@@ -93,8 +112,15 @@
             $('.gene')
                 .ogbTooltip()
                 .each(function () {
-                this.setAttribute('onclick', "showGeneClickMenu(event, 'auto', '.genome-and-anno-container')")
-            })
+                    this.setAttribute('onclick', "showGeneClickMenu(event, 'auto', '.genome-and-anno-container')")
+                })
+
+            $(".ogb-tag.pathway")
+                .ogbTooltip()
+                .on("click", function () {
+                    showPathwayClickMenu(event)
+                })
+
 
         });
 

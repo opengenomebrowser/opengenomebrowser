@@ -417,6 +417,41 @@ Compare the genes of these annotations</a>
 `)
     }
 
+    $.post('/api/get-annotation/', {'annotation_name': annotation}, function (data) {
+        const pathways = data['pathways']
+        let html = ''
+
+        // Pathways
+        if (pathways.length) {
+            html += `
+<h6 class="dropdown-header context-menu-header">
+Pathways</h6>
+<div style="display: inline-flex">
+    <div class="dropdown-item context-menu-icon context-menu-icon-pathway">
+    This annotation occurs on ${pathways.length} pathways</div>
+    <div class="btn-group dropright">
+    <button class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="font-size: 1rem; padding: 0rem 0.8rem">
+    </button>
+        <div class="dropdown-menu no-collapse" style="width: 400px">`
+
+            pathways.forEach(p => {
+                html += `
+<p class="dropdown-item" onclick="event.stopPropagation()">
+<span class="ogb-tag pathway" title="${p[1]}" onclick="showPathwayClickMenu(event)">${p[0]}</span>:
+${p[1]}`
+            })
+
+            html += `
+        </div>
+    </div>
+</div>`
+        }
+
+
+        cm.appendElement(html)
+        cm.popper.update()
+    }, "json")
+
     cm.show()
 }
 
@@ -477,10 +512,11 @@ Compare genes</a>
     }
 
     $.post('/api/get-gene/', {'gene_identifier': gene}, function (data) {
-        let genome = data['genome']
-        let taxid = data['taxid']
-        let species = data['species']
-        let annotype_to_gene = data['annotype_to_gene']
+        const genome = data['genome']
+        const taxid = data['taxid']
+        const species = data['species']
+        const annotype_to_gene = data['annotype_to_gene']
+        const pathways = data['pathways']
 
         if (annotype_to_gene['GP'] != undefined && annotype_to_gene['GP'][0]["name"] != undefined) {
             $('#gene-context-menu-gene-product-missing').text(annotype_to_gene['GP'][0]["name"]).removeAttr('hidden')
@@ -493,9 +529,40 @@ Compare genes</a>
 ${genome}</h6>
 <a href="/genome/${genome}" class="dropdown-item context-menu-icon context-menu-icon-organism">
 Open genome info</a>
-<h6 class="dropdown-header context-menu-header">
-Annotations</h6>
 `
+
+        // Pathways
+        if (pathways.length) {
+            html += `
+<h6 class="dropdown-header context-menu-header">
+Pathways</h6>
+<div style="display: inline-flex">
+    <div class="dropdown-item context-menu-icon context-menu-icon-pathway">
+    This gene occurs on ${pathways.length} pathways</div>
+    <div class="btn-group dropright">
+    <button class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="font-size: 1rem; padding: 0rem 0.8rem">
+    </button>
+        <div class="dropdown-menu no-collapse" style="width: 400px">`
+
+            pathways.forEach(p => {
+                html += `
+<p class="dropdown-item" onclick="event.stopPropagation()">
+<span class="ogb-tag pathway" title="${p[1]}" onclick="showPathwayClickMenu(event, ['${genome}'])">${p[0]}</span>:
+${p[1]}`
+            })
+
+            html += `
+        </div>
+    </div>
+</div>`
+        }
+
+        // Annotations
+        if (Object.keys(annotype_to_gene).length) {
+            html += `
+<h6 class="dropdown-header context-menu-header">
+Annotations</h6>`
+        }
         for (const [anno_type, annotations] of Object.entries(annotype_to_gene)) {
             html += `
 <div style="display: inline-flex">
@@ -504,12 +571,16 @@ Annotations</h6>
     <div class="btn-group dropright">
     <button class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="font-size: 1rem; padding: 0rem 0.8rem">
     </button>
-        <div class="dropdown-menu" style="width: 400px">`
+        <div class="dropdown-menu no-collapse" style="width: 400px">
+`
 
             annotations.forEach(a => {
                 html += `
-            <a class="dropdown-item context-menu-icon context-menu-icon-annotation" style="display: flex; flex-wrap: wrap; white-space: inherit" href="/annotation/${a['name']}">
-            ${a['name']} (${a['description']})</a>`
+<p class="dropdown-item" onclick="event.stopPropagation()">
+    <span class="ogb-tag annotation" data-annotype="${anno_type}" title="${a.description}" 
+        onclick="showAnnotationClickMenu(event)"
+        >${a.name}</span>: ${a.description || 'no description'}
+<\p>`
             })
 
             html += `
@@ -527,7 +598,7 @@ Annotations</h6>
 let showTaxidClickMenu = function (event, taxname = 'auto', taxRank = 'auto') {
     console.log('showTaxidClickMenu event:', event, 'taxname', taxname, 'taxRank', taxRank)
 
-    // auto-discover annotation
+    // auto-discover taxname
     taxname = autoDiscoverSelf(event, taxname)
 
     const selector = `@${taxRank === 'auto' ? 'tax' : taxRank}:${taxname}`
@@ -567,7 +638,7 @@ let autoDiscoverDescription = function (event) {
 let showTagClickMenu = function (event, tag = 'auto', description = 'auto') {
     console.log('showTagClickMenu event:', event, 'tag', tag, 'description', description)
 
-    // auto-discover annotation
+    // auto-discover tag
     tag = autoDiscoverSelf(event, tag)
 
     const backgroundColor = $(event.target).css('background-color')
@@ -590,5 +661,40 @@ Copy selector (@tag:${tag})</a>
 `)
 
     cm.show()
+}
+
+
+let showPathwayClickMenu = function (event, genomes = 'none') {
+    console.log('showTagClickMenu event:', event, 'genome', genomes)
+
+    // auto-discover genomes
+    genomes = autoDiscoverGenomes(genomes)
+
+    const slug = event.target.textContent
+    const title = event.target?.getAttribute('title') || event?.target?.getAttribute('data-original-title') || '-'
+    const backgroundColor = $(event.target).css('background-color')
+    const textColor = $(event.target).css('color')
+
+    const genomeUrlString = genomes.length ? '&g1=' + genomes.join(',') : ''
+
+    console.log(genomeUrlString)
+
+    // initiate context menu
+    let cm = new ClickMenu(event, 'pathway-context-menu')
+
+    // list of elements to click on
+    cm.appendElement(`
+<h6 class="dropdown-header context-menu-header" style="color:${textColor}; background-color: ${backgroundColor}">
+${slug}</h6>
+<h6 class="dropdown-header context-menu-header">
+${title}</h6>
+<a href="/pathway/?map=${slug}${genomeUrlString}" class="dropdown-item context-menu-icon context-menu-icon-pathway">
+Open pathway map</a>
+<a href="/annotations/?pathway_map=${slug}" class="dropdown-item context-menu-icon context-menu-icon-annotations">
+See annotations behind pathway map</a>
+`)
+
+    cm.show()
+
 }
 

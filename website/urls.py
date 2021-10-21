@@ -77,6 +77,7 @@ urlpatterns = [
     path('api/dna-feature-viewer-multi/', Api.dna_feature_viewer_multi, name='api-dna-feature-viewer'),
     path('api/align/', Api.align, name='api-align'),
     path('api/get-gene/', Api.get_gene, name='api-get-gene'),
+    path('api/get-annotation/', Api.get_annotation, name='api-get-annotation'),
     path('api/get-tree/', Api.get_tree, name='api-get-tree'),
     path('api/reload-orthofinder/', Api.reload_orthofinder, name='api-reload-orthofinder'),
     path('api/get-dotplot/', get_dotplot, name='api-get-dotplot'),

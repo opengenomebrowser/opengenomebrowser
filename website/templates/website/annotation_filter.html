@@ -175,14 +175,10 @@
             console.log(`Form Submitted! Time stamp: ${event.timeStamp}`)
 
             const genomes = extractQuery($('#magic-query'))
-            console.log(genomes)
             genomesInput.value = genomes
-            console.log(genomesInput.value)
 
             $.when(validateGenomes(genomes)).done(function (genomes_valid) {
                 genomes_valid = genomes_valid['success']
-
-                console.log('genomes_valid', genomes_valid)
 
                 if (genomes_valid) {
                     $('.get-genomes').removeClass('is-invalid')
@@ -193,7 +189,7 @@
                 if (genomes_valid) {
                     form.submit()
                 } else {
-                    console.log('invalid')
+                    console.log('invalid:', genomes)
                 }
             })
         }

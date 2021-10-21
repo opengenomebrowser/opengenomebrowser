@@ -153,7 +153,6 @@ const changeTree = function (tree, property, value) {
     if (tree === undefined) {
         return  // means tree is not drawn yet
     }
-    console.log(tree, property)
     if (property === 'type') {
         tree = tree.setType(value)
     } else if (property === 'mode') {
@@ -171,7 +170,6 @@ const redrawTree = function (tree) {
 }
 
 const turnBranchLabels = function (tree) {
-    console.log('turn branch labels')
     setTimeout(function () {
         const rotation = tree.layout === 'vertical' ? 0 : -90
         tree.eachBranchLabel((label, data) => {
@@ -184,10 +182,8 @@ const addTreeSizeListener = function (tree, divId) {
     const div = document.getElementById(divId)
 
     const resizefunction = function () {
-        console.log('triggered function')
         clearTimeout(ajax_timer)
         ajax_timer = setTimeout(function () {
-            console.log('resizing')
             redrawTree(tree)
         }, 500)
     }

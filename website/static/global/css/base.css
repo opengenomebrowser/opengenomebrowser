@@ -60,6 +60,21 @@ html {
     color: white;
 }
 
+.ogb-tag.pathway {
+    background-color: rgb(35, 0, 187);
+    color: white;
+}
+
+.ogb-click-menu .no-collapse p {
+    margin-bottom: 0;
+    white-space: unset;
+}
+
+.ogb-click-menu .no-collapse .ogb-tag {
+    white-space: break-spaces;
+    width: unset;
+}
+
 .read-only-div {
     max-height: 13rem;
     min-height: 1rem;

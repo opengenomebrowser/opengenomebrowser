@@ -363,6 +363,26 @@ class Api:
         return JsonResponse(dict(fastas=FASTAS, method=method, version=version, alignment=alignment))
 
     @staticmethod
+    def get_annotation(request):
+        """
+        Get information about an annotation.
+
+        Query: annotation_name = "R01051"
+
+        Returns JSON
+        """
+        annotation_name = request.POST.get('annotation_name')
+        annotation = Annotation.objects.get(name=annotation_name)
+
+        return JsonResponse(dict(
+            name=annotation.name,
+            description=annotation.description,
+            anno_type=annotation.anno_type,
+            html=annotation.html,
+            pathways=list(annotation.pathwaymap_set.values_list('slug', 'title'))
+        ))
+
+    @staticmethod
     def get_gene(request):
         """
         Get information about a gene.
@@ -374,6 +394,8 @@ class Api:
         gene_identifier = request.POST.get('gene_identifier')
 
         g = Gene.objects.get(identifier=gene_identifier)
+
+        pathways = PathwayMap.objects.filter(annotations__in=g.annotations.all()).distinct().order_by('slug')
 
         def jsonify_annotation(a: Annotation):
             return dict(
@@ -398,6 +420,7 @@ class Api:
             taxid=g.genomecontent.taxid.id,
             identifier=g.identifier,
             annotype_to_gene=annotype_to_gene,
+            pathways=list(pathways.values_list('slug', 'title')),
             annotations=[
                 dict(
                     name=annotation.name,

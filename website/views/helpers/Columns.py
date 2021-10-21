@@ -332,7 +332,6 @@ class DateRangeColumn(Column):
             const dateStart = $(this).find('.date-from').val() || rangeStart
             const dateEnd = $(this).find('.date-to').val() || rangeEnd
             const value = (rangeStart===dateStart&&rangeEnd===dateEnd) ? '' : `${dateStart}:${dateEnd}`
-            console.log('asdfasdfasdfasdfasfd', value)
             input.val(value)
         })'''.replace('{{ class }}', cls.html_class(), 1)
 
