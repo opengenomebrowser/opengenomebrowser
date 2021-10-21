@@ -69,6 +69,7 @@ class MarkdownObjectPage(MarkdownObject):
 def markdown_editor_view(request):
     context = dict(
         title='Markdown Editor',
+        no_help=True,
         error_danger=[], error_warning=[], error_info=[],
         genomes=[],
         genome_to_species={}
