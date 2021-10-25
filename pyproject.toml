@@ -32,6 +32,7 @@ plotly = "^5.3.1"
 dna-features-viewer = "^3.0.3"
 bokeh = "^2.3.3"
 opengenomebrowser-tools = {git = "https://github.com/opengenomebrowser/opengenomebrowser-tools.git"}
+gendiscalpy = {git = "https://github.com/MrTomRod/gendiscalpy"}
 
 [tool.poetry.dev-dependencies]
 

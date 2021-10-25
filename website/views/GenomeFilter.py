@@ -86,7 +86,7 @@ class GenomeFilter:
             ListColumn('Broad Isolation Environment', id='env_broad', lookup_expr='env_broad_scale', render_expr='env_broad_scale_html'),
             ListColumn('Local Isolation Environment', id='env_local', lookup_expr='env_local_scale', render_expr='env_local_scale_html'),
             ListColumn('Environment Medium', lookup_expr='env_medium', render_expr='env_medium_html'),
-            ListColumn('Literature References'),
+            ListColumn('Literature References', lookup_expr='literature_references', render_expr='literature_references_html'),
         ]
         return {f.id: f for f in Columns}
 

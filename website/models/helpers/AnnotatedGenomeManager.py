@@ -1,7 +1,10 @@
 from django.db.models.manager import Manager
-from django.db.models import Case, When, F, Value, CharField, BooleanField, ExpressionWrapper, Q, Func
+from django.db.models import Case, When, F, Value, CharField, BooleanField, ExpressionWrapper, Q
 from django.db.models.functions import Concat
 from django.contrib.postgres.aggregates import StringAgg
+
+from django.db.models.aggregates import Func
+from django.db.models.expressions import RawSQL
 
 
 class AnnotatedGenomeManager(Manager):
@@ -19,6 +22,7 @@ class AnnotatedGenomeManager(Manager):
         qs = cls.annotate_env_html(qs, lookup_expr='env_broad_scale')
         qs = cls.annotate_env_html(qs, lookup_expr='env_local_scale')
         qs = cls.annotate_env_html(qs, lookup_expr='env_medium')
+        qs = cls.annotate_literature_references_html(qs)
         return qs
 
     @staticmethod
@@ -148,3 +152,18 @@ class AnnotatedGenomeManager(Manager):
                 })
             )}
         )
+
+    @staticmethod
+    def annotate_literature_references_html(qs: Manager, *args, **kwargs) -> Manager:
+        # <a class="badge badge-info" href="{url}">{name}</a>`
+        return qs.annotate(
+            literature_references_html=RawSQL(
+                """
+                SELECT COALESCE(STRING_AGG(CONCAT('<a class="badge badge-info" href="', elem ->> 'url', '">', elem ->> 'name', '</a>'), ' ') , '')
+                FROM jsonb_array_elements(literature_references) as elem
+                """,
+                params=tuple()
+            )
+        )
+
+

@@ -49,6 +49,9 @@ RUN poetry config virtualenvs.create false && \
     poetry cache clear --all --no-interaction --no-ansi . && \
     pip cache purge
 
+# install GenDisCal
+RUN install_gendiscal --path=/usr/local/bin
+
 # copy repository into docker
 COPY . .
 

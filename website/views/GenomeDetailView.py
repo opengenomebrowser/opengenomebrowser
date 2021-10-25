@@ -2,14 +2,17 @@ from website.models import Genome, Annotation, annotation_types
 from website.models.TaxID import TaxID
 from django.views.generic import DetailView
 from django.template import engines
+from collections import Counter
 from math import sqrt
 import numpy as np
 import pandas as pd
 
 from lib.get_tax_info.get_tax_info import GetTaxInfo
 from lib.get_tax_info.get_tax_info import TaxID as RawTaxID
+from opengenomebrowser_tools.utils import get_cog_categories
 
 RawTaxID.gti = GetTaxInfo()
+cog_categories = get_cog_categories()
 
 
 class ParameterField:
@@ -95,6 +98,14 @@ class GenomeDetailView(DetailView):
         context['genome_markdown'] = g.markdown()
         context['organism_markdown'] = g.organism.markdown()
 
+        context['cog'] = {
+            cog: {
+                'value': g.COG[cog],
+                'description': cog_categories[cog]['description'],
+                'color': cog_categories[cog]['color']
+            } for cog in sorted(g.COG, key=g.COG.get, reverse=True)  # sort by most common COG
+        }
+
         key_parameters = ['is_representative', 'contaminated', 'isolation_date', 'growth_condition',
                           'geographical_coordinates', 'geographical_name',
                           'env_broad_scale', 'env_local_scale', 'env_medium',
@@ -113,7 +124,7 @@ class GenomeDetailView(DetailView):
         context['ann_parameters'] = [ParameterField(genome=g, attr=attr) for attr in ann_parameters]
 
         context['ann_per_annotype'] = {at: Annotation.objects.filter(genomecontent__in=[g.identifier], anno_type=abbr).count()
-                                     for abbr, at in annotation_types.items()}
+                                       for abbr, at in annotation_types.items()}
 
         context['custom_tables'] = []
         if g.custom_tables:

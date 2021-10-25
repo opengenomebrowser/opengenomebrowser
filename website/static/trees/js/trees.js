@@ -143,7 +143,7 @@ const processTreeData = function (data, method) {
         }
     }
 
-    if ('distance-matrix' in data) {
+    if (data !== undefined && 'distance-matrix' in data) {
         $('#genome-distance-matrix').data('distance-matrix', data['distance-matrix'])
     }
 

@@ -28,7 +28,7 @@ if [ "$DEBUG" == "true" ]; then
 
 else
 
-  echo "PRODUCTION MODE with UWSGI_WORKERS=${$UWSGI_WORKERS:-5} and HARAKIRI=${HARAKIRI:-60}"
+  echo "PRODUCTION MODE with UWSGI_WORKERS=${UWSGI_WORKERS:-5} and HARAKIRI=${HARAKIRI:-60}"
 
   uwsgi \
     --chmod-socket=666 \
@@ -37,7 +37,7 @@ else
     --env DJANGO_SETTINGS_MODULE=OpenGenomeBrowser.settings \
     --master --pidfile=/tmp/opengenomebrowser-master.pid \
     --socket=/socket/ogb.sock \
-    --processes="${$UWSGI_WORKERS:-5}" \
+    --processes="${UWSGI_WORKERS:-5}" \
     --harakiri="${HARAKIRI:-60}" \
     --worker-reload-mercy="${HARAKIRI:-60}" \
     --max-requests=5000 \

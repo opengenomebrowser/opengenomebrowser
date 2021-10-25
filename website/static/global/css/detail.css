@@ -18,6 +18,10 @@
     text-align: right
 }
 
+#cog-table th {
+    width: auto;
+}
+
 .pie-chart {
     width: 260px;
     height: 260px;

@@ -208,23 +208,6 @@
             $('#n-selected-rows').text(nRowsText)
         }
 
-
-        $("#genome-table th").each(function (iColumn, column) {
-            const columnId = $(column).data('column-id')
-            if (columnId === 'literature_references') {
-                $("#genome-table tr").each(function (iRow, row) {
-                    if (iRow === 0) return
-                    const envField = row.children[iColumn]
-                    if (envField.textContent.length > 2) {
-                        const textContent = JSON.parse(envField.textContent.replace(/\'/g, '\"'))
-                        envField.innerHTML = textContent.map(x => `<a class="badge badge-info" href="${x['url'] || ''}">${x['name'] || ''}</a>`).join('')
-                    } else {
-                        envField.innerHTML = ''
-                    }
-                })
-            }
-        })
-
         $(document).ready(function () {
             $('.ogb-tag.genome')
                 .ogbTooltip()

@@ -379,6 +379,42 @@
             </div>
         {% endif %}
 
+        {% if cog %}
+            <div class="container">
+
+                <hr class="featurette-divider">
+
+                <h3>COG</h3>
+
+                <div class="container flex-container">
+                    <div class=flex-table">
+                        <table class="table table-sm" id="cog-table">
+                            <thead class="thead-dark">
+                            <tr>
+                                <th scope="col" data-toggle="tooltip" data-placement="top" title="COG: Clusters of Orthologous Genes"><a
+                                        href="https://www.ncbi.nlm.nih.gov/research/cog-project/" style="color: inherit">COG</a></th>
+                                <th class="text-center" scope="col">description</th>
+                                <th class="text-right" scope="col">value</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for cog, data in cog.items %}
+                                <tr style="background-color: {{ data.color }}">
+                                    <th class="text-center" scope="row">{{ cog }}</th>
+                                    <td class="text-center">{{ data.description }}</td>
+                                    <td class="text-right">{{ data.value|floatformat:1 }}</td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="flex-pie">
+                        <div id="cog-pie-chart" class="pie-chart" height="260px" width="260px"></div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
         {% if custom_tables %} {% for title, table, pie_chart_col in custom_tables %}
             <!-- included_sequences -->
             <div class="container">
@@ -454,7 +490,7 @@
             <label for="gene-search">Gene: </label>
             <input id="gene-search" value="{{ genome }}_">
 
-            <button type="button" class="btn btn-primary" onclick="go_to_gene($('#gene-search').val())">Submit</button>
+            <button type="button" class="btn btn-primary" onclick="goToGene($('#gene-search').val())">Submit</button>
         </div>
 
         <!-- link to annotation search -->
@@ -474,6 +510,7 @@
 
         $(document).ready(function () {
             $('#busco-table [data-toggle="tooltip"]').tooltip({boundary: 'window'}) // BUSCO tooltips
+            $('#cog-table [data-toggle="tooltip"]').tooltip({boundary: 'window'}) // COG tooltips
 
             $('[data-species]').ogbTooltip()
 
@@ -497,7 +534,7 @@
 
         })
 
-        function go_to_gene(gene) {
+        function goToGene(gene) {
             window.open(`/gene/${gene}`)
         }
 
@@ -511,7 +548,7 @@
             displayModeBar: false
         }
 
-        function load_busco_pie() {
+        function loadBuscoPie() {
             let data = [{
                 values: [{{ genome.BUSCO.S }}, {{ genome.BUSCO.D }}, {{ genome.BUSCO.F }}, {{ genome.BUSCO.M }}],
                 labels: ['S (single-copy)', 'D (duplicated)', 'F (fragmented)', 'M (missing)',],
@@ -524,8 +561,21 @@
             Plotly.newPlot('busco-pie-chart', data, pie_layout, pie_settings)
         }
 
+        function loadCogPie() {
+            let data = [{
+                values: [{% for d in cog.values %}'{{ d.value }}',{% endfor %}],
+                labels: [{% for c, data in cog.items %}'({{ c }}) {{ data.description }}',{% endfor %}],
+                type: 'pie',
+                marker: {
+                    colors: [{% for d in cog.values %}'{{ d.color }}',{% endfor %}]
+                },
+            }]
+
+            Plotly.newPlot('cog-pie-chart', data, pie_layout, pie_settings)
+        }
+
         {% if included_sequences %}
-            function load_included_pie() {
+            function loadIncludedPie() {
                 let data = [{
                     values: [
                         {% for taxid, html, sci_name, color, percentage in included_sequences %} {{percentage}}, {% endfor %}],
@@ -543,7 +593,7 @@
             }
         {% endif %}
 
-        function load_custom_table_pie(title, pie_chart_col) {
+        function loadCustomTablePie(title, pie_chart_col) {
             const chart_id = `${title}-pie-chart`
             const table_id = `custom_table_${title}`
 
@@ -597,13 +647,17 @@
 
         window.onload = function () {
             {% if genome.BUSCO %}
-                load_busco_pie()
+                loadBuscoPie()
+            {% endif %}
+
+            {% if cog %}
+                loadCogPie()
             {% endif %}
 
 
             {% if custom_tables %} {% for title, table, pie_chart_col in custom_tables %}
             {% if pie_chart_col %}
-                load_custom_table_pie('{{ title }}', '{{ pie_chart_col }}')
+                loadCustomTablePie('{{ title }}', '{{ pie_chart_col }}')
             {% endif %}
             {% endfor %}{% endif %}
 

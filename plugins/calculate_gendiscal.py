@@ -1,5 +1,5 @@
 from huey.contrib.djhuey import task
-from lib.genome_similarity.gendiscal_wrapper import GenDisCal
+from gendiscalpy import GenDisCal
 
 
 @task()
@@ -13,9 +13,9 @@ def calculate_gendiscal(g1, g2):
     print(f'start GenomeSimilarity calc {g1.identifier} :: {g2.identifier}')
 
     try:
-        sim_score = GenDisCal().calculate_similarity(
-            fasta1=g1.genome.assembly_fasta(relative=False),
-            fasta2=g2.genome.assembly_fasta(relative=False),
+        sim_score = 1 - GenDisCal().compare_two(
+            assembly_1=g1.genome.assembly_fasta(relative=False),
+            assembly_2=g2.genome.assembly_fasta(relative=False),
             preset='approxANI'
         )
     except Exception as e:

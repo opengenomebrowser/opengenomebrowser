@@ -250,6 +250,26 @@ six = "*"
 termcolor = "*"
 
 [[package]]
+name = "gendiscalpy"
+version = "0.0.1"
+description = ""
+category = "main"
+optional = false
+python-versions = "*"
+develop = false
+
+[package.dependencies]
+biotite = "*"
+fire = "*"
+pandas = "*"
+
+[package.source]
+type = "git"
+url = "https://github.com/MrTomRod/gendiscalpy"
+reference = "master"
+resolved_reference = "84f3be18f35626a20548c8196edb3fc89961e3ee"
+
+[[package]]
 name = "glacier"
 version = "0.3.1"
 description = ""
@@ -709,7 +729,7 @@ python-versions = "*"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.9,<3.10"
-content-hash = "4bc4502c15cb2ee9a5bbafbeeac571418d754193ac96a2bb89078c15e3fa1fba"
+content-hash = "774ff8f88a8c2a8e0b217780adc332354c90620283e2eca3ab4d0bc21550053c"
 
 [metadata.files]
 asgiref = [
@@ -825,6 +845,7 @@ dna-features-viewer = [
 fire = [
     {file = "fire-0.4.0.tar.gz", hash = "sha256:c5e2b8763699d1142393a46d0e3e790c5eb2f0706082df8f647878842c216a62"},
 ]
+gendiscalpy = []
 glacier = [
     {file = "glacier-0.3.1-py3-none-any.whl", hash = "sha256:94318db0c94af918f4f7d437e4018f18a41019b3298ad664d7cbd5ba84f43d7f"},
     {file = "glacier-0.3.1.tar.gz", hash = "sha256:be7d89ea4b3596442ebe7501211077e52ec3eee4f2d505e85dfa410055ac23be"},
