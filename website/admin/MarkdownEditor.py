@@ -5,6 +5,7 @@ from django.http import JsonResponse
 from OpenGenomeBrowser.settings import GENOMIC_DATABASE
 from website.models import Organism, Genome
 from website.models.helpers.backup_file import read_file_or_default, overwrite_with_backup
+from website.views.helpers.extract_errors import extract_errors
 
 
 class MarkdownObject:
@@ -67,13 +68,12 @@ class MarkdownObjectPage(MarkdownObject):
 
 
 def markdown_editor_view(request):
-    context = dict(
+    context = extract_errors(request,dict(
         title='Markdown Editor',
         no_help=True,
-        error_danger=[], error_warning=[], error_info=[],
         genomes=[],
         genome_to_species={}
-    )
+    ))
 
     try:
         if 'page' in request.GET:

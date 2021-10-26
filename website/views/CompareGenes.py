@@ -3,16 +3,14 @@ from django.db.models import Q
 
 from website.models import Annotation, annotation_types, Genome, Gene
 from website.views.Api import err
+from website.views.helpers.extract_errors import extract_errors
 from website.views.helpers.extract_requests import contains_data, extract_data
 
 
 class CompareGenes:
     @staticmethod
     def compare(request):
-        context = dict(
-            title='Compare Genes',
-            error_danger=[], error_warning=[], error_info=[]
-        )
+        context = extract_errors(request, dict(title='Compare Genes'))
 
         context['anno_types'] = annotation_types.values()
 

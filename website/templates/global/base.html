@@ -208,12 +208,21 @@
             </div>
         </div>
     {% endfor %}
+    {% for error in error_info %}
+        <!-- info -->
+        <div class="container black-links mt-3">
+            <div class="alert alert-info" role="alert">
+                {{ error }}
+            </div>
+        </div>
+    {% endfor %}
+
 </section>
 
 {% block body %}{% endblock %}
 
 <section>
-    {% for error in error_info %}
+    {% for error in error_info_bottom %}
         <!-- info -->
         <div class="container black-links mt-3">
             <div class="alert alert-info" role="alert">

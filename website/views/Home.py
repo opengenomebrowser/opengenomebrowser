@@ -1,10 +1,13 @@
 from django.shortcuts import render
 from website.models.helpers.backup_file import read_file_or_default
+from website.views.helpers.extract_errors import extract_errors
 from lib.ogb_cache.ogb_cache import ogb_cache, timedelta
 from OpenGenomeBrowser.settings import LOGIN_REQUIRED, GENOMIC_DATABASE, CACHE_DIR, CACHE_MAXSIZE
 
 
 def home_view(request):
+    context = extract_errors(request, dict(title='Home', no_help=True))
+
     home_markdown = read_file_or_default(file=f'{GENOMIC_DATABASE}/index.md', default=None, default_if_empty=True)
 
     admin_actions = [
@@ -193,13 +196,11 @@ def home_view(request):
         ]
     )
 
-    context = dict(
-        title='Home',
-        no_help=True,
+    context.update(dict(
         credit=credit,
         home_markdown=home_markdown,
-        admin_actions=admin_actions
-    )
+        admin_actions=admin_actions,
+    ))
 
     if request.user.is_authenticated or not LOGIN_REQUIRED:
         try:
@@ -207,9 +208,9 @@ def home_view(request):
             context['sunburst_html'] = sunburst_html
             context['sunburst_js'] = sunburst_js
         except AssertionError as e:
-            context['error_warning'] = [str(e)]
+            context['error_warning'].append(str(e))
         except Exception as e:
-            context['error_danger'] = [f'Failed to load sunburst plot: {e}']
+            context['error_danger'].append(f'Failed to load sunburst plot: {e}')
 
     return render(request, 'website/index.html', context)
 

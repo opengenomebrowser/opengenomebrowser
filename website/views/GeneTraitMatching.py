@@ -10,6 +10,7 @@ from website.models import Genome, Gene, GenomeContent
 from website.models.Annotation import Annotation, annotation_types
 
 from website.views.GenomeDetailView import dataframe_to_bootstrap_html
+from website.views.helpers.extract_errors import extract_errors
 from website.views.helpers.magic_string import MagicQueryManager, MagicError
 from website.views.helpers.extract_requests import contains_data, contains_all, extract_data
 
@@ -35,16 +36,15 @@ def gtm_view(request):
     :returns: rendered gene_trait_matching.html
     """
 
-    context = dict(
+    context = extract_errors(request, dict(
         title='Gene trait matching',
         anno_types=annotation_types.values(),
         multiple_testing_methods=multiple_testing_methods,
         # defaults:
         default_anno_type='OL',
         default_alpha=0.1,
-        default_multiple_testing_method='fdr_bh',
-        error_danger=[], error_warning=[], error_info=[]
-    )
+        default_multiple_testing_method='fdr_bh'
+    ))
 
     anno_type_valid, alpha_valid, multiple_testing_method, genomes_g1_valid, genomes_g2_valid = False, False, False, False, False
 

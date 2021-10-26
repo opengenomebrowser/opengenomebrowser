@@ -63,6 +63,8 @@ if all([var in os.environ for var in ['EMAIL_HOST', 'EMAIL_HOST_USER', 'DEFAULT_
     EMAIL_PORT = int(os.environ.get('EMAIL_PORT'))
 
 LOGIN_MESSAGE = os.environ.get('LOGIN_MESSAGE', 'Welcome to OpenGenomeBrowser!')
+LOGIN_REDIRECT_URL = '/?info=You are logged in.'
+LOGOUT_REDIRECT_URL = '/?info=You are logged out.'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 

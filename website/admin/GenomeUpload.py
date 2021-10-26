@@ -10,6 +10,7 @@ from django.http import JsonResponse
 
 from OpenGenomeBrowser.settings import GENOMIC_DATABASE
 from website.models import Organism, Genome
+from website.views.helpers.extract_errors import extract_errors
 
 from opengenomebrowser_tools.import_genome import import_genome as import_genome_into_folder_structure
 from db_setup.manage_ogb import import_organism as import_organism_to_database
@@ -103,10 +104,7 @@ class GenomeUploadView(FormView):
 
 
 def genome_import_view(request, slug: str):
-    context = dict(
-        title='Genome import',
-        error_danger=[], error_warning=[], error_info=[]
-    )
+    context = extract_errors(request, dict(title='Genome import'))
     organism_name = slug
     context['organism'] = organism_name
 

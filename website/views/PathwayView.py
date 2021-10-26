@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from website.models.PathwayMap import PathwayMap
 from OpenGenomeBrowser import settings
+from website.views.helpers.extract_errors import extract_errors
 from website.views.helpers.magic_string import MagicQueryManager, MagicError
 from website.views.helpers.extract_requests import contains_data, extract_data
 from collections import Counter
@@ -10,7 +11,7 @@ type_dict = PathwayMap._get_type_dict()
 
 
 def pathway_view(request):
-    context = dict(title='Pathways', error_danger=[], error_warning=[], error_info=[])
+    context = extract_errors(request,dict(title='Pathways'))
 
     map: PathwayMap = None
     map_is_valid = False

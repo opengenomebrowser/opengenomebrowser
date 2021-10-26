@@ -6,6 +6,7 @@ from typing import Callable
 from django.shortcuts import render, HttpResponse
 from django.http import JsonResponse
 
+from website.views.helpers.extract_errors import extract_errors
 from website.views.helpers.magic_string import MagicQueryManager
 from lib.ogb_cache.ogb_cache import clear_cache
 from website.views.helpers.extract_requests import contains_data, extract_data
@@ -66,10 +67,7 @@ def zip_dir(zip_handler: zipfile.ZipFile, name: str, arcname: str, filter: Calla
 
 
 def downloader_view(request):
-    context = dict(
-        title='Downloader',
-        error_danger=[], error_warning=[], error_info=[]
-    )
+    context = extract_errors(request, dict(title='Downloader'))
 
     context['genome_to_species'] = '{}'
 

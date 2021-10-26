@@ -1,4 +1,6 @@
 from django.shortcuts import render, HttpResponse
+
+from website.views.helpers.extract_errors import extract_errors
 from website.views.helpers.magic_string import MagicQueryManager, MagicError
 from django.http import HttpResponseBadRequest
 from website.views.helpers.extract_requests import contains_data, extract_data
@@ -27,10 +29,7 @@ choice_to_settings = dict(
 
 
 def blast_view(request):
-    context = dict(
-        title='Blast',
-        error_danger=[], error_warning=[], error_info=[]
-    )
+    context = extract_errors(request, dict(title='Blast'))
 
     context['genome_to_species'] = '{}'
 

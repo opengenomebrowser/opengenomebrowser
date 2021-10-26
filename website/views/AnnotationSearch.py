@@ -7,6 +7,7 @@ import json
 
 from website.models import Genome
 from website.models.Annotation import Annotation
+from website.views.helpers.extract_errors import extract_errors
 from website.views.helpers.extract_requests import contains_data, extract_data
 
 from website.views.GenomeDetailView import dataframe_to_bootstrap_html
@@ -14,10 +15,7 @@ from website.views.helpers.magic_string import MagicQueryManager
 
 
 def annotation_view(request):
-    context = dict(
-        title='Annotation search',
-        error_danger=[], error_warning=[], error_info=[]
-    )
+    context = extract_errors(request, dict(title='Annotation search'))
 
     if contains_data(request, 'genomes'):
         qs = extract_data(request, 'genomes', list=True)

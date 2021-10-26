@@ -17,7 +17,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from django.contrib.auth.views import LoginView
+from django.contrib.auth.views import LoginView, PasswordChangeView
 from django.views.generic import RedirectView
 from rest_framework import routers
 
@@ -35,9 +35,6 @@ router.register(r'tags', TagViewSet)
 class OgbLoginView(LoginView):
     template_name = 'registration/login.html'
 
-    def __init__(self):
-        super().__init__()
-
     def get_context_data(self, **kwargs):
         from OpenGenomeBrowser import settings
         context = super().get_context_data(**kwargs)
@@ -47,6 +44,10 @@ class OgbLoginView(LoginView):
         return context
 
 
+class OgbPasswordChangeView(PasswordChangeView):
+    success_url = '/?info=Password change successful.'
+
+
 urlpatterns = [
     # favicon.ico
     path('favicon.ico', RedirectView.as_view(url='/static/global/customicons/ogb-circle.svg')),
@@ -54,6 +55,7 @@ urlpatterns = [
     path('admin/', ogb_admin_site.urls),
 
     path('accounts/login/', OgbLoginView.as_view(), name='login'),
+    path('accounts/password_change/', OgbPasswordChangeView.as_view(), name="password_change"),
     path('accounts/', include('django.contrib.auth.urls')),
 
     # django-rest-framework

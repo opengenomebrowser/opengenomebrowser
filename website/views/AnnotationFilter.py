@@ -3,6 +3,7 @@ from django.shortcuts import render
 
 from website.models import Annotation, PathwayMap
 from website.models.Annotation import annotation_types
+from website.views.helpers.extract_errors import extract_errors
 
 from website.views.helpers.magic_string import MagicQueryManager
 from website.views.helpers.extract_requests import extract_data, extract_data_or
@@ -76,10 +77,7 @@ class AnnotationFilter:
 
     @classmethod
     def filter_view(cls, request):
-        context = dict(
-            title='Annotation filter',
-            error_danger=[], error_warning=[], error_info=[]
-        )
+        context = extract_errors(request, dict(title='Annotation filter'))
 
         filterset, filter_fields = cls.filter_queryset(request, context)
 

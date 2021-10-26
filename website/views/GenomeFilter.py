@@ -5,6 +5,7 @@ from django.db.models.manager import Manager
 from OpenGenomeBrowser import settings
 from website.models import Genome, TaxID, Tag
 from website.models.helpers import AnnotatedGenomeManager
+from website.views.helpers.extract_errors import extract_errors
 from website.views.helpers.extract_requests import extract_data, extract_data_or
 
 from website.views.helpers.Columns import \
@@ -107,14 +108,11 @@ class GenomeFilter:
 
     @classmethod
     def filter_view(cls, request):
-        context = dict(
-            title='Genome table',
-            error_danger=[], error_warning=[], error_info=[]
-        )
+        context = extract_errors(request, dict(title='Genome table'))
 
-        context['error_info'].append('Use Ctrl and Shift to select multiple genomes.')
-        context['error_info'].append('Click on genome tags to open the context menu.')
-        context['error_info'].append('Click on "Show columns and filters" to show additional columns and use filters')
+        context['error_info_bottom'].append('Use Ctrl and Shift to select multiple genomes.')
+        context['error_info_bottom'].append('Click on genome tags to open the context menu.')
+        context['error_info_bottom'].append('Click on "Show columns and filters" to show additional columns and use filters')
 
         context['total_unfiltered_count'] = Genome.objects.count()
         context['activate_js'] = [c.activate_js() for c in cls.column_classes]

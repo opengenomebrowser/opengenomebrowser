@@ -3,13 +3,11 @@ from django.http import JsonResponse
 from lib.dot.dot_prep_wrapper import DotPrep
 from website.models.Genome import Genome
 from plugins import calculate_dotplot
+from website.views.helpers.extract_errors import extract_errors
 
 
 def dotplot_view(request):
-    context = dict(
-        title='Dotplot',
-        error_danger=[], error_warning=[], error_info=[]
-    )
+    context = extract_errors(request, dict(title='Dotplot'))
 
     for ref_or_query in ['ref', 'query']:
         identifier = request.GET.get(ref_or_query, None)
