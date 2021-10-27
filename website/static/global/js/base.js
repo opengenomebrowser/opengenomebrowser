@@ -442,6 +442,7 @@ function initAutocompleteAnnotations(div_name) {
             source: '/api/autocomplete-annotations/',
             minLength: 1
         },
+        delimiter: ',;',
         forceLowercase: false,
         onChange: onAnnotationsChange
     })
@@ -496,6 +497,7 @@ function initAutocompleteGenomes(div_name, maxTags) {
             source: '/api/autocomplete-genomes/',
             minLength: 1
         },
+        delimiter: ',; ',
         forceLowercase: false,
         maxTags: maxTags ? maxTags : null,
         onChange: onGenomesChange
@@ -564,6 +566,7 @@ function initAutocompleteGenes(div_name) {
             source: '/api/autocomplete-genes/',
             minLength: 1
         },
+        delimiter: ',; ',
         forceLowercase: false,
         onChange: onGenesChange
     })
