@@ -268,11 +268,11 @@ function createGradient(groupColors, nGroups, targetElement) {
         gradient.appendChild(stop)
     }
 
-    // get BBox, ensure width >= 2
+    // get BBox, ensure width >= 10
     const bbox = targetElement.getBBox()
-    if (bbox['width'] < 2) {
-        bbox['width'] = bbox['width'] + 2
-        bbox['x'] = bbox['x'] - 1
+    if (bbox['width'] < 0.1) {
+        bbox['width'] = bbox['width'] + 10
+        bbox['x'] = bbox['x'] - 5
     }
 
     // set gradient
