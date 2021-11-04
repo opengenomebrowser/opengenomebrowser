@@ -268,9 +268,14 @@ function createGradient(groupColors, nGroups, targetElement) {
         gradient.appendChild(stop)
     }
 
-    // set gradient direction
-    // gradient.setAttribute('x2', '1') // ->  does not work for elements with width or height = 0, wtf?!
+    // get BBox, ensure width >= 2
     const bbox = targetElement.getBBox()
+    if (bbox['width'] < 2) {
+        bbox['width'] = bbox['width'] + 2
+        bbox['x'] = bbox['x'] - 1
+    }
+
+    // set gradient
     gradient.setAttribute('gradientUnits', 'userSpaceOnUse')
     gradient.setAttribute('x1', bbox['x'])
     gradient.setAttribute('x2', bbox['x'] + bbox['width'])
