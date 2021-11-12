@@ -93,14 +93,14 @@
                 <form id="real-div" class="collapse">
                     <div class="form-group">
                         <label for="real-genomes-1">Group 1:</label>
-                        <div class="read-only-div">
+                        <div class="read-only-div" id="real-genomes-1">
                             {% for genome in magic_query_manager_g1.all_genomes %}{{ genome.html|safe }}{% endfor %}
                         </div>
                     </div>
 
                     <div class="form-group">
                         <label for="real-genomes-2">Group 2:</label>
-                        <div class="read-only-div">
+                        <div class="read-only-div" id="real-genomes-2">
                             {% for genome in magic_query_manager_g2.all_genomes %}{{ genome.html|safe }}{% endfor %}
                         </div>
                     </div>
@@ -212,6 +212,59 @@
             })
         }
 
+        function activateTable(settings) {
+            const table = $('#gene-trait-matching-table').DataTable()
+
+            // click on annotations
+            $('.ogb-tag.annotation').each(function (index) {
+                // only add click event if there is none yet
+                if (jQuery._data(this, 'events') === undefined) {
+                    $(this)
+                        .ogbTooltip()
+                        .on('click', function () {
+                            table.rows(this.parentElement.parentElement).select()  // select this row
+                            const data = table.rows({selected: true}).data()
+                            const selectedAnnotations = Array.from({length: data.length}, (_, i) => data[i][0])
+                            showAnnotationClickMenu(event, 'auto', selectedAnnotations, {'Group 1': genomesG1, 'Group 2': genomesG2})
+                        })
+                }
+            })
+        }
+
+
+        function drawTable(data) {
+            const table = $('#gene-trait-matching-table').DataTable({
+                data: data['dataset'],
+                columns: data['columns'],
+                select: true, multi: true,
+                lengthMenu: [[-1, 10, 25, 50, 100], ['All', 10, 25, 50, 100]],
+                pageLength: 25,
+                order: [[3, 'asc']],
+                'drawCallback': activateTable,
+                language: {
+                    'emptyTable': 'No significant differences found. More genomes may be required.'
+                },
+                'columnDefs': [
+                    // {0: '_annotation', 1: 'Description', 2: 'Annotation', 3: 'Group 1 [%]', 4: 'Group 2 [%]', 5: 'Group 1', 6: 'Group 2', 7: 'pv', 8: 'qv', 9: 'reject'}
+                    {'targets': [0], 'visible': false, 'searchable': false}, // _annotation
+                    {'targets': [1], 'visible': false}, // Description
+                    {'targets': [3, 3, 4, 5, 6, 9], 'searchable': false}, // numbers, reject
+                    {'targets': [7, 8], type: 'scientific', 'searchable': false}, // pvalue, qvalue
+                ]
+            })
+
+            const buttons = new $.fn.dataTable.Buttons(table, {
+                buttons: [{
+                    extend: 'csv',
+                    exportOptions: {
+                        columns: ':visible'  // download visibe columns only
+                    }
+                }]
+            }).container().appendTo($('#buttons'))
+
+        }
+
+
         async function loadTable(genomes_g1, genomes_g2, alpha, anno_type, multiple_testing_method) {
             if (genomes_g1.length === 0 && genomes_g2.length === 0) {
                 console.log('no annotations or no genomes!')
@@ -220,40 +273,16 @@
 
             $('#gene-loci-spinner').attr('hidden', false)
 
-            $.post('{% url "website:gene-trait-matching-table" %}', {
+            $.post('{% url 'website:gene-trait-matching-table' %}', {
                 'g1[]': genomes_g1,
                 'g2[]': genomes_g2,
                 'alpha': alpha,
                 'anno_type': anno_type,
                 'multiple_testing_method': multiple_testing_method
-            }, "json")
+            }, 'json')
                 .done(function (data, textStatus, jqXHR) {
-                    let table = $('#gene-trait-matching-table').DataTable({
-                        data: data['dataset'],
-                        columns: data['columns'],
-                        lengthMenu: [[-1, 10, 25, 50, 100], ["All", 10, 25, 50, 100]],
-                        pageLength: 25,
-                        order: [[3, 'asc']],
-                        "drawCallback": function (settings) {
-                            $(".ogb-tag.annotation").each(function (index) {
-                                // only add click event if there is none yet
-                                if (jQuery._data(this, 'events') === undefined) {
-                                    $(this)
-                                        .ogbTooltip()
-                                        .on("click", function () {
-                                            showAnnotationClickMenu(event)
-                                        })
-                                }
-                            })
-                        },
-                        language: {
-                            "emptyTable": "No significant differences found. More genomes are probably required."
-                        }
-                    })
-
-                    let buttons = new $.fn.dataTable.Buttons(table, {
-                        buttons: ['csv']
-                    }).container().appendTo($('#buttons'))
+                    drawTable(data)
+                    activateTable()
                 })
                 .fail(function (data, textStatus, jqXHR) {
                     if (data?.status === 409) {

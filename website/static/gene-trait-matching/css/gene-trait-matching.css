@@ -18,3 +18,7 @@ div.col-md-6:nth-child(2) {
 #gene-trait-matching-table_length .custom-select, #gene-trait-matching-table_filter .form-control {
     margin: 0 7px 0 7px;
 }
+
+#gene-trait-matching-table tr.selected {
+    background-color: #acbad4;
+}

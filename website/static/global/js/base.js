@@ -254,6 +254,18 @@ let waitForElement = function (selector, callback, timeout = 200) {
 
 
 /*
+ * Removes duplicate elements from array
+ *
+ * Usage:
+ * removeDuplicates([1,1,1,2])
+ * returns: [1, 2]
+ */
+const removeDuplicates = (array) => {
+    return Array.from(new Set(array));
+};
+
+
+/*
  * Execute callback function when element changes
  *
  * Usage:
@@ -409,26 +421,6 @@ function createReadOnlyGenomeDiv(genomeArray, genomeToVisualization, additionalC
             class: classes.join(' '),
             onclick: `showGenomeClickMenu(event, 'auto', 'auto', 'auto', '${clickMenuAnnotations}')`,
             'data-species': dataGenome['sciname'],
-        }).ogbTooltip())
-    }
-
-    return readOnlyDiv
-}
-
-function createReadOnlyAnnotationsDiv(annotationsArray, annotationToType) {
-    let readOnlyDiv = $('<div>', {
-        class: "read-only-div",
-        css: {'display': 'flex', 'flex-wrap': 'wrap'},
-        onclick: `CopyToClipboard('${annotationsArray.join(', ')}')`
-    })
-
-    for (let idx in annotationsArray) {
-        readOnlyDiv.append($('<span>', {
-            text: annotationsArray[idx],
-            class: 'annotation ogb-tag',
-            onclick: `showAnnotationClickMenu(event, 'auto', 'auto', $(this).parent().parent().parent().parent() )`,
-            'data-annotype': annotationToType[annotationsArray[idx]]['anno_type'],
-            'title': annotationToType[annotationsArray[idx]]['description']
         }).ogbTooltip())
     }
 

@@ -91,7 +91,7 @@
                     if ($(this).hasClass('genome')) {
                         this.setAttribute('onclick', `showGenomeClickMenu(event)`)
                     } else if ($(this).hasClass('annotation')) {
-                        this.setAttribute('onclick', `showAnnotationClickMenu(event, 'auto', 'auto', '#genome-container', 'auto')`)
+                        this.setAttribute('onclick', `showAnnotationClickMenu(event, 'auto', 'auto', {'TestGenomes': '#genome-container'}, 'auto')`)
                     } else if ($(this).hasClass('gene')) {
                         this.setAttribute('onclick', `showGeneClickMenu(event)`)
                     } else if ($(this).hasClass('taxid')) {

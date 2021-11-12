@@ -146,12 +146,7 @@ let autoDiscoverSiblings = function (event, self_string, siblings, type) {
             return $(this).text()
         }).get()
     } else if (siblings === 'auto') {
-        if (self_string === undefined) {
-            siblings = []
-        } else {
-            siblings = [self_string]
-        }
-
+        siblings = (self_string === undefined) ? [] : [self_string]
         $(event.target).siblings().each(function () {
             if ($(this).hasClass(type)) {
                 siblings.push($(this).text())
@@ -159,14 +154,14 @@ let autoDiscoverSiblings = function (event, self_string, siblings, type) {
         })
     } else if (typeof (siblings) === 'string') {
         let target = siblings
-        siblings = []
+        siblings = (self_string === undefined) ? [] : [self_string]
         $(target).find('.' + type).not('[data-annotype="fake"]').each(function () {
             siblings.push($(this).text())
         })
     } else {
         assert(Array.isArray(siblings), 'This function expects an array, a JQuery selector or nothing!!')
     }
-    return siblings
+    return removeDuplicates(siblings)
 }
 
 let autoDiscoverSpecies = function (event, species) {
@@ -184,16 +179,16 @@ let autoDiscoverGenomes = function (genomes) {
     if (genomes === 'none') {
         return []
     } else if (Array.isArray(genomes)) {
-        return genomes
+        return removeDuplicates(genomes)
     } else if (genomes instanceof jQuery) {
-        return genomes.find('.genome').map(function () {
+        return removeDuplicates(genomes.find('.genome').map(function () {
             return $(this).text()
-        }).get()
+        }).get())
     } else {
         // assume genomes is a pointer. find all .genome children and return array
-        return $(genomes).find('.genome').map(function () {
+        return removeDuplicates($(genomes).find('.genome').map(function () {
             return $(this).text()
-        }).get()
+        }).get())
     }
 }
 
@@ -334,14 +329,17 @@ Perform annotation search</a>
     $('.ogb-tag.mini').tooltip()
 }
 
-let showAnnotationClickMenu = function (event, annotation = 'auto', siblings = 'auto', genomes = 'none', annotype = 'auto') {
-    console.log('showAnnotationClickMenu', 'event:', event, 'annotation:', annotation, 'siblings:', siblings, 'genomes', genomes, 'annotype', annotype)
+let showAnnotationClickMenu = function (event, annotation = 'auto', siblings = 'auto', listOfGenomes = {}, annotype = 'auto') {
+    console.log('showAnnotationClickMenu', 'event:', event, 'annotation:', annotation, 'siblings:', siblings, 'listOfGenomes', listOfGenomes, 'annotype', annotype)
 
     // auto-discover
     annotation = autoDiscoverSelf(event, annotation)
     siblings = autoDiscoverSiblings(event, annotation, siblings, 'annotation')
     let siblings_repl = urlReplBlanks(siblings)
-    genomes = autoDiscoverGenomes(genomes)
+    listOfGenomes = Object.entries(listOfGenomes).reduce((newObj, [name, genomes]) => {
+        newObj[name] = autoDiscoverGenomes(genomes)
+        return newObj
+    }, {})
 
     let description = ''
     for (var attr of ['data-original-title', 'title']) {
@@ -387,7 +385,8 @@ Copy annotation</a>
         cm.appendElement(`<a href="${url}" class="dropdown-item context-menu-icon context-menu-icon-hyperlink">${name}</a>`)
     })
 
-    if (siblings.length > 1) {
+    // Annotation search without genomes
+    if (listOfGenomes.length === 0) {
         cm.appendElement(`
 <h6 class="dropdown-header context-menu-header many-annotations">
 ${siblings.length} selected annotations</h6>
@@ -397,25 +396,34 @@ Search for annotations</a>
 `)
     }
 
-    if (genomes.length > 0) {
+    // Compare genes
+    Object.entries(listOfGenomes).forEach(([name, genomes]) => {
+        name = (name === '') ? '' : `${name}: `
         cm.appendElement(`
-<h6 class="dropdown-header context-menu-header many-genes">
-${genomes.length} selected genomes</h6>
+<h6 class="dropdown-header context-menu-header many-annotations many-genes">
+${name}${genomes.length} genomes</h6>
+
 <a href="/compare-genes/?genomes=${genomes.join('+')}&annotations=${urlReplBlanks([annotation])}" class="dropdown-item context-menu-icon context-menu-icon-genes many-genes">
-Compare the genes of this annotation</a>
+Compare the genes</a>
 </div>
 `)
+    })
+
+    if (siblings.length) {
+        // Annotation search with genomes
+        Object.entries(listOfGenomes).forEach(([name, genomes]) => {
+            name = (name === '') ? '' : `${name}: `
+            cm.appendElement(`
+<h6 class="dropdown-header context-menu-header many-annotations many-genomes">
+${name}${genomes.length} genomes and ${siblings.length} annotations</h6>
+
+<a href="/annotation-search/?annotations=${siblings_repl}&genomes=${genomes.join('+')}&annotations=${siblings_repl}" class="dropdown-item context-menu-icon context-menu-icon-annotations many-annotations">
+Search for annotations</a>
+</div>
+`)
+        })
     }
 
-    if (genomes.length > 1 && siblings.length > 1) {
-        cm.appendElement(`
-<h6 class="dropdown-header context-menu-header many-genes">
-${genomes.length} genomes and ${siblings.length} annotations</h6>
-<a href="/compare-genes/?genomes=${genomes.join('+')}&annotations=${siblings_repl}" class="dropdown-item context-menu-icon context-menu-icon-genes many-genes">
-Compare the genes of these annotations</a>
-</div>
-`)
-    }
 
     $.post('/api/get-annotation/', {'annotation_name': annotation}, function (data) {
         const pathways = data['pathways']
@@ -676,8 +684,6 @@ let showPathwayClickMenu = function (event, genomes = 'none') {
     const textColor = $(event.target).css('color')
 
     const genomeUrlString = genomes.length ? '&g1=' + genomes.join(',') : ''
-
-    console.log(genomeUrlString)
 
     // initiate context menu
     let cm = new ClickMenu(event, 'pathway-context-menu')

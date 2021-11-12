@@ -1,18 +1,17 @@
 from django.shortcuts import render, HttpResponse
-from django.db.models import Q, Count
 from django.http import JsonResponse
+from django.db import connection
 
 import pandas as pd
 from scipy.stats import fisher_exact, boschloo_exact
 from statsmodels.stats.multitest import multipletests
 
-from website.models import Genome, Gene, GenomeContent
-from website.models.Annotation import Annotation, annotation_types
+from website.models.Annotation import annotation_types
 
 from website.views.GenomeDetailView import dataframe_to_bootstrap_html
 from website.views.helpers.extract_errors import extract_errors
-from website.views.helpers.magic_string import MagicQueryManager, MagicError
-from website.views.helpers.extract_requests import contains_data, contains_all, extract_data
+from website.views.helpers.magic_string import MagicQueryManager
+from website.views.helpers.extract_requests import contains_data, extract_data
 
 multiple_testing_methods = {
     'bonferroni': 'Bonferroni: one-step correction',
@@ -131,22 +130,22 @@ def gtm_table(request):
     multiple_testing_method = request.POST.get('multiple_testing_method')
 
     try:
-        gtm_df = gtm(g1=magic_query_manager_g1.all_genomes, g2=magic_query_manager_g2.all_genomes,
-                     anno_type=anno_type, alpha=alpha, multiple_testing_method=multiple_testing_method)
+        gtm_df = gtm(
+            g1=set(magic_query_manager_g1.all_genomes.values_list('identifier', flat=True)),
+            g2=set(magic_query_manager_g2.all_genomes.values_list('identifier', flat=True)),
+            anno_type=anno_type, alpha=alpha, multiple_testing_method=multiple_testing_method)
     except Exception as e:
         return JsonResponse(dict(success='false', message=str(e)), status=500)
 
     if len(gtm_df) == 0:
         return JsonResponse(dict(success='false', message='Found no significantly different annotations.'), status=409)
 
-    json_response = to_json(gtm_df=gtm_df, anno_type=anno_type, method='boschloo')
-
-    return JsonResponse(json_response)
+    return JsonResponse(to_json(gtm_df=gtm_df))
 
 
 def gtm(
-        g1: [Genome],
-        g2: [Genome],
+        g1: {str},
+        g2: {str},
         anno_type: str = 'OL',
         method: str = 'boschloo',
         alpha: float = 0.25,
@@ -163,9 +162,8 @@ def gtm(
     :param multiple_testing_method: See https://www.statsmodels.org/dev/generated/statsmodels.stats.multitest.multipletests.html
     :return: Table of proteins that are significantly over- or underrepresented.
     """
-    g1 = g1.values_list('identifier', flat=True)
-    g2 = g2.values_list('identifier', flat=True)
-    intersection = g1.intersection(g2)
+    intersection = set.intersection(g1, g2)
+    all_g = set.union(g1, g2)
     assert len(intersection) == 0, f'The following genomes occur in both lists: {", ".join(intersection)}'
     assert len(g1) > 0, 'Group 1 contains no genomes.'
     assert len(g2) > 0, 'Group 2 contains no genomes.'
@@ -184,75 +182,104 @@ def gtm(
     else:
         raise AssertionError(f"method must be either 'fisher' or 'boschloo'. {method=}")
 
-    annos_qs = Annotation.objects.filter(
-        anno_type=anno_type
-    ).annotate(
-        g1=Count('genomecontent', filter=Q(genomecontent__in=g1)),
-        g2=Count('genomecontent', filter=Q(genomecontent__in=g2))
-    ).exclude(
-        Q(g1=0) & Q(g2=0)  # exclude non-covered annotations
-    ).exclude(
-        Q(g1=len(g1)) & Q(g2=len(g2))  # exclude fully covered annotations
-    )
+    with connection.cursor() as cursor:
+        cursor.execute(
+            '''
+            SELECT * FROM (
+                SELECT "name", "description",
+                    COUNT(genomecontent_id) FILTER ( WHERE genomecontent_id IN %s ) as g1,
+                    COUNT(genomecontent_id) FILTER ( WHERE genomecontent_id IN %s ) as g2
+                FROM website_genomecontent_annotations
+                     LEFT OUTER JOIN website_annotation ON ("name" = "annotation_id")
+                WHERE "anno_type" = %s AND "genomecontent_id" IN %s
+                GROUP BY "name"
+            ) AS foo WHERE NOT (g1 = %s AND g2 = %s);
+            ''',
+            [tuple(g1), tuple(g2), anno_type, tuple(all_g), len(g1), len(g2)]
+        )
 
-    annos = annos_qs.all().values_list('name', 'description', 'g1', 'g2')
-
-    annos = pd.DataFrame(list(annos), columns=['annotation', 'description', 'g1', 'g2'])
+        annos = pd.DataFrame(list(cursor.fetchall()), columns=['annotation', 'description', 'g1', 'g2'])
 
     assert len(annos) > 0, f'No annotations found for anno_type={anno_type}'
 
-    n_rows = len(annos)
-
     # get unique combinations of g1 and g2 to calculate fewer tests:
-    test_df = annos.groupby(['g1', 'g2']).size().reset_index()
-    test_df.drop([0], axis=1, inplace=True)
-    test_df['not_g1'] = len(g1) - test_df['g1']
-    test_df['not_g2'] = len(g2) - test_df['g2']
-    test_df['pvalue'] = test_df.apply(test_fn, axis=1)
-    test_df.drop(['not_g1', 'not_g2'], axis=1, inplace=True)
+    gtm_df = annos[['g1', 'g2']].drop_duplicates().reset_index(drop=True)
+    gtm_df['not_g1'] = len(g1) - gtm_df['g1']
+    gtm_df['not_g2'] = len(g2) - gtm_df['g2']
+    gtm_df['pvalue'] = gtm_df.apply(test_fn, axis=1)
+    gtm_df.drop(['not_g1', 'not_g2'], axis=1, inplace=True)
 
-    # perform left outer join
-    annos = pd.merge(annos, test_df, on=['g1', 'g2'], how='left')
-
-    # sort by highest test's test
-    annos.sort_values(by='pvalue', inplace=True)
+    # most significant first
+    gtm_df.sort_values(by='pvalue', inplace=True)
 
     # apply multiple testing correction
     reject, pvals_corrected, alphac_sidak, alphac_bonf = multipletests(
-        annos['pvalue'], is_sorted=True,
+        gtm_df['pvalue'], is_sorted=True,
         alpha=alpha, method=multiple_testing_method
     )
-    annos['p_corrected'] = pvals_corrected
-    annos['reject'] = reject
-    assert len(annos) == n_rows, f'wtf?{n_rows} -> {len(annos)}'
+    gtm_df['p_corrected'] = pvals_corrected
+    gtm_df['reject'] = reject
 
     # remove rows where corrected p-value is 1
-    annos = annos[annos['p_corrected'] < 1]
+    gtm_df = gtm_df[gtm_df['p_corrected'] < 1]
 
-    return annos
+    # format in percentage
+    gtm_df['g1_%'] = gtm_df['g1'] / len(g1)
+    gtm_df['g2_%'] = gtm_df['g2'] / len(g2)
 
+    # perform left outer join
+    gtm_df = pd.merge(gtm_df, annos, on=['g1', 'g2'], how='left')
 
-def prettify(gtm_df: pd.DataFrame, anno_type: str, method: str) -> pd.DataFrame:
-    assert list(gtm_df.columns) == ['annotation', 'description', 'g1', 'g2', 'pvalue', 'p_corrected', 'reject']
+    # add parameters of gtm to pandas dataframe attributes
+    gtm_df.attrs.update({
+        'g1': g1, 'g2': g2,
+        'anno_type': anno_type, 'method': method,
+        'multiple_testing_method': multiple_testing_method, 'alpha': alpha
+    })
 
-    def html(row):
-        return f'<div class="annotation ogb-tag" data-annotype="{anno_type}" title="{row["description"]}">{row["annotation"]}</div>'
-
-    gtm_df['annotation'] = gtm_df.apply(lambda row: html(row), axis=1)
-    gtm_df.drop('description', axis=1, inplace=True)
-
-    gtm_df.columns = ['Annotation', 'Group 1', 'Group 2', f'pvalue ({method.capitalize()}\'s test)', 'qvalue (corrected)', 'reject H0']
-
+    # columns: ['g1', 'g2', 'pvalue', 'p_corrected', 'reject', 'g1_%', 'g2_%', 'annotation', 'description']
     return gtm_df
 
 
-def to_html(gtm_df: pd.DataFrame, anno_type: str, method: str) -> str:
-    gtm_df = prettify(gtm_df, anno_type, method)
+def prettify(gtm_df: pd.DataFrame) -> pd.DataFrame:
+    assert list(gtm_df.columns) == ['g1', 'g2', 'pvalue', 'p_corrected', 'reject', 'g1_%', 'g2_%', 'annotation', 'description'], \
+        f'Columns do not match. Got: {list(gtm_df.columns)}'
+    for attr in ['g1', 'g2', 'anno_type', 'method', 'multiple_testing_method', 'alpha']:
+        assert attr in gtm_df.attrs, f'Dataframe is missing attr: {attr}'
+
+    anno_type = gtm_df.attrs['anno_type']
+    multiple_testing_method = gtm_df.attrs['multiple_testing_method']
+    method = gtm_df.attrs['method']
+    len_g1 = len(gtm_df.attrs['g1'])
+    len_g2 = len(gtm_df.attrs['g2'])
+
+    html = lambda row: f"<div class='annotation ogb-tag' data-annotype='{anno_type}' title='{row['description']}'>{row['annotation']}</div>"
+
+    gtm_df['annotation_html'] = gtm_df.apply(html, axis=1)
+    gtm_df['g1'] = gtm_df['g1'].apply(lambda x: f'{x}/{len_g1}')
+    gtm_df['g2'] = gtm_df['g2'].apply(lambda x: f'{x}/{len_g2}')
+    gtm_df[['g1_%', 'g2_%']] = gtm_df[['g1_%', 'g2_%']].applymap(lambda x: f'{x * 100:.3g}%')
+    gtm_df[['pvalue', 'p_corrected']] = gtm_df[['pvalue', 'p_corrected']].applymap('{:.2g}'.format)  # 2 significant figures
+
+    print(gtm_df.columns)
+    method_str = f'pvalue ({method.capitalize()}\'s test)'
+    gtm_df = gtm_df[[
+        'annotation', 'description', 'annotation_html', 'g1_%', 'g2_%', 'g1', 'g2', 'pvalue', 'p_corrected', 'reject'
+    ]]
+    gtm_df.columns = [
+        '_annotation', 'Description', 'Annotation', 'Group 1 [%]', 'Group 2 [%]', 'Group 1', 'Group 2', method_str, 'qvalue (corrected)', 'reject H0'
+    ]
+    print(gtm_df.columns)
+    return gtm_df
+
+
+def to_html(gtm_df: pd.DataFrame) -> str:
+    gtm_df = prettify(gtm_df)
     return dataframe_to_bootstrap_html(gtm_df, index=False, table_id='gene-trait-matching-table')
 
 
-def to_json(gtm_df: pd.DataFrame, anno_type: str, method: str) -> dict:
-    gtm_df = prettify(gtm_df, anno_type, method)
+def to_json(gtm_df: pd.DataFrame) -> dict:
+    gtm_df = prettify(gtm_df)
 
     json_response = dict(
         dataset=gtm_df.values.tolist(),

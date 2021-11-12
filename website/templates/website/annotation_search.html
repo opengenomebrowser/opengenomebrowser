@@ -148,7 +148,7 @@
             $('#real-annotations .ogb-tag.annotation')
                 .ogbTooltip()
                 .click(function (event) {
-                    showAnnotationClickMenu(event, 'auto', 'auto', target)
+                    showAnnotationClickMenu(event, 'auto', 'auto', {'': target})
                 })
 
             loadTable(annotations, genomes, true)
@@ -213,7 +213,7 @@
                             if ($(this).hasClass('genome')) {
                                 this.setAttribute('onclick', `showGenomeClickMenu(event, 'auto', 'auto', $(this).parent().parent() )`)
                             } else if ($(this).hasClass('annotation')) {
-                                this.setAttribute('onclick', `showAnnotationClickMenu(event, 'auto', $(this).parent().parent().parent(), $(this).parent().parent().parent().parent() )`)
+                                this.setAttribute('onclick', `showAnnotationClickMenu(event, 'auto', $(this).parent(), {'': $(this).parent().parent().parent().parent()} )`)
                             }
                         })
 
