@@ -5,7 +5,7 @@ import contextlib
 import tempfile
 from subprocess import call, run, PIPE
 from Bio import SeqIO
-from Bio.SeqFeature import FeatureLocation
+from Bio.SeqFeature import SeqFeature
 from lib.dot.DotPrep import run as dotprep_run
 
 
@@ -190,8 +190,9 @@ class DotPrep:
             ref_or_query_start = 'query_start'
             ref_or_query_end = 'query_end'
 
-        def get_position(location: FeatureLocation) -> (int, int):
-            return location.nofuzzy_start, location.nofuzzy_end
+        def get_position(f: SeqFeature) -> (int, int):
+            location = f.location if f.location_operator != 'join' else f.location.parts[0]
+            return (location.nofuzzy_start, location.nofuzzy_end)
 
         loci = set()  # {(1, 300), (444, 600), ...}
 
@@ -201,7 +202,9 @@ class DotPrep:
                 for f in scf.features:
                     if 'locus_tag' not in f.qualifiers:
                         continue
-                    start, end = get_position(location=f.location if f.location_operator != 'join' else f.location.parts[0])
+
+                    start, end = get_position(f=f)
+
                     if (start, end) in loci:
                         continue
 
@@ -210,7 +213,7 @@ class DotPrep:
                         ref_or_query_start: start,
                         ref_or_query_end: end,
                         'name': f.qualifiers['locus_tag'][0],
-                        'strand': '+' if f.strand else '-'
+                        'strand': '+' if f.strand > 0 else '-'
                     })
 
                     loci.add((start, end))
