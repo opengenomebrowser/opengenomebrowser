@@ -1,9 +1,13 @@
+import json
+
 from django.shortcuts import render
 from django.http import JsonResponse
-from lib.dot.dot_prep_wrapper import DotPrep
+from dot import DotPrep
 from website.models.Genome import Genome
 from plugins import calculate_dotplot
 from website.views.helpers.extract_errors import extract_errors
+
+dotprep = DotPrep()
 
 
 def dotplot_view(request):
@@ -32,8 +36,14 @@ def get_dotplot_annotations(request):
     is_ref = request.POST.get('is_ref') == 'true'
 
     genome = Genome.objects.get(identifier=identifier)
+    gbk = genome.cds_gbk(relative=False)
 
-    annotations = DotPrep.gbk_to_annotation(genome.cds_gbk(relative=False), is_ref=is_ref)
+    if is_ref:
+        annotations = DotPrep.gbk_to_annotation_ref(gbk=gbk)
+    else:
+        assert 'flipped_scaffolds' in request.POST, f'With is_ref=False, index must be specified.'
+        flipped_scaffolds = json.loads(request.POST.get('flipped_scaffolds'))
+        annotations = DotPrep.gbk_to_annotation_qry(gbk=gbk, flipped_scaffolds=flipped_scaffolds)
 
     return JsonResponse(dict(
         genome=identifier,
@@ -57,9 +67,10 @@ def get_dotplot(request):
     fasta_ref = genome_ref.assembly_fasta(relative=True)
     fasta_query = genome_query.assembly_fasta(relative=True)
 
-    coords, index = calculate_dotplot(fasta_ref=fasta_ref, fasta_qry=fasta_query, mincluster=mincluster)
+    coords, index, flipped_scaffolds = calculate_dotplot(fasta_ref=fasta_ref, fasta_qry=fasta_query, mincluster=mincluster)
 
     return JsonResponse(dict(
         coords=coords,
-        coords_index=index
+        coords_index=index,
+        flipped_scaffolds=flipped_scaffolds
     ))
