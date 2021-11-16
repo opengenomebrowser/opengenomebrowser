@@ -218,10 +218,14 @@ ORTHOLOG_ANNOTATIONS = f'{GENOMIC_DATABASE}/orthologs/orthologs.tsv'
 # where KEGG data should be loaded to (using manage_ogb.py --download-kegg-data)
 ANNOTATION_DESCRIPTIONS = f'{GENOMIC_DATABASE}/annotation-descriptions'
 
-# path (relative to GENOMIC_DATABASE) to pathway_maps-svgs
-PATHWAY_MAPS_RELATIVE = 'pathway_maps/svg'
-# path (relative to GENOMIC_DATABASE) to type_dictionary.json
-PATHWAY_MAPS_TYPE_DICT_RELATIVE = 'pathway_maps/type_dictionary.json'
+if os.path.isdir(f'{GENOMIC_DATABASE}/pathway-maps'):
+    # path (relative to GENOMIC_DATABASE) to pathway_maps-svgs
+    PATHWAY_MAPS_RELATIVE = 'pathway-maps/svg'
+    # path (relative to GENOMIC_DATABASE) to type_dictionary.json
+    PATHWAY_MAPS_TYPE_DICT_RELATIVE = 'pathway-maps/type_dictionary.json'
+else:
+    PATHWAY_MAPS_RELATIVE = 'pathway_maps/svg'
+    PATHWAY_MAPS_TYPE_DICT_RELATIVE = 'pathway_maps/type_dictionary.json'
 
 # Path to the folder that contains the orthofinder binary
 ORTHOFINDER_INSTALL_DIR = '/opt/OrthoFinder_source'

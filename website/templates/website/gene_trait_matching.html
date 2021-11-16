@@ -231,6 +231,22 @@
             })
         }
 
+        /**
+         * Enable scientific notation sorting
+         */
+        jQuery.extend(jQuery.fn.dataTableExt.oSort, {
+            "scientific-pre": function (a) {
+                return parseFloat(a);
+            },
+
+            "scientific-asc": function (a, b) {
+                return ((a < b) ? -1 : ((a > b) ? 1 : 0));
+            },
+
+            "scientific-desc": function (a, b) {
+                return ((a < b) ? 1 : ((a > b) ? -1 : 0));
+            }
+        });
 
         function drawTable(data) {
             const table = $('#gene-trait-matching-table').DataTable({
@@ -239,7 +255,7 @@
                 select: true, multi: true,
                 lengthMenu: [[-1, 10, 25, 50, 100], ['All', 10, 25, 50, 100]],
                 pageLength: 25,
-                order: [[3, 'asc']],
+                order: [[7, 'asc']],  // default sorting: pvalue
                 'drawCallback': activateTable,
                 language: {
                     'emptyTable': 'No significant differences found. More genomes may be required.'
