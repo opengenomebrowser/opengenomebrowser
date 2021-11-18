@@ -1,3 +1,5 @@
+from html import escape
+
 from django.shortcuts import render, HttpResponse
 from django.http import JsonResponse
 from django.db import connection
@@ -253,7 +255,8 @@ def prettify(gtm_df: pd.DataFrame) -> pd.DataFrame:
     len_g1 = len(gtm_df.attrs['g1'])
     len_g2 = len(gtm_df.attrs['g2'])
 
-    html = lambda row: f"<div class='annotation ogb-tag' data-annotype='{anno_type}' title='{row['description']}'>{row['annotation']}</div>"
+    html = lambda \
+        row: f"<div class='annotation ogb-tag' data-annotype='{anno_type}' title='{escape(row['description'])}'>{escape(row['annotation'])}</div>"
 
     gtm_df['annotation_html'] = gtm_df.apply(html, axis=1)
     gtm_df['g1'] = gtm_df['g1'].apply(lambda x: f'{x}/{len_g1}')
@@ -261,7 +264,6 @@ def prettify(gtm_df: pd.DataFrame) -> pd.DataFrame:
     gtm_df[['g1_%', 'g2_%']] = gtm_df[['g1_%', 'g2_%']].applymap(lambda x: f'{x * 100:.3g}%')
     gtm_df[['pvalue', 'p_corrected']] = gtm_df[['pvalue', 'p_corrected']].applymap('{:.2g}'.format)  # 2 significant figures
 
-    print(gtm_df.columns)
     method_str = f'pvalue ({method.capitalize()}\'s test)'
     gtm_df = gtm_df[[
         'annotation', 'description', 'annotation_html', 'g1_%', 'g2_%', 'g1', 'g2', 'pvalue', 'p_corrected', 'reject'
@@ -269,7 +271,6 @@ def prettify(gtm_df: pd.DataFrame) -> pd.DataFrame:
     gtm_df.columns = [
         '_annotation', 'Description', 'Annotation', 'Group 1 [%]', 'Group 2 [%]', 'Group 1', 'Group 2', method_str, 'qvalue (corrected)', 'reject H0'
     ]
-    print(gtm_df.columns)
     return gtm_df
 
 

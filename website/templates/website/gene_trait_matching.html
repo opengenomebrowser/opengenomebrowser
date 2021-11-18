@@ -225,7 +225,7 @@
                             table.rows(this.parentElement.parentElement).select()  // select this row
                             const data = table.rows({selected: true}).data()
                             const selectedAnnotations = Array.from({length: data.length}, (_, i) => data[i][0])
-                            showAnnotationClickMenu(event, 'auto', selectedAnnotations, {'Group 1': genomesG1, 'Group 2': genomesG2})
+                            showAnnotationClickMenu(event, 'auto', selectedAnnotations, {'Group 1': '#real-genomes-1', 'Group 2': '#real-genomes-2'})
                         })
                 }
             })

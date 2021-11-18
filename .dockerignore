@@ -53,6 +53,8 @@ website/static/global/css/annotype_color.css
 
 /db_setup/.*
 
+/nginx/
+
 .git
 .gitmodules
 

@@ -489,7 +489,7 @@ function initAutocompleteGenomes(div_name, maxTags) {
             source: '/api/autocomplete-genomes/',
             minLength: 1
         },
-        delimiter: ',; ',
+        delimiter: ',;',
         forceLowercase: false,
         maxTags: maxTags ? maxTags : null,
         onChange: onGenomesChange
