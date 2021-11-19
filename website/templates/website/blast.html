@@ -83,14 +83,15 @@
 
                             </select>
                         </div>
-                    </div>
 
-                    <div class="form-group">
-                        <label for="id_blast_input" class=" requiredField">Blast input</label>
+                        <label for="blast-parameters"><a>Additional BLAST parameters:</a></label>
+                        <input type="text" class="form-control" id="blast-parameters" placeholder="for example: -evalue 1e-5 -num_alignments 100">
+
+                        <label for="blast_input" class=" requiredField">Blast input</label>
                         <div>
                             <textarea name="blast_input"
                                       id="blast_input" cols="40" rows="10"
-                                      style="font-family: Courier" spellcheck="false"
+                                      style="font-family: monospace" spellcheck="false"
                                       class="textarea form-control" required>></textarea>
                         </div>
                     </div>
@@ -145,6 +146,8 @@
                     showGenomeClickMenu(event)
                 })
 
+            $('#blast-parameters').val(readCookie('blast-parameters'))
+
         })
 
 
@@ -176,9 +179,11 @@
             $("#blast-alignments-table").empty()
             $("#blast-single-alignment").empty()
 
+            // load parameters
             let frm = $('#blast-form')
-
-            const serialized_query = frm.serialize() + '&genomes[]=' + urlReplBlanks(allGenomes)
+            const parameters = $('#blast-parameters').val()
+            writeCookie('blast-parameters', parameters)
+            const serialized_query = frm.serialize() + '&genomes[]=' + urlReplBlanks(allGenomes) + '&blast_kwargs=' + parameters
 
             // load new blast results
             $.ajax({

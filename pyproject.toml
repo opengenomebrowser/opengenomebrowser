@@ -34,6 +34,7 @@ bokeh = "^2.3.3"
 opengenomebrowser-tools = {git = "https://github.com/opengenomebrowser/opengenomebrowser-tools.git"}
 gendiscalpy = {git = "https://github.com/MrTomRod/gendiscalpy"}
 dot = {git = "https://github.com/MrTomRod/dot"}
+ncbi-blast = {git = "https://github.com/MrTomRod/ncbi_blast.git"}
 
 [tool.poetry.dev-dependencies]
 

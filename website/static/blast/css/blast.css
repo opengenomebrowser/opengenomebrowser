@@ -5,3 +5,7 @@
 #blast-multiple-alignments-buttons .btn {
     background-color: #f0f0f0;
 }
+
+#blast-parameters::placeholder {
+    color: rgb(196, 196, 196)
+}
