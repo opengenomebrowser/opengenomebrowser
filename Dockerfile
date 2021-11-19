@@ -1,4 +1,4 @@
-FROM python:3.9-buster
+FROM python:3.10-buster
 MAINTAINER Thomas Roder
 
 ENV PYTHONPATH=/usr/local/bin/python:.
@@ -11,7 +11,13 @@ RUN apt-get update -y
 WORKDIR /tmp
 
 # install packages via apt
-RUN apt-get install -y sudo ncbi-blast+ clustalo mafft muscle netcat pigz tree && apt-get clean
+RUN apt-get install -y sudo clustalo mafft muscle netcat pigz tree && apt-get clean
+
+# install ncbi-blast+
+RUN wget --quiet https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.12.0/ncbi-blast-2.12.0+-x64-linux.tar.gz && \
+    tar -xvf ncbi-blast-2.12.0+-x64-linux.tar.gz && \
+    rm ncbi-blast-2.12.0+-x64-linux.tar.gz && \
+    rm -r ncbi-blast-2.12.0+
 
 # install OrthoFinder
 RUN wget --quiet https://github.com/davidemms/OrthoFinder/releases/download/2.5.4/OrthoFinder_source.tar.gz && \
@@ -27,7 +33,7 @@ RUN wget --quiet https://github.com/mummer4/mummer/releases/download/v4.0.0rc1/m
     ./configure --prefix=/usr/local && make && make install && \
     ldconfig && \
     cd .. && \
-    rm -rf mummer-4.0.0rc1/
+    rm -r mummer-4.0.0rc1/
 
 ENV WORKDIR=/opengenomebrowser
 WORKDIR ${WORKDIR}

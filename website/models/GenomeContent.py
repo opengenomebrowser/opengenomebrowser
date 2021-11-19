@@ -193,13 +193,17 @@ class GenomeContent(models.Model):
             (self.genome.cds_ffn(relative=False), self.blast_db_ffn(relative=False), 'nucl')
         ]
 
-        from lib.ncbiblast.ncbi_blast.blast_wrapper import Blast
-        blast = Blast(system_blast=True)
+        from ncbi_blast import Blast
+        blast = Blast()
+
+        def create_relative_link(src: str, dst: str) -> None:
+            dst_dir = os.path.dirname(dst)
+            os.symlink(src=os.path.relpath(src, dst_dir), dst=dst)
 
         for fasta, blast_db_location, dbtype in blastable_files:
             if not os.path.isdir(blast_db_location):
                 os.makedirs(os.path.dirname(blast_db_location))
-                os.symlink(src=fasta, dst=blast_db_location)
+                create_relative_link(src=fasta, dst=blast_db_location)
             blast.mkblastdb(file=blast_db_location, dbtype=dbtype, overwrite=True)
 
     def load_custom_file(self, file_dict):

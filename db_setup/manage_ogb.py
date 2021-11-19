@@ -514,7 +514,7 @@ def load_annotation_descriptions(anno_type: str = None, reload: bool = True) -> 
     Annotation.load_descriptions(anno_types=anno_types, reload=reload)
 
 
-def load_blast_dbs(reload=False) -> None:
+def load_blast_dbs(reload: bool) -> None:
     """
     Create missing blast_dbs.
 
