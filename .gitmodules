@@ -4,9 +4,6 @@
 [submodule "lib/orthofinder_tools"]
 	path = lib/orthofinder_tools
 	url = https://gitlab.bioinformatics.unibe.ch/troder/orthofinder_tools
-[submodule "lib/ncbiblast"]
-	path = lib/ncbiblast
-	url = https://gitlab.bioinformatics.unibe.ch/troder/ncbiblast
 [submodule "lib/multiplesequencealignment"]
 	path = lib/multiplesequencealignment
 	url = https://gitlab.bioinformatics.unibe.ch/troder/multiplesequencealignment.git
