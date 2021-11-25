@@ -35,6 +35,7 @@ opengenomebrowser-tools = {git = "https://github.com/opengenomebrowser/opengenom
 gendiscalpy = {git = "https://github.com/MrTomRod/gendiscalpy"}
 dot = {git = "https://github.com/MrTomRod/dot"}
 ncbi-blast = {git = "https://github.com/MrTomRod/ncbi_blast.git"}
+gene-loci-comparison = {git = "https://github.com/MrTomRod/gene_loci_comparison.git"}
 
 [tool.poetry.dev-dependencies]
 

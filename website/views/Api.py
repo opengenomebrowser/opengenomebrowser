@@ -10,7 +10,7 @@ from django.db.models import Max, Q, CharField, Value as V
 from website.models import GenomeContent, Genome, PathwayMap, Gene, TaxID, GenomeSimilarity, Annotation, annotation_types
 from website.models.Tree import TaxIdTree, AniTree, OrthofinderTree, TreeNotDoneError, TreeFailedError
 
-from lib.gene_loci_comparison.gene_loci_comparison import GraphicRecordLocus
+from gene_loci_comparison import Loci, Locus
 from bokeh.embed import components
 
 from lib.multiplesequencealignment.multiple_sequence_alignment import ClustalOmega, MAFFT, Muscle
@@ -211,15 +211,15 @@ class Api:
 
         g = Gene.objects.get(identifier=gene_identifier)
 
-        graphic_record = GraphicRecordLocus(
+        locus = Locus(
             gbk_file=g.genomecontent.genome.cds_gbk(relative=False),
             locus_tag=gene_identifier,
             span=span
         )
 
-        graphic_record.colorize_graphic_record({gene_identifier: '#1984ff'}, strict=False, default_color='#ffffff')
+        locus.colorize({gene_identifier: '#1984ff'}, strict=False, default_color='#ffffff')
 
-        plot = graphic_record.plot_with_bokeh(
+        plot = locus.plot_bokeh(
             figure_width=11.4,  # width of .container divs
             figure_height='auto',
             viewspan=3000
@@ -254,7 +254,7 @@ class Api:
             dict(gbk=g.genomecontent.genome.cds_gbk(relative=False), gene=g.identifier, title=g.identifier)
             for g in gs]
 
-        graphic_records = GraphicRecordLocus.get_multiple(
+        loci = Loci.generate(
             loci_of_interest,
             locus_to_color_dict={},
             span=span
@@ -262,10 +262,11 @@ class Api:
 
         if colorize_by == '--':
             # color selected genes in blue
-            for graphic_record in graphic_records:
-                graphic_record.colorize_graphic_record({graphic_record.locus_tag: '#1984ff'})
+            for locus in loci.loci:
+                locus: Locus
+                locus.colorize({locus.locus_tag: '#1984ff'})
         else:
-            all_genes = [lt for gr in graphic_records for lt in gr.get_locus_tags()]
+            all_genes = [lt for locus in loci.loci for lt in locus.locus_tags()]
 
             genes = Gene.objects \
                 .filter(identifier__in=set(all_genes)) \
@@ -287,10 +288,10 @@ class Api:
                              if anno in annos_to_color}
 
             # color genes according to annotations:
-            for graphic_record in graphic_records:
-                graphic_record.colorize_graphic_record(gene_to_color)
+            for locus in loci.loci:
+                locus.colorize(gene_to_color)
 
-        plots = GraphicRecordLocus.plot_multiple_bokeh(graphic_records, viewspan=3000, auto_reverse=True)
+        plots = loci.plot_bokeh(viewspan=3000, auto_reverse=True)
 
         script, plot_divs = components(plots)
         script = script[33:-10]  # remove <script type="text/javascript"> and </script>

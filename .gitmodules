@@ -7,6 +7,3 @@
 [submodule "lib/multiplesequencealignment"]
 	path = lib/multiplesequencealignment
 	url = https://gitlab.bioinformatics.unibe.ch/troder/multiplesequencealignment.git
-[submodule "lib/gene_loci_comparison"]
-	path = lib/gene_loci_comparison
-	url = https://gitlab.bioinformatics.unibe.ch/troder/gene_loci_comparison.git

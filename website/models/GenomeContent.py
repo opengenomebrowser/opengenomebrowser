@@ -164,7 +164,7 @@ class GenomeContent(models.Model):
         # Product
         objects = [Gene.annotations.through(gene_id=gene, annotation_id=anno) for gene, anno in
                    product_relationships]
-        Gene.annotations.through.objects.bulk_create(objects)
+        Gene.annotations.through.objects.bulk_create(objects, ignore_conflicts=True)  # ignore_conflicts if gene code and product are the same
         # EC
         objects = [Gene.annotations.through(gene_id=gene, annotation_id=anno) for gene, anno in ec_relationships]
         Gene.annotations.through.objects.bulk_create(objects)

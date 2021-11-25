@@ -307,6 +307,27 @@ reference = "master"
 resolved_reference = "84f3be18f35626a20548c8196edb3fc89961e3ee"
 
 [[package]]
+name = "gene-loci-comparison"
+version = "0.0.2"
+description = ""
+category = "main"
+optional = false
+python-versions = "*"
+develop = false
+
+[package.dependencies]
+biopython = "*"
+bokeh = "*"
+dna-features-viewer = "*"
+pandas = "*"
+
+[package.source]
+type = "git"
+url = "https://github.com/MrTomRod/gene_loci_comparison.git"
+reference = "master"
+resolved_reference = "8d1ce9c1229a83c9e316d92cae3c02a2cbb48eba"
+
+[[package]]
 name = "glacier"
 version = "0.3.1"
 description = ""
@@ -494,11 +515,7 @@ optional = false
 python-versions = ">=3.7.1"
 
 [package.dependencies]
-numpy = [
-    {version = ">=1.17.3", markers = "platform_machine != \"aarch64\" and platform_machine != \"arm64\" and python_version < \"3.10\""},
-    {version = ">=1.19.2", markers = "platform_machine == \"aarch64\" and python_version < \"3.10\""},
-    {version = ">=1.20.0", markers = "platform_machine == \"arm64\" and python_version < \"3.10\""},
-]
+numpy = {version = ">=1.21.0", markers = "python_version >= \"3.10\""}
 python-dateutil = ">=2.7.3"
 pytz = ">=2017.3"
 
@@ -812,8 +829,8 @@ python-versions = "*"
 
 [metadata]
 lock-version = "1.1"
-python-versions = ">=3.9,<3.10"
-content-hash = "86d680abbb1ab764033223c7c045a9206ddce57c49ddf69b0ee9c525abac90e7"
+python-versions = ">=3.10,<3.11"
+content-hash = "b809b762a40d97fb6ab20c991f28f8a6be14731e75a8eec2bc504e2f92f93fb4"
 
 [metadata.files]
 asgiref = [
@@ -935,6 +952,7 @@ fonttools = [
     {file = "fonttools-4.28.1.zip", hash = "sha256:8c8f84131bf04f3b1dcf99b9763cec35c347164ab6ad006e18d2f99fcab05529"},
 ]
 gendiscalpy = []
+gene-loci-comparison = []
 glacier = [
     {file = "glacier-0.3.1-py3-none-any.whl", hash = "sha256:94318db0c94af918f4f7d437e4018f18a41019b3298ad664d7cbd5ba84f43d7f"},
     {file = "glacier-0.3.1.tar.gz", hash = "sha256:be7d89ea4b3596442ebe7501211077e52ec3eee4f2d505e85dfa410055ac23be"},
