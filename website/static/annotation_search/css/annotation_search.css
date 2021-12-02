@@ -1,8 +1,6 @@
-#safe-center {
-    display: flex;
-    margin: auto;
-    overflow: auto;
-    justify-content: safe center;
+.prevent-overflow {
+    overflow-x: auto;
+    max-width: min-content;
 }
 
 .table {
