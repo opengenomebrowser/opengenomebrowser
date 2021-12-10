@@ -1,0 +1,244 @@
+{% extends 'global/base.html' %}
+{% load static %}
+
+{% block styles %}
+    <!-- Site-specific css/js -->
+    <link rel="stylesheet" type="text/css" href="{% static 'global/css/annotype_color.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'global/css/taxid_color.css' %}" id="taxid-color-stylesheet"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'global/css/tag_color.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'flower-plot/css/flower-plot.css' %}"/>
+    <script src="{% static 'global/js/query-groups.js' %}"></script>
+    <script src="{% static 'flower-plot/js/flower-plot.js' %}"></script>
+
+    <!-- autocomplete -->
+    <link href="{% static 'global/css/jquery.tag-editor.css' %}" rel="stylesheet"/>
+    <script src="{% static 'global/js/jquery.caret.min.js' %}"></script>
+    <script src="{% static 'global/js/jquery.tag-editor.min.js' %}"></script>
+
+{% endblock %}
+
+{% block sidebar %}
+
+    <div class="sidebar-subcontent form-check form-check-inline">
+        <label class="form-check-label" for="colorize-tax-checkbox"><a>Colorize taxonomy?</a></label>
+        <input class="form-check-input" type="checkbox" id="colorize-tax-checkbox" onclick="toggleColorizeTax()" checked>
+    </div>
+
+    <div class="sidebar-subcontent">
+        <div id="buttons" class="sidebar-subcontent">
+            <a>Export table: </a>
+        </div>
+    </div>
+
+
+    <hr>
+
+
+    <div class="sidebar-subcontent form-check form-check-inline">
+        <label for="flower-plot-anno-type"><a>Which category of annotations to use?</a></label>
+        <select class="form-control" id="flower-plot-anno-type" data-selected="{{ anno_type }}">
+            {% for at in anno_types %}
+                <option value="{{ at.anno_type }}" {% if at.anno_type == anno_type %} selected {% endif %}>{{ at.name }} ({{ at.anno_type }})
+                </option>{% endfor %}
+        </select>
+    </div>
+
+    <hr>
+
+    <div class="sidebar-subcontent form-check form-check-inline">
+        <button type="button" class="btn btn-primary" onclick="$('#flower-plot-submit-button').click()">Submit</button>
+    </div>
+
+
+{% endblock %}
+
+{% block body %}
+
+    <section>
+
+        <div class="container">
+            <form>
+                {% csrf_token %}
+                <div id="magic-query"></div>
+
+                <button id="flower-plot-submit-button" type="button" class="btn btn-primary" onclick="submitFunction()">Submit</button>
+            </form>
+
+            {% if magic_query_manager %}
+                <hr class="featurette-divider">
+
+                <button type="button" class="btn btn-light" data-toggle="collapse" href="#real-div" aria-expanded="false" aria-controls="real-div"
+                >Show query
+                </button>
+
+                <form id="real-div" class="collapse">
+                    <div class="form-group">
+                        <label for="real-genomes">Group 1:</label>
+                        <div class="read-only-div" id="real-genomes">
+                            {% for genome in magic_query_manager.all_genomes %}{{ genome.html|safe }}{% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Parameters:</label>
+                        <div class="read-only-div" id="real-anno-type">
+                            <a>Annotation type: {{ anno_type }}</a>
+                        </div>
+                    </div>
+
+                </form>
+                </div>
+            {% endif %}
+
+        </div>
+
+    </section>
+
+    <section style="padding-top: 1rem">
+        <div id="annotation-matrix-container">
+            <div style="display:flex; justify-content: center;">
+                <div id="gene-loci-spinner" class="spinner-border text-dark" role="status" hidden>
+                    <span class="sr-only">Loading...</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="flower-plot-section" style="padding-top: 1rem">
+        <div class="center-content" id="flower-plot-container"></div>
+    </section>
+
+
+{% endblock %}
+
+{% block end %}
+    <script>
+        "use strict"
+
+        const magicQuery = [{% if magic_query_manager %} '{{ magic_query_manager.queries|join:"', '" }}' {% else %}{% endif %}]
+        const genomes = [{% if magic_query_manager %} '{{ magic_query_manager.all_genomes|join:"', '" }}' {% else %}{% endif %}]
+
+        const magicQueryDiv = $('#magic-query')
+
+        $(document).ready(function () {
+            addGenomesGroup(magicQueryDiv, magicQuery, false, false)
+
+            $('.ogb-tag.genome')
+                .ogbTooltip()
+                .click(function () {
+                    showGenomeClickMenu(event)
+                })
+
+        })
+
+        $(document).ready(function () {
+            {% if success %}
+                console.log(loadFlowerSvg(genomes, "{{anno_type}}"))
+            {% endif %}
+        })
+
+
+        function submitFunction() {
+            const target = magicQueryDiv.find('.get-genomes')[0]
+            const genomes = extractQuery(target)
+            const anno_type = $('#flower-plot-anno-type').val()
+
+            $.when(validateGenomes(genomes)).done(function (genomesValid) {
+                genomesValid = genomesValid['success']
+
+                if (genomesValid) {
+                    $('.get-genomes').removeClass('is-invalid')
+                } else {
+                    $('.get-genomes').addClass('is-invalid')
+                }
+
+                if (genomesValid) {
+                    goToPageWithData('/flower-plot', {'genomes': genomes, 'anno_type': anno_type})
+                }
+            })
+        }
+
+
+        function showSvg(data) {
+            const genomeToTaxname = data['genomes_taxname']
+            const allGenomes = Object.keys(genomeToTaxname)
+            const annoType = data['anno_type']
+
+            $('#flower-plot-container').html(data['svg'])
+            const flowerPlot = document.getElementById('flower-plot-container').firstElementChild
+
+            const extractComment = function (element) {
+                return element.innerHTML.split('<!-- ')[1].split(' -->')[0]
+            }
+
+            // find relevant elements
+            flowerPlot.querySelectorAll('*[id^="flower-genome-"]').forEach(genomeElement => {
+                const genomeName = genomeElement.id.substring(14)
+                const notGenomes = allGenomes.filter(g => g !== genomeName)
+                // const shellElement = flowerPlot.querySelector('#flower-shell-' + CSS.escape(genomeName))
+                const uniqueElement = flowerPlot.querySelector('#flower-unique-' + CSS.escape(genomeName))
+
+                // activate genomeElement
+                genomeElement.addEventListener("click", function (event) {
+                    console.log(genomeElement, genomeName, event)
+                    showGenomeClickMenu(event, genomeName, genomeToTaxname[genomeName], allGenomes)
+                })
+                genomeElement.style['cursor'] = 'pointer'
+
+                // activate uniqueElement
+                uniqueElement.addEventListener("click", function (event) {
+                    const nAnnos = extractComment(uniqueElement)
+                    showAnnotationQueryClickMenu(event, [genomeName], notGenomes, annoType,
+                        `Unique ${annoType} annotations of ${genomeName}: ${nAnnos}`, nAnnos)
+                })
+                uniqueElement.style['cursor'] = 'pointer'
+            })
+
+            // activate core
+            const flowerCore = flowerPlot.querySelector('#flower-core')
+            const flowerText = flowerPlot.querySelector('#flower-core-text')
+            flowerCore.addEventListener("click", function (event) {
+                const nAnnos = extractComment(flowerPlot.querySelector('#flower-core-text'))
+                showAnnotationQueryClickMenu(event, allGenomes, [], annoType,
+                    `Core: ${nAnnos} annotations`, nAnnos)
+            })
+            flowerCore.style['cursor'] = 'pointer'
+            flowerText.style['pointer-events'] = 'none'
+        }
+
+
+        async function loadFlowerSvg(genomes, anno_type) {
+            if (genomes.length === 0) {
+                console.log('no genomes!')
+                return
+            }
+
+            $('#gene-loci-spinner').attr('hidden', false)
+
+            $.post('{% url 'website:flower-plot-svg' %}', {
+                'genomes[]': genomes,
+                'anno_type': anno_type,
+            }, 'json')
+                .done(function (data, textStatus, jqXHR) {
+                    console.log('SUCCESS')
+                    console.log(data)
+                    showSvg(data)
+                })
+                .fail(function (data, textStatus, jqXHR) {
+                    if (data?.status === 409) {
+                        console.log('Error 409 info:', data, textStatus, jqXHR)
+                        alertModal('info', 'Info', data?.responseJSON?.message)
+                    } else {
+                        console.log('fail', data, textStatus, jqXHR)
+                        alertModal('danger', 'Error', data?.responseJSON?.message || `(no message) ${data?.status} ${data?.statusText}`)
+                    }
+                })
+                .always(function () {
+                    $('#gene-loci-spinner').attr('hidden', true)
+                })
+        }
+
+
+    </script>
+
+{% endblock %}

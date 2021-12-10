@@ -138,6 +138,11 @@ convert hex (e.g. #2980b9) to filter: https://codepen.io/sosuke/pen/Pjoqqp
     filter: invert(39%) sepia(80%) saturate(459%) hue-rotate(160deg) brightness(96%) contrast(93%); /* #2980b9 */
 }
 
+.context-menu-icon-flower-plot::before {
+    background-image: url("/static/global/customicons/flower-plot.svg");
+    filter: invert(39%) sepia(80%) saturate(459%) hue-rotate(160deg) brightness(96%) contrast(93%); /* #2980b9 */
+}
+
 .context-menu-icon-gene-trait-matching::before {
     background-image: url("/static/global/ionicons/ios-star-half.svg");
     filter: invert(39%) sepia(80%) saturate(459%) hue-rotate(160deg) brightness(96%) contrast(93%); /* #2980b9 */
@@ -220,15 +225,15 @@ convert hex (e.g. #2980b9) to filter: https://codepen.io/sosuke/pen/Pjoqqp
 }
 
 .ogb-click-menu .many-genomes {
-    background: #f9fcff;
+    background: #ebf5ff;
 }
 
 .ogb-click-menu .many-genes {
-    background: #fff7f7;
+    background: #ffecec;
 }
 
 .ogb-click-menu .many-annotations {
-    background: #f4fff8;
+    background: #ecfff3;
 }
 
 .context-menu-header {

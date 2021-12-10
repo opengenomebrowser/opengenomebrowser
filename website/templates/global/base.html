@@ -85,6 +85,10 @@
                href="{% url 'website:annotation-search' %}">
                 Annotation search
             </a>
+            <a class="dropdown-item context-menu-icon context-menu-icon-flower-plot {% if request.resolver_match.url_name == 'flower-plot' %}active{% endif %}"
+               href="{% url 'website:flower-plot' %}">
+                Flower plot
+            </a>
             <a class="dropdown-item context-menu-icon context-menu-icon-gene-comparison {% if request.resolver_match.url_name == 'compare-genes' %}active{% endif %}"
                href="{% url 'website:compare-genes' %}">
                 Compare genes

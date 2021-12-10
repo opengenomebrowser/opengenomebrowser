@@ -36,6 +36,7 @@ gendiscalpy = {git = "https://github.com/MrTomRod/gendiscalpy"}
 dot = {git = "https://github.com/MrTomRod/dot"}
 ncbi-blast = {git = "https://github.com/MrTomRod/ncbi_blast.git"}
 gene-loci-comparison = {git = "https://github.com/MrTomRod/gene_loci_comparison.git"}
+flower-plot = {git = "https://github.com/MrTomRod/flower-plot.git"}
 
 [tool.poetry.dev-dependencies]
 

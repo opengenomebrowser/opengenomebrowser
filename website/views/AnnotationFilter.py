@@ -18,15 +18,20 @@ def simple_filter(qs, lookup_expr, field_id, request, context):
 
 
 def genomes_filter(qs, lookup_expr, field_id, request, context):
+    mgm_id = 'magic_query_manager' if field_id == 'genomes' else 'magic_query_manager_not'
     genomes = extract_data_or(request=request, key=field_id, list=True, sep=',')
+
     if genomes:
         try:
             magic_query_manager = MagicQueryManager(queries=genomes)
-            context['magic_query_manager'] = magic_query_manager
+            context[mgm_id] = magic_query_manager
             if len(magic_query_manager.all_genomes) == 0:
                 context['error_danger'].append('Query did not find any genomes.')
             for g in magic_query_manager.all_genomes:
-                qs = qs.filter(genomecontent__in=[g.identifier])
+                if field_id == 'genomes':
+                    qs = qs.filter(genomecontent__in=[g.identifier])
+                else:
+                    qs = qs.exclude(genomecontent__in=[g.identifier])
         except Exception as e:
             context['error_danger'].append(str(e))
 
@@ -46,6 +51,8 @@ class AnnotationFilter:
     filter_fields = dict(
         genomes=dict(
             label='Genomes', lookup_expr=None, filter_function=genomes_filter, hidden=True),
+        not_genomes=dict(
+            label='Not genomes', lookup_expr=None, filter_function=genomes_filter, hidden=True),
         name=dict(
             label='Name (regex)', lookup_expr='name__regex', filter_function=simple_filter),
         description=dict(
@@ -79,16 +86,20 @@ class AnnotationFilter:
     def filter_view(cls, request):
         context = extract_errors(request, dict(title='Annotation filter'))
 
-        filterset, filter_fields = cls.filter_queryset(request, context)
+        qs, filter_fields = cls.filter_queryset(request, context)
+
+        # order queryset consistent results with pagination
+        order_by = extract_data_or(request, 'paginate_by', default='name')
+        qs = qs.order_by(order_by)
 
         context['filter_fields'] = filter_fields
 
         paginate_by = extract_data(request, 'paginate_by')
         if paginate_by == 'All':
-            context['object_list'] = filterset
+            context['object_list'] = qs
         else:
             paginate_by = int(paginate_by) if type(paginate_by) is str and paginate_by.isnumeric() else cls.paginate_by
-            paginator = Paginator(filterset, paginate_by)
+            paginator = Paginator(qs, paginate_by)
             try:
                 page = int(extract_data(request, 'page'))
             except:

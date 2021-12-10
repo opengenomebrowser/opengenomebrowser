@@ -1,0 +1,9 @@
+#center-content {
+    width: 100%;
+    overflow: auto
+}
+
+#flower-plot-container svg {
+    width: 100%;
+    height: auto;
+}

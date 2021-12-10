@@ -263,11 +263,11 @@ Open genome info</a>
 <a onclick="CopyToClipboard('${genome}')" class="dropdown-item context-menu-icon context-menu-icon-copy">
 Copy identifier</a>
 <a href="/pathway/?g1=${genome}" class="dropdown-item context-menu-icon context-menu-icon-pathway">
-Open genome on pathway map</a>
+Open pathway map</a>
 <a href="/annotation-search/?genomes=${genome}" class="dropdown-item context-menu-icon context-menu-icon-annotation">
-Search for annotations in genome</a>
+Search for annotations</a>
 <a href="/blast/?genomes=${genome}" class="dropdown-item context-menu-icon context-menu-icon-blast">
-Blast genome</a>
+Blast</a>
 `
 
     if (annotations.length > 0) {
@@ -287,7 +287,7 @@ Perform annotation search</a>
 <h6 class="dropdown-header context-menu-header many-genomes">
 ${siblings.length} selected genomes</h6>
 <a onclick="CopyToClipboard('${siblings_str_comma}')" class="dropdown-item many-genomes context-menu-icon context-menu-icon-copy">
-Copy selected genomes</a>`
+Copy genome identifiers</a>`
 
         if (siblings.length === 2) {
             html += `
@@ -300,13 +300,15 @@ Compare the assemblies using dotplot</a>
 <a href="/trees/?genomes=${siblings_str}" class="dropdown-item many-genomes context-menu-icon context-menu-icon-tree">
 Show phylogenetic trees</a>
 <a href="/pathway/?g1=${siblings_str}" class="dropdown-item many-genomes context-menu-icon context-menu-icon-pathway">
-Open genomes on pathway map</a>
+Open all on pathway map</a>
 <a href="/annotation-search/?genomes=${siblings_str}" class="dropdown-item many-genomes context-menu-icon context-menu-icon-annotations">
-Search for annotations in genomes</a>
+Search for annotations in all</a>
+<a href="/flower-plot/?genomes=${siblings_str}" class="dropdown-item many-genomes context-menu-icon context-menu-icon-flower-plot">
+Show flower plot</a>
 <a href="/gene-trait-matching/?g1=${siblings_str}" class="dropdown-item many-genomes context-menu-icon context-menu-icon-gene-trait-matching">
-Perform gene trait matching with these genomes</a>
+Perform gene trait matching</a>
 <a href="/blast/?genomes=${siblings_str}" class="dropdown-item many-genomes context-menu-icon context-menu-icon-blast">
-Blast genomes</a>
+Blast all</a>
 <a href="/downloader/?genomes=${siblings_str}" class="dropdown-item many-genomes context-menu-icon context-menu-icon-downloader">
 Open downloader</a>
 </div>
@@ -388,9 +390,9 @@ Copy annotation</a>
     // Annotation search without genomes
     if (listOfGenomes.length === 0) {
         cm.appendElement(`
-<h6 class="dropdown-header context-menu-header many-annotations">
+<h6 class="dropdown-header context-menu-header many-genomes">
 ${siblings.length} selected annotations</h6>
-<a href="/annotation-search/?annotations=${siblings_repl}" class="dropdown-item context-menu-icon context-menu-icon-annotations many-annotations">
+<a href="/annotation-search/?annotations=${siblings_repl}" class="dropdown-item context-menu-icon context-menu-icon-annotations many-genomes">
 Search for annotations</a>
 </div>
 `)
@@ -400,7 +402,7 @@ Search for annotations</a>
     Object.entries(listOfGenomes).forEach(([name, genomes]) => {
         name = (name === '') ? '' : `${name}: `
         cm.appendElement(`
-<h6 class="dropdown-header context-menu-header many-annotations many-genes">
+<h6 class="dropdown-header context-menu-header many-genes">
 ${name}${genomes.length} genomes</h6>
 
 <a href="/compare-genes/?genomes=${genomes.join('+')}&annotations=${urlReplBlanks([annotation])}" class="dropdown-item context-menu-icon context-menu-icon-genes many-genes">
@@ -414,7 +416,7 @@ Compare the genes</a>
         Object.entries(listOfGenomes).forEach(([name, genomes]) => {
             name = (name === '') ? '' : `${name}: `
             cm.appendElement(`
-<h6 class="dropdown-header context-menu-header many-annotations many-genomes">
+<h6 class="dropdown-header context-menu-header many-annotations">
 ${name}${genomes.length} genomes and ${siblings.length} annotations</h6>
 
 <a href="/annotation-search/?annotations=${siblings_repl}&genomes=${genomes.join('+')}&annotations=${siblings_repl}" class="dropdown-item context-menu-icon context-menu-icon-annotations many-annotations">

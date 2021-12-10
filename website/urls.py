@@ -53,6 +53,10 @@ urlpatterns = [
     path('gene-trait-matching/', GeneTraitMatching.gtm_view, name='gene-trait-matching'),
     path('gene-trait-matching-table/', GeneTraitMatching.gtm_table, name='gene-trait-matching-table'),
 
+    # ex: /gene-trait-matching/?g1={organism1}+{organism2}&g2={organism3}+{organism4}
+    path('flower-plot/', FlowerPlot.flower_view, name='flower-plot'),
+    path('flower-plot-svg/', FlowerPlot.flower_svg, name='flower-plot-svg'),
+
     # ex: /blast/?query={fasta}&genomes={organism1}+{organism2}
     path('blast/', Blast.blast_view, name='blast'),
     path('blast/submit', Blast.blast_submit, name='blast-submit'),

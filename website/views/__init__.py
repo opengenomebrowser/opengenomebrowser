@@ -14,6 +14,7 @@ from .Files import files_html, files_json
 from .ClickMenu import click_view
 from .CompareGenes import CompareGenes
 from .GeneTraitMatching import gtm_view
+from .FlowerPlot import flower_view
 from .Downloader import downloader_view
 from website.views.AnnotationFilter import AnnotationFilter
 from website.views.GenomeFilter import GenomeFilter

@@ -39,7 +39,8 @@
         <div class="collapse" id="collapseFilters">
             <br>
 
-            <div id="magic-query"></div>
+            <div id="magic-query-genomes"></div>
+            <div id="magic-query-not-genomes"></div>
 
             <form method="GET" id="form">
 
@@ -84,7 +85,7 @@
 
 
 
-            {% if magic_query_manager %}
+            {% if magic_query_manager or magic_query_manager_not %}
                 <div class="">
 
                     <hr class="featurette-divider">
@@ -94,13 +95,23 @@
                     </button>
 
                     <form id="real-div" class="collapse">
-                        <div class="form-group">
-                            <label for="real-genomes-1">Genomes:</label>
-                            <div class="read-only-div" id="real-genomes">
-                                {% for genome in magic_query_manager.all_genomes %}{{ genome.html|safe }}{% endfor %}
+                        {% if magic_query_manager %}
+                            <div class="form-group">
+                                <label for="real-genomes">Genomes:</label>
+                                <div class="read-only-div" id="real-genomes">
+                                    {% for genome in magic_query_manager.all_genomes %}{{ genome.html|safe }}{% endfor %}
+                                </div>
                             </div>
-                        </div>
+                        {% endif %}
 
+                        {% if magic_query_manager_not %}
+                            <div class="form-group">
+                                <label for="real-genomes-not">Not in genomes:</label>
+                                <div class="read-only-div" id="real-genomes-not">
+                                    {% for genome in magic_query_manager_not.all_genomes %}{{ genome.html|safe }}{% endfor %}
+                                </div>
+                            </div>
+                        {% endif %}
                     </form>
                 </div>
 
@@ -142,10 +153,10 @@
 
         const genomesDiv = document.getElementById('form_genomes')
         const genomesInput = genomesDiv.childNodes[3]
+        const notGenomesDiv = document.getElementById('form_not_genomes')
+        const notGenomesDivInput = notGenomesDiv.childNodes[3]
 
-        $(document).ready(function () {
-            addGenomesGroup($('#magic-query'), genomesInput.value.split(','), false, false)
-        })
+        let genomesGroupsInitiated = false
 
         $(document).ready(function () {
             $('.ogb-tag.annotation')
@@ -163,6 +174,15 @@
 
         const activateDropdownSelect = function () {
             setTimeout(function () {
+                if (!genomesGroupsInitiated) {
+                    // initiate genome selectors
+                    addGenomesGroup($('#magic-query-genomes'), genomesInput.value.split(','), false, false)
+                    addGenomesGroup($('#magic-query-not-genomes'), notGenomesDivInput.value.split(','), false, false)
+                    $('.get-genomes:eq(1) label').text('Not in genomes:')
+
+                    genomesGroupsInitiated = true
+                }
+
                 {% for field_id, filter_field in filter_fields.items %}{% if filter_field.choices %}
                 $('#id_{{ field_id }}').select2()
                 {% endif %}{% endfor %}
@@ -174,22 +194,31 @@
         const submitFunction = function () {
             console.log(`Form Submitted! Time stamp: ${event.timeStamp}`)
 
-            const genomes = extractQuery($('#magic-query'))
+            const genomes = extractQuery($('#magic-query-genomes'))
+            const notGenomes = extractQuery($('#magic-query-not-genomes'))
             genomesInput.value = genomes
+            notGenomesDivInput.value = notGenomes
 
-            $.when(validateGenomes(genomes)).done(function (genomes_valid) {
-                genomes_valid = genomes_valid['success']
+            $.when(validateGenomes(genomes), validateGenomes(notGenomes)).done(function (genomesValid, notGenomesValid) {
+                genomesValid = genomesValid[2].responseJSON['success']
+                notGenomesValid = notGenomesValid[2].responseJSON['success']
 
-                if (genomes_valid) {
-                    $('.get-genomes').removeClass('is-invalid')
+                if (genomesValid) {
+                    $('.get-genomes:eq(0)').removeClass('is-invalid')
                 } else {
-                    $('.get-genomes').addClass('is-invalid')
+                    $('.get-genomes:eq(0)').addClass('is-invalid')
+                    console.log('invalid genomes:', genomes)
                 }
 
-                if (genomes_valid) {
-                    form.submit()
+                if (notGenomesValid) {
+                    $('.get-genomes:eq(1)').removeClass('is-invalid')
                 } else {
-                    console.log('invalid:', genomes)
+                    $('.get-genomes:eq(1)').addClass('is-invalid')
+                    console.log('invalid notGenomes:', notGenomes)
+                }
+
+                if (genomesValid && notGenomesValid) {
+                    form.submit()
                 }
             })
         }
