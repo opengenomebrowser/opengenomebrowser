@@ -7,6 +7,8 @@
     <link rel="stylesheet" type="text/css" href="{% static 'global/css/taxid_color.css' %}" id="taxid-color-stylesheet"/>
     <link rel="stylesheet" type="text/css" href="{% static 'global/css/tag_color.css' %}"/>
     <link rel="stylesheet" type="text/css" href="{% static 'flower-plot/css/flower-plot.css' %}"/>
+    <script src="{% static 'pathway-maps/js/html2canvas.min.js' %}"></script>
+    <script src="{% static 'global/js/download-content.js' %}"></script>
     <script src="{% static 'global/js/query-groups.js' %}"></script>
     <script src="{% static 'flower-plot/js/flower-plot.js' %}"></script>
 
@@ -47,6 +49,20 @@
 
     <div class="sidebar-subcontent form-check form-check-inline">
         <button type="button" class="btn btn-primary" onclick="$('#flower-plot-submit-button').click()">Submit</button>
+    </div>
+
+    <div class="sidebar-subcontent form-check form-check-inline">
+        <a>Download flower plot:</a>
+    </div>
+    <div class="sidebar-subcontent form-check form-check-inline">
+        <button type="button" class="btn btn-secondary"
+                onclick="savePng(document.getElementById('flower-plot-container').children[0], 'flower-plot.png')" style="margin-right: 1rem;">
+            Save as PNG
+        </button>
+        <button type="button" class="btn btn-secondary"
+                onclick="saveSvg(document.getElementById('flower-plot-container').children[0], 'flower-plot.svg')">
+            Save as SVG
+        </button>
     </div>
 
 
