@@ -17,27 +17,6 @@ from website.views.helpers.magic_string import MagicQueryManager
 from website.views.helpers.extract_requests import contains_data, extract_data
 
 
-def xxx():
-    genomes = ['NIZO2256', 'NIZO2257', 'NIZO2259', 'NIZO2260', 'NIZO2262a', 'NIZO2264', 'NIZO2457', 'NIZO2484', 'NIZO2494', 'NIZO2535', 'NIZO2741',
-               'NIZO2776', 'NIZO2801', 'NIZO2806', 'NIZO2814', 'NIZO2830', 'NIZO1836', 'NIZO1838', 'NIZO1839', 'NIZO1840', 'NIZO2766', 'CIP104448',
-               'NIZO1837a', 'NIZO2258', 'NIZO2485', 'NIZO2855', 'NIZO2802', 'NIZO2877', 'NIZO2889', 'NIZO2891', 'NIZO2896', 'NIZO3400', 'NIZO2753',
-               'NIZO2757', 'NIZO2726a', 'NIZO2831', 'NIZO2263', 'NIZO2029']
-
-    anno_type = 'KR'
-
-    n_core, genome_to_data = get_flower_data(genomes, anno_type)
-
-    import matplotlib.pyplot as plt
-
-    flower_plot(genome_to_data=genome_to_data, n_core=n_core)
-
-    # plt.tight_layout()
-    # plt.show()
-    pipe = StringIO()
-    plt.savefig(pipe, format='svg')
-    print(pipe.getvalue())
-
-
 def flower_view(request):
     """
     This function loads the page /flower-plot/
@@ -93,7 +72,8 @@ def flower_svg(request):
     import matplotlib.pyplot as plt
     plt.close()
 
-    flower_plot(genome_to_data, n_core)
+    ax = flower_plot(genome_to_data, n_core)
+    plt.tight_layout()
 
     pipe = StringIO()
     plt.savefig(pipe, format='svg')
