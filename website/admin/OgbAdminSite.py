@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.urls import path
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.decorators import permission_required
 
 from website.admin.MarkdownEditor import markdown_editor_view, markdown_editor_submit
