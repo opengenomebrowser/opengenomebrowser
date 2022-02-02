@@ -1,3 +1,4 @@
+from django.core.exceptions import FieldError
 from django.core.paginator import Paginator
 from django.shortcuts import render
 
@@ -89,8 +90,12 @@ class AnnotationFilter:
         qs, filter_fields = cls.filter_queryset(request, context)
 
         # order queryset consistent results with pagination
-        order_by = extract_data_or(request, 'paginate_by', default='name')
-        qs = qs.order_by(order_by)
+        order_by = extract_data_or(request, 'order_by', default='name')
+        try:
+            qs = qs.order_by(order_by)
+        except FieldError:
+            context['error_danger'].append(f"Could not order_by '{order_by}', ordering by 'name' instead.")
+            qs = qs.order_by('name')
 
         context['filter_fields'] = filter_fields
 

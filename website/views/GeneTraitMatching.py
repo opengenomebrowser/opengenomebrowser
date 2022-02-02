@@ -6,6 +6,7 @@ from django.db import connection
 
 import pandas as pd
 from scipy.stats import fisher_exact, boschloo_exact
+from fast_fisher import fast_fisher_cython
 from statsmodels.stats.multitest import multipletests
 
 from website.models.Annotation import annotation_types
@@ -14,6 +15,8 @@ from website.views.GenomeDetailView import dataframe_to_bootstrap_html
 from website.views.helpers.extract_errors import extract_errors
 from website.views.helpers.magic_string import MagicQueryManager
 from website.views.helpers.extract_requests import contains_data, extract_data
+
+methods = ['fast-fisher', 'fisher', 'boschloo']
 
 multiple_testing_methods = {
     'bonferroni': 'Bonferroni: one-step correction',
@@ -40,14 +43,21 @@ def gtm_view(request):
     context = extract_errors(request, dict(
         title='Gene trait matching',
         anno_types=annotation_types.values(),
+        methods=methods,
         multiple_testing_methods=multiple_testing_methods,
         # defaults:
+        default_method='fast-fisher',
         default_anno_type='OL',
-        default_alpha=0.1,
-        default_multiple_testing_method='fdr_bh'
+        default_alpha=0.2,
+        default_multiple_testing_method='fdr_bh',
     ))
 
-    anno_type_valid, alpha_valid, multiple_testing_method, genomes_g1_valid, genomes_g2_valid = False, False, False, False, False
+    method_valid, anno_type_valid, alpha_valid, multiple_testing_method, genomes_g1_valid, genomes_g2_valid \
+        = False, False, False, False, False, False
+
+    if contains_data(request, 'method'):
+        method_valid = True
+        context['default_method'] = extract_data(request, 'method')
 
     if contains_data(request, 'anno_type'):
         anno_type_valid = True
@@ -93,7 +103,7 @@ def gtm_view(request):
         if len(g2_identifiers) == 0:
             context['error_warning'].append('Group 2 contains no genomes!')
 
-    if all([anno_type_valid, alpha_valid, multiple_testing_method, genomes_g1_valid, genomes_g2_valid]):
+    if all([method_valid, anno_type_valid, alpha_valid, multiple_testing_method, genomes_g1_valid, genomes_g2_valid]):
         context.update(dict(
             success=len(context['error_warning']) == 0
         ))
@@ -111,22 +121,23 @@ def gtm_table(request):
     context = {}
 
     # check input
-    for input in ['g1[]', 'g2[]', 'alpha', 'anno_type', 'multiple_testing_method']:
+    for input in ['g1[]', 'g2[]', 'alpha', 'method', 'anno_type', 'multiple_testing_method']:
         if input not in request.POST:
-            return HttpResponse(f'Request failed! Please POST {input}.')
+            return JsonResponse(dict(success='false', message=f'Request failed! Please POST {input}.'), status=500)
 
     qs_g1 = set(request.POST.getlist('g1[]'))
     try:
         magic_query_manager_g1 = MagicQueryManager(qs_g1)
     except Exception as e:
-        return HttpResponse(f'Request failed: g1[] incorrect. {e}')
+        return JsonResponse(dict(success='false', message=f'Request failed: g1[] incorrect. {e}'), status=500)
 
     qs_g2 = set(request.POST.getlist('g2[]'))
     try:
         magic_query_manager_g2 = MagicQueryManager(qs_g2)
     except Exception as e:
-        return HttpResponse(f'Request failed: g2[] incorrect. {e}')
+        return JsonResponse(dict(success='false', message=f'Request failed: g2[] incorrect. {e}'), status=500)
 
+    method = request.POST.get('method')
     anno_type = request.POST.get('anno_type')
     alpha = float(request.POST.get('alpha'))
     multiple_testing_method = request.POST.get('multiple_testing_method')
@@ -135,7 +146,7 @@ def gtm_table(request):
         gtm_df = gtm(
             g1=set(magic_query_manager_g1.all_genomes.values_list('identifier', flat=True)),
             g2=set(magic_query_manager_g2.all_genomes.values_list('identifier', flat=True)),
-            anno_type=anno_type, alpha=alpha, multiple_testing_method=multiple_testing_method)
+            method=method, anno_type=anno_type, alpha=alpha, multiple_testing_method=multiple_testing_method)
     except Exception as e:
         return JsonResponse(dict(success='false', message=str(e)), status=500)
 
@@ -149,8 +160,8 @@ def gtm(
         g1: {str},
         g2: {str},
         anno_type: str = 'OL',
-        method: str = 'boschloo',
-        alpha: float = 0.25,
+        method: str = 'fast-fisher',
+        alpha: float = 0.2,
         multiple_testing_method: str = 'fdr_bh'
 ) -> pd.DataFrame:
     """
@@ -159,7 +170,7 @@ def gtm(
     :param g1: First group of genomes
     :param g2: Second group of genomes
     :param anno_type: Annotation type to be used to link proteins between genomes
-    :param method: test to be applied, either 'fisher' or 'boschloo'
+    :param method: test to be applied, either 'fast-fisher', 'fisher' or 'boschloo'
     :param alpha: Alpha / FWER (family-wise error rate)
     :param multiple_testing_method: See https://www.statsmodels.org/dev/generated/statsmodels.stats.multitest.multipletests.html
     :return: Table of proteins that are significantly over- or underrepresented.
@@ -181,8 +192,11 @@ def gtm(
             [r.g1, r.g2],
             [r.not_g1, r.not_g2]
         ]).pvalue
+    elif method == 'fast-fisher':
+        # test1t: directly call two-tailed Cython method
+        test_fn = lambda r: fast_fisher_cython.test1t(r.g1, r.g2, r.not_g1, r.not_g2)
     else:
-        raise AssertionError(f"method must be either 'fisher' or 'boschloo'. {method=}")
+        raise AssertionError(f"method must be either 'fast-fisher', 'fisher' or 'boschloo'. {method=}")
 
     with connection.cursor() as cursor:
         cursor.execute(
@@ -256,7 +270,7 @@ def prettify(gtm_df: pd.DataFrame) -> pd.DataFrame:
     len_g2 = len(gtm_df.attrs['g2'])
 
     html = lambda \
-        row: f"<div class='annotation ogb-tag' data-annotype='{anno_type}' title='{escape(row['description'])}'>{escape(row['annotation'])}</div>"
+            row: f"<div class='annotation ogb-tag' data-annotype='{anno_type}' title='{escape(row['description'])}'>{escape(row['annotation'])}</div>"
 
     gtm_df['annotation_html'] = gtm_df.apply(html, axis=1)
     gtm_df['g1'] = gtm_df['g1'].apply(lambda x: f'{x}/{len_g1}')

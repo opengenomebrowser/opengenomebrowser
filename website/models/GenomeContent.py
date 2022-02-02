@@ -24,7 +24,7 @@ class GenomeContent(models.Model):
 
     annotations = models.ManyToManyField(Annotation)
 
-    ani_similarity = models.ManyToManyField('self', through=GenomeSimilarity, symmetrical=True, related_name='ani_similarity+')
+    ani_similarity = models.ManyToManyField('self', through=GenomeSimilarity, symmetrical=True)
 
     @property
     def parent(self):

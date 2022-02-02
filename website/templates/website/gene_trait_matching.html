@@ -37,6 +37,15 @@
 
 
     <div class="sidebar-subcontent form-check form-check-inline">
+        <label for="gene-trait-matching-method"><a>Which test to apply?</a></label>
+        <select class="form-control" id="gene-trait-matching-method" data-selected="{{ default_anno_type }}">
+            {% for m in methods %}
+                <option value="{{ m }}" {% if m == default_method %} selected {% endif %}>{{ m }}
+                </option>{% endfor %}
+        </select>
+    </div>
+
+    <div class="sidebar-subcontent form-check form-check-inline">
         <label for="gene-trait-matching-anno-type"><a>Which category of annotations to use?</a></label>
         <select class="form-control" id="gene-trait-matching-anno-type" data-selected="{{ default_anno_type }}">
             {% for at in anno_types %}
@@ -108,6 +117,7 @@
                     <div class="form-group">
                         <label>Parameters:</label>
                         <div class="read-only-div" id="real-anno-type">
+                            <a>Method: {{ default_method }}</a>
                             <a>Annotation type: {{ default_anno_type }}</a>
                             <a>Multiple testing method: {{ default_multiple_testing_method }}</a>
                             <a>Alpha: {{ default_alpha }}</a>
@@ -164,7 +174,7 @@
 
         $(document).ready(function () {
             {% if success %}
-                loadTable(genomesG1, genomesG2, {{default_alpha}}, "{{default_anno_type}}", "{{default_multiple_testing_method}}")
+                loadTable(genomesG1, genomesG2, "{{default_method}}", {{default_alpha}}, "{{default_anno_type}}", "{{default_multiple_testing_method}}")
             {% endif %}
         })
 
@@ -176,6 +186,7 @@
 
             const alpha = parseFloat($('#range-span').text())
             const anno_type = $('#gene-trait-matching-anno-type').val()
+            const method = $('#gene-trait-matching-method').val()
             const multiple_testing_method = $('#gene-trait-matching-multiple-testing-method').val()
 
             $.when(validateGenomes(genomes_g1), validateGenomes(genomes_g2)).done(function (genomes_g1_valid, genomes_g2_valid) {
@@ -196,9 +207,10 @@
 
                 if (genomes_g1_valid && genomes_g2_valid) {
                     let data = {
+                        'method': method,
                         'alpha': alpha.toString(),
                         'anno_type': anno_type,
-                        'multiple_testing_method': multiple_testing_method
+                        'multiple_testing_method': multiple_testing_method,
                     }
                     if (genomes_g1.length !== 0) {
                         data['g1'] = genomes_g1
@@ -281,7 +293,7 @@
         }
 
 
-        async function loadTable(genomes_g1, genomes_g2, alpha, anno_type, multiple_testing_method) {
+        async function loadTable(genomes_g1, genomes_g2, method, alpha, anno_type, multiple_testing_method) {
             if (genomes_g1.length === 0 && genomes_g2.length === 0) {
                 console.log('no annotations or no genomes!')
                 return
@@ -292,6 +304,7 @@
             $.post('{% url 'website:gene-trait-matching-table' %}', {
                 'g1[]': genomes_g1,
                 'g2[]': genomes_g2,
+                'method': method,
                 'alpha': alpha,
                 'anno_type': anno_type,
                 'multiple_testing_method': multiple_testing_method
