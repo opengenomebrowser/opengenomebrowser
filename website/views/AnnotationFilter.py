@@ -85,7 +85,7 @@ class AnnotationFilter:
 
     @classmethod
     def filter_view(cls, request):
-        context = extract_errors(request, dict(title='Annotation filter'))
+        context = extract_errors(request, dict(title='Annotation filter', no_help=True))
 
         qs, filter_fields = cls.filter_queryset(request, context)
 
