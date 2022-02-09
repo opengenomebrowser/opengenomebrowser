@@ -4,7 +4,7 @@ import bs4
 from django.utils.text import slugify
 from django.db import models
 from website.models.Annotation import Annotation
-from website.models.GenomeContent import GenomeContent
+from website.models.GenomeContent import add_many_annotations
 from OpenGenomeBrowser import settings
 
 
@@ -102,7 +102,7 @@ class PathwayMap(models.Model):
         for anno_type, annotations in anno_objects.items():
             if len(annotations) == 0:
                 continue
-            GenomeContent.add_many_annotations(model=map, anno_type=anno_type, annos_to_add=anno_objects[anno_type])
+            add_many_annotations(model=map, anno_type=anno_type, annos_to_add=anno_objects[anno_type])
 
         return soup, annotations
 

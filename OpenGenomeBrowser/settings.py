@@ -44,6 +44,8 @@ FILE_UPLOAD_HANDLERS = ['django.core.files.uploadhandler.TemporaryFileUploadHand
 CACHE_DIR = os.environ.get('CACHE_DIR', '/tmp/ogb-cache')
 CACHE_MAXSIZE = int(os.environ.get('CACHE_MAXSIZE', 20))
 
+GENBANK_LOAD_EC = os.environ.get('GENBANK_LOAD_EC', 'true').lower() == 'true'
+
 ORTHOFINDER_ENABLED = os.environ.get('ORTHOFINDER_ENABLED', 'false').lower() == 'true'
 
 PROTEIN_FASTA_ENDINGS = os.environ.get('PROTEIN_FASTA_ENDINGS')

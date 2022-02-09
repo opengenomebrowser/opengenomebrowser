@@ -16,6 +16,7 @@ from OpenGenomeBrowser import settings
 from db_setup.FolderLooper import FolderLooper, MockGenome, MockOrganism
 from website.serializers import GenomeSerializer, OrganismSerializer
 from website.models import Organism, Genome, Tag, TaxID, GenomeContent, Gene, PathwayMap, Annotation
+from website.models.GenomeContent import create_blast_dbs
 
 folder_looper = FolderLooper(settings.GENOMIC_DATABASE)
 
@@ -178,7 +179,8 @@ def import_organism(name: str, update_css: bool = True):
 
             else:
                 print(f':: update: {difference}')
-                o = organism_serializer.update(instance=o, validated_data=organism_serializer.validated_data, representative_isnull=True)
+                o = organism_serializer.update(instance=o, validated_data=organism_serializer.validated_data,
+                                               representative_isnull=True)
 
         except Organism.DoesNotExist:
             print(':: new')
@@ -195,13 +197,15 @@ def import_organism(name: str, update_css: bool = True):
 
             try:
                 g = Genome.objects.get(identifier=genome.identifier)
-                match, difference = GenomeSerializer.json_matches_genome(genome=g, json_dict=genome.json, organism_name=o.name)
+                match, difference = GenomeSerializer.json_matches_genome(genome=g, json_dict=genome.json,
+                                                                         organism_name=o.name)
                 if match:
                     print(':: unchanged')
 
                 else:
                     print(f':: update: {difference}')
-                    g = genome_serializer.update(instance=g, validated_data=genome_serializer.validated_data, organism=o)
+                    g = genome_serializer.update(instance=g, validated_data=genome_serializer.validated_data,
+                                                 organism=o)
 
             except Genome.DoesNotExist:
                 print(':: new')
@@ -532,7 +536,7 @@ def load_blast_dbs(reload: bool) -> None:
     for i, gc in enumerate(gcs):
         if reload or not blast_dbs_exist(gc):
             print(f'Creating blast-db {i + 1}/{n_gcs}: {gc.identifier}')
-            gc.create_blast_dbs(reload=True)
+            create_blast_dbs(gc, reload=True)
 
 
 @transaction.atomic
