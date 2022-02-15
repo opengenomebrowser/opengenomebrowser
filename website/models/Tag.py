@@ -66,12 +66,12 @@ class Tag(models.Model):
         return f'<span class="ogb-tag" data-tag="{self.tag}">{self.tag}</span>'
 
     @staticmethod
-    def getTagList() -> [str]:
+    def get_tag_list() -> [str]:
         try:
             return [tag.tag for tag in Tag.objects.all()]
         except ProgrammingError:
-            print("this should only happen during database setup! see website/models/Tag.getTagList()")
-            return ""
+            print("this should only happen during database setup! see website/models/Tag.get_tag_list()")
+            return []
 
     def get_child_genomes(self, representative=None, contaminated=None, restricted=None):
         from .Genome import Genome

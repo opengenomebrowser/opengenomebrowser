@@ -1,6 +1,7 @@
 import sys
 import os
 import json
+import logging
 from progressbar import progressbar
 from colorama import Fore
 from django.db import transaction
@@ -518,24 +519,49 @@ def load_annotation_descriptions(anno_type: str = None, reload: bool = True) -> 
     Annotation.load_descriptions(anno_types=anno_types, reload=reload)
 
 
-def load_blast_dbs(reload: bool) -> None:
+def load_blast_dbs(reload: bool, genome: str = None, older_than_days: int = None) -> None:
     """
     Create missing blast_dbs.
 
     :param reload: if True: Recreate all blast_dbs. (This may be useful when NCBI changes their blast db version.)
+    :param genome: identifier of a genome. Default: all genomes
+    :param older_than_days: if the files are older than this number, reload the blast db
     """
+    if older_than_days is not None:
+        from datetime import datetime, timedelta
 
-    def blast_dbs_exist(gc: GenomeContent) -> bool:
+        assert type(older_than_days) is int, f'{older_than_days=} must be an integer!'
+        max_age = datetime.now() - timedelta(days=older_than_days)
+
+    if genome is None:
+        genomes = GenomeContent.objects.all()
+    else:
+        genomes = [GenomeContent.objects.get(identifier=genome)]
+
+    def must_update(gc: GenomeContent) -> bool:
         for f in [gc.blast_db_fna(relative=False), gc.blast_db_faa(relative=False), gc.blast_db_ffn(relative=False)]:
-            if not os.path.isfile(f):
-                return False
-        return True
+            suffix = 'pdb' if f.endswith('.faa') else 'ndb'
+            db_file = f'{f}.{suffix}'
 
-    gcs = GenomeContent.objects.all()
-    n_gcs = len(gcs)
-    for i, gc in enumerate(gcs):
-        if reload or not blast_dbs_exist(gc):
-            print(f'Creating blast-db {i + 1}/{n_gcs}: {gc.identifier}')
+            # reload if files missing
+            if not os.path.isfile(f) or not os.path.isfile(db_file):
+                print(f'Reload because BlastDB missing: {f}')
+                return True
+
+            # reload if files old
+            if older_than_days is not None:
+                age = datetime.fromtimestamp(os.path.getmtime(db_file))
+                if age < max_age:
+                    print(f'Reload because old: {age=} {db_file=}')
+                    return True
+
+        print('Pass')
+        return False
+
+    n_gcs = len(genomes)
+    for i, gc in enumerate(genomes):
+        print(f'{i + 1}/{n_gcs} :: {gc} ::', end=' ')
+        if reload or must_update(gc):
             create_blast_dbs(gc, reload=True)
 
 
@@ -577,7 +603,14 @@ def update_taxids(download_taxdump: bool = False) -> None:
         print('done')
 
 
-def postgres_vacuum(full: bool = True):
+def postgres_vacuum(full: bool):
+    """
+    VACUUM reclaims storage occupied by dead tuples.
+
+    It is recommended to run this after many tuples were deleted/modified.
+
+    :param full: FULL reclaims more space, but takes much longer. Will lock the database.
+    """
     from django.db import connection
 
     SQL = """
@@ -598,27 +631,135 @@ def postgres_vacuum(full: bool = True):
         cursor.execute(cmd % (r[0], r[1]))
 
 
-if __name__ == "__main__":
-    from glacier import glacier
+def reload_custom_annotations(
+        genome: str = 'ALL',
+        reload: bool = False,
+        simulate_only: bool = True,
+        custom_file_types: [str] = [],
+        anno_types: [str] = [],
+):
+    """
+    Reload custom_annotation files into OpenGenomeBrowser without re-importing the entire genome.
 
-    glacier([
-        sanity_check_folder_structure,
-        import_database,
-        import_organism,
-        remove_organism,
-        remove_missing_organisms,
-        reset_database,
-        import_pathway_maps,
-        sanity_check_postgres,
-        import_orthologs,
-        send_mail,
-        reload_color_css,
-        load_blast_dbs,
-        update_bokeh,
-        load_annotation_descriptions,
-        update_taxids,
-        backup_genome_similarities,
-        import_genome_similarities,
-        reload_organism_genomecontents,
-        postgres_vacuum
-    ])
+    For example, if eggnog-annotations were updated, run:
+    manage_ogb.py reload-custom-annotations \\
+        --custom_file_types='[eggnog, eggnog-2.1.2]' \\
+        --anno_types='[GO, EC, KG, KR, EP, EO, ED]' \\
+        --simulate_only=True
+
+    If custom_annotations of type "AR" were updated, run:
+    manage_ogb.py reload-custom-annotations \\
+        --custom_file_types='[AR]' \\
+        --anno_types='[AR]' \\
+        --simulate_only=True
+
+    Use --simulate_only=False only when you're really sure it will do exactly what you want!!!
+
+    :param genome: specify a genome identifier. default: apply to all genomes
+    :param custom_file_types: custom_file types to reload, \
+for example: [eggnog, eggnog-2.1.2]. default: [] (empty list)
+    :param anno_types: anno_types to remove from the genome before re-import, \
+for example: [GO, EC, KG, KR, EP, EO, ED]. default: [] (empty list)
+    :param reload: whether to reload the annotation files
+    :param simulate_only: if True, simply print what would happen
+    """
+    if not custom_file_types and not anno_types:
+        raise AssertionError('Either custom_file_types or anno_types has to be specified.')
+    if type(custom_file_types) is list and type(anno_types) is list:
+        raise AssertionError('custom_file_types and anno_types must be lists!')
+
+    print(genome, reload, simulate_only, custom_file_types, anno_types)
+
+    if genome == 'ALL':
+        genomes = GenomeContent.objects.all()
+    else:
+        genomes = [GenomeContent.objects.get(identifier=genome)]
+
+    if genome == 'ALL':
+        print(f'These actions will be performed on all {len(genomes)} genomes:')
+    else:
+        print(f'These actions will be performed on {genomes[0]}:')
+
+    def _reload_custom_annotations(gc: GenomeContent):
+        custom_files = [f for f in gc.custom_files if not f['type'] in custom_file_types]
+        custom_files_to_remove = [f for f in gc.custom_files if f['type'] in custom_file_types]
+
+        n_annos_before = gc.annotations.count()
+
+        annos_to_remove = gc.annotations.filter(anno_type__in=anno_types)
+        n_annos_to_remove = annos_to_remove.count()
+
+        if not custom_files_to_remove:
+            if n_annos_to_remove > 0:
+                logging.warning(f'{gc}: Found no custom file but {n_annos_to_remove} annotations to remove!')
+
+        if simulate_only:
+            print(gc)
+            print(f'       remove {n_annos_to_remove} annotations')
+            print(f'       remove {len(custom_files_to_remove)} custom_files')
+            if reload:
+                print(f'       finally: reload genome')
+            return
+
+        with transaction.atomic():
+            if annos_to_remove:
+                gc.annotations.remove(*annos_to_remove)
+
+            if custom_files_to_remove:
+                gc.custom_files = custom_files
+                gc.save()
+
+            if reload:
+                o = MockOrganism(path=f'{settings.GENOMIC_DATABASE}/organisms/{gc.organism.name}')
+                g = MockGenome(
+                    path=f'{settings.GENOMIC_DATABASE}/organisms/{gc.organism.name}/genomes/{gc.identifier}',
+                    organism=o
+                )
+                genome_serializer = GenomeSerializer(data=g.json)
+                genome_serializer.is_valid(raise_exception=True)
+                genome_serializer.update(instance=gc.genome, validated_data=genome_serializer.validated_data,
+                                         organism=gc.genome.organism)
+
+                print(gc)
+                gc.update()
+                n_annos_after = gc.annotations.count()
+                print(f'       before: {n_annos_before}, removed: {n_annos_to_remove}, after: {n_annos_after}')
+            else:
+                print(f'{gc}: before: {n_annos_before}, removed: {n_annos_to_remove}, reload?: {reload}')
+
+    for gc in genomes:
+        _reload_custom_annotations(gc)
+
+
+if __name__ == "__main__":
+    from fire import Fire
+
+    Fire({
+        # commonly used, user friendly
+        'sanity-check-folder-structure': sanity_check_folder_structure,
+        'import-database': import_database,
+        'import-organism': import_organism,
+        'remove-organism': remove_organism,
+        'remove-missing-organisms': remove_missing_organisms,
+        'import-pathway-maps': import_pathway_maps,
+        'import-orthologs': import_orthologs,
+        'load-annotation-descriptions': load_annotation_descriptions,
+
+        # advanced
+        'reload-color-css': reload_color_css,
+        'load-blast-dbs': load_blast_dbs,
+        'update-taxids': update_taxids,
+
+        # more advanced
+        'reload-organism-genomecontents': reload_organism_genomecontents,
+        'reload-custom-annotations': reload_custom_annotations,
+
+        # dev only
+        'backup-genome-similarities': backup_genome_similarities,
+        'import-genome-similarities': import_genome_similarities,
+        'update-bokeh': update_bokeh,
+        'send-mail': send_mail,
+        'sanity-check-postgres': sanity_check_postgres,
+        'postgres-vacuum': postgres_vacuum,
+        'reset-database': reset_database,
+    })

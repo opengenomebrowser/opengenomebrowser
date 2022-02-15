@@ -1,8 +1,8 @@
-import os.path
-from os import path, makedirs, remove
+from os import path, makedirs
 from shutil import move
 from datetime import datetime
 import json
+from django.utils.text import slugify
 
 
 def is_empty(string: str) -> bool:
@@ -31,7 +31,7 @@ def backup_file(file: str, user: str = None) -> str:
         user = 'nouser'
 
     assert path.isfile(file), f'File does not exist: {file}'
-    assert user.isalnum(), f'File does not exist: {file}'
+    user = slugify(user)
     dirname = path.dirname(file)
     basename = path.basename(file)
     bkp_dir = f'{dirname}/.bkp'

@@ -112,7 +112,7 @@ def genome_metadata_is_valid(data: dict, path_to_genome: str, raise_exception=Fa
 
 
 if __name__ == "__main__":
-    from glacier import glacier
+    from fire import Fire
     import json
 
 
@@ -128,4 +128,4 @@ if __name__ == "__main__":
         genome_metadata_is_valid(data, path_to_genome, raise_exception=True)
 
 
-    glacier(validate)
+    Fire(validate)
