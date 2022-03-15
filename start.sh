@@ -6,6 +6,12 @@ set -e
 # wait until postgres is up
 python db_setup/wait_for_postgres.py
 
+if ! [ -d "$FOLDER_STRUCTURE" ]; then
+  # give an error message if $FOLDER_STRUCTURE is not mounted
+  echo "Error: FOLDER_STRUCTURE=${FOLDER_STRUCTURE} not found. Can not continue."
+  exit 1
+fi
+
 # wait until folder structure version matches OpenGenomeBrowser version
 python db_setup/wait_for_version_match.py
 set +e

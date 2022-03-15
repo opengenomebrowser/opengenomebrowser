@@ -26,6 +26,9 @@ urlpatterns = [
     path('taxid/<str:slug>/', TaxIDDetailView.as_view(), name='taxid'),
     path('taxname/<str:slug>/', TaxIDDetailView.redirect_taxname, name='taxname'),
 
+    # ex: /tag/{tag}
+    path('tag/<str:slug>/', TagDetailView.as_view(), name='tag'),
+
     # ex: /gene/{name}
     path('gene/<str:slug>/', GeneDetailView.as_view(), name='gene'),
 

@@ -35,6 +35,8 @@ else
   sudo chown -R user:user /root
   sudo chown -R user:user /tmp
   sudo chown -R user:user /opt
+  sudo chown -R user:user /opengenomebrowser/cache/
+  sudo chown -R user:user /opengenomebrowser/static_root/
 
   # in production mode give user ownership of code and socker
   if [ "$DEBUG" = "false" ]; then

@@ -2,13 +2,13 @@ from django.shortcuts import render
 from website.models.helpers.backup_file import read_file_or_default
 from website.views.helpers.extract_errors import extract_errors
 from lib.ogb_cache.ogb_cache import ogb_cache, timedelta
-from OpenGenomeBrowser.settings import LOGIN_REQUIRED, GENOMIC_DATABASE, CACHE_DIR, CACHE_MAXSIZE
+from OpenGenomeBrowser.settings import LOGIN_REQUIRED, FOLDER_STRUCTURE, CACHE_DIR, CACHE_MAXSIZE
 
 
 def home_view(request):
     context = extract_errors(request, dict(title='Home', no_help=True))
 
-    home_markdown = read_file_or_default(file=f'{GENOMIC_DATABASE}/index.md', default=None, default_if_empty=True)
+    home_markdown = read_file_or_default(file=f'{FOLDER_STRUCTURE}/index.md', default=None, default_if_empty=True)
 
     admin_actions = [
         dict(url='/admin/markdown-editor/?page=index', action='Edit markdown')

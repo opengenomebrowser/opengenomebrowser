@@ -9,7 +9,7 @@ class Organism(models.Model):
     """
     Represents a biologically distinct entity.
 
-    Imported from the contents of database/genomes/*
+    Imported from the contents of folder_structure/organisms/{o}/...
     """
 
     name = models.CharField(max_length=40, unique=True)
@@ -54,11 +54,11 @@ class Organism(models.Model):
 
     def base_path(self, relative=True) -> str:
         rel = F"organisms/{self.name}"
-        return rel if relative else f'{settings.GENOMIC_DATABASE}/{rel}'
+        return rel if relative else f'{settings.FOLDER_STRUCTURE}/{rel}'
 
     @property
     def metadata_json(self):
-        return f'{settings.GENOMIC_DATABASE}/organisms/{self.name}/organism.json'
+        return f'{settings.FOLDER_STRUCTURE}/organisms/{self.name}/organism.json'
 
     def markdown_path(self, relative=True) -> str:
         return F"{self.base_path(relative)}/organism.md"
@@ -80,7 +80,7 @@ class Organism(models.Model):
         # ensure metadata matches organism
         import json
         from website.serializers import OrganismSerializer
-        im_dict = json.loads(open(f'{settings.GENOMIC_DATABASE}/organisms/{self.name}/organism.json').read())
+        im_dict = json.loads(open(f'{settings.FOLDER_STRUCTURE}/organisms/{self.name}/organism.json').read())
         matches, differences = OrganismSerializer.json_matches_organism(organism=self, json_dict=im_dict)
         assert matches, f'json and database do not match. organism: {self.name} differences: {differences}'
 

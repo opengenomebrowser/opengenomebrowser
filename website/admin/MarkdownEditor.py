@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse
 
-from OpenGenomeBrowser.settings import GENOMIC_DATABASE
+from OpenGenomeBrowser.settings import FOLDER_STRUCTURE
 from website.models import Organism, Genome
 from website.models.helpers.backup_file import read_file_or_default, overwrite_with_backup
 from website.views.helpers.extract_errors import extract_errors
@@ -17,7 +17,7 @@ class MarkdownObject:
 
     @property
     def markdown(self):
-        return read_file_or_default(file=f'{GENOMIC_DATABASE}/{self.file_path}', default='')
+        return read_file_or_default(file=f'{FOLDER_STRUCTURE}/{self.file_path}', default='')
 
     def set_markdown(self, md: str, user: str):
         self.obj.set_markdown(md=md, user=user)
@@ -58,9 +58,9 @@ class MarkdownObjectPage(MarkdownObject):
         )
 
     def set_markdown(self, md: str, user: str):
-        from OpenGenomeBrowser.settings import GENOMIC_DATABASE
+        from OpenGenomeBrowser.settings import FOLDER_STRUCTURE
         overwrite_with_backup(
-            file=f'{GENOMIC_DATABASE}/{self.file_path}',
+            file=f'{FOLDER_STRUCTURE}/{self.file_path}',
             content=md,
             user=user,
             delete_if_empty=True

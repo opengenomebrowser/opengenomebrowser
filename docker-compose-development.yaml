@@ -20,7 +20,7 @@ services:
       - development.env
     command: /opengenomebrowser/init.sh
     volumes:
-      - ./database:/database
+      - ./folder_structure:/folder_structure
       - ./:/opengenomebrowser/
       - ./ogb_container/cache:/tmp/ogb-cache
     ports:

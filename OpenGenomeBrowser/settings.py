@@ -36,8 +36,9 @@ DB_NAME = os.environ.get('DB_NAME', 'opengenomebrowser_db')
 DB_USER = os.environ.get('DB_USER', 'postgres')
 DB_PASSWORD = os.environ.get('DB_PASSWORD', 'postgres')
 
-# GENOMIC_DATABASE must contain the folder 'organisms'
-GENOMIC_DATABASE = os.environ.get('GENOMIC_DATABASE', '/database')
+# FOLDER_STRUCTURE must contain the folder 'organisms'
+FOLDER_STRUCTURE = os.environ.get('FOLDER_STRUCTURE', '/folder_structure')
+print(FOLDER_STRUCTURE)
 
 FILE_UPLOAD_HANDLERS = ['django.core.files.uploadhandler.TemporaryFileUploadHandler']
 
@@ -215,15 +216,15 @@ HUEY = {
     },
 }
 
-ORTHOLOG_ANNOTATIONS = f'{GENOMIC_DATABASE}/orthologs/orthologs.tsv'
+ORTHOLOG_ANNOTATIONS = f'{FOLDER_STRUCTURE}/orthologs/orthologs.tsv'
 
 # where KEGG data should be loaded to (using manage_ogb.py --download-kegg-data)
-ANNOTATION_DESCRIPTIONS = f'{GENOMIC_DATABASE}/annotation-descriptions'
+ANNOTATION_DESCRIPTIONS = f'{FOLDER_STRUCTURE}/annotation-descriptions'
 
-if os.path.isdir(f'{GENOMIC_DATABASE}/pathway-maps'):
-    # path (relative to GENOMIC_DATABASE) to pathway_maps-svgs
+if os.path.isdir(f'{FOLDER_STRUCTURE}/pathway-maps'):
+    # path (relative to FOLDER_STRUCTURE) to pathway_maps-svgs
     PATHWAY_MAPS_RELATIVE = 'pathway-maps/svg'
-    # path (relative to GENOMIC_DATABASE) to type_dictionary.json
+    # path (relative to FOLDER_STRUCTURE) to type_dictionary.json
     PATHWAY_MAPS_TYPE_DICT_RELATIVE = 'pathway-maps/type_dictionary.json'
 else:
     PATHWAY_MAPS_RELATIVE = 'pathway_maps/svg'
@@ -232,15 +233,15 @@ else:
 # Path to the folder that contains the orthofinder binary
 ORTHOFINDER_INSTALL_DIR = '/opt/OrthoFinder_source'
 # absolute path to OrthoFinder fasta folder
-ORTHOFINDER_FASTAS = f'{GENOMIC_DATABASE}/OrthoFinder/fastas'
+ORTHOFINDER_FASTAS = f'{FOLDER_STRUCTURE}/OrthoFinder/fastas'
 
 #
 #
 # sanity checks, do not edit what is below here.
 #
 #
-PATHWAY_MAPS_TYPE_DICT = f'{GENOMIC_DATABASE}/{PATHWAY_MAPS_TYPE_DICT_RELATIVE}'
-PATHWAY_MAPS = f'{GENOMIC_DATABASE}/{PATHWAY_MAPS_RELATIVE}'
+PATHWAY_MAPS_TYPE_DICT = f'{FOLDER_STRUCTURE}/{PATHWAY_MAPS_TYPE_DICT_RELATIVE}'
+PATHWAY_MAPS = f'{FOLDER_STRUCTURE}/{PATHWAY_MAPS_RELATIVE}'
 
 # Name of the most recent 'Results'-folder, i.e. 'Results_Aug14'
 if ORTHOFINDER_ENABLED:
@@ -259,7 +260,7 @@ if ORTHOFINDER_ENABLED:
 else:
     ORTHOFINDER_LATEST_RUN = None
 
-for folder in [PATHWAY_MAPS, GENOMIC_DATABASE]:
+for folder in [PATHWAY_MAPS, FOLDER_STRUCTURE]:
     assert os.path.isdir(folder), f'The path in settings.py does not point to a folder: {folder}'
 
 for file in [PATHWAY_MAPS_TYPE_DICT]:

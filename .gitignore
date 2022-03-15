@@ -46,6 +46,7 @@ docs/_build/
 species_color_dict.json
 
 database/*
+folder_structure/*
 lib/get_tax_info/data/*
 lib/ncbi_blast/ncbi-blast-2.10.0+/
 lib/ani/*.jar

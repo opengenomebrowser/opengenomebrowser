@@ -12,7 +12,7 @@ class GenomeContent(models.Model):
     """
     Represents a genomes content.
 
-    Imported from database/genomes/organisms/genomes/{1_assemblies,2_annotations}
+    Imported from folder_structure/organisms/{o}/genomes/{g}/...
     """
     identifier = models.CharField('unique identifier', max_length=50, unique=True, primary_key=True)
 
@@ -306,7 +306,7 @@ def load_regular_file(genomecontent: GenomeContent, file_dict):
 
     anno_type = file_dict['type']
     assert anno_type in annotation_types, \
-        f'Error in annotation file:{file_dict}\nType {anno_type} is not defined in {settings.GENOMIC_DATABASE}/annotations.json.'
+        f'Error in annotation file:{file_dict}\nType {anno_type} is not defined in {settings.FOLDER_STRUCTURE}/annotations.json.'
     regex = annotation_types[anno_type].regex
 
     all_annotations = set()  # {'anno1', 'anno2', ...}

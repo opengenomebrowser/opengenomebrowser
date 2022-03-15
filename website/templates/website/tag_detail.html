@@ -3,7 +3,8 @@
 
 {% block styles %}
     <!-- Site-specific css/js -->
-    <link rel="stylesheet" type="text/css" href="{% static 'global/css/taxid_color.css' %}" id="taxid-color-stylesheet"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'global/css/taxid_color.css' %}"
+          id="taxid-color-stylesheet"/>
     <link rel="stylesheet" type="text/css" href="{% static 'global/css/tag_color.css' %}"/>
     <link rel="stylesheet" type="text/css" href="{% static 'global/css/detail.css' %}"/>
 {% endblock %}
@@ -23,9 +24,9 @@
     <nav aria-label="breadcrumb" class="breadcrumb-fixed">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"></li>
-            <!-- Taxid -->
+            <!-- Tag -->
             <li class="breadcrumb-item active" aria-current="page">
-                <span>TAXID {{ taxid.id }}</span>
+                <span>TAG {{ tag.tag }}</span>
             </li>
         </ol>
     </nav>
@@ -39,42 +40,26 @@
         <!-- title -->
         <div class="container black-links">
             <!-- species name -->
-            <span class="type-label">name:</span>
-            <span class="h1" onclick="showTaxidClickMenu(event, '{{ taxid }}', 'tax{{ taxid.rank }}')">
-                {{ taxid }} </span>
+{#            <span class="type-label"></span>#}
+            <span class="h1" onclick="showTagClickMenu(event, '{{ tag.tag }}')">
+                {{ tag.html|safe }}
+            </span>
 
-            <!-- species taxid -->
-            <span class="type-label">taxid:</span>
-            <span class="h1" style="{{ taxid.html_style }}" onclick="showTaxidClickMenu(event, '{{ taxid }}', 'tax{{ taxid.rank }}')">
-                {{ taxid.id }} </span>
+            <br>
 
-            <!-- species rank --><br>
-            <span class="type-label">rank:</span>
-            <span class="h2">{{ taxid.rank }}</span>
+            <!-- species rank -->
+            <span class="type-label">description:</span>
+            <span class="h2">{{ tag.description }}</span>
 
-            {% if taxid.parent %}<br>
-                <!-- parent name -->
-                <span class="type-label">parent:</span>
-                <span class="h1" onclick="showTaxidClickMenu(event, '{{ taxid.parent }}', 'tax{{ taxid.parent.rank }}')">
-                    {{ taxid.parent }} </span>
-
-                <!-- parent taxid -->
-                <span class="type-label">taxid:</span>
-                <span class="h1" style="{{ taxid.parent.html_style }}"
-                      onclick="showTaxidClickMenu(event, '{{ taxid.parent }}', 'tax{{ taxid.parent.rank }}')">
-                    {{ taxid.parent.id }} </span>
-            {% endif %}
             <hr class="featurette-divider">
 
         </div>
 
-        <!-- organisms and genomes -->
+        <!-- genomes -->
         <div class="container black-links">
-            <ul>{% for organism in taxid.get_child_organisms %}
-                <li>organism: {{ organism.html|safe }}</li>
-                <ul>{% for genome in organism.genome_set.all %}
-                    <li>{{ genome.html|safe }}</li>{% endfor %}
-                </ul>{% endfor %}
+            <ul>{% for genome in tag.get_child_genomes %}
+                <li>genome: {{ genome.html|safe }}</li>
+            {% endfor %}
             </ul>
 
         </div>

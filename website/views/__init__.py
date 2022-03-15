@@ -3,6 +3,7 @@ from .OrganismDetailView import OrganismDetailView
 from .GenomeDetailView import GenomeDetailView
 from .PathwayView import pathway_view
 from .TaxIDDetailView import TaxIDDetailView
+from .TagDetailView import TagDetailView
 from .GeneDetailView import GeneDetailView
 from .AnnotationSearch import annotation_view
 from .AnnotationDetailView import AnnotationDetailView

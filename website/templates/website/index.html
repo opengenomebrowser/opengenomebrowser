@@ -42,18 +42,25 @@
 
     {% else %}
 
-        <!-- full logo -->
-        <div class="container">
-            <a href="{% url 'website:genomes' %}{% default_genomes_table_url %}">
-                <div class="logo-container">
-                    <img src="{% static 'global/customicons/ogb-full.svg' %}" id="ogb-logo-full">
-                </div>
-            </a>
+        <div id="intro-container" class="container">
+            <!-- full logo -->
+            <img src="{% static 'global/customicons/ogb-full.svg' %}" id="ogb-logo-full">
 
-            <div class=" logo-container black-links" style="padding-top:3rem">
-                <a href="{% url 'website:genomes' %}{% default_genomes_table_url %}">
-                    click here to start browsing genomes
-                </a>
+            <!-- button group with links -->
+            <div id="ogb-btns" aria-label="OpenGenomeBrowser links panel">
+                <a id="ogb-btn-demo" type="button" class="ogb-btn"
+                   href="https://opengenomebrowser.bioinformatics.unibe.ch/"
+                >Demo</a>
+                <a id="ogb-btn-youtube" type="button" class="ogb-btn"
+                   href="https://www.youtube.com/watch?v=rkWREfcwPKQ"
+                >Youtube</a>
+                <a id="ogb-btn-docs" type="button" class="ogb-btn"
+                   href="https://opengenomebrowser.github.io/"
+                >Docs</a>
+                <a id="ogb-btn-source" type="button" class="ogb-btn"
+                   href="https://github.com/opengenomebrowser/opengenomebrowser"
+                >Source</a>
+
             </div>
         </div>
 
@@ -118,6 +125,13 @@
 {% block end %}{% if sunburst_html %}
 
     <script type="application/javascript">
+        // hide speech bubble on first click anywhere
+        const hideSpeechBubble = function () {
+            document.getElementById('speech-bubble').style['display'] = 'none'
+            document.removeEventListener('click', hideSpeechBubble)
+        }
+        document.addEventListener('click', hideSpeechBubble)
+
         {{ sunburst_js|safe }}
 
         const applySunburstColors = function () {

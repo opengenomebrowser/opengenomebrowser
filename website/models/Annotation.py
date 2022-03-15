@@ -96,7 +96,7 @@ class AnnotationType:
         return f'[data-annotype="{self.anno_type}"] {{background-color: {self.color} !important; color: black !important}}'
 
 
-with open(f'{settings.GENOMIC_DATABASE}/annotations.json') as f:
+with open(f'{settings.FOLDER_STRUCTURE}/annotations.json') as f:
     annotation_types = {anno_type: AnnotationType(anno_type, data) for anno_type, data in json.load(f).items()}
 
 

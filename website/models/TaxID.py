@@ -199,7 +199,7 @@ class TaxID(MPTTModel):
 
 
 class TaxIdColors(KeyValueStore):
-    _file = f'{settings.GENOMIC_DATABASE}/taxid_color_dict.json'
+    _file = f'{settings.FOLDER_STRUCTURE}/taxid_color_dict.json'
     _model = TaxID
     _key = 'id'
     _key_isint = True

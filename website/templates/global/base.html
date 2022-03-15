@@ -59,21 +59,29 @@
 <nav class="navbar navbar-dark bg-dark fixed-top">
     <!-- logo and text -->
     <a class="navbar-brand" href="/" style="font-family: 'ogbFont'">
-        <img src="{% static 'global/customicons/ogb-circle.svg' %}" id="ogb-logo-circle" width="30" height="30" class="d-inline-block align-top">
+        <img src="{% static 'global/customicons/ogb-circle.svg' %}" id="ogb-logo-circle" width="30" height="30"
+             class="d-inline-block align-top">
         <span id="ogb-logo-text">OpenGenomeBrowser</span>
     </a>
 
 
-    <div class="navbar-nav ml-auto navbar-padding">
+    <div class="navbar-nav ml-auto navbar-padding" style="position: relative">
         <a class="nav-link text-nowrap {% if request.resolver_match.url_name == 'genomes' %}active{% endif %}"
            href="{% url 'website:genomes' %}{% default_genomes_table_url %}"
         >Genomes</a>
+        {% if request.resolver_match.url_name == 'index' %}
+            <div id="speech-bubble" class="black-links">
+                Click here to start exploring genomes!
+            </div>
+        {% endif %}
+
     </div>
 
 
     <!-- tools -->
     <div class="nav-item dropdown">
-        <button class="btn btn-outline-light my-2 my-sm-0 dropdown-toggle" id="navbarDropdown" data-toggle="dropdown" aria-haspopup="true">
+        <button class="btn btn-outline-light my-2 my-sm-0 dropdown-toggle" id="navbarDropdown" data-toggle="dropdown"
+                aria-haspopup="true">
             Tools
         </button>
         <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">

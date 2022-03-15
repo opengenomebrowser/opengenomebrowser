@@ -13,14 +13,14 @@ from mimetypes import guess_type
 #     internal;
 #     autoindex on;
 #     autoindex_format html;
-#     alias /database;
+#     alias /folder_structure;
 # }
 #
 # location ^~ /protected_json {
 #     internal;
 #     autoindex on;
 #     autoindex_format json;
-#     alias /database;
+#     alias /folder_structure;
 # }
 #
 # location ^~ /protected_cache {
@@ -37,7 +37,7 @@ def files_html(request):
         request_path=request.path,
         url_prefix='/files_html/',
         protected_prefix='/protected_html/',
-        fs_prefix=settings.GENOMIC_DATABASE
+        fs_prefix=settings.FOLDER_STRUCTURE
     )
 
 
@@ -46,7 +46,7 @@ def files_json(request):
         request_path=request.path,
         url_prefix='/files_json/',
         protected_prefix='/protected_json/',
-        fs_prefix=settings.GENOMIC_DATABASE
+        fs_prefix=settings.FOLDER_STRUCTURE
     )
 
 

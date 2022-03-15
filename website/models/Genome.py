@@ -155,7 +155,7 @@ class Genome(models.Model):
 
     def base_path(self, relative=True) -> str:
         rel = F"organisms/{self.organism.name}/genomes/{self.identifier}"
-        return rel if relative else f'{settings.GENOMIC_DATABASE}/{rel}'
+        return rel if relative else f'{settings.FOLDER_STRUCTURE}/{rel}'
 
     def assembly_fasta(self, relative=True) -> str:  # mandatory
         return F"{self.base_path(relative)}/{self.assembly_fasta_file}"
@@ -185,7 +185,7 @@ class Genome(models.Model):
 
     @property
     def metadata_json(self) -> str:
-        return f'{settings.GENOMIC_DATABASE}/organisms/{self.organism.name}/genomes/{self.identifier}/genome.json'
+        return f'{settings.FOLDER_STRUCTURE}/organisms/{self.organism.name}/genomes/{self.identifier}/genome.json'
 
     def markdown_path(self, relative=True) -> str:
         return F"{self.base_path(relative)}/genome.md"

@@ -19,7 +19,7 @@ from website.serializers import GenomeSerializer, OrganismSerializer
 from website.models import Organism, Genome, Tag, TaxID, GenomeContent, Gene, PathwayMap, Annotation
 from website.models.GenomeContent import create_blast_dbs
 
-folder_looper = FolderLooper(settings.GENOMIC_DATABASE)
+folder_looper = FolderLooper(settings.FOLDER_STRUCTURE)
 
 
 def print_warning(message, color):
@@ -101,9 +101,9 @@ def sanity_check_folder_structure(verbose=True) -> (int, int):
     return n_organisms, n_genomes
 
 
-def import_database(delete_missing: bool = True, auto_delete_missing: bool = False):
+def import_folder_structure(delete_missing: bool = True, auto_delete_missing: bool = False):
     """
-    Load organisms and genomes from file database into PostgreSQL database
+    Load organisms and genomes from folder_structure into PostgreSQL database
 
     :param delete_missing: if True (default), check if organisms/genomes have gone missing
     :param auto_delete_missing: if True, remove missing organisms/genomes without console prompt
@@ -113,7 +113,7 @@ def import_database(delete_missing: bool = True, auto_delete_missing: bool = Fal
     print('Performing sanity checks...')
     n_organisms, n_genomes = sanity_check_folder_structure(verbose=False)
 
-    # Remove Organism or a Genome if it has been removed from the database-folder
+    # Remove Organism or a Genome if it has been removed from the folder_structure
     if delete_missing:
         remove_missing_organisms(auto_delete_missing)
 
@@ -163,9 +163,9 @@ def reload_organism_genomecontents(name: str = None, all: bool = False, assembly
 
 def import_organism(name: str, update_css: bool = True):
     """
-    Import organism into database
+    Import organism into PostgreSQL database
     """
-    organism = MockOrganism(path=f'{settings.GENOMIC_DATABASE}/organisms/{name}')
+    organism = MockOrganism(path=f'{settings.FOLDER_STRUCTURE}/organisms/{name}')
     with transaction.atomic():
         color_print(f'└── {organism.name}', color=Fore.BLUE, end=' ')
 
@@ -228,7 +228,7 @@ def import_organism(name: str, update_css: bool = True):
 
 def remove_organism(name: str):
     """
-    Remove organism from database
+    Remove organism from PostgreSQL database
     """
     Organism.objects.get(name=name).delete()
     GenomeContent.objects.filter(genome__isnull=True).delete()
@@ -266,7 +266,7 @@ def remove_missing_organisms(auto_delete_missing: bool = False) -> None:
         if organism.name not in all_organisms:
             if not auto_delete_missing:
                 print_warning(
-                    F"Organism '{organism.name}' is missing from the database-folder. Remove it from the database?",
+                    F"Organism '{organism.name}' is missing from the folder_structure. Remove it from the database?",
                     color=Fore.MAGENTA
                 )
                 confirm_delete(color=Fore.MAGENTA)
@@ -276,7 +276,7 @@ def remove_missing_organisms(auto_delete_missing: bool = False) -> None:
         if genome.identifier not in all_genomes:
             if not auto_delete_missing:
                 print_warning(
-                    F"Genome '{genome.identifier}' is missing from the database-folder. Remove it from the database?",
+                    F"Genome '{genome.identifier}' is missing from the folder_structure. Remove it from the database?",
                     color=Fore.MAGENTA
                 )
                 confirm_delete(color=Fore.MAGENTA)
@@ -287,7 +287,7 @@ def remove_missing_organisms(auto_delete_missing: bool = False) -> None:
 
 def reset_database(auto_delete: bool = False) -> None:
     """
-    Removes all objects fromt he PostgreSQL database (Organism, Genome, Tag, TaxID, GenomeContent, Gene, PathwayMap, Annotation)
+    Removes all objects from the PostgreSQL database (Organism, Genome, Tag, TaxID, GenomeContent, Gene, PathwayMap, Annotation)
 
     :param auto_delete: if True: delete without prompt
     """
@@ -302,7 +302,7 @@ def reset_database(auto_delete: bool = False) -> None:
 
 def sanity_check_postgres() -> None:
     """
-    Perform sanity checks on objects in the database
+    Perform sanity checks on objects in the PostgreSQL database
     """
     print()
     print("Performing sanity checks...")
@@ -684,35 +684,44 @@ for example: [GO, EC, KG, KR, EP, EO, ED]. default: [] (empty list)
         custom_files = [f for f in gc.custom_files if not f['type'] in custom_file_types]
         custom_files_to_remove = [f for f in gc.custom_files if f['type'] in custom_file_types]
 
-        n_annos_before = gc.annotations.count()
-
-        annos_to_remove = gc.annotations.filter(anno_type__in=anno_types)
-        n_annos_to_remove = annos_to_remove.count()
+        gc_annos = gc.annotations.filter(anno_type__in=anno_types)
+        gene_anno_connections = Gene.annotations.through.objects.filter(
+            annotation__anno_type__in=anno_types,
+            gene__genomecontent__identifier=gc.identifier
+        )
+        n_gc_annos = gc_annos.count()
+        n_connections_to_remove = Annotation.objects.filter(gene__genomecontent__identifier=gc.identifier,
+                                                            anno_type__in=anno_types).distinct().count()
 
         if not custom_files_to_remove:
-            if n_annos_to_remove > 0:
-                logging.warning(f'{gc}: Found no custom file but {n_annos_to_remove} annotations to remove!')
+            if n_gc_annos > 0:
+                logging.warning(f'{gc}: Found no custom file but '
+                                f'{n_gc_annos} annotations '
+                                f'and {n_connections_to_remove} gene-anno-links to remove!')
 
         if simulate_only:
             print(gc)
-            print(f'       remove {n_annos_to_remove} annotations')
+            print(f'       remove {n_gc_annos} annotations and {n_connections_to_remove} gene-anno-links')
             print(f'       remove {len(custom_files_to_remove)} custom_files')
             if reload:
                 print(f'       finally: reload genome')
             return
 
         with transaction.atomic():
-            if annos_to_remove:
-                gc.annotations.remove(*annos_to_remove)
+            if gc_annos:
+                # remove GenomeContent -> Annotation
+                gc.annotations.remove(*gc_annos)
+                # remove GenomeContent.Gene -> Annotation
+                gene_anno_connections.delete()
 
             if custom_files_to_remove:
                 gc.custom_files = custom_files
                 gc.save()
 
             if reload:
-                o = MockOrganism(path=f'{settings.GENOMIC_DATABASE}/organisms/{gc.organism.name}')
+                o = MockOrganism(path=f'{settings.FOLDER_STRUCTURE}/organisms/{gc.organism.name}')
                 g = MockGenome(
-                    path=f'{settings.GENOMIC_DATABASE}/organisms/{gc.organism.name}/genomes/{gc.identifier}',
+                    path=f'{settings.FOLDER_STRUCTURE}/organisms/{gc.organism.name}/genomes/{gc.identifier}',
                     organism=o
                 )
                 genome_serializer = GenomeSerializer(data=g.json)
@@ -722,10 +731,17 @@ for example: [GO, EC, KG, KR, EP, EO, ED]. default: [] (empty list)
 
                 print(gc)
                 gc.update()
-                n_annos_after = gc.annotations.count()
-                print(f'       before: {n_annos_before}, removed: {n_annos_to_remove}, after: {n_annos_after}')
+                n_gc_annos_after = gc.annotations.filter(anno_type__in=anno_types).distinct().count()
+                n_gene_annos_after = Annotation.objects.filter(
+                    gene__genomecontent__identifier=gc.identifier,
+                    anno_type__in=anno_types
+                ).distinct().count()
+                assert n_gc_annos_after == n_gene_annos_after, \
+                    f'Genome-Annotation links are inconsistent with Gene-Annotation'
+                print(
+                    f'       number of annotations before: {n_gc_annos} after:{n_gc_annos_after}')
             else:
-                print(f'{gc}: before: {n_annos_before}, removed: {n_annos_to_remove}, reload?: {reload}')
+                print(f'{gc}: before: {n_gc_annos}, reload?: {reload}')
 
     for gc in genomes:
         _reload_custom_annotations(gc)
@@ -737,7 +753,7 @@ if __name__ == "__main__":
     Fire({
         # commonly used, user friendly
         'sanity-check-folder-structure': sanity_check_folder_structure,
-        'import-database': import_database,
+        'import-folder-structure': import_folder_structure,
         'import-organism': import_organism,
         'remove-organism': remove_organism,
         'remove-missing-organisms': remove_missing_organisms,

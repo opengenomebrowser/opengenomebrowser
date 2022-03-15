@@ -60,7 +60,7 @@ class Tag(models.Model):
 
     @property
     def html(self):
-        return f'<span class="tag ogb-tag" data-tag="{self.obj.tag}" title="{self.description}">@tag:{self.tag}</span>'
+        return f'<span class="tag ogb-tag" data-tag="{self.tag}" title="{self.description}">@tag:{self.tag}</span>'
 
     def get_html_badge(self):
         return f'<span class="ogb-tag" data-tag="{self.tag}">{self.tag}</span>'
@@ -117,14 +117,14 @@ class Tag(models.Model):
 
 
 class TagDescriptions(KeyValueStore):
-    _file = f'{settings.GENOMIC_DATABASE}/tag_to_description.json'
+    _file = f'{settings.FOLDER_STRUCTURE}/tag_to_description.json'
     _model = Tag
     _key = 'tag'
     _value = 'description'
 
 
 class TagColors(KeyValueStore):
-    _file = f'{settings.GENOMIC_DATABASE}/tag_to_color.json'
+    _file = f'{settings.FOLDER_STRUCTURE}/tag_to_color.json'
     _model = Tag
     _key = 'tag'
     _value = 'color'

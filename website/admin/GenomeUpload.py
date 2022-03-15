@@ -8,7 +8,7 @@ from django.shortcuts import render
 from django.views.generic.edit import FormView
 from django.http import JsonResponse
 
-from OpenGenomeBrowser.settings import GENOMIC_DATABASE
+from OpenGenomeBrowser.settings import FOLDER_STRUCTURE
 from website.models import Organism, Genome
 from website.views.helpers.extract_errors import extract_errors
 
@@ -63,7 +63,7 @@ class GenomeUploadView(FormView):
 
         organism_name = form.cleaned_data['organism_name']
 
-        organism_folder = f'{GENOMIC_DATABASE}/organisms/{organism_name}'
+        organism_folder = f'{FOLDER_STRUCTURE}/organisms/{organism_name}'
         if os.path.isdir(organism_folder):
             form.add_error(None, f'Cannot proceed: {organism_folder=} already exists!')
             return self.form_invalid(form)
@@ -82,7 +82,7 @@ class GenomeUploadView(FormView):
             try:
                 print(f'Import into folder_structure: {organism_name} :: {genome_identifier}')
                 import_genome_into_folder_structure(
-                    import_dir=tempdir, database_dir=GENOMIC_DATABASE,
+                    import_dir=tempdir, folder_structure_dir=FOLDER_STRUCTURE,
                     organism=organism_name, genome=genome_identifier,
                     rename=rename,
                     check_files=True,
@@ -108,7 +108,7 @@ def genome_import_view(request, slug: str):
     organism_name = slug
     context['organism'] = organism_name
 
-    organism_folder = f'{GENOMIC_DATABASE}/organisms/{organism_name}'
+    organism_folder = f'{FOLDER_STRUCTURE}/organisms/{organism_name}'
     context['organism_folder_rel'] = f'organisms/{organism_name}'
 
     if Organism.objects.filter(name=organism_name).exists():
@@ -122,7 +122,8 @@ def genome_import_view(request, slug: str):
     if not os.path.isdir(organism_folder):
         context['error_danger'].append(f'Error: Folder does not exist: {organism_folder}.')
     if Organism.objects.filter(name=organism_name).exists():
-        context['error_warning'].append(f'Warning: Organism with name={organism_name} has already been imported into the database.')
+        context['error_warning'].append(
+            f'Warning: Organism with name={organism_name} has already been imported into the database.')
 
     return render(request, 'admin/genome_import.html', context=context)
 
@@ -158,10 +159,11 @@ def remove_genome(request):
         if not request.user.has_perm(permission):
             return JsonResponse(dict(success='false', message=f'You lack the {permission} permission.'), status=500)
 
-    organism_folder = f'{GENOMIC_DATABASE}/organisms/{organism_name}'
+    organism_folder = f'{FOLDER_STRUCTURE}/organisms/{organism_name}'
 
     if not os.path.isdir(organism_folder):
-        return JsonResponse(dict(success='false', message=f'Organism folder does not exist: {organism_folder}'), status=500)
+        return JsonResponse(dict(success='false', message=f'Organism folder does not exist: {organism_folder}'),
+                            status=500)
 
     try:
         if Organism.objects.filter(name=organism_name).exists():

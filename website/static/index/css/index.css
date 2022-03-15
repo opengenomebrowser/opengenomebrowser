@@ -1,12 +1,130 @@
-.logo-container {
+#speech-bubble {
+    display: block;
+    position: absolute;
+    width: 300px;
+    right: 0;
+    left: auto;
+    float: left;
+    top: 100%;
+    max-width: 30em;
+    padding: .75rem;
+    margin: .125rem 0 0;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid rgba(0, 0, 0, .15);
+    border-radius: .75rem;
+}
+
+#speech-bubble::before {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 0;
+    bottom: 100%;
+    right: 28px;
+    border: .75rem solid transparent;
+    border-top: none;
+
+    border-bottom-color: #fff;
+    filter: drop-shadow(0 -0.0625rem 0.0625rem rgba(0, 0, 0, .1));
+}
+
+@media (max-width: 576px) {
+    #speech-bubble {
+        left: -116px;
+    }
+
+    #speech-bubble::before {
+        right: 136px;
+    }
+}
+
+#intro-container {
     display: flex;
+    flex-flow: column wrap;
+    align-content: center;
     align-items: center;
-    flex-direction: column;
-    margin: 10% 10%;
 }
 
 #ogb-logo-full {
     width: 60%;
+}
+
+#ogb-btns > .ogb-btn {
+    padding-left: 30px;
+    background-repeat: no-repeat;
+    background-position: top 50% left 10px;
+    background-size: 16px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #212529;
+    text-align: left;
+
+}
+
+#ogb-btn-demo {
+    background-image: url('http://127.0.0.1:8000/static/global/customicons/demo.svg');
+    background-color: #88c6af;
+}
+
+#ogb-btn-youtube {
+    background-image: url('http://127.0.0.1:8000/static/global/customicons/youtube.svg');
+    background-color: #85bed4;
+}
+
+#ogb-btn-docs {
+    background-image: url('http://127.0.0.1:8000/static/global/customicons/docs.svg');
+    background-color: #3a84b4;
+}
+
+#ogb-btn-source {
+    background-image: url('http://127.0.0.1:8000/static/global/customicons/source.svg');
+    background-color: #9f6fc6;
+}
+
+.ogb-btn:hover {
+    filter: brightness(0.8);
+}
+
+.ogb-btn {
+    color: #212529;
+    text-decoration: none !important;
+    display: inline-block;
+    font-weight: 400;
+    text-align: center;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    border: 1px solid transparent;
+    padding: .375rem .75rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    border-radius: .25rem;
+    transition: color .15s ease-in-out, background-color .15s ease-in-out, border-color .15s ease-in-out, filter .15s ease-in-out;
+}
+
+#ogb-btns {
+    position: relative;
+    display: -ms-inline-flexbox;
+    display: inline-flex;
+    vertical-align: middle;
+}
+
+.ogb-btn:not(:disabled):not(.disabled) {
+    cursor: pointer;
+}
+
+#ogb-btns > #ogb-btns:not(:last-child) > .ogb-btn, #ogb-btns > .ogb-btn:not(:last-child) {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+#ogb-btns > #ogb-btns:not(:first-child) > .ogb-btn, #ogb-btns > .ogb-btn:not(:first-child) {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
 }
 
 .card-deck {
@@ -65,6 +183,6 @@
     justify-content: center;
 }
 
-.modebar-container{
+.modebar-container {
     display: none !important;
 }

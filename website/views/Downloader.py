@@ -11,7 +11,7 @@ from website.views.helpers.magic_string import MagicQueryManager
 from lib.ogb_cache.ogb_cache import clear_cache
 from website.views.helpers.extract_requests import contains_data, extract_data
 from website.models import Genome, Organism
-from OpenGenomeBrowser.settings import CACHE_DIR, CACHE_MAXSIZE, GENOMIC_DATABASE
+from OpenGenomeBrowser.settings import CACHE_DIR, CACHE_MAXSIZE, FOLDER_STRUCTURE
 
 # future: use nginx directly
 # nginx mod_zip: https://github.com/evanmiller/mod_zip/
@@ -135,7 +135,7 @@ def downloader_submit(request):
             else:
                 suffix = abbr_to_suffix[abbr]
                 for g in genomes:
-                    zip.write(filename=f'{GENOMIC_DATABASE}/{getattr(g, abbr)(relative=True)}', arcname=f'{g.identifier}.{suffix}')
+                    zip.write(filename=f'{FOLDER_STRUCTURE}/{getattr(g, abbr)(relative=True)}', arcname=f'{g.identifier}.{suffix}')
 
     except Exception as e:
         print(e)

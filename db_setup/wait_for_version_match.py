@@ -3,14 +3,14 @@ from time import sleep
 from opengenomebrowser_tools.utils import get_folder_structure_version
 
 EXPECTED_VERSION = 2
-GENOMIC_DATABASE = os.environ.get('GENOMIC_DATABASE', '/database')
-VERSION_FILE = f'{GENOMIC_DATABASE}/version.json'
+FOLDER_STRUCTURE = os.environ.get('FOLDER_STRUCTURE', '/folder_structure')
+VERSION_FILE = f'{FOLDER_STRUCTURE}/version.json'
 
 
 def wait_for_version_match():
     first_time = True
     while True:
-        version = get_folder_structure_version(database_dir=GENOMIC_DATABASE)
+        version = get_folder_structure_version(folder_structure_dir=FOLDER_STRUCTURE)
 
         if version == EXPECTED_VERSION:
             break

@@ -64,5 +64,6 @@ docker*
 Dockerfile
 
 /database
+/folder_structure
 /static_root
 /ogb_container
