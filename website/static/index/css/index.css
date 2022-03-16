@@ -65,22 +65,22 @@
 }
 
 #ogb-btn-demo {
-    background-image: url('http://127.0.0.1:8000/static/global/customicons/demo.svg');
+    background-image: url('/static/global/customicons/demo.svg');
     background-color: #88c6af;
 }
 
 #ogb-btn-youtube {
-    background-image: url('http://127.0.0.1:8000/static/global/customicons/youtube.svg');
+    background-image: url('/static/global/customicons/youtube.svg');
     background-color: #85bed4;
 }
 
 #ogb-btn-docs {
-    background-image: url('http://127.0.0.1:8000/static/global/customicons/docs.svg');
+    background-image: url('/static/global/customicons/docs.svg');
     background-color: #3a84b4;
 }
 
 #ogb-btn-source {
-    background-image: url('http://127.0.0.1:8000/static/global/customicons/source.svg');
+    background-image: url('/static/global/customicons/source.svg');
     background-color: #9f6fc6;
 }
 

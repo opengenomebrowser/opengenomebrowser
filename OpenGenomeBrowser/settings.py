@@ -38,7 +38,6 @@ DB_PASSWORD = os.environ.get('DB_PASSWORD', 'postgres')
 
 # FOLDER_STRUCTURE must contain the folder 'organisms'
 FOLDER_STRUCTURE = os.environ.get('FOLDER_STRUCTURE', '/folder_structure')
-print(FOLDER_STRUCTURE)
 
 FILE_UPLOAD_HANDLERS = ['django.core.files.uploadhandler.TemporaryFileUploadHandler']
 
