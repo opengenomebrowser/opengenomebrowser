@@ -34,7 +34,7 @@ function writeCookie(name, value, expires_minutes = 120) {
     let expires = new Date()
     expires.setTime(expires.getTime() + (expires_minutes * 60 * 1000))
 
-    let cookie = `${name}=${JSON.stringify(value)}; expires=${expires.toGMTString()}; path=/;`
+    let cookie = `${name}=${JSON.stringify(value)}; expires=${expires.toGMTString()}; path=/;  SameSite=Lax;`
     if (!window.location.host.startsWith('127.0.0.1')) {
         // cannot save cookies to localhost
         cookie += ` domain=.${window.location.host.toString()};`
@@ -49,7 +49,7 @@ function readCookie(name) {
 }
 
 function deleteCookie(name) {
-    let cookie = `${name}=; expires=Thu, 01-Jan-1970 00:00:01 GMT; path=/;`
+    let cookie = `${name}=; expires=Thu, 01-Jan-1970 00:00:01 GMT; path=/; SameSite=Lax;`
     if (!window.location.host.startsWith('127.0.0.1')) {
         // cannot save cookies to localhost
         cookie += ` domain=.${window.location.host.toString()};`
