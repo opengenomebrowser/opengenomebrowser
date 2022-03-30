@@ -2,7 +2,6 @@ from website.models import Genome, Annotation, annotation_types
 from website.models.TaxID import TaxID
 from django.views.generic import DetailView
 from django.template import engines
-from collections import Counter
 from math import sqrt
 import numpy as np
 import pandas as pd
@@ -53,6 +52,7 @@ class ParameterField:
     @property
     def verbose(self):
         if self.attr == 'is_representative': return 'Representative?'
+        if self.attr == 'genomecontent__n_genes': return 'Number of genes'
         return Genome._meta.get_field(self.attr).verbose_name
 
     @property
@@ -120,7 +120,7 @@ class GenomeDetailView(DetailView):
                           'assembly_nr_scaffolds', 'assembly_n50', 'assembly_gaps', 'assembly_ncount', 'nr_replicons']
         context['ass_parameters'] = [ParameterField(genome=g, attr=attr) for attr in ass_parameters]
 
-        ann_parameters = ['cds_tool', 'cds_tool_date', 'cds_tool_version']
+        ann_parameters = ['cds_tool', 'cds_tool_date', 'cds_tool_version', 'genomecontent__n_genes']
         context['ann_parameters'] = [ParameterField(genome=g, attr=attr) for attr in ann_parameters]
 
         context['ann_per_annotype'] = {at: Annotation.objects.filter(genomecontent__in=[g.identifier], anno_type=abbr).count()
