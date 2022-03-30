@@ -3,7 +3,8 @@
 
 {% block styles %}
     <!-- Site-specific css/js -->
-    <link rel="stylesheet" type="text/css" href="{% static 'global/css/taxid_color.css' %}" id="taxid-color-stylesheet"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'global/css/taxid_color.css' %}"
+          id="taxid-color-stylesheet"/>
     <link rel="stylesheet" type="text/css" href="{% static 'global/css/tag_color.css' %}"/>
     <link rel="stylesheet" type="text/css" href="{% static 'global/css/detail.css' %}"/>
     <link rel="stylesheet" type="text/css" href="{% static 'global/css/annotype_color.css' %}">
@@ -60,11 +61,13 @@
         <div class="container black-links">
             <!-- genome -->
             <span class="type-label">genome:</span>
-            <span class="h1" onclick="showGenomeClickMenu(event, 'auto', '{{ genome.taxid }}')">{{ genome.identifier }}</span>
+            <span class="h1"
+                  onclick="showGenomeClickMenu(event, 'auto', '{{ genome.taxid }}')">{{ genome.identifier }}</span>
 
             <!-- organism -->
             <span class="type-label">organism:</span>
-            <span class="h2" onclick="showOrganismClickMenu(event, 'auto', '{{ genome.taxid }}')">{{ genome.organism }}</span>
+            <span class="h2"
+                  onclick="showOrganismClickMenu(event, 'auto', '{{ genome.taxid }}')">{{ genome.organism }}</span>
 
             <!-- old identifier -->
             {% if genome.old_identifier %}
@@ -186,7 +189,8 @@
                     <thead class="thead-dark">
                     <tr>
                         <th scope="col">Key Parameters</th>
-                        <th scope="col" class="expand-td"><img src="{% static 'global/ionicons/ios-arrow-down.svg' %}"></th>
+                        <th scope="col" class="expand-td"><img src="{% static 'global/ionicons/ios-arrow-down.svg' %}">
+                        </th>
                         </th>
                     </tr>
                     </thead>
@@ -212,7 +216,8 @@
                     <thead class="thead-dark">
                     <tr>
                         <th scope="col">Sequencing Information</th>
-                        <th scope="col" class="expand-td"><img src="{% static 'global/ionicons/ios-arrow-down.svg' %}"></th>
+                        <th scope="col" class="expand-td"><img src="{% static 'global/ionicons/ios-arrow-down.svg' %}">
+                        </th>
                         </th>
                     </tr>
                     </thead>
@@ -238,7 +243,8 @@
                     <thead class="thead-dark">
                     <tr>
                         <th scope="col">Assembly Information</th>
-                        <th scope="col" class="expand-td"><img src="{% static 'global/ionicons/ios-arrow-down.svg' %}"></th>
+                        <th scope="col" class="expand-td"><img src="{% static 'global/ionicons/ios-arrow-down.svg' %}">
+                        </th>
                         </th>
                     </tr>
                     </thead>
@@ -264,7 +270,8 @@
                     <thead class="thead-dark">
                     <tr>
                         <th scope="col">Annotation Information</th>
-                        <th scope="col" class="expand-td"><img src="{% static 'global/ionicons/ios-arrow-down.svg' %}"></th>
+                        <th scope="col" class="expand-td"><img src="{% static 'global/ionicons/ios-arrow-down.svg' %}">
+                        </th>
                         </th>
                     </tr>
                     </thead>
@@ -290,7 +297,8 @@
                     <thead class="thead-dark">
                     <tr>
                         <th scope="col">Annotations by category</th>
-                        <th scope="col" class="expand-td"><img src="{% static 'global/ionicons/ios-arrow-down.svg' %}"></th>
+                        <th scope="col" class="expand-td"><img src="{% static 'global/ionicons/ios-arrow-down.svg' %}">
+                        </th>
                         </th>
                     </tr>
                     </thead>
@@ -299,19 +307,26 @@
 
             <div class="collapse" id="annotations-by-category">
                 <table class="table no-top-padding">
+                    <thead>
+                    <tr>
+                        <th></th>
+                        <th># genes with annotation</th>
+                        <th># unique annotations</th>
+                        <th>Browse anntoations</th>
+                    </tr>
+                    </thead>
                     <tbody>
-
-                    {% for at, n_annos in ann_per_annotype.items %}
+                    {% for at, info in ann_per_annotype.items %}
                         <tr>
                             <th scope="row"><span class="ogb-tag" data-annotype="{{ at.anno_type }}"
                                                   style="cursor: unset">{{ at.name }} ({{ at.anno_type }})</span></th>
-                            <td>{{ n_annos }}</td>
+                            <td>{{ info.n_genes_with_annotation }}</td>
+                            <td>{{ info.n_unique_annotations }}</td>
                             <td>
-                                <a href="{% url "website:annotation-filter" %}?genomes={{ genome.identifier }}&anno_type={{ at.anno_type }}">browse</a>
+                                <a href="{% url "website:annotation-filter" %}?genomes={{ genome.identifier }}&anno_type={{ at.anno_type }}">link</a>
                             </td>
                         </tr>
                     {% endfor %}
-
                     </tbody>
                 </table>
             </div>
@@ -391,8 +406,10 @@
                         <table class="table table-sm" id="cog-table">
                             <thead class="thead-dark">
                             <tr>
-                                <th scope="col" data-toggle="tooltip" data-placement="top" title="COG: Clusters of Orthologous Genes"><a
-                                        href="https://www.ncbi.nlm.nih.gov/research/cog-project/" style="color: inherit">COG</a></th>
+                                <th scope="col" data-toggle="tooltip" data-placement="top"
+                                    title="COG: Clusters of Orthologous Genes"><a
+                                        href="https://www.ncbi.nlm.nih.gov/research/cog-project/"
+                                        style="color: inherit">COG</a></th>
                                 <th class="text-center" scope="col">description</th>
                                 <th class="text-right" scope="col">value</th>
                             </tr>
@@ -473,8 +490,9 @@
                     <li>Custom annotations
                         <ul>
                             {% for custom_annotation in genome.custom_annotations %}
-                                <li><a href="/files_html/{{ genome.base_path }}/{{ custom_annotation.file }}">{{ custom_annotation.type }}
-                                    (from {{ custom_annotation.date }})</a></li>
+                                <li>
+                                    <a href="/files_html/{{ genome.base_path }}/{{ custom_annotation.file }}">{{ custom_annotation.type }}
+                                        (from {{ custom_annotation.date }})</a></li>
                             {% endfor %}
                         </ul>
                     </li>

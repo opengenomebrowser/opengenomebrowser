@@ -113,18 +113,22 @@ class GenomeDetailView(DetailView):
                           'literature_references']
         context['key_parameters'] = [ParameterField(genome=g, attr=attr) for attr in key_parameters]
 
-        seq_parameters = ['library_preparation', 'sequencing_tech', 'sequencing_tech_version', 'sequencing_date', 'sequencing_coverage']
+        seq_parameters = ['library_preparation', 'sequencing_tech', 'sequencing_tech_version', 'sequencing_date',
+                          'sequencing_coverage']
         context['seq_parameters'] = [ParameterField(genome=g, attr=attr) for attr in seq_parameters]
 
-        ass_parameters = ['assembly_tool', 'assembly_version', 'assembly_date', 'assembly_gc', 'assembly_longest_scf', 'assembly_size',
+        ass_parameters = ['assembly_tool', 'assembly_version', 'assembly_date', 'assembly_gc', 'assembly_longest_scf',
+                          'assembly_size',
                           'assembly_nr_scaffolds', 'assembly_n50', 'assembly_gaps', 'assembly_ncount', 'nr_replicons']
         context['ass_parameters'] = [ParameterField(genome=g, attr=attr) for attr in ass_parameters]
 
         ann_parameters = ['cds_tool', 'cds_tool_date', 'cds_tool_version', 'genomecontent__n_genes']
         context['ann_parameters'] = [ParameterField(genome=g, attr=attr) for attr in ann_parameters]
 
-        context['ann_per_annotype'] = {at: Annotation.objects.filter(genomecontent__in=[g.identifier], anno_type=abbr).count()
-                                       for abbr, at in annotation_types.items()}
+        context['ann_per_annotype'] = {at: {
+            'n_genes_with_annotation': g.genomecontent.gene_set.filter(annotations__anno_type=abbr).count(),
+            'n_unique_annotations': Annotation.objects.filter(genomecontent__in=[g.identifier], anno_type=abbr).count()
+        } for abbr, at in annotation_types.items()}
 
         context['custom_tables'] = []
         if g.custom_tables:
