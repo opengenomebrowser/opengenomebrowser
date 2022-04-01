@@ -10,7 +10,7 @@ from django.http import JsonResponse
 
 from flower_plot import flower_plot
 
-from website.models.Annotation import annotation_types
+from website.models.Annotation import annotation_types, settings
 
 from website.views.helpers.extract_errors import extract_errors
 from website.views.helpers.magic_string import MagicQueryManager
@@ -28,10 +28,8 @@ def flower_view(request):
     context = extract_errors(request, dict(
         title='Flower plot',
         anno_types=annotation_types.values(),
-        anno_type='OL',  # default
+        anno_type=settings.DEFAULT_ANNOTATION_TYPE,  # default
     ))
-
-    anno_type_valid, genomes_valid = False, False
 
     if contains_data(request, 'anno_type'):
         context['anno_type'] = extract_data(request, 'anno_type')

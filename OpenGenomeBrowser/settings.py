@@ -50,6 +50,8 @@ ORTHOFINDER_ENABLED = os.environ.get('ORTHOFINDER_ENABLED', 'false').lower() == 
 
 PROTEIN_FASTA_ENDINGS = os.environ.get('PROTEIN_FASTA_ENDINGS')
 
+DEFAULT_ANNOTATION_TYPE = os.environ.get('DEFAULT_ANNOTATION_TYPE', 'OL')
+
 # genomes table: default columns
 DEFAULT_GENOMES_TABLE_URL = os.environ.get(
     'DEFAULT_GENOMES_TABLE_URL',

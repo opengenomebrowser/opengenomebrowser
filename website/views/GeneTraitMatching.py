@@ -9,7 +9,7 @@ from scipy.stats import fisher_exact, boschloo_exact
 from fast_fisher import fast_fisher_cython
 from statsmodels.stats.multitest import multipletests
 
-from website.models.Annotation import annotation_types
+from website.models.Annotation import annotation_types, settings
 
 from website.views.GenomeDetailView import dataframe_to_bootstrap_html
 from website.views.helpers.extract_errors import extract_errors
@@ -47,7 +47,7 @@ def gtm_view(request):
         multiple_testing_methods=multiple_testing_methods,
         # defaults:
         default_method='fast-fisher',
-        default_anno_type='OL',
+        default_anno_type=settings.DEFAULT_ANNOTATION_TYPE,
         default_alpha=0.2,
         default_multiple_testing_method='fdr_bh',
     ))

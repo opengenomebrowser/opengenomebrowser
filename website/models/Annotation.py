@@ -98,6 +98,8 @@ class AnnotationType:
 
 with open(f'{settings.FOLDER_STRUCTURE}/annotations.json') as f:
     annotation_types = {anno_type: AnnotationType(anno_type, data) for anno_type, data in json.load(f).items()}
+assert settings.DEFAULT_ANNOTATION_TYPE in annotation_types, \
+    f'{settings.DEFAULT_ANNOTATION_TYPE=} is not in annotations.json: {annotation_types.keys()}'
 
 
 class Annotation(models.Model):
@@ -129,7 +131,8 @@ class Annotation(models.Model):
     @staticmethod
     def load_descriptions(anno_types: list = None, reload=True):
         if anno_types is None:
-            anno_types = list(Annotation.objects.distinct('anno_type').values_list('anno_type', flat=True))  # ['EC', 'GC', 'GO', 'GP', 'KG', 'KR']
+            anno_types = list(Annotation.objects.distinct('anno_type').values_list('anno_type',
+                                                                                   flat=True))  # ['EC', 'GC', 'GO', 'GP', 'KG', 'KR']
 
         if reload:
             print('Reloading annotation descriptions...')
