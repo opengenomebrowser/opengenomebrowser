@@ -1,10 +1,11 @@
 from django.shortcuts import render, HttpResponse, redirect
 from django.db.models import Q
 
-from website.models import Annotation, annotation_types, Genome, Gene
+from OpenGenomeBrowser.settings import DEFAULT_ANNOTATION_TYPE
+from website.models import annotation_types, Gene
 from website.views.Api import err
 from website.views.helpers.extract_errors import extract_errors
-from website.views.helpers.extract_requests import contains_data, extract_data
+from website.views.helpers.extract_requests import contains_data, extract_data, extract_data_or
 
 
 class CompareGenes:
@@ -13,6 +14,8 @@ class CompareGenes:
         context = extract_errors(request, dict(title='Compare Genes'))
 
         context['anno_types'] = annotation_types.values()
+        context['default_anno_type'] = extract_data_or(request, 'anno_type', default=DEFAULT_ANNOTATION_TYPE)
+        print(context['default_anno_type'], DEFAULT_ANNOTATION_TYPE)
 
         # Get genes
         if contains_data(request, 'genes'):
