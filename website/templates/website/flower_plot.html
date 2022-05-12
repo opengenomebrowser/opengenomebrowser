@@ -32,17 +32,25 @@
         </div>
     </div>
 
-
     <hr>
-
 
     <div class="sidebar-subcontent form-check form-check-inline">
         <label for="flower-plot-anno-type"><a>Which category of annotations to use?</a></label>
         <select class="form-control" id="flower-plot-anno-type" data-selected="{{ anno_type }}">
             {% for at in anno_types %}
-                <option value="{{ at.anno_type }}" {% if at.anno_type == anno_type %} selected {% endif %}>{{ at.name }} ({{ at.anno_type }})
+                <option value="{{ at.anno_type }}" {% if at.anno_type == anno_type %} selected {% endif %}>{{ at.name }}
+                    ({{ at.anno_type }})
                 </option>{% endfor %}
         </select>
+    </div>
+
+    <div class="sidebar-subcontent form-check form-check-inline">
+        <div class="custom-control custom-checkbox">
+            <input type="checkbox" class="custom-control-input" id="flower-plot-add-non-annotated"
+                    {% if add_non_annotated %} checked{% endif %}>
+            <label class="custom-control-label" for="flower-plot-add-non-annotated">
+                Add non-annotated genes to leaves?</label>
+        </div>
     </div>
 
     <hr>
@@ -56,7 +64,8 @@
     </div>
     <div class="sidebar-subcontent form-check form-check-inline">
         <button type="button" class="btn btn-secondary"
-                onclick="savePng(document.getElementById('flower-plot-container').children[0], 'flower-plot.png')" style="margin-right: 1rem;">
+                onclick="savePng(document.getElementById('flower-plot-container').children[0], 'flower-plot.png')"
+                style="margin-right: 1rem;">
             Save as PNG
         </button>
         <button type="button" class="btn btn-secondary"
@@ -77,13 +86,16 @@
                 {% csrf_token %}
                 <div id="magic-query"></div>
 
-                <button id="flower-plot-submit-button" type="button" class="btn btn-primary" onclick="submitFunction()">Submit</button>
+                <button id="flower-plot-submit-button" type="button" class="btn btn-primary" onclick="submitFunction()">
+                    Submit
+                </button>
             </form>
 
             {% if magic_query_manager %}
                 <hr class="featurette-divider">
 
-                <button type="button" class="btn btn-light" data-toggle="collapse" href="#real-div" aria-expanded="false" aria-controls="real-div"
+                <button type="button" class="btn btn-light" data-toggle="collapse" href="#real-div"
+                        aria-expanded="false" aria-controls="real-div"
                 >Show query
                 </button>
 
@@ -99,6 +111,7 @@
                         <label>Parameters:</label>
                         <div class="read-only-div" id="real-anno-type">
                             <a>Annotation type: {{ anno_type }}</a>
+                            <a>Add non-annotated genes to leaves: {{ add_non_annotated }}</a>
                         </div>
                     </div>
 
@@ -133,6 +146,7 @@
 
         const magicQuery = [{% if magic_query_manager %} '{{ magic_query_manager.queries|join:"', '" }}' {% else %}{% endif %}]
         const genomes = [{% if magic_query_manager %} '{{ magic_query_manager.all_genomes|join:"', '" }}' {% else %}{% endif %}]
+        const addNonAnnotated = {% if add_non_annotated %}true{% else %}false{% endif %}
 
         const magicQueryDiv = $('#magic-query')
 
@@ -149,7 +163,7 @@
 
         $(document).ready(function () {
             {% if success %}
-                console.log(loadFlowerSvg(genomes, "{{anno_type}}"))
+                loadFlowerSvg(genomes, "{{anno_type}}", addNonAnnotated)
             {% endif %}
         })
 
@@ -157,7 +171,8 @@
         function submitFunction() {
             const target = magicQueryDiv.find('.get-genomes')[0]
             const genomes = extractQuery(target)
-            const anno_type = $('#flower-plot-anno-type').val()
+            const annoType = $('#flower-plot-anno-type').val()
+            const addNonAnnotated = document.querySelector('#flower-plot-add-non-annotated').checked
 
             $.when(validateGenomes(genomes)).done(function (genomesValid) {
                 genomesValid = genomesValid['success']
@@ -169,7 +184,11 @@
                 }
 
                 if (genomesValid) {
-                    goToPageWithData('/flower-plot', {'genomes': genomes, 'anno_type': anno_type})
+                    goToPageWithData('/flower-plot', {
+                        'genomes': genomes,
+                        'anno_type': annoType,
+                        'add_non_annotated': addNonAnnotated
+                    })
                 }
             })
         }
@@ -223,17 +242,20 @@
         }
 
 
-        async function loadFlowerSvg(genomes, anno_type) {
+        async function loadFlowerSvg(genomes, annoType, addNonAnnotated) {
+            console.log('addNonAnnotated', genomes, addNonAnnotated)
             if (genomes.length === 0) {
                 console.log('no genomes!')
                 return
+
             }
 
             $('#gene-loci-spinner').attr('hidden', false)
 
             $.post('{% url 'website:flower-plot-svg' %}', {
                 'genomes[]': genomes,
-                'anno_type': anno_type,
+                'anno_type': annoType,
+                'add_non_annotated': addNonAnnotated,
             }, 'json')
                 .done(function (data, textStatus, jqXHR) {
                     console.log('SUCCESS')
@@ -253,7 +275,6 @@
                     $('#gene-loci-spinner').attr('hidden', true)
                 })
         }
-
 
     </script>
 

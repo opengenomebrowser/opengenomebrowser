@@ -214,12 +214,12 @@ String.prototype.rsplit = function (sep, maxsplit) {
  */
 let urlReplBlanks = function (input) {
     if ($.isArray(input)) {
-        let encode = function (str) {
-            return encodeURIComponent(str.replaceAll(' ', '!!!'))
+        const encode = function (str) {
+            return encodeURIComponent(String(str).replaceAll(' ', '!!!'))
         }
         return input.map(str => encode(str)).join('+')
     } else {
-        return encodeURIComponent(input.replaceAll(' ', '!!!'))
+        return encodeURIComponent(String(input).replaceAll(' ', '!!!'))
     }
 }
 let postReplBlanks = function (input) {

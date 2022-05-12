@@ -13,7 +13,11 @@ def extract_data(request, key: str, list: bool = False, sep: str = ' ', raise_er
         data = request.POST[key]
     else:
         if raise_errors:
-            raise KeyError(f'Could not extract "{key}" from request. Submitted keys: {request.GET.keys()} (GET), {request.POST.keys()} (POST)')
+            raise KeyError(
+                f'Could not extract "{key}" from request. '
+                f'Submitted keys: {request.GET.keys()} (GET), '
+                f'{request.POST.keys()} (POST)'
+            )
         else:
             return None
 

@@ -126,7 +126,7 @@ class GenomeDetailView(DetailView):
         context['ann_parameters'] = [ParameterField(genome=g, attr=attr) for attr in ann_parameters]
 
         context['ann_per_annotype'] = {at: {
-            'n_genes_with_annotation': g.genomecontent.gene_set.filter(annotations__anno_type=abbr).count(),
+            'n_genes_with_annotation': g.genomecontent.gene_set.filter(annotations__anno_type=abbr).distinct().count(),
             'n_unique_annotations': Annotation.objects.filter(genomecontent__in=[g.identifier], anno_type=abbr).count()
         } for abbr, at in annotation_types.items()}
 
