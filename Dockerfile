@@ -37,7 +37,8 @@ RUN wget -P lib/get_tax_info/data/ --quiet ftp://ftp.ncbi.nlm.nih.gov/pub/taxono
 
 # install poetry
 RUN pip install --upgrade pip && \
-    pip install poetry
+    pip install poetry && \
+    pip cache purge
 
 # get dependencies
 COPY pyproject.toml ${WORKDIR}/
@@ -46,7 +47,7 @@ COPY poetry.lock ${WORKDIR}/
 # install dependencies
 RUN poetry config virtualenvs.create false && \
     poetry install --no-dev --no-interaction --no-ansi && \
-    poetry cache clear --all --no-interaction --no-ansi . && \
+    yes | poetry cache clear --all pypi && \
     pip cache purge
 
 # install GenDisCal
