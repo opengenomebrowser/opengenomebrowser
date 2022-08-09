@@ -1,0 +1,11 @@
+.blasterjs-alignment {
+    font-weight: bold;
+    width: 18px;
+    text-align: center;
+    display: inline-block;
+    background-color: #FFFFFF;
+}
+.blasterjs-A { background-color: #FFA563 }
+.blasterjs-C { background-color: #609DF9 }
+.blasterjs-G { background-color: #F9FA60 }
+.blasterjs-T { background-color: #7EF960 }

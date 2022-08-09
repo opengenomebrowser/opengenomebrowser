@@ -4,7 +4,8 @@
 {% block styles %}
     <!-- Site-specific css/js -->
     <link rel="stylesheet" type="text/css" href="{% static 'global/css/annotype_color.css' %}">
-    <link rel="stylesheet" type="text/css" href="{% static 'global/css/taxid_color.css' %}" id="taxid-color-stylesheet"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'global/css/taxid_color.css' %}"
+          id="taxid-color-stylesheet"/>
     <link rel="stylesheet" type="text/css" href="{% static 'global/css/tag_color.css' %}"/>
     <script src="{% static 'global/js/query-groups.js' %}"></script>
     <link rel="stylesheet" type="text/css" href="{% static 'blast/css/blast.css' %}">
@@ -16,7 +17,11 @@
 
     <!-- blasterjs -->
     <script src="{% static 'blast/js/html2canvas-0.4.1.js' %}"></script>
-    <script src="{% static 'global/js/blaster.min.js' %}"></script>
+    <script src="{% static 'blast/js/blasterjs.min.js' %}"></script>
+    <link href="{% static 'blast/css/blasterjs-colors-nucleotides.css' %}" rel="stylesheet"
+          id="stylesheet-blasterjs-nucleotides"/>
+    <link href="{% static 'blast/css/blasterjs-colors-proteins.css' %}" rel="stylesheet"
+          id="stylesheet-blasterjs-proteins"/>
 
 {% endblock %}
 
@@ -47,7 +52,8 @@
             {% if magic_query_manager %}
                 <hr class="featurette-divider">
 
-                <button type="button" class="btn btn-light" data-toggle="collapse" href="#real-div" aria-expanded="false" aria-controls="real-div"
+                <button type="button" class="btn btn-light" data-toggle="collapse" href="#real-div"
+                        aria-expanded="false" aria-controls="real-div"
                 >Show query
                 </button>
 
@@ -80,12 +86,12 @@
                                 <option value="blastx">blastx: nucleotides -> protein cds</option>
                                 <option value="tblastn_ffn">tblastn: protein -> nucleotide cds</option>
                                 <option value="tblastn_fna">tblastn: protein -> nucleotide assembly</option>
-
                             </select>
                         </div>
 
                         <label for="blast-parameters"><a>Additional BLAST parameters:</a></label>
-                        <input type="text" class="form-control" id="blast-parameters" placeholder="for example: -evalue 1e-5 -num_alignments 100">
+                        <input type="text" class="form-control" id="blast-parameters"
+                               placeholder="for example: -evalue 1e-5 -num_alignments 100">
 
                         <label for="blast_input" class=" requiredField">Blast input</label>
                         <div>
@@ -134,8 +140,9 @@
 
         const genomesQuery = [{% if magic_query_manager %} '{{ magic_query_manager.queries|join:"', '" }}' {% else %}{% endif %}]
         const allGenomes = [{% if magic_query_manager %} '{{ magic_query_manager.all_genomes|join:"', '" }}' {% else %}{% endif %}]
-
         const queryGenomes = $('#query-genomes')
+        const stylesheetNucleotides = document.getElementById('stylesheet-blasterjs-nucleotides')
+        const stylesheetProteins = document.getElementById('stylesheet-blasterjs-proteins')
 
         $(document).ready(function () {
             addGenomesGroup(queryGenomes, genomesQuery, false, false)
@@ -149,6 +156,21 @@
             $('#blast-parameters').val(readCookie('blast-parameters'))
 
         })
+
+
+        function toggleStylesheet(sequenceType) {
+            const stylesheetNucleotides = document.getElementById('stylesheet-blasterjs-nucleotides')
+            const stylesheetProteins = document.getElementById('stylesheet-blasterjs-proteins')
+            if (sequenceType === 'proteins') {
+                stylesheetNucleotides.disabled = true
+                stylesheetProteins.disabled = false
+            } else if (sequenceType === 'nucleotides') {
+                stylesheetNucleotides.disabled = false
+                stylesheetProteins.disabled = true
+            } else {
+                throw "toggleStylesheet only understands 'proteins' or 'nucleotides' as arguments!"
+            }
+        }
 
 
         function submitFunction() {
@@ -184,6 +206,11 @@
             const parameters = $('#blast-parameters').val()
             writeCookie('blast-parameters', parameters)
             const serialized_query = frm.serialize() + '&genomes[]=' + urlReplBlanks(allGenomes) + '&blast_kwargs=' + parameters
+
+            // activate new stylesheet
+            const blastType = $('#id_blast_type').val()
+            const alignmentType = ['blastp', 'blastx', 'tblastn_ffn', 'tblastn_fna'].includes(blastType) ? 'proteins' : 'nucleotides'
+            toggleStylesheet(alignmentType)
 
             // load new blast results
             $.ajax({
