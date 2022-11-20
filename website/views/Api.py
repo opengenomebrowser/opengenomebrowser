@@ -226,7 +226,7 @@ class Api:
         )
 
         script, plot_div = components(plot)
-        script = script[33:-10]  # remove <script type="text/javascript"> and </script>
+        script = script[35:-10]  # remove <script type="text/javascript"> and </script>
 
         return JsonResponse(dict(script=script, plot_div=plot_div))
 
@@ -294,7 +294,7 @@ class Api:
         plots = loci.plot_bokeh(viewspan=3000, auto_reverse=True)
 
         script, plot_divs = components(plots)
-        script = script[33:-10]  # remove <script type="text/javascript"> and </script>
+        script = script[35:-10]  # remove <script type="text/javascript"> and </script>
 
         gene_divs = [g.html for g in gs]
         species_divs = [g.genomecontent.organism.taxid.html for g in gs]

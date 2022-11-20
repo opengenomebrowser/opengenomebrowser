@@ -123,7 +123,7 @@
             </a>
             <div class="dropdown-divider"></div>
             <a class="dropdown-item context-menu-icon context-menu-icon-help {% if no_help %}disabled{% endif %}"
-               href="https://opengenomebrowser.github.io/opengenomebrowser/tutorials/{{ request.resolver_match.url_name }}.html">
+               href="https://opengenomebrowser.github.io/tutorials/{{ request.resolver_match.url_name }}.html">
                 Get help with this page
             </a>
         </div>
@@ -245,6 +245,10 @@
 </section>
 
 </body>
+
+<script>
+    const placeholders = {{ placeholders|safe }}
+</script>
 
 {% block end %}{% endblock %}
 

@@ -111,7 +111,7 @@ class GenomeFilter:
         context = extract_errors(request, dict(title='Genome table'))
 
         context['error_info_bottom'].append('Use Ctrl and Shift to select multiple genomes.')
-        context['error_info_bottom'].append('Click on genome tags to open the context menu.')
+        context['error_info_bottom'].append('Click on genome tags (or right click) to open the context menu.')
         context['error_info_bottom'].append('Click on "Show columns and filters" to show additional columns and use filters')
 
         context['total_unfiltered_count'] = Genome.objects.count()

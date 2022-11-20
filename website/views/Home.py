@@ -91,7 +91,7 @@ def home_view(request):
                 img='/static/index/images/GitHubPages.jpg',
                 img_cls='circle',
                 role='Tutorials and Documentation',
-                href='https://opengenomebrowser.github.io/opengenomebrowser/',
+                href='https://opengenomebrowser.github.io/',
                 did=[]
             ),
             dict(

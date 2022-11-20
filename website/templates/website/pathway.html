@@ -119,7 +119,7 @@
                     <div class="col-sm-10">
                         <div class="input-group">
                             <input type="text" class="form-control" id="get-map"
-                                   value="{% if map %}{{ map.slug }} : {{ map.title }}{% endif %}">
+                                   value="{% if map %}{{ map.slug }} : {{ map.title }}{% endif %}" placeholder="{{ placeholders.pathway }}">
                             <div class="input-group-append">
                                 <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true"
                                         style="height: 38px" aria-expanded="false" onclick="rankPathwaysDropdown()">Select

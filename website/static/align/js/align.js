@@ -26,6 +26,9 @@ async function load_alignment(gene_identifiers, target_div, method = 'clustalo',
 
         let m = msa(opts)
 
+        m.g.zoomer.set("alignmentHeight", seqs.length * 15)
+        m.g.zoomer.set("labelNameLength", Math.max(...seqs.map((s) => s.name.length)) * 7.1 + 15)
+
         m.render()
 
         result = data['alignment']

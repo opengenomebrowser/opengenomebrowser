@@ -11,7 +11,7 @@ type_dict = PathwayMap._get_type_dict()
 
 
 def pathway_view(request):
-    context = extract_errors(request,dict(title='Pathways'))
+    context = extract_errors(request, dict(title='Pathways'))
 
     map: PathwayMap = None
     map_is_valid = False
@@ -75,12 +75,12 @@ def score_pathway_maps(request):
 
     i = 1
     while f'g{i}[]' in request.POST:
-        group_ids.append(f'g{i}[]')
+        group_ids.append(f'g{i}')
         i += 1
 
     for group_id in group_ids:
         try:
-            qs = set(request.POST.getlist(group_id))
+            qs = set(request.POST.getlist(f'{group_id}[]'))
             magic_query_manager = MagicQueryManager(queries=qs)
         except Exception as e:
             return JsonResponse(dict(success='false', result=e.message))

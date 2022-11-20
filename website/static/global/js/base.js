@@ -434,6 +434,7 @@ function initAutocompleteAnnotations(div_name) {
             source: '/api/autocomplete-annotations/',
             minLength: 1
         },
+        placeholder: placeholders.annotation || '',
         delimiter: ',;',
         forceLowercase: false,
         onChange: onAnnotationsChange
@@ -482,7 +483,7 @@ function onAnnotationsChange(field, editor, tags) {
     })
 }
 
-function initAutocompleteGenomes(div_name, maxTags) {
+function initAutocompleteGenomes(div_name, maxTags, placeholder = '') {
     // https://goodies.pixabay.com/jquery/tag-editor/demo.html
     $(div_name).tagEditor({
         autocomplete: {
@@ -490,6 +491,7 @@ function initAutocompleteGenomes(div_name, maxTags) {
             minLength: 1
         },
         delimiter: ',;',
+        placeholder: placeholders.genome || '',
         forceLowercase: false,
         maxTags: maxTags ? maxTags : null,
         onChange: onGenomesChange
@@ -558,6 +560,7 @@ function initAutocompleteGenes(div_name) {
             source: '/api/autocomplete-genes/',
             minLength: 1
         },
+        placeholder: placeholders.gene || '',
         delimiter: ',; ',
         forceLowercase: false,
         onChange: onGenesChange
