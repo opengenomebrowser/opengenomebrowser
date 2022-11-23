@@ -330,15 +330,23 @@ Perform annotation search</a>
 
     $('.ogb-tag.mini').tooltip()
 }
-
-let showAnnotationClickMenu = function (event, annotation = 'auto', siblings = 'auto', listOfGenomes = {}, annotype = 'auto') {
-    console.log('showAnnotationClickMenu', 'event:', event, 'annotation:', annotation, 'siblings:', siblings, 'listOfGenomes', listOfGenomes, 'annotype', annotype)
+/**
+ * Generate a context menu for annotations
+ *
+ * @param event
+ * @param annotation: single annotation (string)
+ * @param siblings: other annotations ('auto' or array)
+ * @param groupOfGenomes: dictionary: {genomeName -> arrayOfGenomes}
+ * @param annotype: 'auto' or string
+ */
+let showAnnotationClickMenu = function (event, annotation = 'auto', siblings = 'auto', groupOfGenomes = {}, annotype = 'auto') {
+    console.log('showAnnotationClickMenu', 'event:', event, 'annotation:', annotation, 'siblings:', siblings, 'groupOfGenomes', groupOfGenomes, 'annotype', annotype)
 
     // auto-discover
     annotation = autoDiscoverSelf(event, annotation)
     siblings = autoDiscoverSiblings(event, annotation, siblings, 'annotation')
     let siblings_repl = urlReplBlanks(siblings)
-    listOfGenomes = Object.entries(listOfGenomes).reduce((newObj, [name, genomes]) => {
+    groupOfGenomes = Object.entries(groupOfGenomes).reduce((newObj, [name, genomes]) => {
         newObj[name] = autoDiscoverGenomes(genomes)
         return newObj
     }, {})
@@ -387,20 +395,11 @@ Copy annotation</a>
         cm.appendElement(`<a href="${url}" class="dropdown-item context-menu-icon context-menu-icon-hyperlink">${name}</a>`)
     })
 
-    // Annotation search without genomes
-    if (listOfGenomes.length === 0) {
-        cm.appendElement(`
-<h6 class="dropdown-header context-menu-header many-genomes">
-${siblings.length} selected annotations</h6>
-<a href="/annotation-search/?annotations=${siblings_repl}" class="dropdown-item context-menu-icon context-menu-icon-annotations many-genomes">
-Search for annotations</a>
-</div>
-`)
-    }
-
     // Compare genes
-    Object.entries(listOfGenomes).forEach(([name, genomes]) => {
+    Object.entries(groupOfGenomes).forEach(([name, genomes]) => {
+        // for each group of genomes
         name = (name === '') ? '' : `${name}: `
+        console.log('loop', name, genomes)
         cm.appendElement(`
 <h6 class="dropdown-header context-menu-header many-genes">
 ${name}${genomes.length} genomes</h6>
@@ -411,11 +410,10 @@ Compare the genes</a>
 `)
     })
 
-    if (siblings.length) {
-        // Annotation search with genomes
-        Object.entries(listOfGenomes).forEach(([name, genomes]) => {
-            name = (name === '') ? '' : `${name}: `
-            cm.appendElement(`
+    // Annotation search with genomes
+    Object.entries(groupOfGenomes).forEach(([name, genomes]) => {
+        name = (name === '') ? '' : `${name}: `
+        cm.appendElement(`
 <h6 class="dropdown-header context-menu-header many-annotations">
 ${name}${genomes.length} genomes and ${siblings.length} annotations</h6>
 
@@ -423,9 +421,25 @@ ${name}${genomes.length} genomes and ${siblings.length} annotations</h6>
 Search for annotations</a>
 </div>
 `)
-        })
-    }
+    })
 
+    // if other annotations
+    if (siblings.length > 1) {
+        cm.appendElement(`
+<h6 class="dropdown-header context-menu-header many-genomes">
+${siblings.length} selected annotations</h6>
+<a onclick="CopyToClipboard('${siblings}')" class="dropdown-item many-genomes context-menu-icon context-menu-icon-copy">
+Copy annotations</a>
+`)
+        // Annotation search without genomes
+        if (Object.keys(groupOfGenomes).length === 0) {
+            cm.appendElement(`
+<a href="/annotation-search/?annotations=${siblings_repl}" class="dropdown-item context-menu-icon context-menu-icon-annotations many-genomes">
+Search for annotations</a>
+`)
+        }
+        cm.appendElement('</div>')
+    }
 
     $.post('/api/get-annotation/', {'annotation_name': annotation}, function (data) {
         const pathways = data['pathways']
