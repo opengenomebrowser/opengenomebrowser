@@ -132,9 +132,9 @@ def get_score_many(map: PathwayMap, groups_of_genomes) -> float:
     keys = set()
     counters = []
     group_lenths = []
-    for i, genomes in enumerate(groups_of_genomes, 1):
+    for group_name, genomes in groups_of_genomes.items():
         group_lenths.append(len(genomes))
-        anno_to_count = Counter(getattr(map, f'g{i}[]'))
+        anno_to_count = Counter(getattr(map, group_name))
         counters.append(anno_to_count)
         keys = keys.union(set(anno_to_count.keys()))
 

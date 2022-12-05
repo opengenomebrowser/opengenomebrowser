@@ -40,6 +40,7 @@ function addGenomesGroup(target, genomes = [], deleteButton = true, groupId = tr
 }
 
 function removeGenomesQuery(target) {
+    // remove group of genomes
     $(target).closest('.get-genomes').remove()
     $('#query-genomes .group-count').each(function (i, element) {
         element.text = i + 1
@@ -47,16 +48,10 @@ function removeGenomesQuery(target) {
 }
 
 function extractQuery(target) {
-    const text = $(target).find('.tag-editor').text()
-
-    if (text.length === 0 || text === decodeURI('%C2%A0')) {
-        return [] // no content
-    }
-
-    return text
-        .replace(/\s*,\s*/g, ",")  // remove all whitespace around commas
-        .replace(/^,/, "")  // remove leading comma
-        .split(",")  // split into list of identifiers/magic strings
+    return $(target)
+        .find('input')
+        .tagEditor('getTags')[0]
+        .tags
 }
 
 function copyQuery(target) {
@@ -64,5 +59,10 @@ function copyQuery(target) {
 }
 
 function wipeQuery(target) {
-    $(target).find('.tag-editor').text('')
+    const tagEditorElement = $(target)
+        .find('input')
+    const tags = tagEditorElement.tagEditor('getTags')[0].tags
+    tags.forEach((tag) => {
+        tagEditorElement.tagEditor('removeTag', tag)
+    })
 }

@@ -47,7 +47,7 @@ class GenomeSerializer(serializers.ModelSerializer):
         return genome
 
     def is_valid(self, raise_exception=False):
-        return super().is_valid(raise_exception)
+        return super().is_valid(raise_exception=raise_exception)
 
     @staticmethod
     def update_genomecontent(genome: Genome, wipe=False):

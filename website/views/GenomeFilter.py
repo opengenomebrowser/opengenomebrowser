@@ -110,9 +110,12 @@ class GenomeFilter:
     def filter_view(cls, request):
         context = extract_errors(request, dict(title='Genome table'))
 
-        context['error_info_bottom'].append('Use Ctrl and Shift to select multiple genomes.')
-        context['error_info_bottom'].append('Click on genome tags (or right click) to open the context menu.')
-        context['error_info_bottom'].append('Click on "Show columns and filters" to show additional columns and use filters')
+        context['error_info_bottom'].extend([
+            'Use <code>Ctrl</code> and/or <code>Shift</code> to select multiple genomes. '
+            'Press <code>ESC</code> to deselect all genomes.',
+            'Click on genome tags (or right click) to open the context menu.',
+            'Click on "Show columns and filters" to show additional columns and use filters.'
+        ])
 
         context['total_unfiltered_count'] = Genome.objects.count()
         context['activate_js'] = [c.activate_js() for c in cls.column_classes]
