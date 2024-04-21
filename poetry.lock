@@ -76,28 +76,34 @@ numpy = "*"
 
 [[package]]
 name = "biotite"
-version = "0.33.0"
+version = "0.40.0"
 description = "A comprehensive library for computational molecular biology"
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=3.7"
 files = [
-    {file = "biotite-0.33.0-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:642ddab9536ae444ff70081ca0fdda31c5e00b1452c360e33b90f0a2f3cae4a8"},
-    {file = "biotite-0.33.0-cp310-cp310-manylinux1_x86_64.whl", hash = "sha256:717151200f33d1ba03683ec5d98a089d89fb8f7c6cab357fc4c00213e03d3372"},
-    {file = "biotite-0.33.0-cp310-cp310-win_amd64.whl", hash = "sha256:6f31f2b1365d24c37e6b4db98741797da0a98e4f60b09138a7cc96daf81a3648"},
-    {file = "biotite-0.33.0-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:63e641862b90d776ced2110bfd05132b57bee41c38ad083a8b238678440b573f"},
-    {file = "biotite-0.33.0-cp38-cp38-manylinux1_x86_64.whl", hash = "sha256:23cd6d1e3211b2efd271a593f0f43e2ef01f516ca1bcfc2df82a698474f79687"},
-    {file = "biotite-0.33.0-cp38-cp38-win_amd64.whl", hash = "sha256:9436022744f3b67e95a09e1ce8c64a56d138a52cc3ac239af72a6a8ba340d30b"},
-    {file = "biotite-0.33.0-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:f3911ee87714994f0d20b08d2edd3c499761ee480e3d8bdce2f7641c4aa17096"},
-    {file = "biotite-0.33.0-cp39-cp39-manylinux1_x86_64.whl", hash = "sha256:286feb179aab1fce92d15743e7e9a2798f0feab1bbf89b7bc352b556d67402d9"},
-    {file = "biotite-0.33.0-cp39-cp39-win_amd64.whl", hash = "sha256:8bae0cd5440b98063caa4659f33a418602b5af45648850de1e923145ffbdf572"},
-    {file = "biotite-0.33.0.tar.gz", hash = "sha256:8d51ab6e0ef0a701428b61ee9d5a0e0ea3a146a5faa4b5c311a410969026fbc1"},
+    {file = "biotite-0.40.0-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:6038bdb81fc4fd5f0e1330a287b93f765f1def6c9827c14a7e7f9a2dc078995f"},
+    {file = "biotite-0.40.0-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:58109645e21387598f884ccf4896a4eec1720b4278f76cf44c06d33cf2e77ec0"},
+    {file = "biotite-0.40.0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:fb72b991c96370d5d8eaddc4c5fe2b1ab138aef409ca31d0ae5f782275cb97bc"},
+    {file = "biotite-0.40.0-cp310-cp310-win_amd64.whl", hash = "sha256:9a5ad7caaa542eaed4ef9b1cec949e9b663ad788f4e9071ac3fad096e406fbb8"},
+    {file = "biotite-0.40.0-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:0abbfe8b7370092640825592e953601ab4b997c783da47175c12c7a8c9a31d62"},
+    {file = "biotite-0.40.0-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:2642c0b90f330fa112f9b3010a3ef70375a2ff2c672787cd8d07c2c0a0a137cd"},
+    {file = "biotite-0.40.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:8d6d13e0a2226fdb0eaee9980b173fd139bf4d16462076af36ca637b87b5bc90"},
+    {file = "biotite-0.40.0-cp311-cp311-win_amd64.whl", hash = "sha256:6123af73d6ff4e07798b35cf73b4dd59c385595bdf4d6cdc7aa5223929f67b5c"},
+    {file = "biotite-0.40.0-cp312-cp312-macosx_10_9_x86_64.whl", hash = "sha256:1adaeea60af86ba3aee551bed36c20bd0f221271005464d071a7091129f59489"},
+    {file = "biotite-0.40.0-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:7d2b8d45662325b70a84a42b7a5fff331223fc7766caf5b5637d4893f5124dbc"},
+    {file = "biotite-0.40.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:81968f6fd24df76c091c2c864dd811107e8a68a31717cd9ef3a48cfe42a6b589"},
+    {file = "biotite-0.40.0-cp312-cp312-win_amd64.whl", hash = "sha256:92c900800f7d205d64f82ffce6c6da8cae4c1ecdf3a08db6c285810a8ff76d30"},
+    {file = "biotite-0.40.0.tar.gz", hash = "sha256:7c24f4efcc315299ad36f5deacef0c65bb61cc59a6b642387b6210988b557261"},
 ]
 
 [package.dependencies]
 msgpack = ">=0.5.6"
 networkx = ">=2.0"
-numpy = ">=1.19"
+numpy = ">=1.14.5,<=2.0"
 requests = ">=2.12"
+
+[package.extras]
+test = ["pytest"]
 
 [[package]]
 name = "bokeh"
@@ -302,20 +308,20 @@ tests = ["coverage"]
 
 [[package]]
 name = "django-mptt"
-version = "0.13.4"
+version = "0.16.0"
 description = "Utilities for implementing Modified Preorder Tree Traversal with your Django Models and working with trees of Model instances."
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=3.9"
 files = [
-    {file = "django-mptt-0.13.4.tar.gz", hash = "sha256:80c9fb34df7796a4e5af0cb6b8ade3697555b1aa438bd07a01f32b3ab5202b63"},
-    {file = "django_mptt-0.13.4-py3-none-any.whl", hash = "sha256:75745b621ae31d97957ed924155a750dfa8cacd9543799ada2d713fd6bc3f5c7"},
+    {file = "django_mptt-0.16.0-py3-none-any.whl", hash = "sha256:8716849ba3318d94e2e100ed0923a05c1ffdf8195f8472b690dbaf737d2af3b5"},
+    {file = "django_mptt-0.16.0.tar.gz", hash = "sha256:56c9606bf0b329b5f5afd55dd8bfd073612ea1d5999b10903b09de62bee84c8e"},
 ]
 
 [package.dependencies]
 django-js-asset = "*"
 
 [package.extras]
-tests = ["coverage", "mock-django"]
+tests = ["coverage[toml]", "mock-django"]
 
 [[package]]
 name = "django-prettyjson"
@@ -398,12 +404,12 @@ files = [
 
 [[package]]
 name = "fire"
-version = "0.4.0"
+version = "0.6.0"
 description = "A library for automatically generating command line interfaces."
 optional = false
 python-versions = "*"
 files = [
-    {file = "fire-0.4.0.tar.gz", hash = "sha256:c5e2b8763699d1142393a46d0e3e790c5eb2f0706082df8f647878842c216a62"},
+    {file = "fire-0.6.0.tar.gz", hash = "sha256:54ec5b996ecdd3c0309c800324a0703d6da512241bc73b553db959d98de0aa66"},
 ]
 
 [package.dependencies]
@@ -1641,4 +1647,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.11"
-content-hash = "fa77f680b9e506fb378904a423f03692ae829d525ce4ee6163046cd48dbadb04"
+content-hash = "7ad37ef0749dfa051f7342c732a00ff02023906f82d2a4a46497bec9744c8041"
