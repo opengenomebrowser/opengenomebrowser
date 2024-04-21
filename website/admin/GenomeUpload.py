@@ -25,7 +25,7 @@ class GenomeUploadForm(forms.Form):
     rename = forms.BooleanField(label='Must the files be renamed?', initial=False, required=False)
     genome_files = forms.FileField(
         label='Genomic files (at least .fna, .gbk, .gff)',
-        widget=forms.ClearableFileInput(attrs={'multiple': True}),
+        widget=forms.ClearableFileInput(attrs={'allow_multiple_selected': True}),
         required=False
     )
 
