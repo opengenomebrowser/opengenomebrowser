@@ -3,7 +3,7 @@ from website.models.GenomeContent import GenomeContent
 from website.models.Annotation import Annotation
 from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord
-from Bio.SeqUtils import GC
+from Bio.SeqUtils import gc_fraction
 from OpenGenomeBrowser import settings
 
 
@@ -34,7 +34,7 @@ class Gene(models.Model):
         return f'<span class="gene ogb-tag" data-species="{tsi}">{self.identifier}</span>'
 
     def gc_content(self) -> float:
-        return GC(self.nucleotide_sequence())
+        return 100*gc_fraction(self.nucleotide_sequence())
 
     def fasta_nucleotide(self) -> str:
         return f'>{self.identifier}\n{self.nucleotide_sequence()}'

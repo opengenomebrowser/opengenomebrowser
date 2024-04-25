@@ -126,7 +126,7 @@ class MatrixMaker:
         if axis == 0:
             patterns = list(set([tuple(row.values) for i, row in matrix.applymap(bool).iterrows()]))
         else:
-            patterns = list(set([tuple(row.values) for i, row in matrix.applymap(bool).iteritems()]))
+            patterns = list(set([tuple(row.values) for i, row in matrix.applymap(bool).items()]))
         patterns = sorted(patterns, key=lambda x: sum(x))
         pattern_to_rank = {p: i for i, p in enumerate(patterns)}
         return pattern_to_rank

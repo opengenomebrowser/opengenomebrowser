@@ -268,8 +268,8 @@ class Genome(models.Model):
         if self.assembly_fasta:
             # calculate GC-content
             from Bio import SeqIO
-            from Bio.SeqUtils import GC
-            gc = {(GC(record.seq), len(record)) for record in SeqIO.parse(self.assembly_fasta(relative=False), "fasta")}
+            from Bio.SeqUtils import gc_fraction
+            gc = {(100*gc_fraction(record.seq), len(record)) for record in SeqIO.parse(self.assembly_fasta(relative=False), "fasta")}
             gc_times_len = sum([gc_content * length for gc_content, length in gc])
             total_assembly_length = sum([length for gc_content, length in gc])
             self.assembly_gc = round(gc_times_len / total_assembly_length, 1)
