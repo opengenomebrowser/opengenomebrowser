@@ -1,3 +1,6 @@
+> [!CAUTION]
+> OpenGenomeBrowser is still being actively developed by the startup [Abrinca](https://abrinca.com/), but it is licensed under a closed license.
+
 # OpenGenomeBrowser
 
 See [GitHub pages](https://opengenomebrowser.github.io/opengenomebrowser/) for instructions and tutorials.
